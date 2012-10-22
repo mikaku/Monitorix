@@ -1,0 +1,170 @@
+INTRODUCTION
+===============================================================================
+Monitorix is a free, open source, lightweight system monitoring tool designed
+to monitor as many services and system resources as possible. It has been
+created to be used under production UNIX/Linux servers, but due to its
+simplicity and small size may also be used to monitor embedded devices as
+well.
+
+It consists mainly of two programs: a collector, called monitorix, which
+is a Perl daemon that is started automatically like any other system service,
+and a CGI script called monitorix.cgi.
+
+Every time 'monitorix' is started it reads the configuration file from the path
+specified in the command line (using the -c option), and once checked, it
+creates the 'index.html' file that will act as the Monitorix main page.
+
+It also creates a file called '$BASE_DIR/cgi-bin/monitorix.conf.path' that
+includes the absolute path of the configuration file. This file will be read
+by 'monitorix.cgi' to determine the exact location of the configuration file.
+If for any reason it is unable to locate this file, Monitorix will try two
+alternative locations: '/etc/monitorix.conf' and
+'/usr/local/etc/monitorix.conf'.
+
+
+HISTORY
+===============================================================================
+All of its development was initially created for monitoring Red Hat, Fedora and
+CentOS Linux systems, so this project was made keeping in mind these type of
+distributions. Today it runs on different GNU/Linux distributions and even in
+other UNIX systems, like FreeBSD, OpenBSD and NetBSD.
+
+On March 2006, Monitorix included minimal support to run on FreeBSD systems. My
+special thanks to twenty4help Knowledge Service and to Roger "Rocky" Vetterberg
+for their support and help, and for being good friends during the porting
+process. 
+
+Since the release of 1.3.2 though, Monitorix has almost full support for
+FreeBSD. My special thanks to Pavlin Vatev who generously offered his support
+during all of the process.
+
+With the release 2.0.0 Monitorix suffered a complete rewrite, including new
+features and graphs, cleaned up all the code, updated and enhanced a number of
+aspects in some graphs, and fixed a lot of bugs. The most important change was
+that it no longer required 'crond' to work, instead Monitorix became a complete
+standalone Perl daemon being started and stopped like any other system service.
+
+Since the release 2.2.0 Monitorix includes support for OpenBSD systems. My
+special thanks to Devio.us team for giving me a free shell account where to put
+hands to work.
+
+Since the release 2.6.0 Monitorix includes support for NetBSD systems.
+
+
+IMPORTANT NOTE
+===============================================================================
+The configuration file is a Perl file where values are directly assigned to
+variables that Monitorix uses during normal operation; you should take care to
+conform to basic Perl syntax.
+
+Please, see the monitorix.conf(5) and monitorix(8) man pages.
+
+
+REQUIREMENTS
+===============================================================================
+Monitorix requires some others packages to be installed that your GNU/Linux
+distribution may or may not have:
+
+- A CGI capable Web server (Apache, Nginx, lighttpd, etc.)
+- Perl
+- Perl-CGI
+- Perl-MailTools
+- Perl-MIME-Lite
+- Perl-libwww
+- Perl-DBI
+- Perl-XML-Simple
+- RRDtool and its Perl bindings (perl-rrdtool or rrdtool-perl)
+
+You can download RRDtool from different places:
+	http://pkgs.repoforge.org/rrdtool/
+	http://oss.oetiker.ch/rrdtool/
+
+
+INSTALLATION
+===============================================================================
+The file tree for the Monitorix application is:
+
+File                        Recommended location		Description
+-------------------------------------------------------------------------------
+monitorix                   /usr/bin/			main program (daemon)
+monitorix.cgi               $BASE_DIR/cgi-bin/		CGI (viewer)
+monitorix.conf              /etc/			configuration file
+Changes                     /usr/share/doc/		changes log file
+COPYING                     /usr/share/doc/		license
+logo_bot.png                $BASE_DIR			bottom logo
+logo_top.png                $BASE_DIR			top logo
+monitorixico.png            $BASE_DIR			favicon
+monitorix-alert.sh          /usr/share/doc/		alert example script
+monitorix-apache.conf       /etc/httpd/conf.d/		apache configuration
+monitorix.init              /etc/init.d/		redhat init script
+monitorix-deb.init          /etc/init.d/		debian init script
+monitorix.logrotate         /etc/logrotate.d/		logrotate script
+monitorix.spec              /usr/share/doc/		RPM spec file
+monitorix.sysconfig         /etc/sysconfig/		pre-run config file
+monitorix.lighttpd          /etc/lighttpd/		lighttpd configuration
+README                      /usr/share/doc/		documentation
+README.FreeBSD              /usr/share/doc/		documentation
+README.nginx                /usr/share/doc/		documentation
+README.OpenBSD              /usr/share/doc/		documentation
+README.NetBSD               /usr/share/doc/		documentation
+man/man5/monitorix.conf.5   /usr/share/man/man5/	monitorix.conf manpage
+man/man8/monitorix.8        /usr/share/man/man8/	monitorix manpage
+reports/*.html              $BASE_LIB/reports/		monthly reports i18n
+reports/send_reports        $BASE_LIB/reports/		script to send reports
+
+
+Once succesfully installed, please take a look into the configuration file to
+setup the options according your system and enable or disable graphs.
+
+Finally start Monitorix using the system init script:
+
+# service monitorix start
+
+or with:
+
+# /etc/init.d/monitorix start
+
+At this point, Monitorix will start gathering the system information based on
+the configuration setup in 'monitorix.conf' file, and after some minutes, you
+should be able to see the results from your favorite browser pointing at:
+
+http://localhost/monitorix/
+(don't forget to (re)start your webserver)
+
+
+AUTHORS
+===============================================================================
+Monitorix is written and actively maintained by Jordi Sanfeliu.
+
+Many people further contributed by reporting problems, suggesting various
+improvements, sharing ideas or submitting actual code. Since the list might be
+incomplete, please see the 'Changes' file for a detailed description of all the
+contributions.
+My special thanks to all of them!
+
+
+CONTACT
+===============================================================================
+In case of help, bugs, ideas or suggestions please contact using any of the
+following ways:
+
+- IRC at freenode: #monitorix
+- Mailing List: https://lists.sourceforge.net/lists/listinfo/monitorix-general
+- Direct Email: Jordi Sanfeliu <jordi@fibranet.cat>
+
+
+DONATIONS
+===============================================================================
+If you or your company make regular use of this software, please consider
+making a donation to the author to support open source effort.
+Many thanks for any donation!
+
+
+LICENSE AND COPYRIGHT
+===============================================================================
+Monitorix is distributed under the terms of the GNU General Public License.
+See the included file "COPYING".
+
+Copyright (C) 2005-2012 Jordi Sanfeliu.
+http://www.monitorix.org
+

@@ -1,0 +1,87 @@
+#!/bin/bash
+#
+#	/etc/rc.d/init.d/monitorix
+#
+# Starts the Monitorix daemon
+#
+# chkconfig: 2345 99 10
+# description: Monitorix is a lightweight system monitoring tool
+# processname: monitorix
+# config: /etc/monitorix.conf
+# pidfile: /var/run/monitorix.pid
+
+### BEGIN INIT INFO
+# Provides:          monitorix
+# Required-Start:    $local_fs
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start up the Monitorix daemon
+# Description:       Monitorix is a free, open source, lightweight system
+#                    monitoring tool designed to monitor as many services and
+#                    system resources as possible.
+### END INIT INFO
+
+# Source function library
+. /etc/init.d/functions
+
+if [ -f /etc/sysconfig/monitorix -a $UID -eq 0 ]; then
+	. /etc/sysconfig/monitorix
+fi
+
+RETVAL=0
+PROG="monitorix"
+DAEMON="/usr/bin/monitorix"
+PIDFILE="/var/run/monitorix.pid"
+CONF="/etc/monitorix.conf"
+
+start() {
+	if [ ! -f /var/lock/subsys/$PROG ] ; then
+		echo -n $"Starting $PROG: "
+		daemon $DAEMON -c $CONF -p $PIDFILE $OPTIONS && success || failure
+		RETVAL=$?
+		if [ $RETVAL -eq 0 ] ; then
+			touch /var/lock/subsys/$PROG
+			echo
+		fi
+	fi
+}
+
+stop() {
+	echo -n $"Stopping $PROG: "
+	killproc $PROG
+	RETVAL=$?
+	rm -f /var/lock/subsys/$PROG
+	rm -f $PIDFILE
+	echo
+}
+
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		restart
+		;;
+	condrestart)
+		if [ -f /var/lock/subsys/$PROG ] ; then
+			restart
+		fi
+		;;
+	status)
+        	status $PROG
+		;;
+	*)
+		echo $"Usage: $0 {start|stop|restart|condrestart|status}"
+		exit 1
+esac
+
+exit $RETVAL

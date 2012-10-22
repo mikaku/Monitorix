@@ -1,0 +1,896 @@
+2.6.1  - NN-XXX-2012
+====================
+- Introduced some modifications to the device name detection for FreeBSD.
+	(thanks to Chris Rees, utisoft AT gmail.com)
+
+
+2.6.0  - 19-Sep-2012
+====================
+- Added a complete statistical BIND graph.
+- Added support for NetBSD systems.
+- Added support for grouping remote servers in the Multihost view.
+	(thanks to Hartmut Wöhrle, hartmut AT hartmut-woehrle.ch)
+- The Disk and Filesystems Usage and I/O Activity graphs have been completely
+  rewriten.
+	(suggested by Konstantinos Skarlatos, k.skarlatos AT gmail.com)
+- Added support to monitor unlimited number of disk drives.
+- Added support to monitor unlimited number of filesystems.
+- Reorganized the legend in the Disk drive temperatures and health graph.
+- Changed the shebang to be more portable among different systems.
+- Completely rewritten the Debian/Ubuntu init script.
+	(suggested by Andreas Itzchak Rehberg, izzy AT qumran.org)
+- Minor changes in the header of the Debian/Ubuntu init script.
+	(thanks to Uwe Heidrich, uweheidrich AT hotmail.com)
+- Expanded to 15 characters the description in network ports.
+- Changed to lines a bit thicker some graphs with few values.
+- Added a new feature to enable/disable the use of javascript:void function when
+  clicking on a zoomable graph.
+	(thanks to Florian E.J. Fruth, fejf AT gmx.de)
+- Fixed a bug that mixed the collected values when monitoring multiple MySQL
+  servers.
+	(thanks to Piotr Smalira, p.smalira AT g16-lublin.eu)
+- Fixed a bad percentage calculation in the dentries and inodes values.
+- Removed useless code when collecting Squid stats.
+- Fixed a typo in a MySQL graph.
+
+
+2.5.2  - 21-May-2012
+====================
+- Modified iptables/ipfw accounting rules handling and fixed some bugs.
+- Added to backup .rrd files every time it changes their internal structure.
+	(suggested by Michael Mansour, mmansour AT ostech.com.au)
+- Fixed a bug that prevented the creation of the 'mysql.rrd' file. The error
+  message was "ERROR: while creating /var/lib/monitorix/mysql.rrd: you must
+  define at least one Data Source".
+	(thanks to Darryl Yeoh Gim Hong, drl AT bsd.my for pointing this out)
+- Fixed to avoid modifying read-only values in chomp() function.
+	(thanks to Julio Cifuentes, jcifuentes AT mail.com for pointing this out)
+
+
+2.5.1  - 23-Apr-2012
+====================
+- Modified the regexp in 'mgr:ipcache' listing to support newer Squid versions.
+- Changed some information and debug messages to be more verbose and clear.
+- Force termination with exit(0) when receiving a SIGINT.
+- Added support to use the socket file for the connection to the MySQL server.
+	(suggested by Darryl Yeoh Gim Hong, drl AT bsd.my)
+- Added the new option IMAP_DATE_LOG_FORMAT to match with the Dovecot date log
+  format.
+- Refreshed the COPYING file to reflect the current contents of the GPLv2 at
+  http://www.gnu.org/licenses/gpl-2.0.txt.
+- Complete English correction in the monitorix.conf(5) man page.
+	(thanks to Paul Rupp, paulrupp AT acorp.net)
+- Fixed a bug that prevented monitoring multiple MySQL servers.
+	(thanks to Piotr Smalira, p.smalira AT g16-lublin.eu)
+- Fixed the vertical label of network traffic in Mail graph to honour the
+  NETSTATS_IN_BPS option.
+	(thanks to Piotr Smalira, p.smalira AT g16-lublin.eu)
+- Fixed a bug that prevented collecting IMAP data from wu-imap server.
+- Fixed padding on big values in the Nginx stats.
+
+
+2.5.0  - 21-Mar-2012
+====================
+- Added a complete statistical Fail2ban graph.
+	(suggested by Andreas Itzchak Rehberg, izzy AT qumran.org)
+- Added a complete statistical Lighttpd graph.
+- Added full support for the Postfix MTA in the Mail statistics graph.
+- Extended the number of information in the Mail statistics graph.
+- Added support to monitor unlimited number of local or remote Apache servers.
+- Added support to monitor unlimited number of local or remote MySQL servers.
+- Added support for Dovecot 2.0 log format.
+- Optimized a lot of code including more regular expressions. 
+- Replaced hardcoded graph titles with the strings in the configuration file.
+- Modified the RedHat init script to let Monitorix create itself the pidfile.
+  This should improve the support on modern Linux systems using 'systemd'.
+	(thanks to a IRC user called 'dashbad' for pointing this out)
+- Improved the init script to be more LSB-compliant.
+- Changed to the '-A' parameter in 'smartctl' to avoid waking up disks when
+  collecting their temperatures and health values.
+	(thanks to Michael Perry, mike AT serensilver.co.uk)
+- Fixed some titles in the list box of the main page.
+- Fixed color overriding in the IMAP and POP3 services graph.
+- Fixed the title in some graphs.
+- Fixed a typo in the debug array name that prevented individual debug working
+  properly.
+- Fixed a typo in the configuration file.
+	(thanks to a IRC user called 'gangsterlicious' for pointing this out)
+- Fixed a bug in the Squid graph that prevented of being counted the Aborted
+  clients.
+- Fixed numbering in some graphs.
+
+
+2.4.1  - 09-Jan-2012
+====================
+- Added support for Dovecot 1.2 log format.
+- Added Polish language support in the monthly traffic report.
+	(thanks to Piotr Smalira, p.smalira AT g16-lublin.eu)
+- Added 'hour' timeframe in 'monitorix.cgi' to accept unsupported queries not
+  comming from the main page.
+- Added support for fail2ban bans in the System Services Demand graph.
+	(thanks to Andreas Itzchak Rehberg, izzy AT qumran.org)
+- Added support for CommuniGate mail server logs in the System Services Demand
+  graph.
+	(thanks to Andreas Itzchak Rehberg, izzy AT qumran.org)
+- Added the ability to show more debug information introducing extra values to
+  the -d parameter. The monitorix(8) manpage has been updated to reflect these
+  changes.
+	(suggested by Andreas Itzchak Rehberg, izzy AT qumran.org)
+- Added the sensor real names in the Voltages graph.
+	(suggested by Andreas Itzchak Rehberg, izzy AT qumran.org)
+- Removed duplicated newline character in logger() calls.
+- Added disabling automatic page reloading when $REFRESH_RATE is 0.
+	(thanks to Andreas Itzchak Rehberg, izzy AT qumran.org)
+- Added a new option in configuration file to change the favicon image.
+	(thanks to Andreas Itzchak Rehberg, izzy AT qumran.org)
+- Added support for SpamAssassin and Clamav logs to catch email-spam and
+  email-virus.
+	(thanks to Andreas Itzchak Rehberg, izzy AT qumran.org)
+- Grouped all the mail related services to the small graphs in the System
+  Services Demand graph. This only implied changing the IMAP position.
+	(suggested by Andreas Itzchak Rehberg, izzy AT qumran.org)
+- Fixed the main interrupt graph in order to avoid running out of colors on
+  systems with lot of interrupts.
+- Fixed to honour the limit of 15 characters of the mountpoint names in the
+  Icecast graph.
+- Fixed the column layout of the text mode in the LM-Sensors graph.
+- Fixed to set standard locale LC_TYPE,"C".
+
+
+2.4.0  - 28-Nov-2011
+====================
+- Added a complete statistical Squid Proxy Web Cache graph.
+	(suggested by Michael Mansour, mmansour AT ostech.com.au)
+- Added a complete statistical NTP multigraph.
+- Added a complete statistical Icecast Streaming Media Server multigraph.
+	(suggested by Kamil Weiser, crx AT lordcyber.net)
+- Error messages now use the internal logger() function so all these messages
+  will have the date and time prefixed.
+- Added support for network port monitoring on FreeBSD and OpenBSD systems.
+- Added support for Nginx network traffic monitoring on FreeBSD and OpenBSD
+  systems.
+- Added the number of instances (1) in the specified time key (day, week, month
+  or year). This also introduces some changes in the name of the .png files and
+  will break backwards compatibility with old (2.3-) Monitorix with Multihost
+  feature enabled.
+- Removed some inadequate calls to 'die' taking proper actions on each case.
+- Introduced small optimizations.
+- Removed the '--lower-limit=0' in the Voltages graph that prevented seeing
+  negatives values.
+- Fixed some typos in the variable name $PNG_DIR in 'monitorix.cgi'.
+- Fixed to avoid a 'divide by zero' message on certain NVIDIA driver version.
+
+
+2.3.0  - 05-Sep-2011
+====================
+- Added a complete statistical NFS (v2, v3 and v4) server graph.
+- Added a complete statistical NFS (v2, v3 and v4) client graph.
+- Improved support for newer NVIDIA drivers and fixed some bugs.
+- Added the 'condrestart' option in the RedHat init script.
+	(suggested by Yury V. Zaytsev, yury AT shurup.com)
+- Added a new option in the configuration file to toggle all network values
+  between bits and bytes per second.
+- Some cosmetic changes.
+- Fixed to sanitize a trailing space in the '/proc/stat' file that prevented to
+  show values in the disk I/O graphs on certain systems with Linux kernel 2.4.
+	(thanks to Dimitri Yioulos, dyioulos AT firstbhph.com)
+- Fixed the Connections_usage value in the MySQL graph avoiding to be greater
+  than 100%.
+- Fixed to avoid showing the device interrupts called 'Dynamic-irq'.
+	(thanks to Michael Mansour, mmansour AT ostech.com.au)
+- Fixed to avoid showing the additional parameter in disk drives.
+	(thanks to Michael Mansour, mmansour AT ostech.com.au)
+- Fixed to add more colors in order to support more interrupt devices.
+	(thanks to Dan Criel, dancriel AT gmail.com)
+- Fixed a bad calculation of network traffic in 'text' interface of Ports graph.
+- Fixed an extra 'optgroup' close tag in 'index.html' for each graph disabled.
+
+
+2.2.0  - 21-Jun-2011
+====================
+- Added support for OpenBSD systems.
+	(thanks to Devio.us team)
+- Added a complete statistical MySQL graph.
+	(thanks to Luca Ferrario, luca AT ferrario.net)
+- (missed in previous version) Prefixed with full path the 'sysctl' command to
+  retrieve the boot time. This is specially needed when using the lighttpd web
+  server on FreeBSD systems.
+	(thanks to Chris Rees, utisoft AT gmail.com)
+- Added the Fork rate (new processes started per second) in the Context Switches
+  graph. It includes two new values: the number of forks and vforks, being the
+  later only for FreeBSD and OpenBSD systems.
+- Added support for the new NVIDIA driver 270.41.03.
+- Added support for the names 'BusyServers' and 'IdleServers' given by Apache
+  when ExtendedStatus is disabled.
+- Added support to show the interrupt names on Xen guest systems.
+- Added to force a standard locale to avoid problems with decimal point/comma.
+	(thanks to Vadim Beljaev, anon333 AT mail.com)
+- Workarounded the well-known problem with SIG{CHLD} and system() function that
+  returns -1 on *BSD systems.
+- Included a Debian init script.
+	(thanks to Jörg Alpers, JAlpers AT gmx.net)
+- Fixed the LINE2 of VFS graph and the swap device in FS graph.
+- Fixed a bug when counting total of users on systems with large number of users
+  logged in.
+- Fixed a bug in 'monitorix.spec' that prevented a correct installation on
+  systems with no 'apache' user defined, and added cosmetic changes.
+- Fixed to show only the graphs of the PC LAN defined in @PC_LIST even when
+  $PC_MAX is greater.
+- Fixed a bug that could remove some Network Port 'iptables' rules under 
+  certain circumstances.
+- Fixed a bug that prevented to put in the email of monthly reports the listing
+  with the daily usage of all the hosts.
+- Fixed a missing import of the 'File::Basename' module.
+- Fixed some typos in the man pages and aligned texts in some graphs.
+
+
+2.1.2  - 04-May-2011
+====================
+- Added a new command line parameter to save the PID into the specified file
+  in order to make life easier to 'rc' scripts.
+	(thanks to Chris Rees, utisoft AT gmail.com)
+- Prefixed with full path the 'sysctl' command to retrieve the boot time. This
+  is specially needed when using the lighttpd web server on FreeBSD systems.
+	(thanks to Chris Rees, utisoft AT gmail.com)
+- Added to change to the / directory before parsing the command line parameters,
+  and after that, a change to a safety directory, either /tmp or /lost+found.
+- Improved the code that detects the physical device name where the / filesystem
+  resides.
+- Changed the way how are handled the command line options.
+- Removed the 'Tahoma' font name from all 'font face' HTML tags.
+- Hidden the unused values in the 'LM-Sensors and GPU temperatures' graphs.
+- Fixed to remove correctly the 'iptables' rules when some defined port has been
+  removed from the configuration file.
+- Fixed to show only the graphs of the ports defined in @PORT_LIST even when
+  $PORT_MAX is greater.
+- Fixed a missing variable initialization that generated an 'illegal division by
+  zero' message if the filesystem defined does not existed, and the system
+  didn't had a valid swap device.
+	(thanks to Mowd, mowd8574 AT gmail.com)
+- Fixed to show the PID number even when started as a foreground process.
+- Fixed the padding of the Voltages values.
+- Fixed a bug that prevented to gather correctly the disk I/O values of the /
+  filesystem on Linux systems with kernel 2.4.
+
+
+2.1.1  - 12-Apr-2011
+====================
+- Reflect the SIGHUP reception with a message also in the new reopened log file.
+- Added support for the new 'Idrop' column in the output of 'netstat' command
+  appeared in FreeBSD 8.0 and newer versions.
+	(thanks to Sean, strumming AT thestrings.com)
+- Fixed an illegal division by zero message if the swap device is not used at
+  all, which caused to not collect any data and, at the same time, prevented to
+  see any results in the Filesystems usage and I/O activity graphs.
+	(thanks to Daniel Constantinov, daniel AT k9tecnologia.com.br)
+- Fixed to not show a broken graph if there is no data defined in any of the
+  three possible arrays of the HP Temperatures graphs.
+- Fixed to rename the files in the $USAGE_DIR directory once they are already
+  sent in the monthly reports.
+- Fixed to create correctly the iptables rules for PC LAN traffic accounting.
+	(thanks to Daniel Constantinov, daniel AT k9tecnologia.com.br)
+
+
+2.1.0  - 09-Mar-2011
+====================
+- Completed the monthly traffic reports for PCs.
+- Added a better signal handling.
+- Added the SIGHUP signal handler in order to close and open a new log file.
+- Modified the monitorix(8) manpage to reflect that new feature.
+- Darkened the grey color of the CUPS usage in the Network Services graphs.
+- Fixed annoying messages in log file when PC_MAX is actually greater than the
+  number of entries in PC_LIST or PC_IP:
+
+*** DNS problem with: 
+*** pc_update(): Usage: Socket::inet_ntoa(ip_address_sv) at /usr/bin/monitorix line 3548.
+
+- Fixed to show only the entries defined in PC_LIST even when PC_MAX has a
+  greater value.
+- Fixed to correctly handle the SIGCHLD signal to prevent an accumulation of
+  defunct or "zombie" processes in old Perl versions.
+- Fixed a regexp in 'fs.rrd' that prevented monitoring non-local filesystems.
+- Fixed a typo in monitorix(8) man page when referencing the monitorix.conf(5)
+  man page.
+- Fixed in 'monitorix.cgi' to accept the 'silent' option in PCs graphs.
+- Fixed to LINE2 type the lines plotted in the Greylisting zoomed graph.
+
+
+2.0.0  - 01-Feb-2011
+====================
+This new version is a complete rewrite, including new features and graphs,
+cleaned up all the code, updated and enhanced a number of aspects in some
+graphs, and fixed a lot of bugs. The most important change is that it no longer
+requires 'crond' to work, instead Monitorix is now a complete standalone Perl
+daemon being started and stopped like any other system service.
+
+Please read the 'News' and 'Features' sections in the Monitorix web site to
+give you an idea of all the changes and new features that include.
+
+I want to give a huge thanks to the people that has contributed testing and
+reporting bugs during its beta phase.
+
+
+1.5.2  - 18-Nov-2010
+====================
+- Added an new alert based on the usage of the root filesystem. It follows
+  the same logic than the CPU alert, so the alert script is practically the
+  same.
+	(thanks to Ramchander, ramchan10 AT gmail.com)
+- Modified the man page of the configuration file to reflect the new alert
+  capability.
+- Added a protection mechanism when collecting the filesystem disk usage. It
+  prevents possible timeout scenarios on those filesystems mounted using NFS.
+	(thanks to Ramchander, ramchan10 AT gmail.com)
+- Fixed to remove the netmask suffix when collecting the network traffic if
+  the IP belongs to a hostname instead of a network.
+	(anonymous contribution)
+
+
+1.5.1  - 23-Jun-2010
+====================
+- Changed the default $ENABLE_MAIL option to 'N'.
+- Added a second decimal in the Mail statistics graph in order to have more
+  accurated values.
+- Added a missing "--lower-limit=0" to all graphs (except MTA stats).
+- Changed the default value of rigid (RIGID = 2) to 0 in all network port graphs.
+- Included a number of necessary adjustments in the install.sh script to adapt
+  it better to the FreeBSD installation process.
+	(thanks to Michael Brune, admin AT mjbrune.org)
+- Added the description of the @NET_RIGID and @NET_LIMIT arrays in the man page
+  monitorix.conf(5).
+- Fixed some bugs and a bad code design in the Interrupts graph that prevented
+  showing correctly the graph on systems with some interrupts numbers greater
+  than 256.
+	(thanks to Dimitri Yioulos, dyioulos AT firstbhph.com)
+- Fixed the Memory graph to display correctly the value in MB. This bug affected
+  only the FreeBSD systems.
+- Fixed to be able to enable only the LAN devices monitoring without having to have
+  enabled the network ports monitoring.
+	(thanks to Niklas Janzon, niklas.janzon AT gmail.com)
+- Fixed the iptables rules section in order to avoid its execution on FreeBSD
+  systems.
+- Fixed a bug in the init script that prevented executing it during the system
+  shutdown on RedHat/Fedora/CentOS systems. The path of the lock file has
+  changed from /var/lock/ to /var/lock/subsys.
+
+
+1.5.0  - 06-Apr-2010
+====================
+- Added a new graph to show complete MTA (Sendmail) statistics.
+- Added support for those lines in the 'sensors' command output that include
+  a newline character and have the result in the next line.
+	(thanks to Balazs Denes, dnsdns AT gmail.com)
+- Reused a lot of temporal variables in the CGI file.
+- Fixed to not show error messages on certain virtual servers if the file
+  '/proc/diskstats' does not exist.
+	(thanks to an anonymous IRC user called 'gangsterlicious')
+- Fixed the rigid control in the 3rd graph of the Nginx statistics.
+- Fixed the colors scheme in the main page when using the 'white' theme.
+
+
+1.4.2  - 10-Feb-2010
+====================
+- Removed the width=1 from the top table in the graphs page.
+- Changed to grey the color of all links.
+- Added automatic detection of total amount of memory in the system.
+- Modified the install.sh script in order to remove the already supported
+  distribution Gentoo and to include some warnings saying that the script is
+  not the recommended method of installing Monitorix.
+- Added a new $OSTYPE key called "Linux-Arch" to include support for Arch Linux
+  distribution.
+	(thanks to graysky, da_audiophile AT yahoo.com)
+- Fixed the URL of the images if is being called through a secure web server.
+	(thanks to an anonymous IRC user called 'dobermai')
+- Fixed those no named interrupts that generated the annoying message
+  "substr outside of string at /var/www/cgi-bin/monitorix.cgi line 4775,
+  <INTERRUPTS> line n." in the Apache error log.
+	(thanks to Mac, redleader25 AT hotmail.com)
+
+
+1.4.1  - 04-Jan-2010
+====================
+- Updated the monitorix.spec and monitorix.conf files for SuSE Linux packages.
+	(thanks to Oliver Kaltenecker, oliver.kaltenecker AT wittwer.de)
+- Modified the wide of the mount point column in the disk usage graph in order
+  to fit longer pathnames.
+- Substituted the pair of bottom logos (black and white) for a new one with
+  background transparency.
+- Changed the initial logo image by a new one with background transparency and
+  removed the slogan which reduced its size.
+- Removed the configuration option $IDATE.
+- Removed the envelope image as with the new mailing list it doesn't make sense
+  to be there anymore.
+- Fixed to honour the color theme even in the main page and simplified its
+  layout.
+- Fixed some annoying error messages in the web server logs about the use of
+  an uninitialized value in 4781 line.
+	(thanks to Edgar Barranco, ebarranco AT gmail.com)
+- Fixed a bug in how are collected the hardware temperatures in HP ProLiant
+  ML310 and ML350 models.
+	(thanks to Rene Kapeller, rene.kapeller AT psi.ch)
+- Fixed an overflow in the CPU array in systems with more than 8 processors,
+  that prevented seeing the rest of graphs.
+  	(thanks to Robin Friedrich, Robin.Friedrich AT itt.com)
+
+
+1.4.0  - 05-Oct-2009
+====================
+- Optimized the iptables command used to collect Chain statistics.
+- Added the ability to show the results in plain text instead of using rendered
+  graphs. This will make life easier either for people with vision impairments
+  and for automatic processing of the information.
+	(thanks to Christoph Doeren, cd AT yuyumo.de)
+- Added an alert system based on the last 15 minutes of the CPU load average.
+	(suggested by Dimitri Yioulos, dyioulos AT firstbhph.com)
+- Fixed a bug in monitorix.cgi that messed up the way how are displayed the
+  individual processors' graphs.
+
+
+1.3.2  - 01-Sep-2009
+====================
+- Improved a lot the support for FreeBSD systems.
+	(thanks to Pavlin Vatev, anex AT smrad.net)
+- Added support for Enterprise Volume Management System (EVMS) to show the
+  I/O disk activity of the root filesystem.
+  	(thanks to Markus Rennings, mren AT mrmx.de)
+- Added a new option in monitorix.conf called %MAIL_LOG with the paths for the
+  mail log file of each Operating System. This removes the old path hard coded.
+- Changed the "use" line of the LWP::UserAgent module, now is only loaded if
+  Nginx statistics are enabled. This creates less dependences for all people
+  that don't need the Nginx statistics.
+- Optimized the accounting process of SSH connections using the same code for
+  Linux and for FreeBSD. Linux SSH connections using public keys are also
+  counted now.
+  	(thanks to Markus Rennings, mren AT mrmx.de)
+- Rewritten the Monitorix init script for Gentoo Linux.
+  	(thanks to Markus Rennings, mren AT mrmx.de)
+- Added a zero pading in the name of the proc.png files.
+- Fixed to show 0% of usage if a filesystem defined in MNT_LIST has been
+  umounted, instead of returning the same disk usage of its parent filesystem.
+- Fixed the %HTTP_LOG path in the monitorix.conf file for Linux-Gentoo.
+  	(thanks to Markus Rennings, mren AT mrmx.de)
+- Fixed the missing monitorixico.png file in the install script.
+  	(thanks to Markus Rennings, mren AT mrmx.de)
+- Fixed to not create the network ports counters if $ENABLE_PORT is "N".
+
+
+1.3.1  - 05-Jul-2009
+====================
+- Fixed a location problem for the logo files on a fresh installation using the
+  Linux-Debian option.
+- Fixed a critical permission problem during a fresh installation (using the
+  Linux-Debian option) that prevented seeing all the graphs.
+  	(thanks to Rubla Georgian, deletet.file AT yahoo.com)
+- Fixed some annoying error messages in the web server log when the $PORTnn and
+  $PORTnn_NAME aren't correctly defined in /etc/monitorix.conf.
+  	(thanks to Luca Ferrario, luca AT ferrario.net)
+- Removed the un_install.sh script.
+
+
+1.3.0  - 14-Jul-2009
+====================
+- Added the monitorix.conf(5) man page to be the main place to get help.
+- Added support for the Nginx web server statistics.
+  	(thanks to Aleksandr Miroshnychenko, al.miroshnychenko AT gmail.com)
+- Removed the unused $EMAIL option. The $PC_DEFMAIL option is the one used when
+  sending the monthly reports.
+- Removed the $PC_MAX option as its value is now hard coded.
+- Reorganized a bit the monitorix.conf file and cleared the syntax.
+- Improved the install.sh script with the 'install' command instead of using
+  'mkdir', 'cp' and friends.
+- Fixed some missing HTML closing tags.
+- Fixed to match the default value of $ENABLE_LMTEMP in monitorix.pl.
+- Fixed a bad counting of the number of current Samba shares when there wasn't
+  any share on the list.
+  	(thanks to Luca Ferrario, luca AT ferrario.net)
+
+
+1.2.4  - 06-Apr-2009
+====================
+- Isolated a Linux dependant code that prevented running Monitorix correctly
+  on FreeBSD systems.
+- Included support to recognize correctly the temperatures and RPM values when
+  in some weird cases, the FAN and CPU labels (in the lm_sensors output) share
+  the same name.
+  	(thanks to Luca Ferrario, luca AT ferrario.net)
+- Fixed a duplication in the Monitorix iptables rules during a restart.
+- Added support for systems with device interrupt numbers greater than 255.
+- Added support for openSuSE/SLES Linux distribution.
+	(thanks to Alessandro Soraruf, soraruf AT ntd.homelinux.org)
+
+
+1.2.3  - 14-Jan-2009
+====================
+- Fixed the way how Monitorix creates the iptables rules. Now it uses the
+  parameter -I instead the -A in order to insert those rules in the top of
+  each chain so the data get recorded.
+  	(thanks to Andrei Ioachim, andrei AT inteligis.com)
+- Added support for the Postfix MTA in the SMTP counter of the Network Services
+  Demand graph.
+  	(thanks to Andrei Ioachim, andrei AT inteligis.com)
+- Fixed a typo in the declaration of $HTDOCS in the install.sh that only
+  affected to Gentoo installations.
+	(thanks to Carlos Perez, cpa.admin AT gmail.com)
+- Removed the dependence of the 'lockfile' command in the init-script.
+	(suggested by Carlos Perez, cpa.admin AT gmail.com)
+- Fixed to detect and show better the interrupt names.
+- Added a minimal support for interrupt numbers bigger than 255. This minimal
+  support will let you see the names of those interrupts that have those big
+  numbers but their activity will rest still void.
+	(thanks to Brian Lopeman, brian.lopeman AT ctrh.org)
+- Fixed a missing '127.0.0.1' in the URL of the graph images when
+  'monitorix.cgi' is called from the command line.
+  	(thanks to David Tiberio, dave AT cheapbooks.com)
+
+
+1.2.2  - 20-Nov-2008
+====================
+- Fixed a missing '/' when removing /var/www/monitorix in the un_install.sh
+  script.
+	(thanks to Tamas Marki, tamas AT gnsdm.com)
+- Fixed to really accept more than three network devices. There were some parts
+  that were not correctly upgraded to five.
+        (thanks to Milos Prudek, prudek AT bvx.cz)
+- Added the parameter -w during the hddtemp call just to make sure that it will
+  awaken the disk (if needed).
+- Removed the .sh extension and the she-bang in the crond script for all Linux
+  distributions, although only in the Debian based ones people experienced
+  problems.
+- Added a new configuration option to disable the crond mail related to
+  Monitorix errors.
+	(suggested by Detlef Neubauer, detlef.neubauer AT wzrz.de)
+- Fixed to include the "Linux-Generic" as a supported OSTYPE.
+- Fixed to include the monthly report files for the Italian language in the RPM
+  package.
+- Removed the htmlentity of the ampersand character introduced in the previous
+  version, as the last RRDtool version seems not complaining anymore.
+- Improved the way how the root filesystem device is detected including support
+  for the partitions with two digits like /dev/sda10.
+	(suggested by Dimitri Yioulos, dyioulos AT firstbhph.com)
+
+
+1.2.1  - 01-Oct-2008
+====================
+- Added support for the new RRDtool 1.3 version.
+- Fixed the alignment of the MB & CPU temperatures graph legend.
+- Forced the font type to 'Mono' for the RRDtool 1.3 version.
+- Fixed one identifier to count better the total messages sent/received in
+  /var/log/maillog.
+- Added support for some virtualized systems where the rootfs device name does
+  not appears in /proc/diskstats and the only way to collect the i/o values is
+  using the partition device name.
+	(thanks to Travis Wu, twu AT capitalsystems.com)
+- Added support for Linux software RAID devices of the form /dev/md/*.
+	(thanks to an anonymous IRC user called 'emilio')
+- Added Italian language support in the monthly traffic report.
+	(thanks to Luca Ferrario, luca AT ferrario.net)
+- Fixed the ampersand character to be an entity to avoid complaining messages
+  of Pango in the RRDtool 1.3 version.
+- Included the "Linux-Generic" OSTYPE key that for a strange reason it was
+  missing.
+- Fixed in the cover web page to only include the graphs that the system can
+  really offer. That will avoid to see more ethernets graphs than the number
+  of real ethernet devices and the same for the number of processors.
+
+
+1.2.0  - 02-Apr-2008
+====================
+- Added support for systems based on LVM structure on top of a CCISS RAID of
+  disk drives.
+	(thanks to Bob McClure, Jr., bob AT bobcatos.com)
+- Removed the full path of the 'pvs' command as it complicates the portability
+  of Monitorix to other Linux distributions.
+	(thanks to Eric, teknologist AT gmail.com)
+- Added the "no warnings" pragma to temporarily block warnings while calling
+  the 'sensors' command.
+- Fixed a bug introduced in the last version that prevented to see the interrupt
+  names on systems with 2.4 Linux kernels.
+- Fixed the graph of disk temperatures in order to preserve the page layout
+  when there's no defined any disk device in the HDDTEMP_LIST array.
+	(thanks to Eric, teknologist AT gmail.com)
+- Fixed to tolerate if @HDDTEMP_LIST was badly defined with just a void entry
+  instead of no entries at all. That's if someone defined incorrectly the array
+  as @HDDTEMP_LIST = ""; instead of simply as @HDDTEMP_LIST;
+	(thanks to Eric, teknologist AT gmail.com)
+- Removed the error messages when it has been defined in /etc/monitorix.conf a
+  network interface that it doesn't exist in the system.
+- Fixed the error message "Use of uninitialized value in string eq at
+  /var/www/cgi-bin/monitorix.cgi line 454." that appeared in the Apache error
+  logs when using Multihost feature.
+
+
+1.1.2  - 25-Feb-2008
+====================
+- Added the execution of the "pvs -a" command each time Monitorix is restarted,
+  just to make sure to remove a strange message about "Medium not found"
+  appeared on fresh CentOS 5 installations using LVM.
+- Converted automatically into a link the URL that appears in the bottom of
+  each graph (if enabled by $MULTIHOST_FOOTER) in the Multihost mode.
+- Fixed to put the zero character instead of NULL when there's no value, in the
+  monthly file of traffic during the daily collecting of counters.
+- Fixed a bug in the interrupt names that removed its first character affecting
+  only (mostly old) machines with "local-APIC-edge" support.
+
+
+1.1.1  - 16-Nov-2007
+====================
+- Fixed a stupid bug that prevented showing the graphs of network ports.
+
+
+1.1.0  - 15-Nov-2007
+====================
+- Added support for Gentoo Linux distribution.
+	(thanks to Matej Povazaj, ybdaba AT gmail.com)
+- Added support for Slackware Linux distribution.
+	(thanks to Bogdan Radulescu, from http://nimblex.net>
+- Changed the way how is the data collected in the Kernel Usage graph. From now
+  on, this graph will show its data in a more accurated way than before. People
+  can continue using the Real and Stacked modes though.
+	(thanks to Christian Meusel, christian.meusel AT inf.tu-dresden.de)
+- Definitely fixed (I really hope so) a persistent bug during the numeric
+  extraction of the alpha numeric string of the lm_sensors temperatures.
+- Fixed support for HP ML310 ProLiant server in the motherboard temperatures
+  graph.
+- Changed the main page form method from POST to GET in order to be able to
+  remove the old /cgi-bin/monitorix.cgi and call localhost.cgi directly.
+  So now on, the localhost.cgi is renamed as monitorix.cgi and it's placed in
+  the same place where it was the old one, removing the /cgi-bin/monitorix
+  directory as it will not longer be used.
+- Fixed to show the graph when using multihost feature and select only the
+  Context Switches graph.
+- Improved how are showed the images when using multihost feature selecting
+  only individual hosts. Now they are bigger.
+
+
+1.0.1  - 03-Oct-2007
+====================
+- Fixed some annoying messages like "Argument "+46M-BM-0C" isn't numeric in int 
+  at /usr/bin/monitorix.pl line > 2710, <SENSORS> line 13.". Now it extracts
+  correctly numbers from an alpha numeric string.
+	(thanks to Russell Morris, rmorris AT rkmorris.us)
+- Changed from area-based to line-based the HP IPL temperature graphs in order
+  to follow the same aspect than the new LM-Sensors graph.
+- Added a permanent "lower-limit=0" in the following graphs: Context Switches,
+  LM-Sensors, Network Packet Traffic and Network Error Traffic.
+- Fixed the alignment of the legend in the FAN speeds graph on systems still
+  using the old RRDtool branch version 1.0.
+
+
+1.0.0  - 04-Sep-2007
+====================
+- Added a new graph to see the temperatures of the system motherboard, CPUs,
+  fan speeds and hard disk drives using lm_sensors and the hddtemp tool. Such
+  graph is disabled by default since there are still a lot of motherboards with
+  unsupported sensors out there. This new graph can be combined with the HP
+  specific temperatures graph.
+- Fixed some adjustments in the temperatures collector in newer HP ProLiant
+  servers with newer IML.
+- Added the ability to select the percentages layout in the Kernel Usage
+  statistics. The possible options are (R)eal or (S)tacked.
+	(suggested by Andrzej Pokrywko, Andrzej.Pokrywko AT onet.pl)
+- Fixed a bug that prevented to display correctly the interrupt names on newer
+  systems that use PCI-MSI instead of IO-APIC.
+- Added the ability to change the refresh rate value in the statistics web
+  page. The default value remains unchanged to 150 seconds.
+- Added some adjustments in the Monitorix init script.
+- Extended the environment variable PATH to cover more root directories.
+- Changed the default NET_RIGID from 2 to 0.
+- Changed the default network configuration from two interfaces to only one, as
+  it seems the most of people have only one network interface installed.
+- Removed some "Use of uninitialized value ..." annoying messages in the Apache
+  error_log.
+
+
+0.9.2  - 12-Jun-2007
+====================
+- Special Debian contribution.
+  + Added support for Debian distribution.
+  + Added the missing "monitorixico.png" file during the install process using
+    the install.sh shell-script.
+	(thanks to Uwe Heidrich, uweheidrich AT hotmail.com)
+- Added German language support in the monthly report.
+	(thanks to Uwe Heidrich, uweheidrich AT hotmail.com)
+- Added support for systems using Linux RAID systems under LVM.
+- Fixed in the localhost.cgi and in monitorix.pl files to not include a second
+  configuration file if the first one already exists.
+- Fixed the graphs legend lines adding blank lines in order to have a better
+  formatting. That only affected those who have RRDtool version above 1.2.13.
+- Added the Zoom feature that, when enabled, it will permits to see a larger
+  picture just clicking inside any graph image.
+	(suggested by Dimitri Yioulos, dyioulos AT firstbhph.com)
+- Removed the degree symbol in all the temperature graphs.
+- Some little code cleanup.
+
+
+0.9.1  - 09-Jan-2007
+====================
+- Fixed some annoying cron messages about uninitialized value during an addition
+  and a multiplication, only on 2.4 kernels.
+- Fixed the line and area colors in the kernel-related new graphs.
+
+
+0.9.0  - 03-Jan-2007
+====================
+- Fixed the background color of the graphs in Multihost feature.
+- Added a lot of new colors to cover as many hardware interrupts as they exist.
+- Added the Monitorix shortcut icon.
+- Fixed a bad closing in the global <html> tag.
+- Fixed and optimized the start routine in the init script.
+- Added a new composed-graph to see the Linux kernel usage per processor. The
+  graph will be divided by three parts (as always) only using, right now, the
+  biggest and the first one of the last two. The graph will show the global
+  percentages of total user time, nice time, system time, idle time and io-wait
+  time and separately, the number of context switches. Finally if the system
+  has multiprocessors there will be an individual graph per processor showing
+  the percentages of its CPU times (up to 8 processors).
+	(suggested by Michael Berger, MBerger AT scrippsops.com)
+- Added a configuration switch (Y/N) per graph to enable or disable its
+  processing. This will help specially on embedded systems (where there is not
+  much disk space) to monitorize only what it is really needed.
+- IMPORTANT NOTICE: The configuration file (/etc/monitorix.conf) has been
+  extended with important changes.
+
+
+0.8.3  - 16-Oct-2006
+====================
+- Added the word "easier" to the Monitorix slogan.
+- Added support for CCISS Compaq RAID driver under 2.6 Linux kernels.
+- Changed the color for the first mounted filesystem in the disk usage, now is
+  darker.
+- Changed all the white colors to gray in order to be more visible when using
+  the white theme.
+- Changed the Fax color (from white to orange).
+- Adjusted three colors in the interrupt activity graphs: from gray to orange,
+  from black to dark-gray and from white to light-gray.
+- Changed the color of the running processes (from dark blue to red).
+- Changed the HTML font from the Arial,Helvetica to Verdana,Tahoma, and switched
+  to lowercase all the HTML tags.
+- Fixed a problem when finding the root disk on LVM systems with multiple disks
+  on the same logical volume.
+	(thanks to Bon, bon AT bugstudio.net)
+- Consolidated to only one internal function all temperature graphs concerning
+  to the Hewlett-Packard server models.
+- Fixed a broken image in the third temperature graph on some Hewlett-Packard
+  server models.
+- Added support for up to 255 hardware interrupts to take advantatge of the
+  APIC feature in newer Linux systems. The "int.rrd" database will be upgraded
+  automatically.
+- Because of the new support for so many interrupts, the interrupt graphs no
+  longer displays the unused ones.
+- Added support for up to 5 NICs. The "net.rrd" database will be upgraded
+  automatically.
+  	(suggested by Mike Harris, MikeDawg AT addictz.org)
+- Removed the use of the generation number from the HP ProLiant servers, because
+  there are no differencies In the number of processors between the current
+  generations. Now the server names are changed from ML350G3 to simply ML350.
+
+
+0.8.2  - 04-Jul-2006
+====================
+- Changed from dark-gray to orange the color of the last mount point in the
+  disk usage graph.
+- Added error handling during the creation of the RRDs database files.
+- Fixed a graph creation error when trying to view the PC LANs on systems with
+  RRDtool v1.2+.
+- Fixed a graph creation error during the monthly report creation on systems
+  with RRDtool v1.2+.
+- Fixed to take care about the color selected when creating the monthly report
+  graphs.
+- Fixed a typo when cutting the last digit of $root_disk.
+	(thanks to Christoph Fritsche, Christoph.Fritsche AT fh-telekom-leipzig.de)
+- Added the new parameter "silent=imagetag" which among of the image
+  generation it will return the HTML <IMG SRC> tag for the specified image.
+- Fixed the annoying old behaviour of the Multihost feature that obligates to
+  reload the page two times every time you want to see the most up to date
+  remote server graphs.
+- Some cosmetic changes.
+
+
+0.8.1  - 17-May-2006
+====================
+- Fixed problems while creating the ip counters when the network port variables
+  $PORT01, $PORT02, ... are removed or not defined in the configuration file.
+- Added better support for Linux Software RAID devices (/dev/md0, /dev/md1, ...).
+- Added specific colored logo images for black and white themes.
+- Optimized the way how are used the chomp() functions, using now multiple
+  arguments.
+- Optimized all the code that was using system commands to collect information.
+- Dramatically reduced the CPU load average on most systems specially on slow or
+  old systems. As an example of that, a Pentium at 133Mhz sees reduced to 50%
+  its CPU load.
+- More code cleaning.
+
+
+0.8.0  - 27-Mar-2006
+====================
+- Almost complete support for FreeBSD based systems.
+	(thanks to Roger "Rocky" Vetterberg, roger AT vetterberg.com)
+	(thanks to the twenty4help, http://www.twenty4help.com)
+- Code prepared to be more easily portable to other UNIX/Linux systems.
+- Changed the location of the configuration file to /etc/monitorix.conf.
+- Fixed a "grep" condition problem with LVM based systems not using LVM.
+	(thanks to Yazhir, admin AT pazeng.co.il)
+- Fixed to escape more possible colons on interrupt device names.
+- Fixed graph font size for RRDtool versions 1.2+.
+- Better support for RRDtool version 1.2.
+- Fixed the counter of the amount of Samba locked files.
+- Better monitorization in the detection of VirusMail (requires MailScanner).
+- Improved the Active Processes graph, now includes the sleeping and running
+  processes in order to know better the amount of concurrent processes the
+  server has.
+- Now the cron file is automatically created taking care the OS usual paths.
+- Removed the default names for the unused interrupt devices. Now all the unused
+  interrupts will be marked as "unused".
+- Fixed the order of collected data in disk activity graphs.
+- More code cleaning and removed some unused variables.
+
+
+0.7.14 - 17-Jan-2006
+====================
+- Fixed to be more accurate the way how are detected the ports that are down.
+- Removing annoying cron messages and added again the locking mechanism.
+
+
+0.7.13 - 16-Jan-2006
+====================
+- Added an automatic space-padding control to the MNT_LIST mount points names.
+- Fixed "val" and "mode" declarations and added a hint into README file for
+  users coming from other Linux distributions.
+	(thanks to Christoph Fritsche, s03315 AT fh-telekom-leipzig.de )
+- Really added the parameter "-P" in the "df" lines. In the previous version it
+  was only commented in the ChangeLog.
+- Added a new file in the /etc/httpd/conf.d/ which will make the alias
+  "/monitorix", and will facilitate the installation with different html root
+  directories.
+- Added an initial support for LVM (Logical Volume Manager) based systems.
+- Added a warning indicator (changing the color background to red) on the 12
+  port graphs for each selected port if it seems to be down.
+- Removed temporaly the locked mechanism introduced in the previous version
+  because it produces annoying cron messages everyday at midnight.
+- Some little code cleaning.
+
+
+0.7.12 - 07-Nov-2005
+====================
+- Fixed the stat() function that prevented to collect Samba and NetAtalk data.
+- Escape colons in Interrupt names (INT_NAME) for rrdtool 1.2 branch versions.
+	(thanks to Marcos Andre, foca AT siagri.com.br)
+- Added the parameter "-P" in order to prevent multi-line output from "df".
+	(thanks to Rene Kapeller, rene.kapeller AT psi.ch)
+- Added a locking mechanism to prevent concurrent executions of Monitorix, that
+  will be useful on very high loaded servers.
+	(thanks to Rene Kapeller, rene.kapeller AT psi.ch)
+
+
+0.7.11 - 06-Oct-2005
+====================
+- Now the POP3 section is looking for pop3 string (not pop-3) in log entries.
+- It handles possible DNS no resolution for defined PC LANs.
+- Added English language support for the monthly reports.
+- Removed the PC_DS list. Monitorix only will use PC_LIST and PC_IP if needed.
+- Remove the hard-coded command paths in order to be more distro compatible.
+- Added some checks in order to warn if some directories or files can't be read.
+- Fix to escape only colons for rrdtool 1.2 branch versions.
+
+
+0.7.10 - 26-Sep-2005
+====================
+- Reduced the size of the Monitorix logo in the startup screen.
+- Finally fixed the problem with disk i/o on 2.6 kernels.
+- Fixed some incompatibilities in order to support RRDtool v1.2.
+	(thanks to Alex Shiffer, refys AT zelacom.com)
+- Removed MONITORIX_VER variable from the configuration file.
+
+
+0.7.9  - 12-Sep-2005
+====================
+- Some cleanups in the Configuration.help file.
+- Remove annoying samba messages in cron when samba is not running.
+- Fixed bug when collecting disk i/o on kernels 2.6 (/proc/diskstats).
+	(thanks to Alf Tanner, alf.tanner AT gmail.com)
+
+
+0.7.8  - 11-Sep-2005
+====================
+- Initial public release.
+
