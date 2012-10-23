@@ -2,6 +2,10 @@ N.N.N  - NN-XXX-NNNN
 ====================
 - Introduced some modifications to the device name detection for FreeBSD.
 	(thanks to Chris Rees, utisoft AT gmail.com)
+- Improved support of Linux NFSv4 spliting the operation names in two different
+  arrays (client and server).
+- Fixed a typo in 'monitorix.cgi' that prevented honoring the NFSC_VERSION
+  option.
 
 
 2.6.0  - 19-Sep-2012
