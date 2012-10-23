@@ -9988,7 +9988,7 @@ sub nfsc {
 	}
 
 	$title = !$silent ? $title : "";
-	$title =~ s/NFS/NFS v$NFSS_VERSION/;
+	$title =~ s/NFS/NFS v$NFSC_VERSION/;
 
 	unlink ("$PNG_DIR" . "$PNG1",
 		"$PNG_DIR" . "$PNG2",
