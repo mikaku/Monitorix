@@ -6,6 +6,8 @@ N.N.N  - NN-XXX-NNNN
   arrays (client and server).
 - Fixed a typo in 'monitorix.cgi' that prevented honoring the NFSC_VERSION
   option.
+- Fixed an intermix usage of alarm() and sleep() substituting it by alarm() and
+  pause().
 
 
 2.6.0  - 19-Sep-2012
