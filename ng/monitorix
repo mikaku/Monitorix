@@ -1,0 +1,534 @@
+#!/usr/bin/env perl
+#
+# Monitorix - A lightweight system monitoring tool.
+#
+# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+require 5.006;
+
+use warnings;
+use strict;
+use RRDs;
+use POSIX;
+use Config::General;
+use File::Basename;
+use LWP::UserAgent;
+use XML::Simple;
+use Socket;
+use DBI;
+use Getopt::Std;
+use Cwd 'abs_path';
+use locale;
+use Data::Dumper;
+
+# Force a standard locale
+$ENV{LANG} = "";
+setlocale(LC_TIME, "C");
+
+$SIG{'INT' } = 'INT_handler';
+$SIG{'ABRT'} = 'INT_handler';
+$SIG{'QUIT'} = 'INT_handler';
+$SIG{'TRAP'} = 'INT_handler';
+$SIG{'STOP'} = 'INT_handler';
+$SIG{'TERM'} = 'INT_handler';
+$SIG{'CHLD'} = 'CHLD_handler';
+$SIG{'HUP' } = 'HUP_handler';
+$SIG{'ALRM'} = 'ALRM_handler';
+
+use constant VERSION	=> "2.9.901";
+use constant RELDATE	=> "06-Nov-2012";
+
+my @suppsys = ("Linux", "FreeBSD", "OpenBSD", "NetBSD");
+my %config;
+my @graphs;
+my @graphs_debug;
+my $os;
+my $kernel;
+our %options;
+
+sub INT_handler {
+	my ($signal) = @_;
+
+	logger("SIG$signal caught.");
+	flush_accounting_rules();
+	logger("Exiting.");
+	exit(0);
+}
+
+sub CHLD_handler {
+	my $pid = waitpid(-1, WNOHANG);
+}
+
+sub HUP_handler {
+	my ($signal) = @_;
+	my $myself = (caller(0))[3];
+
+	logger("SIG$signal caught.");
+	close(STDOUT);
+	close(STDERR);
+	unless(open(STDOUT, ">> $config{log_file}")) {
+		logger("Can't write to LOG: $!");
+	}
+	unless(open(STDERR, ">> $config{log_file}")) {	# >>&STDOUT XXX
+		logger("Can't write to LOG: $!");
+	}
+	logger("$myself: reopening log file.");
+}
+
+sub ALRM_handler {
+	my $myself = (caller(0))[3];
+	my ($sec, $min, $hour, $mday) = localtime(time);
+
+	if($sec == 0) {
+		foreach my $g (@graphs) {
+			my ($t) = split('_', $g);
+			logger("$myself: calling $g()") unless !$options{d};
+			if(!grep {trim($_) eq $t} (@graphs_debug)) {
+				undef($t);
+			}
+			eval {&$g($t);};
+			if($@) {
+				logger("$g(): $@");
+			}
+		}
+		if(lc($config{graph_enable}->{pc}) eq "y" && lc($config{pc_enable_monthly_reports}) eq "y") {
+			if($min == 0 && $hour == 0) {
+				get_counters();
+				if($mday == 1) {
+					send_reports();
+				}
+			}
+		}
+	}
+	alarm(1);
+}
+
+sub logger {
+	my ($msg) = @_;
+
+	$msg = localtime() . " - " . $msg;
+	print("$msg\n");
+}
+
+sub daemonize {
+	if(fork) {
+		exit(0);	# parent exits
+	}
+
+	setsid();
+	foreach(0 .. (sysconf(&POSIX::_SC_OPEN_MAX) || 1024)) {
+		close($_);
+	}
+	unless(chdir("/")) {
+		die("Can't chdir to /: $!");
+	}
+	unless(umask(022)) {
+		die("Unable to umask 022: $!");
+	}
+#	unless(open(STDIN, "< /dev/null")) {
+#		die("Can't read /dev/null: $!");
+#	}
+	unless(open(STDOUT, ">> $config{log_file}")) {
+		die("Can't write to LOG: $!");
+	}
+	unless(open(STDERR, ">> $config{log_file}")) {	# >>&STDOUT XXX
+		die("Can't write to LOG: $!");
+	}
+}
+
+sub usage {
+	print(STDERR << "EOF");
+Usage: monitorix -c configfile [-p pidfile] [-d none | graph[,graph] | all ] [-v]
+
+EOF
+	exit(1);
+}
+
+sub trim {
+	my $str = shift;
+
+	$str =~ s/^\s+//;
+	$str =~ s/\s+$//;
+	return $str;
+}
+
+sub create_index {
+	my $myself = (caller(0))[3];
+
+	my $n;
+	my $gname;
+	my $theme = $config{theme};
+	my $bgcolor;
+	my $table_back_color;
+	my $title_back_color;
+	my $title_fore_color;
+
+	if($theme eq "black") {
+		$bgcolor = $config{$theme}->{main_bg};
+		$table_back_color = $config{$theme}->{graph_bg};
+		$title_back_color = $config{$theme}->{title_bg};
+		$title_fore_color = $config{$theme}->{title_fg};
+	} elsif(!$theme || $theme eq "white") {
+		$bgcolor = "#ffffff";
+		$table_back_color = "#CCCCCC";
+		$title_back_color = "#777777";
+		$title_fore_color = "#CCCC00";
+	} else {
+		logger("$myself: ERROR: invalid value in 'theme' option") unless !$options{d};
+	}
+
+	if(!open(OUT, "> $config{base_dir}/index.html")) {
+		die "unable to create '${config{base_dir}}index.html'. $!";
+	}
+	print(OUT <<EOF);
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+ <head>
+  <title>$config{title}</title>
+  <link rel="shortcut icon" href="$config{favicon}">
+ </head>
+ <body bgcolor="$bgcolor" text="#888888" vlink="#888888" link="#888888">
+  <center>
+  <p>
+  <br>
+  <font face="Verdana, sans-serif">
+  <table>
+    <tr>
+      <td>
+        <a href="http://www.monitorix.org/"><img src="logo_top.png" border="0"></a>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <h2 align="right">v@{[VERSION]}</h2>
+      </td>
+    </tr>
+  </table>
+  <p>
+  <form action="$config{base_cgi}/monitorix.cgi" method="get">
+    <table cellspacing="5" cellpadding="0" bgcolor="$table_back_color" border="1">
+      <tr>
+        <td bgcolor="$title_back_color">
+          <font color="$title_fore_color">
+<b>&nbsp;Hostname&nbsp;</b>
+          </font>
+       </td>
+        <td bgcolor="$title_back_color">
+          <font color="$title_fore_color">
+<b>&nbsp;Graph&nbsp;</b>
+          </font>
+       </td>
+     </tr>
+      <tr>
+EOF
+
+	print(OUT "        <td bgcolor='$bgcolor'>\n");
+	print(OUT "          <select name='mode' size='1'>\n");
+	print(OUT "            <option value='localhost'>Local Host</option>\n");
+	if(scalar(my @remotehost_list = split(',', $config{remotehost_list})) && lc($config{multihost}) eq "y") {
+		print(OUT "            <optgroup label='Multihost'>\n");
+		print(OUT "            <option value='multihost.all'>All Hosts</option>\n");
+		for($n = 0; $n < scalar(@remotehost_list); $n++) {
+			print(OUT "              <option value='multihost.$n'>" . trim($remotehost_list[$n]) . "</option>\n");
+                              }
+		print(OUT "            </optgroup>\n");
+
+		if(lc($config{groups}) eq "y" ) {
+			my @remotegroup_list = split(',', $config{remotegroup_list});
+			print(OUT "            <optgroup label='Multihost-Groups'>\n");
+			print(OUT "            <option value='multihost.group'>All Groups</option>\n");
+			for($n = 0; $n < scalar(@remotegroup_list); $n++) {
+				print(OUT "              <option value='multihost.group$n'>" . trim($remotegroup_list[$n]) . "</option>\n");
+			}
+			print(OUT "            </optgroup>\n");
+		}
+	}
+
+	if(scalar(my @pc_list = split(',', $config{pc_list})) && lc($config{graph_enable}->{pc}) eq "y") {
+		print(OUT "            <optgroup label='LAN PCs'>\n");
+		print(OUT "              <option value='pc.all'>All LAN PCs</option>\n");
+		for($n = 0; $n < scalar(@pc_list); $n++) {
+			print(OUT "              <option value='pc.$n'>" . trim($pc_list[$n]) . "</option>\n");
+                              }
+		print(OUT "            </optgroup>\n");
+	}
+	print(OUT "          </select>\n");
+	print(OUT "        </td>\n");
+
+
+
+	print(OUT "        <td bgcolor='$bgcolor'>\n");
+	print(OUT "          <select name='graph' size='1'>\n");
+	print(OUT "            <option value='all'>All graphs</option>\n");
+	foreach (split(',', $config{graph_name})) {
+		my $g = trim($_);
+		if(lc($config{graph_enable}->{$g}) eq "y") {
+			print(OUT "            <optgroup label='" . $config{graph_title}->{$g} . "'>\n");
+			if($g eq "proc") {
+				for($n = 0; $n < $config{proc_max}; $n++) {
+					$gname = "_" . $g;
+					print(OUT "              <option value='" . $gname . $n . "'>" . $config{graphs}->{$gname} . " " . $n . "</option>\n");
+				}
+				next;
+			}
+			if($g eq "net") {
+				my $n2;
+				for($n = 0; $n < scalar(my @net_list = split(',', $config{net_list})); $n++) {
+					$gname = "_" . $g;
+					for($n2 = 1; $n2 <= 3; $n2++) {
+						my $str = trim($net_list[$n]) . " " . $config{graphs}->{$gname . $n2};
+						print(OUT "              <option value='" . $gname . $n . $n2 . "'>" . $str . "</option>\n");
+					}
+				}
+				next;
+			}
+			if($g eq "port") {
+				for($n = 0; $n < $config{port_max} && $n < scalar(my @port_list = split(',', $config{port_list})); $n++) {
+					my $num = trim($port_list[$n]);
+					my ($name) = split(',', $config{port_desc}->{$num});
+					$gname = "_" . $g;
+					print(OUT "              <option value='" . $gname . $n . "'>" . $config{graphs}->{$gname} . " " . $num . " (" . trim($name) . ")" . "</option>\n");
+				}
+				next;
+			}
+			if($g eq "fail2ban") {
+				for($n = 0; $n < scalar(my @fail2ban_list = split(',', $config{fail2ban_list})); $n++) {
+					my $name = trim($fail2ban_list[$n]);
+					$gname = "_" . $g;
+					print(OUT "              <option value='" . $gname . $n . "'>" . $name . "</option>\n");
+				}
+				next;
+			}
+			$n = 0;
+			foreach my $k (sort keys %{$config{graphs}}) {
+				if($k =~ m/$g/) {
+					$gname = "_" . $g . ++$n;
+					if($config{graphs}->{$gname}) {
+						print(OUT "              <option value='" . $gname ."'>" . $config{graphs}->{$gname} . "</option>\n");
+					}
+				}
+			}
+			print(OUT "            </optgroup>\n");
+		}
+	}
+	print(OUT "          </select>\n");
+	print(OUT "        </td>\n");
+
+
+	print(OUT <<EOF);
+     </tr>
+    </table>
+    <p>
+    <table cellspacing="5" cellpadding="0" bgcolor="$table_back_color" border="1">
+     <tr>
+        <td bgcolor="$title_back_color">
+          <input type="radio" checked name="when" value="1day">
+            <font color="$title_fore_color"><b>Daily&nbsp;</b></font>
+        </td>
+        <td bgcolor="$title_back_color">
+          <input type="radio" name="when" value="1week">
+            <font color="$title_fore_color"><b>Weekly&nbsp;</b></font>
+        </td>
+        <td bgcolor="$title_back_color">
+          <input type="radio" name="when" value="1month">
+            <font color="$title_fore_color"><b>Monthly&nbsp;</b></font>
+        </td>
+        <td bgcolor="$title_back_color">
+          <input type="radio" name="when" value="1year">
+            <font color="$title_fore_color"><b>Yearly&nbsp;</b></font>
+        </td>
+      </tr>
+    </table>
+    <p>
+    <input type="hidden" name="color" value="$theme">
+    <input type="submit" value="    Ok    ">
+  </form>
+  </font>
+  </center>
+ </body>
+</html>
+EOF
+	close(OUT);
+}
+
+sub flush_accounting_rules {
+	my $num = 0;
+
+	# flushes out any Monitorix iptables/ipfw rules
+	if($os eq "Linux") {
+		logger("Flushing out iptables rules.") unless !$options{d};
+		if(open(IN, "iptables -nxvL INPUT --line-numbers |")) {
+			my @rules;
+			my @names;
+			while(<IN>) {
+				my ($rule, undef, undef, $name) = split(' ', $_);
+				if($name =~ /monitorix_IN/ || /monitorix_nginx_IN/) {
+					push(@rules, $rule);
+					push(@names, $name);
+				}
+			}
+			close(IN);
+			@rules = reverse(@rules);
+			foreach(@rules) {
+				system("iptables -D INPUT $_");
+				$num++;
+			}
+			foreach(@names) {
+				system("iptables -X $_");
+			}
+		}
+		if(open(IN, "iptables -nxvL OUTPUT --line-numbers |")) {
+			my @rules;
+			my @names;
+			while(<IN>) {
+				my ($rule, undef, undef, $name) = split(' ', $_);
+				if($name =~ /monitorix_OUT/ || /monitorix_nginx_OUT/) {
+					push(@rules, $rule);
+					push(@names, $name);
+				}
+			}
+			close(IN);
+			@rules = reverse(@rules);
+			foreach(@rules) {
+				system("iptables -D OUTPUT $_");
+				$num++;
+			}
+			foreach(@names) {
+				system("iptables -X $_");
+			}
+		}
+		logger("$num iptables rules have been flushed.") unless !$options{d};
+	}
+	if($os eq "FreeBSD" || $os eq "OpenBSD") {
+		logger("Flushing out ipfw rules.") unless !$options{d};
+		system("ipfw delete $config{port_rule} 2>/dev/null");
+		system("ipfw delete $config{nginx_rule} 2>/dev/null");
+	}
+}
+
+
+# Main
+# ----------------------------------------------------------------------------
+getopts("d:vc:p:", \%options) || usage();
+
+if($options{v}) {
+	print("Monitorix version " . VERSION . " (" . RELDATE . ")\n");
+	print("by Jordi Sanfeliu <jordi\@fibranet.cat>\n");
+	print("http://www.monitorix.org/\n\n");
+	exit(0);
+}
+if(!$options{c}) {
+	usage();
+	exit(1);
+}
+$options{c} = abs_path($options{c}) unless $^V lt 5.6.2;
+if(!stat($options{c})) {
+	die("can't open file '$options{c}'.\n");
+}
+
+# get the current OS and kernel version and check its support
+my $release;
+($os, undef, $release) = uname();
+my ($major, $minor) = split('\.', $release);
+$kernel = $major . "." . $minor;
+if(!grep {$_ eq $os} @suppsys) {
+	die("FATAL: your operating system ($os) is not supported.\n");
+}
+
+if(grep {$_ eq $os} ("FreeBSD", "OpenBSD", "NetBSD")) {
+	$SIG{'CHLD'} = 'DEFAULT';
+}	
+
+# load configuration file
+my $conf = new Config::General(
+		-ConfigFile	=> $options{c},
+	);
+%config = $conf->getall;
+
+$0 = sprintf("%s %s%s%s%s",
+	$^V lt 5.6.2 ? "monitorix" : abs_path($0),
+	$options{c} ? "-c $options{c}" : "",
+	$options{p} ? " -p $options{p}" : "",
+	$options{d} ? " -d $options{d}" : "",
+	$options{v} ? " -v" : "");
+
+#daemonize();
+logger("Starting Monitorix version " . VERSION . " (pid $$).");
+
+if($options{p}) {
+	$options{p} = abs_path($options{p});
+	open(OUT, "> $options{p}")
+		|| die("could not open '$options{p}' for writing");
+	print(OUT "$$");
+	close(OUT);
+}
+
+# change to a safety directory
+unless(chdir("/tmp")) {
+	logger("can't chdir to /tmp: $!");
+	unless(chdir("/lost+found")) {
+		die("Can't chdir to /lost+found: $!");
+	}
+}
+
+if($options{d}) {
+	if($options{d} ne "none" && $options{d} ne "all") {
+		@graphs_debug = split(',', $options{d});
+		foreach my $t (@graphs_debug) {
+			if(!grep {trim($_) eq $t} (split(',', $config{graph_name}))) {
+				die("Invalid debug key '$t'");
+			}
+		}
+	}
+	logger("Entering in debug mode.");
+	logger("Changed process name to '$0'.");
+}
+
+# save the path of the configuration file
+if(open(OUT, "> " . $config{base_dir} . "/cgi-bin/monitorix.conf.path")) {
+	print(OUT "$options{c}\n");
+	close(OUT);
+} else {
+	logger("Unable to create the file '$config{base_dir}/cgi-bin/monitorix.conf.path'.");
+}
+
+logger("Initializing graphs.") unless !$options{d};
+flush_accounting_rules();
+
+foreach (split(',', $config{graph_name})) {
+	my $g = trim($_);
+	if(lc($config{graph_enable}->{$g}) eq "y") {
+		my $func = $g . "_init";
+		eval {&$func();};
+		logger("WARNING: unexpected errors in function $func()") if($@);
+	}
+}
+
+if(!scalar(@graphs)) {
+	logger("nothing to do, exiting.");
+	exit(0);
+}
+
+logger("Generating the 'index.html' file.") unless !$options{d};
+create_index();
+logger("Ok, done.") unless !$options{d};
+
+alarm(1);
+while(1) {
+        pause();
+}
