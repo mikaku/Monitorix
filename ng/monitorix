@@ -21,8 +21,12 @@
 
 require 5.006;
 
-use warnings;
 use strict;
+use warnings;
+use FindBin qw($Bin);
+use lib $Bin . '/lib';
+
+use Monitorix;
 use RRDs;
 use POSIX;
 use Config::General;
@@ -34,6 +38,7 @@ use DBI;
 use Getopt::Std;
 use Cwd 'abs_path';
 use locale;
+
 use Data::Dumper;
 
 # Force a standard locale
@@ -98,12 +103,13 @@ sub ALRM_handler {
 		foreach my $g (@graphs) {
 			my ($t) = split('_', $g);
 			logger("$myself: calling $g()") unless !$options{d};
-			if(!grep {trim($_) eq $t} (@graphs_debug)) {
-				undef($t);
-			}
-			eval {&$g($t);};
-			if($@) {
-				logger("$g(): $@");
+			undef($t) if(!grep {trim($_) eq $t} (@graphs_debug));
+			{
+				no strict "refs";
+				eval {&$g($t);};
+				if($@) {
+					logger("$g(): $@");
+				}
 			}
 		}
 		if(lc($config{graph_enable}->{pc}) eq "y" && lc($config{pc_enable_monthly_reports}) eq "y") {
@@ -116,13 +122,6 @@ sub ALRM_handler {
 		}
 	}
 	alarm(1);
-}
-
-sub logger {
-	my ($msg) = @_;
-
-	$msg = localtime() . " - " . $msg;
-	print("$msg\n");
 }
 
 sub daemonize {
@@ -157,14 +156,6 @@ Usage: monitorix -c configfile [-p pidfile] [-d none | graph[,graph] | all ] [-v
 
 EOF
 	exit(1);
-}
-
-sub trim {
-	my $str = shift;
-
-	$str =~ s/^\s+//;
-	$str =~ s/\s+$//;
-	return $str;
 }
 
 sub create_index {
@@ -507,18 +498,27 @@ if(open(OUT, "> " . $config{base_dir} . "/cgi-bin/monitorix.conf.path")) {
 	logger("Unable to create the file '$config{base_dir}/cgi-bin/monitorix.conf.path'.");
 }
 
-logger("Initializing graphs.") unless !$options{d};
 flush_accounting_rules();
 
+logger("Initializing graphs.") unless !$options{d};
 foreach (split(',', $config{graph_name})) {
 	my $g = trim($_);
 	if(lc($config{graph_enable}->{$g}) eq "y") {
-		my $func = $g . "_init";
-		eval {&$func();};
-		logger("WARNING: unexpected errors in function $func()") if($@);
+		my $init = $g . "_init";
+		eval "use $g qw(" . $init . " " . $g . "_update)";
+		if($@) {
+			logger("WARNING: unable to find module '$g'");
+			next;
+		}
+		{
+			no strict "refs";
+			eval {&$init($g, \%config, \@graphs);};
+		}
+		logger("WARNING: unexpected errors in function $init()") if($@);
 	}
 }
 
+print Dumper(@graphs);
 if(!scalar(@graphs)) {
 	logger("nothing to do, exiting.");
 	exit(0);
