@@ -61,9 +61,6 @@ use constant RELDATE	=> "06-Nov-2012";
 my @suppsys = ("Linux", "FreeBSD", "OpenBSD", "NetBSD");
 my %config;
 my @graphs;
-my @graphs_debug;
-my $os;
-my $kernel;
 our %options;
 
 sub INT_handler {
@@ -101,12 +98,17 @@ sub ALRM_handler {
 
 	if($sec == 0) {
 		foreach my $g (@graphs) {
-			my ($t) = split('_', $g);
+			my ($d) = split('_', $g);
 			logger("$myself: calling $g()") unless !$options{d};
-			undef($t) if(!grep {trim($_) eq $t} (@graphs_debug));
+
+			undef($d) if(!grep {trim($_) eq $d} (@{$config{debug}}));
+			if(defined($options{d}) && $options{d} eq "all") {
+				$d = $g;
+			}
+
 			{
 				no strict "refs";
-				eval {&$g($t);};
+				eval { &$g(\%config, $d); };
 				if($@) {
 					logger("$g(): $@");
 				}
@@ -361,7 +363,7 @@ sub flush_accounting_rules {
 	my $num = 0;
 
 	# flushes out any Monitorix iptables/ipfw rules
-	if($os eq "Linux") {
+	if($config{os} eq "Linux") {
 		logger("Flushing out iptables rules.") unless !$options{d};
 		if(open(IN, "iptables -nxvL INPUT --line-numbers |")) {
 			my @rules;
@@ -405,7 +407,7 @@ sub flush_accounting_rules {
 		}
 		logger("$num iptables rules have been flushed.") unless !$options{d};
 	}
-	if($os eq "FreeBSD" || $os eq "OpenBSD") {
+	if($config{os} eq "FreeBSD" || $config{os} eq "OpenBSD") {
 		logger("Flushing out ipfw rules.") unless !$options{d};
 		system("ipfw delete $config{port_rule} 2>/dev/null");
 		system("ipfw delete $config{nginx_rule} 2>/dev/null");
@@ -432,24 +434,25 @@ if(!stat($options{c})) {
 	die("can't open file '$options{c}'.\n");
 }
 
-# get the current OS and kernel version and check its support
-my $release;
-($os, undef, $release) = uname();
-my ($major, $minor) = split('\.', $release);
-$kernel = $major . "." . $minor;
-if(!grep {$_ eq $os} @suppsys) {
-	die("FATAL: your operating system ($os) is not supported.\n");
-}
-
-if(grep {$_ eq $os} ("FreeBSD", "OpenBSD", "NetBSD")) {
-	$SIG{'CHLD'} = 'DEFAULT';
-}	
-
 # load configuration file
 my $conf = new Config::General(
 		-ConfigFile	=> $options{c},
 	);
 %config = $conf->getall;
+$config{debug} = ();
+
+# get the current OS and kernel version and check its support
+my $release;
+($config{os}, undef, $release) = uname();
+my ($major, $minor) = split('\.', $release);
+$config{kernel} = $major . "." . $minor;
+if(!grep {$_ eq $config{os}} @suppsys) {
+	die("FATAL: your operating system ($config{os}) is not supported.\n");
+}
+
+if(grep {$_ eq $config{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
+	$SIG{'CHLD'} = 'DEFAULT';
+}	
 
 $0 = sprintf("%s %s%s%s%s",
 	$^V lt 5.6.2 ? "monitorix" : abs_path($0),
@@ -479,8 +482,8 @@ unless(chdir("/tmp")) {
 
 if($options{d}) {
 	if($options{d} ne "none" && $options{d} ne "all") {
-		@graphs_debug = split(',', $options{d});
-		foreach my $t (@graphs_debug) {
+		@{$config{debug}} = split(',', $options{d});
+		foreach my $t (@{$config{debug}}) {
 			if(!grep {trim($_) eq $t} (split(',', $config{graph_name}))) {
 				die("Invalid debug key '$t'");
 			}
@@ -505,6 +508,13 @@ foreach (split(',', $config{graph_name})) {
 	my $g = trim($_);
 	if(lc($config{graph_enable}->{$g}) eq "y") {
 		my $init = $g . "_init";
+		my $d = $g;
+
+		undef($d) if(!grep {trim($_) eq $d} (@{$config{debug}}));
+		if(defined($options{d}) && $options{d} eq "all") {
+			$d = $g;
+		}
+
 		eval "use $g qw(" . $init . " " . $g . "_update)";
 		if($@) {
 			logger("WARNING: unable to find module '$g'");
@@ -512,7 +522,7 @@ foreach (split(',', $config{graph_name})) {
 		}
 		{
 			no strict "refs";
-			eval {&$init($g, \%config, \@graphs);};
+			eval { &$init($g, \%config, \@graphs, $d); };
 		}
 		logger("WARNING: unexpected errors in function $init()") if($@);
 	}
