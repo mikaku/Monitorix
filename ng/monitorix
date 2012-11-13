@@ -60,7 +60,6 @@ use constant RELDATE	=> "06-Nov-2012";
 
 my @suppsys = ("Linux", "FreeBSD", "OpenBSD", "NetBSD");
 my %config;
-my @graphs;
 our %options;
 
 sub INT_handler {
@@ -97,7 +96,7 @@ sub ALRM_handler {
 	my ($sec, $min, $hour, $mday) = localtime(time);
 
 	if($sec == 0) {
-		foreach my $g (@graphs) {
+		foreach my $g (@{$config{func_update}}) {
 			my ($d) = split('_', $g);
 			logger("$myself: calling $g()") unless !$options{d};
 
@@ -440,6 +439,7 @@ my $conf = new Config::General(
 	);
 %config = $conf->getall;
 $config{debug} = ();
+$config{func_update} = ();
 
 # get the current OS and kernel version and check its support
 my $release;
@@ -522,14 +522,14 @@ foreach (split(',', $config{graph_name})) {
 		}
 		{
 			no strict "refs";
-			eval { &$init($g, \%config, \@graphs, $d); };
+			eval { &$init($g, \%config, $d); };
 		}
 		logger("WARNING: unexpected errors in function $init()") if($@);
 	}
 }
 
-print Dumper(@graphs);
-if(!scalar(@graphs)) {
+print Dumper($config{func_update});
+if(!scalar($config{func_update})) {
 	logger("nothing to do, exiting.");
 	exit(0);
 }
