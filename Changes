@@ -9,12 +9,6 @@ N.N.N  - NN-XXX-NNNN
 - Fixed an intermix usage of alarm() and sleep() substituting it by alarm() and
   pause().
 
-3.0
-- Fixed a missing description in the first entry of each network interface in
-  the options list.
-- Fixed a missing argument on each *_init() function preventing show an "Ok"
-  message when debugging is enabled.
-
 
 2.6.0  - 19-Sep-2012
 ====================
