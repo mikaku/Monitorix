@@ -429,8 +429,8 @@ if(!stat($options{c})) {
 
 # load configuration file
 my $conf = new Config::General(
-		-ConfigFile	=> $options{c},
-	);
+	-ConfigFile	=> $options{c},
+);
 %config = $conf->getall;
 $config{debug} = ();
 $config{func_update} = ();
