@@ -27,17 +27,10 @@ use FindBin qw($Bin);
 use lib $Bin . '/lib';
 
 use Monitorix;
-use RRDs;
-use POSIX;
+use POSIX qw(WNOHANG LC_TIME setlocale uname pause);
 use Config::General;
-use File::Basename;
-use LWP::UserAgent;
-use XML::Simple;
-use Socket;
-use DBI;
 use Getopt::Std;
 use Cwd 'abs_path';
-use locale;
 
 use Data::Dumper;
 
@@ -96,20 +89,21 @@ sub ALRM_handler {
 	my ($sec, $min, $hour, $mday) = localtime(time);
 
 	if($sec == 0) {
-		foreach my $g (@{$config{func_update}}) {
-			my ($d) = split('_', $g);
-			logger("$myself: calling $g()") unless !$options{d};
+		foreach my $f (@{$config{func_update}}) {
+			my $update = $f . "_update";
+			my $d = $f;
+			logger("$myself: calling $update()") unless !$options{d};
 
 			undef($d) if(!grep {trim($_) eq $d} (@{$config{debug}}));
 			if(defined($options{d}) && $options{d} eq "all") {
-				$d = $g;
+				$d = $f;
 			}
 
 			{
 				no strict "refs";
-				eval { &$g(\%config, $d); };
+				eval { &$update($f, \%config, $d); };
 				if($@) {
-					logger("$g(): $@");
+					logger("$update(): $@");
 				}
 			}
 		}
