@@ -1,6 +1,6 @@
 package system;
 
-#use strict;
+use strict;
 use warnings;
 use Monitorix;
 use RRDs;
@@ -69,6 +69,7 @@ sub system_init {
 		}
 	}
 
+	# check dependencies
 	if(lc($config->{enable_alerts}) eq "y") {
 		if(! -x $config->{alert_loadavg_script}) {
 			logger("$myself: ERROR: script '$config->{alert_loadavg_script}' doesn't exist or don't has execution permissions.");
@@ -283,8 +284,9 @@ sub system_update {
 }
 
 sub system_cgi {
-	my ($package, $config, $colors, $tf, $graph, $silent, $u) = @_;
+	my ($package, $config, $colors, $tf, $graph, $silent) = @_;
 
+	my $u = "";
 	my $width;
 	my $height;
 	my @riglim;
@@ -299,6 +301,14 @@ sub system_cgi {
 
 	my $total_mem;
 
+	if($silent eq "yes" || $silent eq "imagetag") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "_";
+	}
+	if($silent eq "imagetagbig") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "";
+	}
 	my $PNG1 = $u . $package . "1." . $tf->{when} . ".png";
 	my $PNG2 = $u . $package . "2." . $tf->{when} . ".png";
 	my $PNG3 = $u . $package . "3." . $tf->{when} . ".png";
@@ -476,11 +486,11 @@ sub system_cgi {
 	}
 
 	undef(@riglim);
-	if($SYSTEM2_RIGID eq 1) {
-		push(@riglim, "--upper-limit=$SYSTEM2_LIMIT");
+	if($config->{system2_rigid} eq 1) {
+		push(@riglim, "--upper-limit=$config->{system2_limit}");
 	} else {
-		if($SYSTEM2_RIGID eq 2) {
-			push(@riglim, "--upper-limit=$SYSTEM2_LIMIT");
+		if($config->{system2_rigid} eq 2) {
+			push(@riglim, "--upper-limit=$config->{system2_limit}");
 			push(@riglim, "--rigid");
 		}
 	}
@@ -491,25 +501,25 @@ sub system_cgi {
 	push(@tmp, "LINE1:nprun#EE0000");
 	push(@tmp, "LINE1:npslp#00EEEE");
 	push(@tmp, "LINE1:nproc#EEEE00:Processes");
-	($width, $height) = split('x', $GRAPH_SIZE{small});
+	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
-		($width, $height) = split('x', $GRAPH_SIZE{remote}) if $silent eq "imagetag";
-		($width, $height) = split('x', $GRAPH_SIZE{main}) if $silent eq "imagetagbig";
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 	}
 	RRDs::graph("$PNG_DIR" . "$PNG2",
-		"--title=$rgraphs{_system2}  ($nwhen$twhen)",
-		"--start=-$nwhen$twhen",
+		"--title=$config->{graphs}->{_system2}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
 		"--vertical-label=Processes",
 		"--width=$width",
 		"--height=$height",
 		@riglim,
 		"--lower-limit=0",
-		@VERSION12,
-		@VERSION12_small,
-		@graph_colors,
+		@{$config->{version12}},
+		@{$config->{version12_small}},
+		@{$colors->{graph_colors}},
 		"DEF:nproc=$rrd:system_nproc:AVERAGE",
 		"DEF:npslp=$rrd:system_npslp:AVERAGE",
 		"DEF:nprun=$rrd:system_nprun:AVERAGE",
@@ -518,19 +528,19 @@ sub system_cgi {
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
-		($width, $height) = split('x', $GRAPH_SIZE{zoom});
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		RRDs::graph("$PNG_DIR" . "$PNG2z",
-			"--title=$rgraphs{_system2}  ($nwhen$twhen)",
-			"--start=-$nwhen$twhen",
+			"--title=$config->{graphs}->{_system2}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
 			"--vertical-label=Processes",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
 			"--lower-limit=0",
-			@VERSION12,
-			@VERSION12_small,
-			@graph_colors,
+			@{$config->{version12}},
+			@{$config->{version12_small}},
+			@{$colors->{graph_colors}},
 			"DEF:nproc=$rrd:system_nproc:AVERAGE",
 			"DEF:npslp=$rrd:system_npslp:AVERAGE",
 			"DEF:nprun=$rrd:system_nprun:AVERAGE",
@@ -540,14 +550,14 @@ sub system_cgi {
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /system2/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
-			if($DISABLE_JAVASCRIPT_VOID eq "Y") {
-				print("      <a href=\"" . $URL . $IMGS_DIR . $PNG2z . "\"><img src='" . $URL . $IMGS_DIR . $PNG2 . "' border='0'></a>\n");
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $URL . $IMGS_DIR . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $URL . $IMGS_DIR . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $URL . $IMGS_DIR . $PNG2 . "'>\n");
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "'>\n");
 		}
 	}
 
@@ -577,16 +587,16 @@ sub system_cgi {
 		push(@tmp, "LINE1:m_macti#00EE00");
 		push(@tmp, "LINE1:m_mused#EE0000");
 	}
-	($width, $height) = split('x', $GRAPH_SIZE{small});
+	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
-		($width, $height) = split('x', $GRAPH_SIZE{remote}) if $silent eq "imagetag";
-		($width, $height) = split('x', $GRAPH_SIZE{main}) if $silent eq "imagetagbig";
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 	}
 	RRDs::graph("$PNG_DIR" . "$PNG3",
-		"--title=$rgraphs{_system3} (${total_mem}MB)  ($nwhen$twhen)",
-		"--start=-$nwhen$twhen",
+		"--title=$config->{graphs}->{_system3} (${total_mem}MB)  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
 		"--vertical-label=Megabytes",
 		"--width=$width",
@@ -594,9 +604,9 @@ sub system_cgi {
 		"--upper-limit=$total_mem",
 		"--lower-limit=0",
 		"--base=1024",
-		@VERSION12,
-		@VERSION12_small,
-		@graph_colors,
+		@{$config->{version12}},
+		@{$config->{version12_small}},
+		@{$colors->{graph_colors}},
 		"DEF:mtotl=$rrd:system_mtotl:AVERAGE",
 		"DEF:mbuff=$rrd:system_mbuff:AVERAGE",
 		"DEF:mcach=$rrd:system_mcach:AVERAGE",
@@ -614,10 +624,10 @@ sub system_cgi {
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
-		($width, $height) = split('x', $GRAPH_SIZE{zoom});
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		RRDs::graph("$PNG_DIR" . "$PNG3z",
-			"--title=$rgraphs{_system3} (${total_mem}MB)  ($nwhen$twhen)",
-			"--start=-$nwhen$twhen",
+			"--title=$config->{graphs}->{_system3} (${total_mem}MB)  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
 			"--vertical-label=Megabytes",
 			"--width=$width",
@@ -625,9 +635,9 @@ sub system_cgi {
 			"--upper-limit=$total_mem",
 			"--lower-limit=0",
 			"--base=1024",
-			@VERSION12,
-			@VERSION12_small,
-			@graph_colors,
+			@{$config->{version12}},
+			@{$config->{version12_small}},
+			@{$colors->{graph_colors}},
 			"DEF:mtotl=$rrd:system_mtotl:AVERAGE",
 			"DEF:mbuff=$rrd:system_mbuff:AVERAGE",
 			"DEF:mcach=$rrd:system_mcach:AVERAGE",
@@ -646,14 +656,14 @@ sub system_cgi {
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /system3/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
-			if($DISABLE_JAVASCRIPT_VOID eq "Y") {
-				print("      <a href=\"" . $URL . $IMGS_DIR . $PNG3z . "\"><img src='" . $URL . $IMGS_DIR . $PNG3 . "' border='0'></a>\n");
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $URL . $IMGS_DIR . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $URL . $IMGS_DIR . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $URL . $IMGS_DIR . $PNG3 . "'>\n");
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "'>\n");
 		}
 	}
 
@@ -662,7 +672,7 @@ sub system_cgi {
 		print("    </tr>\n");
 		main::graph_footer();
 	}
-	return 1;
+	print("  <br>\n");
 }
 
 sub get_uptime {
