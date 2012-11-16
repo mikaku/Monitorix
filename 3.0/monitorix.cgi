@@ -196,7 +196,7 @@ if(!$silent) {
 	print("<html>\n");
 	print("  <head>\n");
 	print("    <title>$config{title}</title>\n");
-	print("    <link rel='shortcut icon' href='" . $config{favicon} . "'>\n");
+	print("    <link rel='shortcut icon' href='" . $config{base_url} . "/" . $config{favicon} . "'>\n");
 	if($config{refresh_rate}) {
 		print("    <meta http-equiv='Refresh' content='" . $config{refresh_rate} . "'>\n");
 	}
