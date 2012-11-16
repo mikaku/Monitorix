@@ -186,7 +186,7 @@ sub create_index {
 <html>
  <head>
   <title>$config{title}</title>
-  <link rel="shortcut icon" href="$config{favicon}">
+  <link rel="shortcut icon" href="$config{base_url}/$config{favicon}">
  </head>
  <body bgcolor="$bgcolor" text="#888888" vlink="#888888" link="#888888">
   <center>
