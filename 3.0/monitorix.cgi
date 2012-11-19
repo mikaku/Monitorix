@@ -31,8 +31,11 @@ use POSIX;
 use RRDs;
 
 my %config;
+my %cgi;
 my %colors;
 my %tf;
+my @version12;
+my @version12_small;
 
 #our @nfsv2 = ("null", "getattr", "setattr", "root", "lookup", "readlink", "read", "wrcache", "write", "create", "remove", "rename", "link", "symlink", "mkdir", "rmdir", "readdir", "fsstat");
 #our @nfsv3 = ("null", "getattr", "setattr", "lookup", "access", "readlink", "read", "write", "create", "mkdir", "symlink", "mknod", "remove", "rmdir", "rename", "link", "readdir", "readdirplus", "fsstat", "fsinfo", "pathconf", "commit");
@@ -168,23 +171,21 @@ if($tf{twhen} eq "year") {
 }
 
 
-$config{version12} = ();
-$config{version12_small} = ();
 if($RRDs::VERSION > 1.2) {
-	push(@{$config{version12}}, "--slope-mode");
-	push(@{$config{version12}}, "--font=LEGEND:7:");
-	push(@{$config{version12}}, "--font=TITLE:9:");
-	push(@{$config{version12}}, "--font=UNIT:8:");
+	push(@version12, "--slope-mode");
+	push(@version12, "--font=LEGEND:7:");
+	push(@version12, "--font=TITLE:9:");
+	push(@version12, "--font=UNIT:8:");
 	if($RRDs::VERSION >= 1.3) {
-		push(@{$config{version12}}, "--font=DEFAULT:0:Mono");
+		push(@version12, "--font=DEFAULT:0:Mono");
 	}
 	if($tf{twhen} eq "day") {
-		push(@{$config{version12}}, "--x-grid=HOUR:1:HOUR:6:HOUR:6:0:%R");
+		push(@version12, "--x-grid=HOUR:1:HOUR:6:HOUR:6:0:%R");
 	}
-	push(@{$config{version12_small}}, "--font=TITLE:8:");
-	push(@{$config{version12_small}}, "--font=UNIT:7:");
+	push(@version12_small, "--font=TITLE:8:");
+	push(@version12_small, "--font=UNIT:7:");
 	if($RRDs::VERSION >= 1.3) {
-		push(@{$config{version12_small}}, "--font=DEFAULT:0:Mono");
+		push(@version12_small, "--font=DEFAULT:0:Mono");
 	}
 }
 
@@ -258,6 +259,14 @@ if(!$silent) {
 	print("    <h4><font color='#888888'>" . strftime("%a %b %e %H:%M:%S %Z %Y", localtime) . "</font></h4>\n");
 }
 
+
+$cgi{colors} = \%colors;
+$cgi{tf} = \%tf;
+$cgi{version12} = \@version12;
+$cgi{version12_small} = \@version12_small;
+$cgi{graph} = $graph;
+$cgi{silent} = $silent;
+
 if($mode eq "localhost") {
 	foreach (split(',', $config{graph_name})) {
 		my $g = trim($_);
@@ -272,7 +281,7 @@ if($mode eq "localhost") {
 
 			if($graph eq "all" || $graph =~ /_$g/) {
 				no strict "refs";
-				&$cgi($g, \%config, \%colors, \%tf, $graph, $silent);
+				&$cgi($g, \%config, \%cgi);
 			}
 		}
 	}

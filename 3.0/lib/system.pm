@@ -284,7 +284,12 @@ sub system_update {
 }
 
 sub system_cgi {
-	my ($package, $config, $colors, $tf, $graph, $silent) = @_;
+	my ($package, $config, $cgi) = @_;
+
+	my $tf = $cgi->{tf};
+	my $colors = $cgi->{colors};
+	my $graph = $cgi->{graph};
+	my $silent = $cgi->{silent};
 
 	my $u = "";
 	my $width;
@@ -438,7 +443,7 @@ sub system_cgi {
 		"--height=$height",
 		@riglim,
 		"--lower-limit=0",
-		@{$config->{version12}},
+		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
 		"DEF:load1=$rrd:system_load1:AVERAGE",
 		"DEF:load5=$rrd:system_load5:AVERAGE",
@@ -459,7 +464,7 @@ sub system_cgi {
 			"--height=$height",
 			@riglim,
 			"--lower-limit=0",
-			@{$config->{version12}},
+			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:load1=$rrd:system_load1:AVERAGE",
 			"DEF:load5=$rrd:system_load5:AVERAGE",
@@ -517,8 +522,8 @@ sub system_cgi {
 		"--height=$height",
 		@riglim,
 		"--lower-limit=0",
-		@{$config->{version12}},
-		@{$config->{version12_small}},
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
 		"DEF:nproc=$rrd:system_nproc:AVERAGE",
 		"DEF:npslp=$rrd:system_npslp:AVERAGE",
@@ -538,8 +543,8 @@ sub system_cgi {
 			"--height=$height",
 			@riglim,
 			"--lower-limit=0",
-			@{$config->{version12}},
-			@{$config->{version12_small}},
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:nproc=$rrd:system_nproc:AVERAGE",
 			"DEF:npslp=$rrd:system_npslp:AVERAGE",
@@ -604,8 +609,8 @@ sub system_cgi {
 		"--upper-limit=$total_mem",
 		"--lower-limit=0",
 		"--base=1024",
-		@{$config->{version12}},
-		@{$config->{version12_small}},
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
 		"DEF:mtotl=$rrd:system_mtotl:AVERAGE",
 		"DEF:mbuff=$rrd:system_mbuff:AVERAGE",
@@ -635,8 +640,8 @@ sub system_cgi {
 			"--upper-limit=$total_mem",
 			"--lower-limit=0",
 			"--base=1024",
-			@{$config->{version12}},
-			@{$config->{version12_small}},
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:mtotl=$rrd:system_mtotl:AVERAGE",
 			"DEF:mbuff=$rrd:system_mbuff:AVERAGE",
