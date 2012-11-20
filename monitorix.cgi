@@ -13309,12 +13309,7 @@ sub multihost {
 	my @URL;
 	my @TEMP_LIST;
 
-	if($val eq "all") {
-		for($n = 0; $n < scalar(@REMOTEHOST_LIST); $n += 2) {
-			push(@HOST, $REMOTEHOST_LIST[$n]);
-			push(@URL, $REMOTEHOST_LIST[$n + 1]);
-		}
-	} else {
+	if($val =~ m/group[0-9]*/) {
 		$gnum = substr($val, 5, length($val));
 		@TEMP_LIST = split(':', $REMOTEGROUP_LIST[2 * $gnum + 1]);
 		$gnum = scalar(@TEMP_LIST);
@@ -13326,6 +13321,11 @@ sub multihost {
 					push(@URL, $REMOTEHOST_LIST[$m2 + 1]);
 				}
 			}
+		}
+	} else {
+		for($n = 0; $n < scalar(@REMOTEHOST_LIST); $n += 2) {
+			push(@HOST, $REMOTEHOST_LIST[$n]);
+			push(@URL, $REMOTEHOST_LIST[$n + 1]);
 		}
 	}
 
