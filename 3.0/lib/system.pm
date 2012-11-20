@@ -307,6 +307,8 @@ sub system_cgi {
 	my $title = $config->{graph_title}->{$package};
 	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
 
+	$title = !$silent ? $title : "";
+
 	my $total_mem;
 
 	if($silent eq "yes" || $silent eq "imagetag") {
@@ -317,15 +319,13 @@ sub system_cgi {
 		$colors->{fg_color} = "#000000";  # visible color for text mode
 		$u = "";
 	}
+
 	my $PNG1 = $u . $package . "1." . $tf->{when} . ".png";
 	my $PNG2 = $u . $package . "2." . $tf->{when} . ".png";
 	my $PNG3 = $u . $package . "3." . $tf->{when} . ".png";
 	my $PNG1z = $u . $package . "1z." . $tf->{when} . ".png";
 	my $PNG2z = $u . $package . "2z." . $tf->{when} . ".png";
 	my $PNG3z = $u . $package . "3z." . $tf->{when} . ".png";
-
-	$title = !$silent ? $title : "";
-
 	unlink ("$PNG_DIR" . "$PNG1",
 		"$PNG_DIR" . "$PNG2",
 		"$PNG_DIR" . "$PNG3");
@@ -382,7 +382,8 @@ sub system_cgi {
 			print("    </tr>\n");
 			main::graph_footer();
 		}
-		return 1;
+		print("  <br>\n");
+		return;
 	}
 
 	if($title) {
