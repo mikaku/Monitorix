@@ -286,6 +286,9 @@ sub system_update {
 sub system_cgi {
 	my ($package, $config, $cgi) = @_;
 
+	my %system = %{$config->{system}};
+	my @rigid = split(',', $system{rigid});
+	my @limit = split(',', $system{limit});
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -385,11 +388,11 @@ sub system_cgi {
 	if($title) {
 		main::graph_header($title, 2);
 	}
-	if($config->{system1_rigid} eq 1) {
-		push(@riglim, "--upper-limit=$config->{system1_limit}");
+	if(trim($rigid[0]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[0]));
 	} else {
-		if($config->{system1_rigid} eq 2) {
-			push(@riglim, "--upper-limit=$config->{system1_limit}");
+		if(trim($rigid[0]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[0]));
 			push(@riglim, "--rigid");
 		}
 	}
@@ -491,11 +494,11 @@ sub system_cgi {
 	}
 
 	undef(@riglim);
-	if($config->{system2_rigid} eq 1) {
-		push(@riglim, "--upper-limit=$config->{system2_limit}");
+	if(trim($rigid[1]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[1]));
 	} else {
-		if($config->{system2_rigid} eq 2) {
-			push(@riglim, "--upper-limit=$config->{system2_limit}");
+		if(trim($rigid[1]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[1]));
 			push(@riglim, "--rigid");
 		}
 	}
