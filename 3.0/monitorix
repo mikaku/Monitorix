@@ -159,6 +159,7 @@ sub create_index {
 	my $n;
 	my $gname;
 	my $theme = $config{theme};
+	my %multihost = %{$config{multihost}};
 	my $bgcolor;
 	my $table_back_color;
 	my $title_back_color;
@@ -226,7 +227,8 @@ EOF
 	print(OUT "        <td bgcolor='$bgcolor'>\n");
 	print(OUT "          <select name='mode' size='1'>\n");
 	print(OUT "            <option value='localhost'>Local Host</option>\n");
-	if(scalar(my @remotehost_list = split(',', $config{remotehost_list})) && lc($config{multihost}) eq "y") {
+
+	if(scalar(my @remotehost_list = split(',', $multihost{remotehost_list})) && lc($multihost{enabled}) eq "y") {
 		print(OUT "            <optgroup label='Multihost'>\n");
 		print(OUT "            <option value='multihost.all'>All Hosts</option>\n");
 		for($n = 0; $n < scalar(@remotehost_list); $n++) {
@@ -234,8 +236,8 @@ EOF
                               }
 		print(OUT "            </optgroup>\n");
 
-		if(lc($config{groups}) eq "y" ) {
-			my @remotegroup_list = split(',', $config{remotegroup_list});
+		if(lc($multihost{groups}) eq "y" ) {
+			my @remotegroup_list = split(',', $multihost{remotegroup_list});
 			print(OUT "            <optgroup label='Multihost-Groups'>\n");
 			print(OUT "            <option value='multihost.group'>All Groups</option>\n");
 			for($n = 0; $n < scalar(@remotegroup_list); $n++) {

@@ -42,6 +42,131 @@ my @version12_small;
 #our @nfssv4 = ("op0-unused", "op1-unused", "op2-future", "access", "close", "commit", "create", "delegpurge", "delegreturn", "getattr", "getfh", "link", "lock", "lockt", "locku", "lookup", "lookup_root", "nverify", "open", "openattr", "open_conf", "open_dgrd", "putfh", "putpubfh", "putrootfh", "read", "readdir", "readlink", "remove", "rename", "renew", "restorefh", "savefh", "secinfo", "setattr", "setcltid", "setcltidconf", "verify", "write", "rellockowner", "bc_ctl", "bind_conn", "exchange_id", "create_ses", "destroy_ses", "free_stateid", "getdirdeleg", "getdevinfo", "getdevlist", "layoutcommit", "layoutget", "layoutreturn", "secinfononam", "sequence", "set_ssv", "test_stateid", "want_deleg", "destroy_clid", "reclaim_comp");
 #our @nfscv4 = ("null", "read", "write", "commit", "open", "open_conf", "open_noat", "open_dgrd", "close", "setattr", "fsinfo", "renew", "setclntid", "confirm", "lock", "lockt", "locku", "access", "getattr", "lookup", "lookup_root", "remove", "rename", "link", "symlink", "create", "pathconf", "statfs", "readlink", "readdir", "server_caps", "delegreturn", "getacl", "setacl", "fs_locations", "exchange_id", "create_ses", "destroy_ses", "sequence", "get_lease_t", "reclaim_comp", "layoutget", "layoutcommit", "layoutreturn", "getdevlist", "getdevinfo", "ds_write", "ds_commit");
 
+
+sub multihost {
+	my ($config, $colors) = @_;
+
+	my $n;
+	my $n2;
+	my @host;
+	my @url;
+	my %multihost = %{$config->{multihost}};
+
+	if($val =~ m/group(\d*)/) {
+		my @remotegroup_desc;
+		my $gnum = int($1);
+
+		# all groups
+		if($val ne "group$gnum") {
+			my @remotehost_list = split(',', $multihost{remotehost_list});
+			for($n = 0; $n < scalar(@remotehost_list); $n++) {
+				scalar(my @tmp = split(',', $multihost{remotegroup_desc}->{$n}));
+				for($n2 = 0; $n2 < scalar(@tmp); $n2++) {
+					push(@remotegroup_desc, trim($tmp[$n2]));
+				}
+			}
+
+		# specific group
+		} else {
+			@remotegroup_desc = split(',', $multihost{remotegroup_desc}->{$gnum});
+		}
+
+		my @remotehost_list = split(',', $multihost{remotehost_list});
+		for($n = 0; $n < scalar(@remotegroup_desc); $n++) {
+			my $h = trim($remotegroup_desc[$n]);
+			for($n2 = 0; $n2 < scalar(@remotehost_list); $n2++) {
+				my $h2 = trim($remotehost_list[$n2]);
+				if($h eq $h2) {
+					push(@host, $h);
+					push(@url, $multihost{remotehost_url}->{$n2});
+				}
+			}
+		}
+	} else {
+		my @remotehost_list = split(',', $multihost{remotehost_list});
+		for($n = 0; $n < scalar(@remotehost_list); $n++) {
+			push(@host, trim($remotehost_list[$n]));
+			push(@url, $multihost{remotehost_url}->{$n});
+		}
+	}
+
+	$multihost{imgs_per_row} = 1 unless $multihost{imgs_per_row} > 1;
+	$graph = ($graph eq "all" || $graph =~ m/group\[0-9]*/) ? "_system1" : $graph;
+
+	if($val eq "all" || $val =~ m/group[0-9]*/) {
+		for($n = 0; $n < scalar(@host); $n += $multihost{imgs_per_row}) {
+			print "<table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n";
+			print " <tr>\n";
+			for($n2 = 0; $n2 < $multihost{imgs_per_row}; $n2++) {
+				if($n < scalar(@host)) {
+					print "  <td bgcolor='$colors->{title_bg_color}'>\n";
+					print "   <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
+					print "   <b>&nbsp;&nbsp;" . $host[$n] . "<b>\n";
+					print "   </font>\n";
+					print "  </td>\n";
+				}
+				$n++;
+			}
+			print " </tr>\n";
+			print " <tr>\n";
+			for($n2 = 0, $n = $n - $multihost{imgs_per_row}; $n2 < $multihost{imgs_per_row}; $n2++) {
+				if($n < scalar(@host)) {
+					print "  <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
+					print "   <iframe src=$url[$n]$config->{base_cgi}/monitorix.cgi?mode=localhost&when=$when&graph=$graph&color=$color&silent=imagetag height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+					print "  </td>\n";
+
+				}
+				$n++;
+			}
+			print " </tr>\n";
+			print " <tr>\n";
+			for($n2 = 0, $n = $n - $multihost{imgs_per_row}; $n2 < $multihost{imgs_per_row}; $n2++) {
+				if($n < scalar(@host)) {
+				if(lc($multihost{footer_url}) eq "y") {
+					print "  <td bgcolor='$colors->{title_bg_color}'>\n";
+					print "   <font face='Verdana, sans-serif' color='$title_fg_color'>\n";
+					print "   <font size='-1'>\n";
+					print "    <b>&nbsp;&nbsp;<a href='" . $url[$n] . $config->{base_url} . "/' style='{color: " . $colors->{title_fg_color} . "}'>$url[$n]</a><b>\n";
+					print "   </font></font>\n";
+					print "  </td>\n";
+				}
+				}
+				$n++;
+			}
+			$n = $n - $multihost{imgs_per_row};
+			print " </tr>\n";
+			print "</table>\n";
+			print "<br>\n";
+		}
+	} else {
+		print "  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n";
+		print "   <tr>\n";
+		print "    <td bgcolor='$colors->{title_bg_color}'>\n";
+		print "    <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
+		print "    <b>&nbsp;&nbsp;" . $host[$val] . "<b>\n";
+		print "    </font>\n";
+		print "    </td>\n";
+		print "   </tr>\n";
+		print "   <tr>\n";
+		print "    <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
+		print "     <iframe src=$url[$val]$config->{base_cgi}/monitorix.cgi?mode=localhost&when=$when&graph=$graph&color=$color&silent=imagetagbig height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+		print "    </td>\n";
+		print "   </tr>\n";
+		print "   <tr>\n";
+		if(lc($multihost{footer_url}) eq "y") {
+			print "   <td bgcolor='$colors->{title_bg_color}'>\n";
+			print "    <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
+			print "    <font size='-1'>\n";
+			print "    <b>&nbsp;&nbsp;<a href='" . $url[$val] . "/monitorix/' style='{color: " . $colors->{title_fg_color} . "}'>$url[$val]</a><b>\n";
+			print "    </font></font>\n";
+			print "   </td>\n";
+		}
+		print "   </tr>\n";
+		print "  </table>\n";
+		print "  <br>\n";
+	}
+}
+
 sub graph_header {
 	my ($title, $colspan) = @_;
 	print("\n");
@@ -103,12 +228,12 @@ my $release;
 my ($major, $minor) = split('\.', $release);
 $config{kernel} = $major . "." . $minor;
 
-my $mode = defined(param('mode')) ? param('mode') : '';
-my $graph = param('graph');
-my $when = param('when');
-my $color = param('color');
-my $val = defined(param('val')) ? param('val') : '';
-my $silent = defined(param('silent')) ? param('silent') : '';
+our $mode = defined(param('mode')) ? param('mode') : '';
+our $graph = param('graph');
+our $when = param('when');
+our $color = param('color');
+our $val = defined(param('val')) ? param('val') : '';
+our $silent = defined(param('silent')) ? param('silent') : '';
 if($mode ne "localhost") {
 	($mode, $val)  = split(/\./, $mode);
 }
@@ -206,6 +331,7 @@ if(!$silent) {
 	print("  <center>\n");
 	print("  <table cellspacing='5' cellpadding='0' bgcolor='" . $colors{graph_bg_color} . "' border='1'>\n");
 	print("  <tr>\n");
+
 	if(($val ne "all" || $val ne "group") && $mode ne "multihost") {
 		print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
 		print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
@@ -213,9 +339,10 @@ if(!$silent) {
 		print("  </font>\n");
 		print("  </td>\n");
 	}
-	if($val =~ m/group[0-9]+/) {
-		my $gnum = substr($val, 5, length($val));
-		my $gname = (split(',', $config{remotegroup_list}))[$gnun];
+
+	if($val =~ m/group(\d+)/) {
+		my $gnum = $1;
+		my $gname = (split(',', $config{remotegroup_list}))[$gnum];
 		$gname = trim($gname);
 		print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
 		print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
@@ -223,6 +350,7 @@ if(!$silent) {
 		print("  </font>\n");
 		print("  </td>\n");
 	}
+
 	print("  <td bgcolor='" . $colors{bg_color} . "'>\n");
 	print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "'>\n");
 	if($mode eq "localhost" || $mode eq "pc") {
@@ -286,7 +414,7 @@ if($mode eq "localhost") {
 		}
 	}
 } elsif($mode eq "multihost") {
-	multihost();
+	multihost(\%config, \%colors);
 } elsif($mode eq "pc") {
 	pc();
 }
