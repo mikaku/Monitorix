@@ -73,6 +73,8 @@ sub HUP_handler {
 	my $myself = (caller(0))[3];
 
 	logger("SIG$signal caught.");
+
+	# upon receiving a SIGHUP signal the logfile is re-opened
 	close(STDOUT);
 	close(STDERR);
 	unless(open(STDOUT, ">> $config{log_file}")) {
@@ -88,6 +90,7 @@ sub ALRM_handler {
 	my $myself = (caller(0))[3];
 	my ($sec, $min, $hour, $mday) = localtime(time);
 
+	# call all enabled graphs on every minute
 	if($sec == 0) {
 		foreach my $f (@{$config{func_update}}) {
 			my $update = $f . "_update";
@@ -108,8 +111,11 @@ sub ALRM_handler {
 			}
 		}
 		if(lc($config{graph_enable}->{pc}) eq "y" && lc($config{pc_enable_monthly_reports}) eq "y") {
+			# collect traffic accounting every day at 00:00h
 			if($min == 0 && $hour == 0) {
 				get_counters();
+
+				# send reports every first day of a month at 00:00h
 				if($mday == 1) {
 					send_reports();
 				}
