@@ -48,8 +48,8 @@ $SIG{'CHLD'} = 'CHLD_handler';
 $SIG{'HUP' } = 'HUP_handler';
 $SIG{'ALRM'} = 'ALRM_handler';
 
-use constant VERSION	=> "2.9.901";
-use constant RELDATE	=> "06-Nov-2012";
+use constant VERSION	=> "2.9.9";
+use constant RELDATE	=> "20-Nov-2012";
 
 my @suppsys = ("Linux", "FreeBSD", "OpenBSD", "NetBSD");
 my %config;
@@ -437,7 +437,7 @@ if(!stat($options{c})) {
 
 # load configuration file
 my $conf = new Config::General(
-	-ConfigFile	=> $options{c},
+	-ConfigFile => $options{c},
 );
 %config = $conf->getall;
 $config{debug} = ();
