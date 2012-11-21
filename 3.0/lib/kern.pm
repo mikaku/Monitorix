@@ -707,7 +707,7 @@ sub kern_cgi {
 	push(@tmp, "LINE1:forks#0000EE");
 	push(@tmpz, "LINE1:cs#00EEEE");
 	push(@tmpz, "LINE1:forks#0000EE");
-	if($os eq "FreeBSD" || $os eq "OpenBSD") {
+	if($config->{os} eq "FreeBSD" || $config->{os} eq "OpenBSD") {
 		push(@tmp, "AREA:vforks#EE4444:VForks");
 		push(@tmpz, "AREA:vforks#EE4444:VForks");
 		push(@tmp, "GPRINT:vforks:LAST:               Current\\: %6.0lf\\n");
@@ -715,62 +715,62 @@ sub kern_cgi {
 		push(@tmpz, "LINE1:vforks#EE0000");
 	}
 
-	($width, $height) = split('x', $GRAPH_SIZE{small});
+	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
-		($width, $height) = split('x', $GRAPH_SIZE{remote}) if $silent eq "imagetag";
-		($width, $height) = split('x', $GRAPH_SIZE{main}) if $silent eq "imagetagbig";
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 		@tmp = @tmpz;
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 	}
 	RRDs::graph("$PNG_DIR" . "$PNG2",
-		"--title=$rgraphs{_kern2}  ($nwhen$twhen)",
-		"--start=-$nwhen$twhen",
+		"--title=$config->{graphs}->{_kern2}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
 		"--vertical-label=CS & forks/s",
 		"--width=$width",
 		"--height=$height",
 		"--lower-limit=0",
-		@VERSION12,
-		@VERSION12_small,
-		@graph_colors,
-		"DEF:cs=$KERN_RRD:kern_cs:AVERAGE",
-		"DEF:forks=$KERN_RRD:kern_forks:AVERAGE",
-		"DEF:vforks=$KERN_RRD:kern_vforks:AVERAGE",
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
+		@{$colors->{graph_colors}},
+		"DEF:cs=$rrd:kern_cs:AVERAGE",
+		"DEF:forks=$rrd:kern_forks:AVERAGE",
+		"DEF:vforks=$rrd:kern_vforks:AVERAGE",
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
-	if($ENABLE_ZOOM eq "Y") {
-		($width, $height) = split('x', $GRAPH_SIZE{zoom});
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		RRDs::graph("$PNG_DIR" . "$PNG2z",
-			"--title=$rgraphs{_kern2}  ($nwhen$twhen)",
-			"--start=-$nwhen$twhen",
+			"--title=$config->{graphs}->{_kern2}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
 			"--vertical-label=CS & forks/s",
 			"--width=$width",
 			"--height=$height",
 			"--lower-limit=0",
-			@VERSION12,
-			@VERSION12_small,
-			@graph_colors,
-			"DEF:cs=$KERN_RRD:kern_cs:AVERAGE",
-			"DEF:forks=$KERN_RRD:kern_forks:AVERAGE",
-			"DEF:vforks=$KERN_RRD:kern_vforks:AVERAGE",
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:cs=$rrd:kern_cs:AVERAGE",
+			"DEF:forks=$rrd:kern_forks:AVERAGE",
+			"DEF:vforks=$rrd:kern_vforks:AVERAGE",
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /kern2/)) {
-		if($ENABLE_ZOOM eq "Y") {
-			if($DISABLE_JAVASCRIPT_VOID eq "Y") {
-				print("      <a href=\"" . $URL . $IMGS_DIR . $PNG2z . "\"><img src='" . $URL . $IMGS_DIR . $PNG2 . "' border='0'></a>\n");
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $URL . $IMGS_DIR . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $URL . $IMGS_DIR . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $URL . $IMGS_DIR . $PNG2 . "'>\n");
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "'>\n");
 		}
 	}
 
@@ -779,7 +779,7 @@ sub kern_cgi {
 	push(@tmp, "AREA:inode#4444EE:inode");
 	push(@tmpz, "AREA:inode#4444EE:inode");
 	push(@tmp, "GPRINT:inode:LAST:                Current\\:  %4.1lf%%\\n");
-	if($os eq "Linux") {
+	if($config->{os} eq "Linux") {
 		push(@tmp, "AREA:dentry#EEEE44:dentry");
 		push(@tmpz, "AREA:dentry#EEEE44:dentry");
 		push(@tmp, "GPRINT:dentry:LAST:               Current\\:  %4.1lf%%\\n");
@@ -789,23 +789,23 @@ sub kern_cgi {
 	push(@tmp, "GPRINT:file:LAST:                 Current\\:  %4.1lf%%\\n");
 	push(@tmp, "LINE2:inode#0000EE");
 	push(@tmpz, "LINE2:inode#0000EE");
-	if($os eq "Linux") {
+	if($config->{os} eq "Linux") {
 		push(@tmp, "LINE2:dentry#EEEE00");
 		push(@tmpz, "LINE2:dentry#EEEE00");
 	}	
 	push(@tmp, "LINE2:file#EE00EE");
 	push(@tmpz, "LINE2:file#EE00EE");
-	($width, $height) = split('x', $GRAPH_SIZE{small});
+	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
-		($width, $height) = split('x', $GRAPH_SIZE{remote}) if $silent eq "imagetag";
-		($width, $height) = split('x', $GRAPH_SIZE{main}) if $silent eq "imagetagbig";
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 		@tmp = @tmpz;
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 	}
 	RRDs::graph("$PNG_DIR" . "$PNG3",
-		"--title=$rgraphs{_kern3}  ($nwhen$twhen)",
-		"--start=-$nwhen$twhen",
+		"--title=$config->{graphs}->{_kern3}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
 		"--vertical-label=Percent (%)",
 		"--width=$width",
@@ -813,20 +813,20 @@ sub kern_cgi {
 		"--upper-limit=100",
 		"--lower-limit=0",
 		"--rigid",
-		@VERSION12,
-		@VERSION12_small,
-		@graph_colors,
-		"DEF:dentry=$KERN_RRD:kern_dentry:AVERAGE",
-		"DEF:file=$KERN_RRD:kern_file:AVERAGE",
-		"DEF:inode=$KERN_RRD:kern_inode:AVERAGE",
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
+		@{$colors->{graph_colors}},
+		"DEF:dentry=$rrd:kern_dentry:AVERAGE",
+		"DEF:file=$rrd:kern_file:AVERAGE",
+		"DEF:inode=$rrd:kern_inode:AVERAGE",
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
-	if($ENABLE_ZOOM eq "Y") {
-		($width, $height) = split('x', $GRAPH_SIZE{zoom});
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		RRDs::graph("$PNG_DIR" . "$PNG3z",
-			"--title=$rgraphs{_kern3}  ($nwhen$twhen)",
-			"--start=-$nwhen$twhen",
+			"--title=$config->{graphs}->{_kern3}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
 			"--vertical-label=Percent (%)",
 			"--width=$width",
@@ -834,26 +834,26 @@ sub kern_cgi {
 			"--upper-limit=100",
 			"--lower-limit=0",
 			"--rigid",
-			@VERSION12,
-			@VERSION12_small,
-			@graph_colors,
-			"DEF:dentry=$KERN_RRD:kern_dentry:AVERAGE",
-			"DEF:file=$KERN_RRD:kern_file:AVERAGE",
-			"DEF:inode=$KERN_RRD:kern_inode:AVERAGE",
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:dentry=$rrd:kern_dentry:AVERAGE",
+			"DEF:file=$rrd:kern_file:AVERAGE",
+			"DEF:inode=$rrd:kern_inode:AVERAGE",
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /kern3/)) {
-		if($ENABLE_ZOOM eq "Y") {
-			if($DISABLE_JAVASCRIPT_VOID eq "Y") {
-				print("      <a href=\"" . $URL . $IMGS_DIR . $PNG3z . "\"><img src='" . $URL . $IMGS_DIR . $PNG3 . "' border='0'></a>\n");
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $URL . $IMGS_DIR . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $URL . $IMGS_DIR . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $URL . $IMGS_DIR . $PNG3 . "'>\n");
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "'>\n");
 		}
 	}
 
