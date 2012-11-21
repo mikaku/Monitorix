@@ -862,7 +862,8 @@ sub kern_cgi {
 		print("    </tr>\n");
 		main::graph_footer();
 	}
-	return 1;
+	print("  <br>\n");
+	return;
 }
 
 1;
