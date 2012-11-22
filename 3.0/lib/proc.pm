@@ -215,7 +215,7 @@ sub proc_update {
 		$rrdata .= ":$p[0]:$p[1]:$p[2]:$p[3]:$p[4]:$p[5]:$p[6]:$p[7]:$p[8]";
 	}
 	RRDs::update($rrd, $rrdata);
-	logger("$myself: $rrdata") if($debug);
+	logger("$myself: $rrdata") if $debug;
 	my $err = RRDs::error;
 	logger("ERROR: while updating $rrd: $err") if $err;
 }
