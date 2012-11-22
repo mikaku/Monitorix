@@ -318,9 +318,7 @@ sub kern_update {
 
 	$rrdata .= ":$user:$nice:$sys:$idle:$iow:$irq:$sirq:$steal:$guest:$cs:$dentry:$file:$inode:$forks:$vforks:$val03:$val04:$val05";
 	RRDs::update($rrd, $rrdata);
-	if($debug) {
-		logger("$myself: $rrdata");
-	}
+	logger("$myself: $rrdata") if($debug);
 	my $err = RRDs::error;
 	logger("ERROR: while updating $rrd: $err") if $err;
 }
