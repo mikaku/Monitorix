@@ -68,9 +68,7 @@ sub kern_init {
 
 	$config->{kern_hist} = ();
 	push(@{$config->{func_update}}, $package);
-	if($debug) {
-		logger("$myself: Ok");
-	}
+	logger("$myself: Ok") if($debug);
 }
 
 sub kern_update {
@@ -87,12 +85,12 @@ sub kern_update {
 	my $sirq;
 	my $steal;
 	my $guest;
-	my $cs = 0;
+	my $cs = "U";
 	my $dentry;
 	my $file;
 	my $inode;
-	my $forks = 0;
-	my $vforks = 0;
+	my $forks = "U";
+	my $vforks = "U";
 	my $val03 = 0;
 	my $val04 = 0;
 	my $val05 = 0;
