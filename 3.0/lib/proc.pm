@@ -31,7 +31,7 @@ sub proc_init {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
-	my %proc = %{$config->{proc}};
+	my $proc = $config->{proc};
 
 	my $info;
 	my @ds;
@@ -52,15 +52,15 @@ sub proc_init {
 				}
 			}
 		}
-		if(scalar(@ds) / 9 != $proc{max}) {
-			logger("Detected size mismatch between 'max = $proc{max}' and $rrd (" . scalar(@ds) / 9 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
+		if(scalar(@ds) / 9 != $proc->{max}) {
+			logger("Detected size mismatch between 'max = $proc->{max}' and $rrd (" . scalar(@ds) / 9 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 	}
 
 	if(!(-e $rrd)) {
 		logger("Creating '$rrd' file.");
-		for($n = 0; $n < $proc{max}; $n++) {
+		for($n = 0; $n < $proc->{max}; $n++) {
 			push(@tmp, "DS:proc" . $n . "_user:GAUGE:120:0:100");
 			push(@tmp, "DS:proc" . $n . "_nice:GAUGE:120:0:100");
 			push(@tmp, "DS:proc" . $n . "_sys:GAUGE:120:0:100");
@@ -115,7 +115,7 @@ sub proc_update {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
-	my %proc = %{$config->{proc}};
+	my $proc = $config->{proc};
 
 	my @procs;
 	my $total;
@@ -129,7 +129,7 @@ sub proc_update {
 
 	# Read last processor usage data
 	my $str;
-	for($n = 0; $n < $proc{max}; $n++) {
+	for($n = 0; $n < $proc->{max}; $n++) {
 		$str = "cpu" . $n;
 		if($config->{proc_hist}->{$str}) {
 			push(@lastproc, $config->{proc_hist}->{$str});
@@ -139,7 +139,7 @@ sub proc_update {
 	if($config->{os} eq "Linux") {
 		open(IN, "/proc/stat");
 		while(<IN>) {
-			for($n = 0; $n < $proc{max}; $n++) {
+			for($n = 0; $n < $proc->{max}; $n++) {
 				$str = "cpu" . $n;
 				if(/^cpu$n /) {
 					$config->{proc_hist}->{$str} = $_;
@@ -159,7 +159,7 @@ sub proc_update {
 		my @data = split(' ', <IN>);
 		close(IN);
 		chomp($ncpu);
-		for($n = 0; $n < $proc{max}; $n++) {
+		for($n = 0; $n < $proc->{max}; $n++) {
 			$str = "cpu" . $n;
 			$from = $n * 5;
 			$to = $from + 4;
@@ -174,7 +174,7 @@ sub proc_update {
 	}
 
 	my @deltas;
-	for($n = 0; $n < $proc{max}; $n++) {
+	for($n = 0; $n < $proc->{max}; $n++) {
 		if($procs[$n]) {
 			@p = split(' ', $procs[$n]);
 			@l = (0) x 10;
@@ -210,7 +210,7 @@ sub proc_update {
 		}
 	}
 
-	for($n = 0; $n < $proc{max}; $n++) {
+	for($n = 0; $n < $proc->{max}; $n++) {
 		@p = split(' ', $procs[$n]);
 		$rrdata .= ":$p[0]:$p[1]:$p[2]:$p[3]:$p[4]:$p[5]:$p[6]:$p[7]:$p[8]";
 	}
