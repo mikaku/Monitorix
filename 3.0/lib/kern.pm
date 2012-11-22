@@ -346,9 +346,9 @@ sub kern_update {
 sub kern_cgi {
 	my ($package, $config, $cgi) = @_;
 
-	my %kern = %{$config->{kern}};
-	my @rigid = split(',', $kern{rigid});
-	my @limit = split(',', $kern{limit});
+	my $kern = $config->{kern};
+	my @rigid = split(',', $kern->{rigid});
+	my @limit = split(',', $kern->{limit});
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -441,9 +441,9 @@ sub kern_cgi {
 			push(@riglim, "--rigid");
 		}
 	}
-	if(lc($kern{graph_mode}) eq "r") {
+	if(lc($kern->{graph_mode}) eq "r") {
 		$vlabel = "Percent (%)";
-		if(lc($kern{list}->{user}) eq "y") {
+		if(lc($kern->{list}->{user}) eq "y") {
 			push(@tmp, "AREA:user#4444EE:user");
 			push(@tmpz, "AREA:user#4444EE:user");
 			push(@tmp, "GPRINT:user:LAST:      Current\\: %4.1lf%%");
@@ -451,7 +451,7 @@ sub kern_cgi {
 			push(@tmp, "GPRINT:user:MIN:    Min\\: %4.1lf%%");
 			push(@tmp, "GPRINT:user:MAX:    Max\\: %4.1lf%%\\n");
 		}
-		if(lc($kern{list}->{nice}) eq "y") {
+		if(lc($kern->{list}->{nice}) eq "y") {
 			push(@tmp, "AREA:nice#EEEE44:nice");
 			push(@tmpz, "AREA:nice#EEEE44:nice");
 			push(@tmp, "GPRINT:nice:LAST:      Current\\: %4.1lf%%");
@@ -459,7 +459,7 @@ sub kern_cgi {
 			push(@tmp, "GPRINT:nice:MIN:    Min\\: %4.1lf%%");
 			push(@tmp, "GPRINT:nice:MAX:    Max\\: %4.1lf%%\\n");
 		}
-		if(lc($kern{list}->{sys}) eq "y") {
+		if(lc($kern->{list}->{sys}) eq "y") {
 			push(@tmp, "AREA:sys#44EEEE:system");
 			push(@tmpz, "AREA:sys#44EEEE:system");
 			push(@tmp, "GPRINT:sys:LAST:    Current\\: %4.1lf%%");
@@ -467,7 +467,7 @@ sub kern_cgi {
 			push(@tmp, "GPRINT:sys:MIN:    Min\\: %4.1lf%%");
 			push(@tmp, "GPRINT:sys:MAX:    Max\\: %4.1lf%%\\n");
 		}
-		if(lc($kern{list}->{iow}) eq "y") {
+		if(lc($kern->{list}->{iow}) eq "y") {
 			push(@tmp, "AREA:iow#EE44EE:I/O wait");
 			push(@tmpz, "AREA:iow#EE44EE:I/O wait");
 			push(@tmp, "GPRINT:iow:LAST:  Current\\: %4.1lf%%");
@@ -476,7 +476,7 @@ sub kern_cgi {
 			push(@tmp, "GPRINT:iow:MAX:    Max\\: %4.1lf%%\\n");
 		}
 		if($config->{os} eq "Linux") {
-			if(lc($kern{list}->{irq}) eq "y") {
+			if(lc($kern->{list}->{irq}) eq "y") {
 				push(@tmp, "AREA:irq#888888:IRQ");
 				push(@tmpz, "AREA:irq#888888:IRQ");
 				push(@tmp, "GPRINT:irq:LAST:       Current\\: %4.1lf%%");
@@ -484,7 +484,7 @@ sub kern_cgi {
 				push(@tmp, "GPRINT:irq:MIN:    Min\\: %4.1lf%%");
 				push(@tmp, "GPRINT:irq:MAX:    Max\\: %4.1lf%%\\n");
 			}
-			if(lc($kern{list}->{sirq}) eq "y") {
+			if(lc($kern->{list}->{sirq}) eq "y") {
 				push(@tmp, "AREA:sirq#E29136:softIRQ");
 				push(@tmpz, "AREA:sirq#E29136:softIRQ");
 				push(@tmp, "GPRINT:sirq:LAST:   Current\\: %4.1lf%%");
@@ -492,7 +492,7 @@ sub kern_cgi {
 				push(@tmp, "GPRINT:sirq:MIN:    Min\\: %4.1lf%%");
 				push(@tmp, "GPRINT:sirq:MAX:    Max\\: %4.1lf%%\\n");
 			}
-			if(lc($kern{list}->{steal}) eq "y") {
+			if(lc($kern->{list}->{steal}) eq "y") {
 				push(@tmp, "AREA:steal#44EE44:steal");
 				push(@tmpz, "AREA:steal#44EE44:steal");
 				push(@tmp, "GPRINT:steal:LAST:     Current\\: %4.1lf%%");
@@ -500,7 +500,7 @@ sub kern_cgi {
 				push(@tmp, "GPRINT:steal:MIN:    Min\\: %4.1lf%%");
 				push(@tmp, "GPRINT:steal:MAX:    Max\\: %4.1lf%%\\n");
 			}
-			if(lc($kern{list}->{guest}) eq "y") {
+			if(lc($kern->{list}->{guest}) eq "y") {
 				push(@tmp, "AREA:guest#448844:guest");
 				push(@tmpz, "AREA:guest#448844:guest");
 				push(@tmp, "GPRINT:guest:LAST:     Current\\: %4.1lf%%");
@@ -508,23 +508,23 @@ sub kern_cgi {
 				push(@tmp, "GPRINT:guest:MIN:    Min\\: %4.1lf%%");
 				push(@tmp, "GPRINT:guest:MAX:    Max\\: %4.1lf%%\\n");
 			}
-			push(@tmp, "LINE1:guest#1F881F") unless lc($kern{list}->{guest} ne "y");
-			push(@tmpz, "LINE1:guest#1F881F") unless lc($kern{list}->{guest} ne "y");
-			push(@tmp, "LINE1:steal#00EE00") unless lc($kern{list}->{steal} ne "y");
-			push(@tmpz, "LINE1:steal#00EE00") unless lc($kern{list}->{steal} ne "y");
-			push(@tmp, "LINE1:sirq#D86612") unless lc($kern{list}->{sirq} ne "y");
-			push(@tmpz, "LINE1:sirq#D86612") unless lc($kern{list}->{sirq} ne "y");
-			push(@tmp, "LINE1:irq#CCCCCC") unless lc($kern{list}->{irq} ne "y");
-			push(@tmpz, "LINE1:irq#CCCCCC") unless lc($kern{list}->{irq} ne "y");
+			push(@tmp, "LINE1:guest#1F881F") unless lc($kern->{list}->{guest} ne "y");
+			push(@tmpz, "LINE1:guest#1F881F") unless lc($kern->{list}->{guest} ne "y");
+			push(@tmp, "LINE1:steal#00EE00") unless lc($kern->{list}->{steal} ne "y");
+			push(@tmpz, "LINE1:steal#00EE00") unless lc($kern->{list}->{steal} ne "y");
+			push(@tmp, "LINE1:sirq#D86612") unless lc($kern->{list}->{sirq} ne "y");
+			push(@tmpz, "LINE1:sirq#D86612") unless lc($kern->{list}->{sirq} ne "y");
+			push(@tmp, "LINE1:irq#CCCCCC") unless lc($kern->{list}->{irq} ne "y");
+			push(@tmpz, "LINE1:irq#CCCCCC") unless lc($kern->{list}->{irq} ne "y");
 		}
-		push(@tmp, "LINE1:iow#EE00EE") unless lc($kern{list}->{iow} ne "y");
-		push(@tmpz, "LINE1:iow#EE00EE") unless lc($kern{list}->{iow} ne "y");
-		push(@tmp, "LINE1:sys#00EEEE") unless lc($kern{list}->{sys} ne "y");
-		push(@tmpz, "LINE1:sys#00EEEE") unless lc($kern{list}->{sys} ne "y");
-		push(@tmp, "LINE1:nice#EEEE00") unless lc($kern{list}->{nice} ne "y");
-		push(@tmpz, "LINE1:nice#EEEE00") unless lc($kern{list}->{nice} ne "y");
-		push(@tmp, "LINE1:user#0000EE") unless lc($kern{list}->{user} ne "y");
-		push(@tmpz, "LINE1:user#0000EE") unless lc($kern{list}->{user} ne "y");
+		push(@tmp, "LINE1:iow#EE00EE") unless lc($kern->{list}->{iow} ne "y");
+		push(@tmpz, "LINE1:iow#EE00EE") unless lc($kern->{list}->{iow} ne "y");
+		push(@tmp, "LINE1:sys#00EEEE") unless lc($kern->{list}->{sys} ne "y");
+		push(@tmpz, "LINE1:sys#00EEEE") unless lc($kern->{list}->{sys} ne "y");
+		push(@tmp, "LINE1:nice#EEEE00") unless lc($kern->{list}->{nice} ne "y");
+		push(@tmpz, "LINE1:nice#EEEE00") unless lc($kern->{list}->{nice} ne "y");
+		push(@tmp, "LINE1:user#0000EE") unless lc($kern->{list}->{user} ne "y");
+		push(@tmpz, "LINE1:user#0000EE") unless lc($kern->{list}->{user} ne "y");
 	} else {
 		$vlabel = "Stacked Percent (%)";
 		push(@tmp, "CDEF:s_nice=user,nice,+");
@@ -542,7 +542,7 @@ sub kern_cgi {
 			push(@tmpz, "CDEF:s_steal=s_sirq,steal,+");
 			push(@tmp, "CDEF:s_guest=s_steal,guest,+");
 			push(@tmpz, "CDEF:s_guest=s_steal,guest,+");
-			if(lc($kern{list}->{guest}) eq "y") {
+			if(lc($kern->{list}->{guest}) eq "y") {
 				push(@tmp, "AREA:s_guest#448844:guest");
 				push(@tmpz, "AREA:s_guest#448844:guest");
 				push(@tmp, "GPRINT:guest:LAST:     Current\\: %4.1lf%%");
@@ -550,7 +550,7 @@ sub kern_cgi {
 				push(@tmp, "GPRINT:guest:MIN:    Min\\: %4.1lf%%");
 				push(@tmp, "GPRINT:guest:MAX:    Max\\: %4.1lf%%\\n");
 			}
-			if(lc($kern{list}->{steal}) eq "y") {
+			if(lc($kern->{list}->{steal}) eq "y") {
 				push(@tmp, "AREA:s_steal#44EE44:steal");
 				push(@tmpz, "AREA:s_steal#44EE44:steal");
 				push(@tmp, "GPRINT:steal:LAST:     Current\\: %4.1lf%%");
@@ -558,7 +558,7 @@ sub kern_cgi {
 				push(@tmp, "GPRINT:steal:MIN:    Min\\: %4.1lf%%");
 				push(@tmp, "GPRINT:steal:MAX:    Max\\: %4.1lf%%\\n");
 			}
-			if(lc($kern{list}->{sirq}) eq "y") {
+			if(lc($kern->{list}->{sirq}) eq "y") {
 				push(@tmp, "AREA:s_sirq#E29136:softIRQ");
 				push(@tmpz, "AREA:s_sirq#E29136:softIRQ");
 				push(@tmp, "GPRINT:sirq:LAST:   Current\\: %4.1lf%%");
@@ -566,7 +566,7 @@ sub kern_cgi {
 				push(@tmp, "GPRINT:sirq:MIN:    Min\\: %4.1lf%%");
 				push(@tmp, "GPRINT:sirq:MAX:    Max\\: %4.1lf%%\\n");
 			}
-			if(lc($kern{list}->{irq}) eq "y") {
+			if(lc($kern->{list}->{irq}) eq "y") {
 				push(@tmp, "AREA:s_irq#888888:IRQ");
 				push(@tmpz, "AREA:s_irq#888888:IRQ");
 				push(@tmp, "GPRINT:irq:LAST:       Current\\: %4.1lf%%");
@@ -575,7 +575,7 @@ sub kern_cgi {
 				push(@tmp, "GPRINT:irq:MAX:    Max\\: %4.1lf%%\\n");
 			}
 		}	
-		if(lc($kern{list}->{iow}) eq "y") {
+		if(lc($kern->{list}->{iow}) eq "y") {
 			push(@tmp, "AREA:s_iow#EE44EE:I/O wait");
 			push(@tmpz, "AREA:s_iow#EE44EE:I/O wait");
 			push(@tmp, "GPRINT:iow:LAST:  Current\\: %4.1lf%%");
@@ -583,7 +583,7 @@ sub kern_cgi {
 			push(@tmp, "GPRINT:iow:MIN:    Min\\: %4.1lf%%");
 			push(@tmp, "GPRINT:iow:MAX:    Max\\: %4.1lf%%\\n");
 		}
-		if(lc($kern{list}->{sys}) eq "y") {
+		if(lc($kern->{list}->{sys}) eq "y") {
 			push(@tmp, "AREA:s_sys#44EEEE:system");
 			push(@tmpz, "AREA:s_sys#44EEEE:system");
 			push(@tmp, "GPRINT:sys:LAST:    Current\\: %4.1lf%%");
@@ -591,7 +591,7 @@ sub kern_cgi {
 			push(@tmp, "GPRINT:sys:MIN:    Min\\: %4.1lf%%");
 			push(@tmp, "GPRINT:sys:MAX:    Max\\: %4.1lf%%\\n");
 		}
-		if(lc($kern{list}->{nice}) eq "y") {
+		if(lc($kern->{list}->{nice}) eq "y") {
 			push(@tmp, "AREA:s_nice#EEEE44:nice");
 			push(@tmpz, "AREA:s_nice#EEEE44:nice");
 			push(@tmp, "GPRINT:nice:LAST:      Current\\: %4.1lf%%");
@@ -599,7 +599,7 @@ sub kern_cgi {
 			push(@tmp, "GPRINT:nice:MIN:    Min\\: %4.1lf%%");
 			push(@tmp, "GPRINT:nice:MAX:    Max\\: %4.1lf%%\\n");
 		}
-		if(lc($kern{list}->{user}) eq "y") {
+		if(lc($kern->{list}->{user}) eq "y") {
 			push(@tmp, "AREA:user#4444EE:user");
 			push(@tmpz, "AREA:user#4444EE:user");
 			push(@tmp, "GPRINT:user:LAST:      Current\\: %4.1lf%%");
