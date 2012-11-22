@@ -88,7 +88,7 @@ sub kern_init {
 
 	$config->{kern_hist} = ();
 	push(@{$config->{func_update}}, $package);
-	logger("$myself: Ok") if($debug);
+	logger("$myself: Ok") if $debug;
 }
 
 sub kern_update {
@@ -338,7 +338,7 @@ sub kern_update {
 
 	$rrdata .= ":$user:$nice:$sys:$idle:$iow:$irq:$sirq:$steal:$guest:$cs:$dentry:$file:$inode:$forks:$vforks:$val03:$val04:$val05";
 	RRDs::update($rrd, $rrdata);
-	logger("$myself: $rrdata") if($debug);
+	logger("$myself: $rrdata") if $debug;
 	my $err = RRDs::error;
 	logger("ERROR: while updating $rrd: $err") if $err;
 }
