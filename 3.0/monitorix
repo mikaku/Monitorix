@@ -274,7 +274,7 @@ EOF
 		if(lc($config{graph_enable}->{$g}) eq "y") {
 			print(OUT "            <optgroup label='" . $config{graph_title}->{$g} . "'>\n");
 			if($g eq "proc") {
-				for($n = 0; $n < $config{proc_max}; $n++) {
+				for($n = 0; $n < $config{proc}->{max}; $n++) {
 					$gname = "_" . $g;
 					print(OUT "              <option value='" . $gname . $n . "'>" . $config{graphs}->{$gname} . " " . $n . "</option>\n");
 				}
