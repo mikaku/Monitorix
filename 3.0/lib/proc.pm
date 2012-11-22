@@ -243,6 +243,7 @@ sub proc_cgi {
 	my $vlabel;
 	my $ncpu;
 	my $n;
+	my $n2;
 	my $str;
 	my $err;
 
@@ -300,7 +301,6 @@ sub proc_cgi {
 		my $line;
 		my @row;
 		my $time;
-		my $n2;
 		my $from;
 		my $to;
 		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
