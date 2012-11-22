@@ -20,7 +20,7 @@
 
 package hptemp;
 
-#use strict;
+use strict;
 use warnings;
 use Monitorix;
 use RRDs;
