@@ -19,8 +19,8 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-no strict;
-no warnings;
+use strict;
+use warnings;
 use FindBin qw($Bin);
 use lib $Bin . '/lib';
 
@@ -44,60 +44,61 @@ my @version12_small;
 
 
 sub multihost {
-	my ($config, $colors) = @_;
+	my ($config, $colors, $cgi) = @_;
 
 	my $n;
 	my $n2;
 	my @host;
 	my @url;
-	my %multihost = %{$config->{multihost}};
+	my $multihost = $config->{multihost};
 
-	if($val =~ m/group(\d*)/) {
+	if($cgi->{val} =~ m/group(\d*)/) {
 		my @remotegroup_desc;
-		my $gnum = int($1);
 
 		# all groups
-		if($val ne "group$gnum") {
-			my @remotehost_list = split(',', $multihost{remotehost_list});
-			for($n = 0; $n < scalar(@remotehost_list); $n++) {
-				scalar(my @tmp = split(',', $multihost{remotegroup_desc}->{$n}));
+		if($cgi->{val} eq "group") {
+			my @remotegroup_list = split(',', $multihost->{remotegroup_list});
+			for($n = 0; $n < scalar(@remotegroup_list); $n++) {
+				scalar(my @tmp = split(',', $multihost->{remotegroup_desc}->{$n}));
 				for($n2 = 0; $n2 < scalar(@tmp); $n2++) {
 					push(@remotegroup_desc, trim($tmp[$n2]));
 				}
 			}
-
-		# specific group
-		} else {
-			@remotegroup_desc = split(',', $multihost{remotegroup_desc}->{$gnum});
 		}
 
-		my @remotehost_list = split(',', $multihost{remotehost_list});
+		# specific group
+		if($cgi->{val} =~ m/group(\d+)/) {
+			my $gnum = int($1);
+			@remotegroup_desc = split(',', $multihost->{remotegroup_desc}->{$gnum});
+		}
+
+		my @remotehost_list = split(',', $multihost->{remotehost_list});
 		for($n = 0; $n < scalar(@remotegroup_desc); $n++) {
 			my $h = trim($remotegroup_desc[$n]);
 			for($n2 = 0; $n2 < scalar(@remotehost_list); $n2++) {
 				my $h2 = trim($remotehost_list[$n2]);
 				if($h eq $h2) {
 					push(@host, $h);
-					push(@url, $multihost{remotehost_url}->{$n2});
+					push(@url, $multihost->{remotehost_url}->{$n2});
 				}
 			}
 		}
 	} else {
-		my @remotehost_list = split(',', $multihost{remotehost_list});
+		my @remotehost_list = split(',', $multihost->{remotehost_list});
 		for($n = 0; $n < scalar(@remotehost_list); $n++) {
 			push(@host, trim($remotehost_list[$n]));
-			push(@url, $multihost{remotehost_url}->{$n});
+			push(@url, $multihost->{remotehost_url}->{$n});
 		}
 	}
 
-	$multihost{imgs_per_row} = 1 unless $multihost{imgs_per_row} > 1;
-	$graph = ($graph eq "all" || $graph =~ m/group\[0-9]*/) ? "_system1" : $graph;
+	$multihost->{imgs_per_row} = 1 unless $multihost->{imgs_per_row} > 1;
+	my $graph = ($cgi->{graph} eq "all" || $cgi->{graph} =~ m/group\[0-9]*/) ? "_system1" : $cgi->{graph};
 
-	if($val eq "all" || $val =~ m/group[0-9]*/) {
-		for($n = 0; $n < scalar(@host); $n += $multihost{imgs_per_row}) {
+	if($cgi->{val} eq "all" || $cgi->{val} =~ m/group[0-9]*/) {
+		for($n = 0; $n < scalar(@host); $n += $multihost->{imgs_per_row}) {
 			print "<table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n";
 			print " <tr>\n";
-			for($n2 = 0; $n2 < $multihost{imgs_per_row}; $n2++) {
+			for($n2 = 0; $n2 < $multihost->{imgs_per_row}; $n2++) {
 				if($n < scalar(@host)) {
 					print "  <td bgcolor='$colors->{title_bg_color}'>\n";
 					print "   <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
@@ -109,10 +110,10 @@ sub multihost {
 			}
 			print " </tr>\n";
 			print " <tr>\n";
-			for($n2 = 0, $n = $n - $multihost{imgs_per_row}; $n2 < $multihost{imgs_per_row}; $n2++) {
+			for($n2 = 0, $n = $n - $multihost->{imgs_per_row}; $n2 < $multihost->{imgs_per_row}; $n2++) {
 				if($n < scalar(@host)) {
 					print "  <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
-					print "   <iframe src=$url[$n]$config->{base_cgi}/monitorix.cgi?mode=localhost&when=$when&graph=$graph&color=$color&silent=imagetag height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+					print "   <iframe src=$url[$n]$config->{base_cgi}/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetag height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
 					print "  </td>\n";
 
 				}
@@ -120,11 +121,11 @@ sub multihost {
 			}
 			print " </tr>\n";
 			print " <tr>\n";
-			for($n2 = 0, $n = $n - $multihost{imgs_per_row}; $n2 < $multihost{imgs_per_row}; $n2++) {
+			for($n2 = 0, $n = $n - $multihost->{imgs_per_row}; $n2 < $multihost->{imgs_per_row}; $n2++) {
 				if($n < scalar(@host)) {
-				if(lc($multihost{footer_url}) eq "y") {
+				if(lc($multihost->{footer_url}) eq "y") {
 					print "  <td bgcolor='$colors->{title_bg_color}'>\n";
-					print "   <font face='Verdana, sans-serif' color='$title_fg_color'>\n";
+					print "   <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
 					print "   <font size='-1'>\n";
 					print "    <b>&nbsp;&nbsp;<a href='" . $url[$n] . $config->{base_url} . "/' style='{color: " . $colors->{title_fg_color} . "}'>$url[$n]</a><b>\n";
 					print "   </font></font>\n";
@@ -133,7 +134,7 @@ sub multihost {
 				}
 				$n++;
 			}
-			$n = $n - $multihost{imgs_per_row};
+			$n = $n - $multihost->{imgs_per_row};
 			print " </tr>\n";
 			print "</table>\n";
 			print "<br>\n";
@@ -143,21 +144,21 @@ sub multihost {
 		print "   <tr>\n";
 		print "    <td bgcolor='$colors->{title_bg_color}'>\n";
 		print "    <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
-		print "    <b>&nbsp;&nbsp;" . $host[$val] . "<b>\n";
+		print "    <b>&nbsp;&nbsp;" . $host[$cgi->{val}] . "<b>\n";
 		print "    </font>\n";
 		print "    </td>\n";
 		print "   </tr>\n";
 		print "   <tr>\n";
 		print "    <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
-		print "     <iframe src=$url[$val]$config->{base_cgi}/monitorix.cgi?mode=localhost&when=$when&graph=$graph&color=$color&silent=imagetagbig height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+		print "     <iframe src=$url[$cgi->{val}]$config->{base_cgi}/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetagbig height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
 		print "    </td>\n";
 		print "   </tr>\n";
 		print "   <tr>\n";
-		if(lc($multihost{footer_url}) eq "y") {
+		if(lc($multihost->{footer_url}) eq "y") {
 			print "   <td bgcolor='$colors->{title_bg_color}'>\n";
 			print "    <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
 			print "    <font size='-1'>\n";
-			print "    <b>&nbsp;&nbsp;<a href='" . $url[$val] . "/monitorix/' style='{color: " . $colors->{title_fg_color} . "}'>$url[$val]</a><b>\n";
+			print "    <b>&nbsp;&nbsp;<a href='" . $url[$cgi->{val}] . "/monitorix/' style='{color: " . $colors->{title_fg_color} . "}'>$url[$cgi->{val}]</a><b>\n";
 			print "    </font></font>\n";
 			print "   </td>\n";
 		}
@@ -277,7 +278,7 @@ $tf{twhen} = "day" unless $tf{twhen};
 $tf{when} = $tf{nwhen} . $tf{twhen};
 
 # toggle this to 1 if you want to maintain old (2.3-) Monitorix with Multihost
-if($backwards_compat_old_multihost) {
+if($config{backwards_compat_old_multihost}) {
 	$tf{when} = $tf{twhen};
 }
 
@@ -342,7 +343,7 @@ if(!$silent) {
 
 	if($val =~ m/group(\d+)/) {
 		my $gnum = $1;
-		my $gname = (split(',', $config{remotegroup_list}))[$gnum];
+		my $gname = (split(',', $config{multihost}->{remotegroup_list}))[$gnum];
 		$gname = trim($gname);
 		print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
 		print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
@@ -393,6 +394,9 @@ $cgi{tf} = \%tf;
 $cgi{version12} = \@version12;
 $cgi{version12_small} = \@version12_small;
 $cgi{graph} = $graph;
+$cgi{when} = $when;
+$cgi{color} = $color;
+$cgi{val} = $val;
 $cgi{silent} = $silent;
 
 if($mode eq "localhost") {
@@ -414,7 +418,7 @@ if($mode eq "localhost") {
 		}
 	}
 } elsif($mode eq "multihost") {
-	multihost(\%config, \%colors);
+	multihost(\%config, \%colors, \%cgi);
 } elsif($mode eq "pc") {
 	pc();
 }
