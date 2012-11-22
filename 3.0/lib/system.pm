@@ -98,7 +98,7 @@ sub system_init {
 
 	$config->{system_hist} = 0;
 	push(@{$config->{func_update}}, $package);
-	logger("$myself: Ok") if($debug);
+	logger("$myself: Ok") if $debug;
 }
 
 sub system_update {
@@ -294,7 +294,7 @@ sub system_update {
 
 	$rrdata .= ":$load1:$load5:$load15:$nproc:$npslp:$nprun:$npwio:$npzom:$npstp:$npswp:$mtotl:$mbuff:$mcach:$mfree:$macti:$minac:$val01:$val02:$val03:$val04:$val05";
 	RRDs::update($rrd, $rrdata);
-	logger("$myself: $rrdata") if($debug);
+	logger("$myself: $rrdata") if $debug;
 	my $err = RRDs::error;
 	logger("ERROR: while updating $rrd: $err") if $err;
 }
