@@ -1,3 +1,4 @@
+- Complete rewrite in a lot of areas.
 - Fixed a missing description in the first entry of each network interface in
   the options list.
 - Fixed a missing argument on each *_init() function preventing show an "Ok"
