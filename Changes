@@ -8,6 +8,7 @@ N.N.N  - NN-XXX-NNNN
   option.
 - Fixed an intermix usage of alarm() and sleep() substituting it by alarm() and
   pause().
+- Fixed a bug in multihost introduced by the groups code.
 
 
 2.6.0  - 19-Sep-2012
