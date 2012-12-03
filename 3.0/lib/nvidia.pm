@@ -20,7 +20,7 @@
 
 package nvidia;
 
-use strict;
+#use strict;
 use warnings;
 use Monitorix;
 use RRDs;
@@ -193,120 +193,425 @@ sub nvidia_update {
 	logger("ERROR: while updating $rrd: $err") if $err;
 }
 
-sub get_nvidia_data {
-	my ($gpu) = @_;
-	my $total = 0;
-	my $used = 0;
-	my $mem = 0;
-	my $cpu = 0;
-	my $temp = 0;
-	my $check_mem = 0;
-	my $check_cpu = 0;
-	my $check_temp = 0;
-	my $l;
+sub nvidia_cgi {
+	my ($package, $config, $cgi) = @_;
 
-	open(IN, "nvidia-smi -q -i $gpu -d MEMORY,UTILIZATION,TEMPERATURE |");
-	my @data = <IN>;
-	close(IN);
-	for($l = 0; $l < scalar(@data); $l++) {
-		if($data[$l] =~ /Memory Usage/) {
-			$check_mem = 1;
-			next;
-		}
-		if($check_mem) {	
-			if($data[$l] =~ /Total/) {
-				my (undef, $tmp) = split(':', $data[$l]);
-				if($tmp eq "\n") {
-					$l++;
-					$tmp = $data[$l];
-				}
-				my ($value, undef) = split(' ', $tmp);
-				$value =~ s/[-]/./;
-				$value =~ s/[^0-9.]//g;
-				if(int($value) > 0) {
-					$total = int($value);
-				}
-			}
-			if($data[$l] =~ /Used/) {
-				my (undef, $tmp) = split(':', $data[$l]);
-				if($tmp eq "\n") {
-					$l++;
-					$tmp = $data[$l];
-				}
-				my ($value, undef) = split(' ', $tmp);
-				$value =~ s/[-]/./;
-				$value =~ s/[^0-9.]//g;
-				if(int($value) > 0) {
-					$used = int($value);
-				}
-				$check_mem = 0;
-			}
-		}
+	my $nvidia = $config->{nvidia};
+	my $tf = $cgi->{tf};
+	my $colors = $cgi->{colors};
+	my $graph = $cgi->{graph};
+	my $silent = $cgi->{silent};
 
-		if($data[$l] =~ /Utilization/) {
-			$check_cpu = 1;
-			next;
-		}
-		if($check_cpu) {	
-			if($data[$l] =~ /Gpu/) {
-				my (undef, $tmp) = split(':', $data[$l]);
-				if($tmp eq "\n") {
-					$l++;
-					$tmp = $data[$l];
-				}
-				my ($value, undef) = split(' ', $tmp);
-				$value =~ s/[-]/./;
-				$value =~ s/[^0-9.]//g;
-				if(int($value) > 0) {
-					$cpu = int($value);
-				}
-			}
-			if($data[$l] =~ /Memory/) {
-				my (undef, $tmp) = split(':', $data[$l]);
-				if($tmp eq "\n") {
-					$l++;
-					$tmp = $data[$l];
-				}
-				my ($value, undef) = split(' ', $tmp);
-				$value =~ s/[-]/./;
-				$value =~ s/[^0-9.]//g;
-				if(int($value) > 0) {
-					$mem = int($value);
-				}
-			}
-			$check_cpu = 0;
-		}
+	my $u = "";
+	my $width;
+	my $height;
+	my @tmp;
+	my @tmpz;
+	my $n;
+	my $err;
+	my @LC = (
+		"#FFA500",
+		"#44EEEE",
+		"#44EE44",
+		"#4444EE",
+		"#448844",
+		"#EE4444",
+		"#EE44EE",
+		"#EEEE44",
+		"#963C74",
+	);
 
-		if($data[$l] =~ /Temperature/) {
-			$check_temp = 1;
-			next;
+	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $title = $config->{graph_title}->{$package};
+	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
+
+	$title = !$silent ? $title : "";
+
+	if($silent eq "yes" || $silent eq "imagetag") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "_";
+	}
+	if($silent eq "imagetagbig") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "";
+	}
+
+	my $PNG1 = $u . $package . "1." . $tf->{when} . ".png";
+	my $PNG2 = $u . $package . "2." . $tf->{when} . ".png";
+	my $PNG3 = $u . $package . "3." . $tf->{when} . ".png";
+	my $PNG1z = $u . $package . "1z." . $tf->{when} . ".png";
+	my $PNG2z = $u . $package . "2z." . $tf->{when} . ".png";
+	my $PNG3z = $u . $package . "3z." . $tf->{when} . ".png";
+
+	unlink ("$PNG_DIR" . "$PNG1",
+		"$PNG_DIR" . "$PNG2",
+		"$PNG_DIR" . "$PNG3");
+	if(lc($config->{enable_zoom}) eq "y") {
+		unlink ("$PNG_DIR" . "$PNG1z",
+			"$PNG_DIR" . "$PNG2z",
+			"$PNG_DIR" . "$PNG3z");
+	}
+
+	if(lc($config->{iface_mode}) eq "text") {
+		if($title) {
+			main::graph_header($title, 2);
+			print("    <tr>\n");
+			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 		}
-		if($check_temp) {	
-			if($data[$l] =~ /Gpu/) {
-				my (undef, $tmp) = split(':', $data[$l]);
-				if($tmp eq "\n") {
-					$l++;
-					$tmp = $data[$l];
-				}
-				my ($value, undef) = split(' ', $tmp);
-				$value =~ s/[-]/./;
-				$value =~ s/[^0-9.]//g;
-				if(int($value) > 0) {
-					$temp = int($value);
-				}
+		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"AVERAGE",
+			"-r $tf->{res}");
+		$err = RRDs::error;
+		print("ERROR: while fetching $rrd: $err\n") if $err;
+		my $line2;
+		my $line3;
+		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
+		print("    ");
+		for($n = 0; $n < $nvidia->{max}; $n++) {
+			print("    NVIDIA card $n");
+		}
+		print("\n");
+		for($n = 0; $n < $nvidia->{max}; $n++) {
+			$line2 .= "   Temp  GPU  Mem";
+			$line3 .= "-----------------";
+		}
+		print("Time$line2\n");
+		print("----$line3 \n");
+		my $line;
+		my @row;
+		my $time;
+		my $n2;
+		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
+			$line = @$data[$n];
+			$time = $time - (1 / $tf->{ts});
+			printf(" %2d$tf->{tc} ", $time);
+			undef($line1);
+			undef(@row);
+			for($n2 = 0; $n2 < $nvidia->{max}; $n2++) {
+				push(@row, @$line[$n2]);
+				push(@row, @$line[$n2 + 9]);
+				push(@row, @$line[$n2 + 18]);
+				$line1 .= "   %3d %3d%% %3d%%";
 			}
-			$check_temp = 0;
+			print(sprintf($line1, @row));
+			print("\n");
+		}
+		print("    </pre>\n");
+		if($title) {
+			print("    </td>\n");
+			print("    </tr>\n");
+			main::graph_footer();
+		}
+		print("  <br>\n");
+		return;
+	}
+
+	if($title) {
+		main::graph_header($title, 2);
+	}
+	for($n = 0; $n < 9; $n++) {
+		if($n < $nvidia->{max}) {
+			push(@tmp, "LINE2:temp" . $n . $LC[$n] . ":Card $n");
+			push(@tmpz, "LINE2:temp" . $n . $LC[$n] . ":Card $n");
+			push(@tmp, "GPRINT:temp" . $n . ":LAST:             Current\\: %2.0lf");
+			push(@tmp, "GPRINT:temp" . $n . ":AVERAGE:   Average\\: %2.0lf");
+			push(@tmp, "GPRINT:temp" . $n . ":MIN:   Min\\: %2.0lf");
+			push(@tmp, "GPRINT:temp" . $n . ":MAX:   Max\\: %2.0lf\\n");
+		} else {
+			push(@tmp, "COMMENT: \\n");
 		}
 	}
 
-	# NVIDIA driver v285.+ not supported (needs new output parsing).
-	# This is to avoid a divide by zero message.
-	if($total) {
-		$mem = ($used * 100) / $total;
-	} else {
-		$mem = $used = $total = 0;
+	if($title) {
+		print("    <tr>\n");
+		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 	}
-	return join(" ", $mem, $cpu, $temp);
+	($width, $height) = split('x', $config->{graph_size}->{main});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		@tmp = @tmpz;
+		push(@tmp, "COMMENT: \\n");
+	}
+	RRDs::graph("$PNG_DIR" . "$PNG1",
+		"--title=$config->{graphs}->{_nvidia1}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=PNG",
+		"--vertical-label=Celsius",
+		"--width=$width",
+		"--height=$height",
+		"--lower-limit=0",
+		@{$cgi->{version12}},
+		@{$colors->{graph_colors}},
+		"DEF:temp0=$rrd:nvidia_temp0:AVERAGE",
+		"DEF:temp1=$rrd:nvidia_temp1:AVERAGE",
+		"DEF:temp2=$rrd:nvidia_temp2:AVERAGE",
+		"DEF:temp3=$rrd:nvidia_temp3:AVERAGE",
+		"DEF:temp4=$rrd:nvidia_temp4:AVERAGE",
+		"DEF:temp5=$rrd:nvidia_temp5:AVERAGE",
+		"DEF:temp6=$rrd:nvidia_temp6:AVERAGE",
+		"DEF:temp7=$rrd:nvidia_temp7:AVERAGE",
+		"DEF:temp8=$rrd:nvidia_temp8:AVERAGE",
+		@tmp,
+		"COMMENT: \\n",
+		"COMMENT: \\n");
+	$err = RRDs::error;
+	print("ERROR: while graphing $PNG_DIR" . "$PNG1: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		RRDs::graph("$PNG_DIR" . "$PNG1z",
+			"--title=$config->{graphs}->{_nvidia1}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Celsius",
+			"--width=$width",
+			"--height=$height",
+			"--lower-limit=0",
+			@{$cgi->{version12}},
+			@{$colors->{graph_colors}},
+			"DEF:temp0=$rrd:nvidia_temp0:AVERAGE",
+			"DEF:temp1=$rrd:nvidia_temp1:AVERAGE",
+			"DEF:temp2=$rrd:nvidia_temp2:AVERAGE",
+			"DEF:temp3=$rrd:nvidia_temp3:AVERAGE",
+			"DEF:temp4=$rrd:nvidia_temp4:AVERAGE",
+			"DEF:temp5=$rrd:nvidia_temp5:AVERAGE",
+			"DEF:temp6=$rrd:nvidia_temp6:AVERAGE",
+			"DEF:temp7=$rrd:nvidia_temp7:AVERAGE",
+			"DEF:temp8=$rrd:nvidia_temp8:AVERAGE",
+			@tmpz);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /nvidia1/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+			}
+			else {
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "'>\n");
+		}
+	}
+	if($title) {
+		print("    </td>\n");
+		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
+	}
+
+	undef(@tmp);
+	undef(@tmpz);
+	push(@tmp, "LINE2:gpu0#FFA500:Card 0\\g");
+	push(@tmp, "GPRINT:gpu0:LAST:\\:%3.0lf%%");
+	push(@tmp, "LINE2:gpu3#4444EE:Card 3\\g");
+	push(@tmp, "GPRINT:gpu3:LAST:\\:%3.0lf%%");
+	push(@tmp, "LINE2:gpu6#EE44EE:Card 6\\g");
+	push(@tmp, "GPRINT:gpu6:LAST:\\:%3.0lf%%\\n");
+	push(@tmp, "LINE2:gpu1#44EEEE:Card 1\\g");
+	push(@tmp, "GPRINT:gpu1:LAST:\\:%3.0lf%%");
+	push(@tmp, "LINE2:gpu4#448844:Card 4\\g");
+	push(@tmp, "GPRINT:gpu4:LAST:\\:%3.0lf%%");
+	push(@tmp, "LINE2:gpu7#EEEE44:Card 7\\g");
+	push(@tmp, "GPRINT:gpu7:LAST:\\:%3.0lf%%\\n");
+	push(@tmp, "LINE2:gpu2#44EE44:Card 2\\g");
+	push(@tmp, "GPRINT:gpu2:LAST:\\:%3.0lf%%");
+	push(@tmp, "LINE2:gpu5#EE4444:Card 5\\g");
+	push(@tmp, "GPRINT:gpu5:LAST:\\:%3.0lf%%");
+	push(@tmp, "LINE2:gpu8#963C74:Card 8\\g");
+	push(@tmp, "GPRINT:gpu8:LAST:\\:%3.0lf%%\\n");
+	push(@tmpz, "LINE2:gpu0#FFA500:Card 0");
+	push(@tmpz, "LINE2:gpu3#4444EE:Card 3");
+	push(@tmpz, "LINE2:gpu6#EE44EE:Card 6");
+	push(@tmpz, "LINE2:gpu1#44EEEE:Card 1");
+	push(@tmpz, "LINE2:gpu4#448844:Card 4");
+	push(@tmpz, "LINE2:gpu7#EEEE44:Card 7");
+	push(@tmpz, "LINE2:gpu2#44EE44:Card 2");
+	push(@tmpz, "LINE2:gpu5#EE4444:Card 5");
+	push(@tmpz, "LINE2:gpu8#963C74:Card 8");
+	($width, $height) = split('x', $config->{graph_size}->{small});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		@tmp = @tmpz;
+		push(@tmp, "COMMENT: \\n");
+	}
+	RRDs::graph("$PNG_DIR" . "$PNG2",
+		"--title=$config->{graphs}->{_nvidia2}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=PNG",
+		"--vertical-label=Percent",
+		"--width=$width",
+		"--height=$height",
+		"--upper-limit=100",
+		"--lower-limit=0",
+		"--rigid",
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
+		@{$colors->{graph_colors}},
+		"DEF:gpu0=$rrd:nvidia_gpu0:AVERAGE",
+		"DEF:gpu1=$rrd:nvidia_gpu1:AVERAGE",
+		"DEF:gpu2=$rrd:nvidia_gpu2:AVERAGE",
+		"DEF:gpu3=$rrd:nvidia_gpu3:AVERAGE",
+		"DEF:gpu4=$rrd:nvidia_gpu4:AVERAGE",
+		"DEF:gpu5=$rrd:nvidia_gpu5:AVERAGE",
+		"DEF:gpu6=$rrd:nvidia_gpu6:AVERAGE",
+		"DEF:gpu7=$rrd:nvidia_gpu7:AVERAGE",
+		"DEF:gpu8=$rrd:nvidia_gpu8:AVERAGE",
+		"COMMENT: \\n",
+		@tmp);
+	$err = RRDs::error;
+	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		RRDs::graph("$PNG_DIR" . "$PNG2z",
+			"--title=$config->{graphs}->{_nvidia2}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Percent",
+			"--width=$width",
+			"--height=$height",
+			"--upper-limit=100",
+			"--lower-limit=0",
+			"--rigid",
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:gpu0=$rrd:nvidia_gpu0:AVERAGE",
+			"DEF:gpu1=$rrd:nvidia_gpu1:AVERAGE",
+			"DEF:gpu2=$rrd:nvidia_gpu2:AVERAGE",
+			"DEF:gpu3=$rrd:nvidia_gpu3:AVERAGE",
+			"DEF:gpu4=$rrd:nvidia_gpu4:AVERAGE",
+			"DEF:gpu5=$rrd:nvidia_gpu5:AVERAGE",
+			"DEF:gpu6=$rrd:nvidia_gpu6:AVERAGE",
+			"DEF:gpu7=$rrd:nvidia_gpu7:AVERAGE",
+			"DEF:gpu8=$rrd:nvidia_gpu8:AVERAGE",
+			@tmpz);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /nvidia2/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+			}
+			else {
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "'>\n");
+		}
+	}
+
+	undef(@tmp);
+	undef(@tmpz);
+	push(@tmp, "LINE2:mem0#FFA500:Card 0\\g");
+	push(@tmp, "GPRINT:mem0:LAST:\\:%3.0lf%%");
+	push(@tmp, "LINE2:mem3#4444EE:Card 3\\g");
+	push(@tmp, "GPRINT:mem3:LAST:\\:%3.0lf%%");
+	push(@tmp, "LINE2:mem6#EE44EE:Card 6\\g");
+	push(@tmp, "GPRINT:mem6:LAST:\\:%3.0lf%%\\n");
+	push(@tmp, "LINE2:mem1#44EEEE:Card 1\\g");
+	push(@tmp, "GPRINT:mem1:LAST:\\:%3.0lf%%");
+	push(@tmp, "LINE2:mem4#448844:Card 4\\g");
+	push(@tmp, "GPRINT:mem4:LAST:\\:%3.0lf%%");
+	push(@tmp, "LINE2:mem7#EEEE44:Card 7\\g");
+	push(@tmp, "GPRINT:mem7:LAST:\\:%3.0lf%%\\n");
+	push(@tmp, "LINE2:mem2#44EE44:Card 2\\g");
+	push(@tmp, "GPRINT:mem2:LAST:\\:%3.0lf%%");
+	push(@tmp, "LINE2:mem5#EE4444:Card 5\\g");
+	push(@tmp, "GPRINT:mem5:LAST:\\:%3.0lf%%");
+	push(@tmp, "LINE2:mem8#963C74:Card 8\\g");
+	push(@tmp, "GPRINT:mem8:LAST:\\:%3.0lf%%\\n");
+	push(@tmpz, "LINE2:mem0#FFA500:Card 0");
+	push(@tmpz, "LINE2:mem3#4444EE:Card 3");
+	push(@tmpz, "LINE2:mem6#EE44EE:Card 6");
+	push(@tmpz, "LINE2:mem1#44EEEE:Card 1");
+	push(@tmpz, "LINE2:mem4#448844:Card 4");
+	push(@tmpz, "LINE2:mem7#EEEE44:Card 7");
+	push(@tmpz, "LINE2:mem2#44EE44:Card 2");
+	push(@tmpz, "LINE2:mem5#EE4444:Card 5");
+	push(@tmpz, "LINE2:mem8#963C74:Card 8");
+	($width, $height) = split('x', $config->{graph_size}->{small});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		@tmp = @tmpz;
+		push(@tmp, "COMMENT: \\n");
+	}
+	RRDs::graph("$PNG_DIR" . "$PNG3",
+		"--title=$config->{graphs}->{_nvidia3}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=PNG",
+		"--vertical-label=Percent",
+		"--width=$width",
+		"--height=$height",
+		"--upper-limit=100",
+		"--lower-limit=0",
+		"--rigid",
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
+		@{$colors->{graph_colors}},
+		"DEF:mem0=$rrd:nvidia_mem0:AVERAGE",
+		"DEF:mem1=$rrd:nvidia_mem1:AVERAGE",
+		"DEF:mem2=$rrd:nvidia_mem2:AVERAGE",
+		"DEF:mem3=$rrd:nvidia_mem3:AVERAGE",
+		"DEF:mem4=$rrd:nvidia_mem4:AVERAGE",
+		"DEF:mem5=$rrd:nvidia_mem5:AVERAGE",
+		"DEF:mem6=$rrd:nvidia_mem6:AVERAGE",
+		"DEF:mem7=$rrd:nvidia_mem7:AVERAGE",
+		"DEF:mem8=$rrd:nvidia_mem8:AVERAGE",
+		"COMMENT: \\n",
+		@tmp);
+	$err = RRDs::error;
+	print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		RRDs::graph("$PNG_DIR" . "$PNG3z",
+			"--title=$config->{graphs}->{_nvidia3}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Percent",
+			"--width=$width",
+			"--height=$height",
+			"--upper-limit=100",
+			"--lower-limit=0",
+			"--rigid",
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:mem0=$rrd:nvidia_mem0:AVERAGE",
+			"DEF:mem1=$rrd:nvidia_mem1:AVERAGE",
+			"DEF:mem2=$rrd:nvidia_mem2:AVERAGE",
+			"DEF:mem3=$rrd:nvidia_mem3:AVERAGE",
+			"DEF:mem4=$rrd:nvidia_mem4:AVERAGE",
+			"DEF:mem5=$rrd:nvidia_mem5:AVERAGE",
+			"DEF:mem6=$rrd:nvidia_mem6:AVERAGE",
+			"DEF:mem7=$rrd:nvidia_mem7:AVERAGE",
+			"DEF:mem8=$rrd:nvidia_mem8:AVERAGE",
+			@tmpz);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /nvidia3/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+			}
+			else {
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "'>\n");
+		}
+	}
+
+	if($title) {
+		print("    </td>\n");
+		print("    </tr>\n");
+		main::graph_footer();
+	}
+	print("  <br>\n");
 }
 
 1;
