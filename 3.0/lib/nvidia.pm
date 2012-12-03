@@ -20,7 +20,7 @@
 
 package nvidia;
 
-#use strict;
+use strict;
 use warnings;
 use Monitorix;
 use RRDs;
@@ -264,6 +264,7 @@ sub nvidia_cgi {
 			"-r $tf->{res}");
 		$err = RRDs::error;
 		print("ERROR: while fetching $rrd: $err\n") if $err;
+		my $line1;
 		my $line2;
 		my $line3;
 		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
