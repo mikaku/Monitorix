@@ -327,30 +327,6 @@ sub system_cgi {
 
 	my $total_mem;
 
-	if($silent eq "yes" || $silent eq "imagetag") {
-		$colors->{fg_color} = "#000000";  # visible color for text mode
-		$u = "_";
-	}
-	if($silent eq "imagetagbig") {
-		$colors->{fg_color} = "#000000";  # visible color for text mode
-		$u = "";
-	}
-
-	my $PNG1 = $u . $package . "1." . $tf->{when} . ".png";
-	my $PNG2 = $u . $package . "2." . $tf->{when} . ".png";
-	my $PNG3 = $u . $package . "3." . $tf->{when} . ".png";
-	my $PNG1z = $u . $package . "1z." . $tf->{when} . ".png";
-	my $PNG2z = $u . $package . "2z." . $tf->{when} . ".png";
-	my $PNG3z = $u . $package . "3z." . $tf->{when} . ".png";
-	unlink ("$PNG_DIR" . "$PNG1",
-		"$PNG_DIR" . "$PNG2",
-		"$PNG_DIR" . "$PNG3");
-	if(lc($config->{enable_zoom}) eq "y") {
-		unlink ("$PNG_DIR" . "$PNG1z",
-			"$PNG_DIR" . "$PNG2z",
-			"$PNG_DIR" . "$PNG3z");
-	}
-
 	if($config->{os} eq "Linux") {
 		$total_mem = `grep -w MemTotal: /proc/meminfo | awk '{print \$2}'`;
 		chomp($total_mem);
@@ -361,6 +337,9 @@ sub system_cgi {
 	}
 	$total_mem = int($total_mem / 1024);			# in MB
 
+
+	# text mode
+	#
 	if(lc($config->{iface_mode}) eq "text") {
 		if($title) {
 			main::graph_header($title, 2);
@@ -400,6 +379,33 @@ sub system_cgi {
 		}
 		print("  <br>\n");
 		return;
+	}
+
+
+	# graph mode
+	#
+	if($silent eq "yes" || $silent eq "imagetag") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "_";
+	}
+	if($silent eq "imagetagbig") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "";
+	}
+
+	my $PNG1 = $u . $package . "1." . $tf->{when} . ".png";
+	my $PNG2 = $u . $package . "2." . $tf->{when} . ".png";
+	my $PNG3 = $u . $package . "3." . $tf->{when} . ".png";
+	my $PNG1z = $u . $package . "1z." . $tf->{when} . ".png";
+	my $PNG2z = $u . $package . "2z." . $tf->{when} . ".png";
+	my $PNG3z = $u . $package . "3z." . $tf->{when} . ".png";
+	unlink ("$PNG_DIR" . "$PNG1",
+		"$PNG_DIR" . "$PNG2",
+		"$PNG_DIR" . "$PNG3");
+	if(lc($config->{enable_zoom}) eq "y") {
+		unlink ("$PNG_DIR" . "$PNG1z",
+			"$PNG_DIR" . "$PNG2z",
+			"$PNG_DIR" . "$PNG3z");
 	}
 
 	if($title) {

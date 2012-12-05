@@ -435,38 +435,9 @@ sub lmsens_cgi {
 
 	$title = !$silent ? $title : "";
 
-	if($silent eq "yes" || $silent eq "imagetag") {
-		$colors->{fg_color} = "#000000";  # visible color for text mode
-		$u = "_";
-	}
-	if($silent eq "imagetagbig") {
-		$colors->{fg_color} = "#000000";  # visible color for text mode
-		$u = "";
-	}
 
-	my $PNG1 = $u . $package . "1." . $tf->{when} . ".png";
-	my $PNG2 = $u . $package . "2." . $tf->{when} . ".png";
-	my $PNG3 = $u . $package . "3." . $tf->{when} . ".png";
-	my $PNG4 = $u . $package . "4." . $tf->{when} . ".png";
-	my $PNG5 = $u . $package . "5." . $tf->{when} . ".png";
-	my $PNG1z = $u . $package . "1z." . $tf->{when} . ".png";
-	my $PNG2z = $u . $package . "2z." . $tf->{when} . ".png";
-	my $PNG3z = $u . $package . "3z." . $tf->{when} . ".png";
-	my $PNG4z = $u . $package . "4z." . $tf->{when} . ".png";
-	my $PNG5z = $u . $package . "5z." . $tf->{when} . ".png";
-	unlink ("$PNG_DIR" . "$PNG1",
-		"$PNG_DIR" . "$PNG2",
-		"$PNG_DIR" . "$PNG3",
-		"$PNG_DIR" . "$PNG4",
-		"$PNG_DIR" . "$PNG5");
-	if(lc($config->{enable_zoom}) eq "y") {
-		unlink ("$PNG_DIR" . "$PNG1z",
-			"$PNG_DIR" . "$PNG2z",
-			"$PNG_DIR" . "$PNG3z",
-			"$PNG_DIR" . "$PNG4z",
-			"$PNG_DIR" . "$PNG5z");
-	}
-
+	# text mode
+	#
 	if(lc($config->{iface_mode}) eq "text") {
 		if($title) {
 			main::graph_header($title, 2);
@@ -606,6 +577,41 @@ sub lmsens_cgi {
 		}
 		print("  <br>\n");
 		return;
+	}
+
+
+	# graph mode
+	#
+	if($silent eq "yes" || $silent eq "imagetag") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "_";
+	}
+	if($silent eq "imagetagbig") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "";
+	}
+
+	my $PNG1 = $u . $package . "1." . $tf->{when} . ".png";
+	my $PNG2 = $u . $package . "2." . $tf->{when} . ".png";
+	my $PNG3 = $u . $package . "3." . $tf->{when} . ".png";
+	my $PNG4 = $u . $package . "4." . $tf->{when} . ".png";
+	my $PNG5 = $u . $package . "5." . $tf->{when} . ".png";
+	my $PNG1z = $u . $package . "1z." . $tf->{when} . ".png";
+	my $PNG2z = $u . $package . "2z." . $tf->{when} . ".png";
+	my $PNG3z = $u . $package . "3z." . $tf->{when} . ".png";
+	my $PNG4z = $u . $package . "4z." . $tf->{when} . ".png";
+	my $PNG5z = $u . $package . "5z." . $tf->{when} . ".png";
+	unlink ("$PNG_DIR" . "$PNG1",
+		"$PNG_DIR" . "$PNG2",
+		"$PNG_DIR" . "$PNG3",
+		"$PNG_DIR" . "$PNG4",
+		"$PNG_DIR" . "$PNG5");
+	if(lc($config->{enable_zoom}) eq "y") {
+		unlink ("$PNG_DIR" . "$PNG1z",
+			"$PNG_DIR" . "$PNG2z",
+			"$PNG_DIR" . "$PNG3z",
+			"$PNG_DIR" . "$PNG4z",
+			"$PNG_DIR" . "$PNG5z");
 	}
 
 	if($title) {

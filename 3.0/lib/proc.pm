@@ -253,15 +253,6 @@ sub proc_cgi {
 
 	$title = !$silent ? $title : "";
 
-	if($silent eq "yes" || $silent eq "imagetag") {
-		$colors->{fg_color} = "#000000";  # visible color for text mode
-		$u = "_";
-	}
-	if($silent eq "imagetagbig") {
-		$colors->{fg_color} = "#000000";  # visible color for text mode
-		$u = "";
-	}
-
 	if($config->{os} eq "Linux") {
 		$ncpu = `grep -w processor /proc/cpuinfo | tail -1 | awk '{ print \$3 }'`;
 		chomp($ncpu);
@@ -273,6 +264,9 @@ sub proc_cgi {
 	$ncpu = $ncpu > $proc->{max} ? $proc->{max} : $ncpu;
 	return unless $ncpu > 1;
 
+
+	# text mode
+	#
 	if(lc($config->{iface_mode}) eq "text") {
 		if($title) {
 			main::graph_header($title, 2);
@@ -324,6 +318,18 @@ sub proc_cgi {
 		}
 		print("  <br>\n");
 		return;
+	}
+
+
+	# graph mode
+	#
+	if($silent eq "yes" || $silent eq "imagetag") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "_";
+	}
+	if($silent eq "imagetagbig") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "";
 	}
 
 	for($n = 0; $n < $ncpu; $n++) {
