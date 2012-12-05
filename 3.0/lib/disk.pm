@@ -47,15 +47,15 @@ sub disk_init {
 				}
 			}
 		}
-		if(scalar(@ds) / 24 != keys(%$disk)) {
-			logger("Detected size mismatch between <disk>...</disk> (" . keys(%$disk) . ") and $rrd (" . scalar(@ds) / 24 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
+		if(scalar(@ds) / 24 != keys(%{$disk->{list}})) {
+			logger("Detected size mismatch between <disk>...</disk> (" . keys(%{$disk->{list}}) . ") and $rrd (" . scalar(@ds) / 24 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 	}
 
 	if(!(-e $rrd)) {
 		logger("Creating '$rrd' file.");
-		for($n = 0; $n < keys(%$disk); $n++) {
+		for($n = 0; $n < keys(%{$disk->{list}}); $n++) {
 			push(@tmp, "DS:disk" . $n . "_hd0_temp:GAUGE:120:0:100");
 			push(@tmp, "DS:disk" . $n . "_hd0_smart1:GAUGE:120:0:U");
 			push(@tmp, "DS:disk" . $n . "_hd0_smart2:GAUGE:120:0:U");
@@ -133,8 +133,8 @@ sub disk_update {
 	my $n;
 	my $rrdata = "N";
 
-	foreach my $k (sort keys %$disk) {
-		my @dsk = split(',', $disk->{$k});
+	foreach my $k (sort keys %{$disk->{list}}) {
+		my @dsk = split(',', $disk->{list}->{$k});
 		for($n = 0; $n < 8; $n++) {
 			$temp = 0;
 			$smart1 = 0;
@@ -238,8 +238,8 @@ sub disk_cgi {
 		my $line2;
 		my $line3;
 		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
-		foreach my $k (sort keys %$disk) {
-			my @d = split(',', $disk->{$k});
+		foreach my $k (sort keys %{$disk->{list}}) {
+			my @d = split(',', $disk->{list}->{$k});
 			for($n = 0; $n < scalar(@d); $n++) {
 				$str = sprintf(" DISK %d               ", $n + 1);
 				$line1 .= $str;
@@ -261,8 +261,8 @@ sub disk_cgi {
 			$time = $time - (1 / $tf->{ts});
 			printf(" %2d$tf->{tc} ", $time);
 			$e = 0;
-			foreach my $k (sort keys %$disk) {
-				my @d = split(',', $disk->{$k});
+			foreach my $k (sort keys %{$disk->{list}}) {
+				my @d = split(',', $disk->{list}->{$k});
 				for($n2 = 0; $n2 < scalar(@d); $n2++) {
 					$from = ($e * 8 * 3) + ($n2 * 3);
 					$to = $from + 3;
@@ -296,7 +296,7 @@ sub disk_cgi {
 		$u = "";
 	}
 
-	for($n = 0; $n < keys(%$disk); $n++) {
+	for($n = 0; $n < keys(%{$disk->{list}}); $n++) {
 		for($n2 = 1; $n2 <= 8; $n2++) {
 			$str = $u . $package . $n . $n2 . "." . $tf->{when} . ".png";
 			push(@PNG, $str);
@@ -310,8 +310,8 @@ sub disk_cgi {
 	}
 
 	$e = 0;
-	foreach my $k (sort keys %$disk) {
-		my @d = split(',', $disk->{$k});
+	foreach my $k (sort keys %{$disk->{list}}) {
+		my @d = split(',', $disk->{list}->{$k});
 
 		if($e) {
 			print("   <br>\n");
