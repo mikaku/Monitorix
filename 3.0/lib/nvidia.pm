@@ -620,6 +620,7 @@ sub nvidia_cgi {
 		main::graph_footer();
 	}
 	print("  <br>\n");
+	return;
 }
 
 1;
