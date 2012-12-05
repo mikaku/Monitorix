@@ -127,7 +127,7 @@ sub hptemp_update {
 	close(IN);
 	my $str;
 	for($l = 0; $l < scalar(@data); $l++) {
-		foreach my $t (split(',', $hptemp->{0})) {
+		foreach my $t (split(',', $hptemp->{list}->{0})) {
 			$str = sprintf("%2d", trim($t));
 			if($data[$l] =~ m/^$str  /) {
 				my $temp = trim(substr($data[$l], 47, 3));
@@ -135,7 +135,7 @@ sub hptemp_update {
 				push(@hptemp1, map {$_ eq "---" ? 0 : $_} ($temp));
 			}
 		}
-		foreach my $t (split(',', $hptemp->{1})) {
+		foreach my $t (split(',', $hptemp->{list}->{1})) {
 			$str = sprintf("%2d", trim($t));
 			if($data[$l] =~ m/^$str  /) {
 				my $temp = trim(substr($data[$l], 47, 3));
@@ -143,7 +143,7 @@ sub hptemp_update {
 				push(@hptemp2, map {$_ eq "---" ? 0 : $_} ($temp));
 			}
 		}
-		foreach my $t (split(',', $hptemp->{2})) {
+		foreach my $t (split(',', $hptemp->{list}->{2})) {
 			$str = sprintf("%2d", trim($t));
 			if($data[$l] =~ m/^$str  /) {
 				my $temp = trim(substr($data[$l], 47, 3));
@@ -233,7 +233,7 @@ sub hptemp_cgi {
 		my $line1;
 		my $line2;
 		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
-		foreach my $t (split(',', $hptemp->{0}), split(',', $hptemp->{1}), split(',', $hptemp->{2})) {
+		foreach my $t (split(',', $hptemp->{list}->{0}), split(',', $hptemp->{list}->{1}), split(',', $hptemp->{list}->{2})) {
 			$id = sprintf("%2d", trim($t));
 			for($n = 0; $n < scalar(@hplog); $n++) {
 				$_ = $hplog[$n];
@@ -258,17 +258,17 @@ sub hptemp_cgi {
 			printf(" %2d$tf->{tc} ", $time);
 			undef($line1);
 			undef(@row);
-			for($n2 = 0; $n2 < scalar(my @hp = split(',', $hptemp->{0})); $n2++) {
+			for($n2 = 0; $n2 < scalar(my @hp = split(',', $hptemp->{list}->{0})); $n2++) {
 				my $temp = @$line[$n2];
 				push(@row, $temp);
 				$line1 .= " %8.0f ";
 			}
-			for($n2 = 0; $n2 < scalar(my @hp = split(',', $hptemp->{1})); $n2++) {
+			for($n2 = 0; $n2 < scalar(my @hp = split(',', $hptemp->{list}->{1})); $n2++) {
 				my $temp = @$line[8 + $n2];
 				push(@row, $temp);
 				$line1 .= " %8.0f ";
 			}
-			for($n2 = 0; $n2 < scalar(my @hp = split(',', $hptemp->{2})); $n2++) {
+			for($n2 = 0; $n2 < scalar(my @hp = split(',', $hptemp->{list}->{2})); $n2++) {
 				my $temp = @$line[8 + 3 + $n2];
 				push(@row, $temp);
 				$line1 .= " %8.0f ";
@@ -319,7 +319,7 @@ sub hptemp_cgi {
 		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 	}
 
-	if(scalar(my @hptemp0 = split(',', $hptemp->{0}))) {
+	if(scalar(my @hptemp0 = split(',', $hptemp->{list}->{0}))) {
 		undef(@tmp);
 		undef(@tmpz);
 		for($n = 0; $n < 8; $n++) {
@@ -414,7 +414,7 @@ sub hptemp_cgi {
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
 
-	if(scalar(my @hptemp1 = split(',', $hptemp->{1}))) {
+	if(scalar(my @hptemp1 = split(',', $hptemp->{list}->{1}))) {
 		undef(@tmp);
 		undef(@tmpz);
 		for($n = 0; $n < 6; $n++) {
@@ -503,7 +503,7 @@ sub hptemp_cgi {
 		}
 	}
 
-	if(scalar(my @hptemp2 = split(',', $hptemp->{2}))) {
+	if(scalar(my @hptemp2 = split(',', $hptemp->{list}->{2}))) {
 		undef(@tmp);
 		undef(@tmpz);
 		for($n = 0; $n < 6; $n++) {
