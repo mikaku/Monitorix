@@ -48,7 +48,7 @@ sub disk_init {
 			}
 		}
 		if(scalar(@ds) / 24 != keys(%{$disk->{list}})) {
-			logger("Detected size mismatch between <disk>...</disk> (" . keys(%{$disk->{list}}) . ") and $rrd (" . scalar(@ds) / 24 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
+			logger("Detected size mismatch between <list>...</list> (" . keys(%{$disk->{list}}) . ") and $rrd (" . scalar(@ds) / 24 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 	}
