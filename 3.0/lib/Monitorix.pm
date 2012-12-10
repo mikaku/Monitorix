@@ -35,9 +35,11 @@ sub logger {
 sub trim {
 	my $str = shift;
 
-	$str =~ s/^\s+//;
-	$str =~ s/\s+$//;
-	return $str;
+	if($str) {
+		$str =~ s/^\s+//;
+		$str =~ s/\s+$//;
+		return $str;
+	}
 }
 
 sub get_nvidia_data {
