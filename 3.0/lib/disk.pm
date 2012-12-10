@@ -243,7 +243,7 @@ sub disk_cgi {
 			for($n = 0; $n < scalar(@d); $n++) {
 				$str = sprintf(" DISK %d               ", $n + 1);
 				$line1 .= $str;
-				$str = sprintf(" Temp Realloc Pending ", $n + 1);
+				$str = sprintf(" Temp Realloc Pending ");
 				$line2 .= $str;
 				$line3 .=      "----------------------";
 			}
