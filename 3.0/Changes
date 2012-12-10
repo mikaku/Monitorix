@@ -4,3 +4,4 @@
 - Fixed a missing argument on each *_init() function preventing show an "Ok"
   message when debugging is enabled.
 - Fixed some bugs in Groups.
+- Fixed a typo in the percentage variable in FS alert.
