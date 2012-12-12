@@ -119,8 +119,11 @@ sub fs_init {
 	# This tries to find out the physical device name of each fs.
 	foreach my $k (sort keys %{$fs->{list}}) {
 		my @fsl = split(',', $fs->{list}->{$k});
+		my $d;
 		foreach my $f (@fsl) {
-			my $d = $fs->{devmap}->{$fs} if $fs->{devmap}->{$fs};
+			undef($d);
+			$f = trim($f);
+			$d = $fs->{devmap}->{$f} if $fs->{devmap}->{$f};
 			next unless !$d;
 
 			if($f ne "swap") {
