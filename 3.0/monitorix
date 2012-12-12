@@ -282,10 +282,10 @@ EOF
 			}
 			if($g eq "net") {
 				my $n2;
-				for($n = 0; $n < scalar(my @net_list = split(',', $config{net_list})); $n++) {
+				for($n = 0; $n < scalar(my @nl = split(',', $config{net}->{list})); $n++) {
 					$gname = "_" . $g;
 					for($n2 = 1; $n2 <= 3; $n2++) {
-						my $str = trim($net_list[$n]) . " " . $config{graphs}->{$gname . $n2};
+						my $str = trim($nl[$n]) . " " . $config{graphs}->{$gname . $n2};
 						print(OUT "              <option value='" . $gname . $n . $n2 . "'>" . $str . "</option>\n");
 					}
 				}
