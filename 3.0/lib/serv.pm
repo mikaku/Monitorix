@@ -101,7 +101,7 @@ sub serv_init {
 		}
 	}
 
-	$config->{serv_hist} = 0;
+	$config->{serv_hist} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
 }
