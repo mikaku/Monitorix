@@ -602,6 +602,15 @@ sub fs_cgi {
 			main::graph_header($title, 2);
 		}
 
+		undef(@riglim);
+		if(trim($rigid[0]) eq 1) {
+			push(@riglim, "--upper-limit=" . trim($limit[0]));
+		} else {
+			if(trim($rigid[0]) eq 2) {
+				push(@riglim, "--upper-limit=" . trim($limit[0]));
+				push(@riglim, "--rigid");
+			}
+		}
 		undef(@tmp);
 		undef(@tmpz);
 		push(@tmp, "COMMENT: \\n");
@@ -651,8 +660,8 @@ sub fs_cgi {
 			"--width=$width",
 			"--height=$height",
 			"--upper-limit=100",
+			@riglim,
 			"--lower-limit=0",
-			"--rigid",
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:fs0=$rrd:fs" . $e . "_use0:AVERAGE",
@@ -676,8 +685,8 @@ sub fs_cgi {
 				"--width=$width",
 				"--height=$height",
 				"--upper-limit=100",
+				@riglim,
 				"--lower-limit=0",
-				"--rigid",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:fs0=$rrd:fs" . $e . "_use0:AVERAGE",
