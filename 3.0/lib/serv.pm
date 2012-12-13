@@ -746,7 +746,7 @@ sub serv_cgi {
 	}
 	if($title) {
 		print("    </td>\n");
-		print("    <td valign='top' bgcolor='" . $config->{title_bg_color} . "'>\n");
+		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
 
 	undef(@riglim);
