@@ -704,6 +704,7 @@ sub system_cgi {
 		main::graph_footer();
 	}
 	print("  <br>\n");
+	return;
 }
 
 sub get_uptime {
