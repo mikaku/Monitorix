@@ -21,7 +21,7 @@
 
 package mail;
 
-#use strict;
+use strict;
 use warnings;
 use Monitorix;
 use RRDs;
