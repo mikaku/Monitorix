@@ -6,4 +6,4 @@
 - Fixed some bugs in Groups.
 - Fixed a typo in the percentage variable in FS alert.
 - Fixed variables naming in 'mail' graph when using Postfix MTA that prevented
-  to see the values rejected, bounced, discarded and forwarded.
+  to see the values bounced, discarded and forwarded.
