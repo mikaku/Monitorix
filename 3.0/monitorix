@@ -292,9 +292,9 @@ EOF
 				next;
 			}
 			if($g eq "port") {
-				for($n = 0; $n < $config{port_max} && $n < scalar(my @port_list = split(',', $config{port_list})); $n++) {
+				for($n = 0; $n < $config{port}->{max} && $n < scalar(my @port_list = split(',', $config{port}->{list})); $n++) {
 					my $num = trim($port_list[$n]);
-					my ($name) = split(',', $config{port_desc}->{$num});
+					my ($name) = (split(',', $config{port}->{desc}->{$num}))[0];
 					$gname = "_" . $g;
 					print(OUT "              <option value='" . $gname . $n . "'>" . $config{graphs}->{$gname} . " " . $num . " (" . trim($name) . ")" . "</option>\n");
 				}
