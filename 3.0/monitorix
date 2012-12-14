@@ -59,7 +59,7 @@ sub INT_handler {
 	my ($signal) = @_;
 
 	logger("SIG$signal caught.");
-	flush_accounting_rules();
+	flush_accounting_rules(\%config, $options{d});
 	logger("Exiting.");
 	exit(0);
 }
@@ -360,61 +360,6 @@ EOF
 	close(OUT);
 }
 
-sub flush_accounting_rules {
-	my $num = 0;
-
-	# flushes out any Monitorix iptables/ipfw rules
-	if($config{os} eq "Linux") {
-		logger("Flushing out iptables rules.") unless !$options{d};
-		if(open(IN, "iptables -nxvL INPUT --line-numbers |")) {
-			my @rules;
-			my @names;
-			while(<IN>) {
-				my ($rule, undef, undef, $name) = split(' ', $_);
-				if($name =~ /monitorix_IN/ || /monitorix_nginx_IN/) {
-					push(@rules, $rule);
-					push(@names, $name);
-				}
-			}
-			close(IN);
-			@rules = reverse(@rules);
-			foreach(@rules) {
-				system("iptables -D INPUT $_");
-				$num++;
-			}
-			foreach(@names) {
-				system("iptables -X $_");
-			}
-		}
-		if(open(IN, "iptables -nxvL OUTPUT --line-numbers |")) {
-			my @rules;
-			my @names;
-			while(<IN>) {
-				my ($rule, undef, undef, $name) = split(' ', $_);
-				if($name =~ /monitorix_OUT/ || /monitorix_nginx_OUT/) {
-					push(@rules, $rule);
-					push(@names, $name);
-				}
-			}
-			close(IN);
-			@rules = reverse(@rules);
-			foreach(@rules) {
-				system("iptables -D OUTPUT $_");
-				$num++;
-			}
-			foreach(@names) {
-				system("iptables -X $_");
-			}
-		}
-		logger("$num iptables rules have been flushed.") unless !$options{d};
-	}
-	if($config{os} eq "FreeBSD" || $config{os} eq "OpenBSD") {
-		logger("Flushing out ipfw rules.") unless !$options{d};
-		system("ipfw delete $config{port_rule} 2>/dev/null");
-		system("ipfw delete $config{nginx_rule} 2>/dev/null");
-	}
-}
-
 
 # Main
 # ----------------------------------------------------------------------------
@@ -503,7 +448,7 @@ if(open(OUT, "> " . $config{base_dir} . "/cgi-bin/monitorix.conf.path")) {
 	logger("Unable to create the file '$config{base_dir}/cgi-bin/monitorix.conf.path'.");
 }
 
-flush_accounting_rules();
+flush_accounting_rules(\%config, $options{d});
 
 logger("Initializing graphs.") unless !$options{d};
 foreach (split(',', $config{graph_name})) {
