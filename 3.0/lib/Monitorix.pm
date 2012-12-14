@@ -23,7 +23,7 @@ package Monitorix;
 use strict;
 use warnings;
 use Exporter 'import';
-our @EXPORT = qw(logger trim get_nvidia_data);
+our @EXPORT = qw(logger trim get_nvidia_data flush_accounting_rules);
 
 sub logger {
 	my ($msg) = @_;
@@ -156,6 +156,63 @@ sub get_nvidia_data {
 		$mem = $used = $total = 0;
 	}
 	return join(" ", $mem, $cpu, $temp);
+}
+
+# flushes out any Monitorix iptables/ipfw rules
+sub flush_accounting_rules {
+	my ($config, $debug) = @_;
+
+	if($config->{os} eq "Linux") {
+		my $num = 0;
+
+		logger("Flushing out iptables rules.") if $debug;
+		if(open(IN, "iptables -nxvL INPUT --line-numbers |")) {
+			my @rules;
+			my @names;
+			while(<IN>) {
+				my ($rule, undef, undef, $name) = split(' ', $_);
+				if($name =~ /monitorix_IN/ || /monitorix_nginx_IN/) {
+					push(@rules, $rule);
+					push(@names, $name);
+				}
+			}
+			close(IN);
+			@rules = reverse(@rules);
+			foreach(@rules) {
+				system("iptables -D INPUT $_");
+				$num++;
+			}
+			foreach(@names) {
+				system("iptables -X $_");
+			}
+		}
+		if(open(IN, "iptables -nxvL OUTPUT --line-numbers |")) {
+			my @rules;
+			my @names;
+			while(<IN>) {
+				my ($rule, undef, undef, $name) = split(' ', $_);
+				if($name =~ /monitorix_OUT/ || /monitorix_nginx_OUT/) {
+					push(@rules, $rule);
+					push(@names, $name);
+				}
+			}
+			close(IN);
+			@rules = reverse(@rules);
+			foreach(@rules) {
+				system("iptables -D OUTPUT $_");
+				$num++;
+			}
+			foreach(@names) {
+				system("iptables -X $_");
+			}
+		}
+		logger("$num iptables rules have been flushed.") if $debug;
+	}
+	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
+		logger("Flushing out ipfw rules.") if $debug;
+		system("ipfw delete $config->{port}->{rule} 2>/dev/null");
+		system("ipfw delete $config->{nginx}->{rule} 2>/dev/null");
+	}
 }
 
 1;
