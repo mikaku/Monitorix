@@ -224,6 +224,7 @@ sub proc_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $proc = $config->{proc};
+	my $kern = $config->{kern};
 	my @rigid = split(',', $proc->{rigid});
 	my @limit = split(',', $proc->{limit});
 	my $tf = $cgi->{tf};
