@@ -230,7 +230,6 @@ sub proc_cgi {
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
-	my $kern = $config->{kern};
 
 	my $u = "";
 	my $width;
