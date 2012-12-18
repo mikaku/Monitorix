@@ -311,6 +311,10 @@ sub nginx_cgi {
 			push(@riglim, "--rigid");
 		}
 	}
+	if($title) {
+		print("    <tr>\n");
+		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+	}
 	push(@tmp, "AREA:total#44EEEE:Total");
 	push(@tmp, "GPRINT:total:LAST:       Current\\: %5.0lf");
 	push(@tmp, "GPRINT:total:AVERAGE:    Average\\: %5.0lf");
@@ -343,10 +347,6 @@ sub nginx_cgi {
 	push(@tmpz, "LINE1:reading#00EE00");
 	push(@tmpz, "LINE1:writing#0000EE");
 	push(@tmpz, "LINE1:waiting#EE00EE");
-	if($title) {
-		print("    <tr>\n");
-		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
-	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
