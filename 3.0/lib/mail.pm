@@ -819,10 +819,8 @@ sub mail_cgi {
 	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
-		($width, $height) = split('x', $config->{graph_size}->{remote}) 
-		if $silent eq "imagetag";
-		($width, $height) = split('x', $config->{graph_size}->{main}) if
-		 $silent eq "imagetagbig";
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 		@tmp = @tmpz;
 		push(@tmp, "COMMENT: \\n");
 	}
