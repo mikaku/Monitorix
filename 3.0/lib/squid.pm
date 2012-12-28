@@ -31,7 +31,6 @@ sub squid_init {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
-	my $squid = $config->{squid};
 
 	if(!(-e $rrd)) {
 		logger("Creating '$rrd' file.");
