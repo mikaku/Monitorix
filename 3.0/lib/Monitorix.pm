@@ -158,7 +158,7 @@ sub get_nvidia_data {
 	return join(" ", $mem, $cpu, $temp);
 }
 
-# flushes out any Monitorix iptables/ipfw rules
+# flushes out all Monitorix iptables/ipfw rules
 sub flush_accounting_rules {
 	my ($config, $debug) = @_;
 
