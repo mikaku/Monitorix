@@ -20,7 +20,7 @@
 
 package user;
 
-#use strict;
+use strict;
 use warnings;
 use Monitorix;
 use RRDs;
