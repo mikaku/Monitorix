@@ -31,7 +31,6 @@ sub nfss_init {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
-	my $squid = $config->{squid};
 
 	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 		logger("$myself is not supported yet by your operating system ($config->{os}).");
