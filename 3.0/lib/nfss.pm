@@ -251,7 +251,6 @@ sub nfss_cgi {
 	my @riglim;
 	my @tmp;
 	my @tmpz;
-	my $i;
 	my @DEF;
 	my $n;
 	my $err;
@@ -444,9 +443,9 @@ sub nfss_cgi {
 		print("    <td valign='top' bgcolor='$colors->{title_bg_color}'>\n");
 	}
 	for($n = 0; $n < 10; $n++) {
-		my $str = trim((split(',', $nfss->{graph_0}))[$n]);
+		my $str = trim((split(',', $nfss->{graph_0}))[$n]) || "";
 		if(grep { $_ eq $str } @nfsv) {
-			($i) = grep { $nfsv[$_] eq $str } 0..$#nfsv;
+			my ($i) = grep { $nfsv[$_] eq $str } 0..$#nfsv;
 			push(@DEF, "DEF:nfs_$i=$rrd:nfss_$i:AVERAGE");
 			push(@tmp, "LINE1:nfs_$i$AC[$n]:" . sprintf("%-12s", $str));
 			push(@tmp, "GPRINT:nfs_$i:LAST:    Cur\\: %6.1lf");
@@ -526,9 +525,9 @@ sub nfss_cgi {
 	undef(@tmpz);
 	undef(@DEF);
 	for($n = 0; $n < 10; $n++) {
-		my $str = trim((split(',', $nfss->{graph_1}))[$n]);
+		my $str = trim((split(',', $nfss->{graph_1}))[$n]) || "";
 		if(grep { $_ eq $str } @nfsv) {
-			($i) = grep { $nfsv[$_] eq $str } 0..$#nfsv;
+			my ($i) = grep { $nfsv[$_] eq $str } 0..$#nfsv;
 			push(@DEF, "DEF:nfs_$i=$rrd:nfss_$i:AVERAGE");
 			push(@tmp, "LINE1:nfs_$i$AC[$n]:" . sprintf("%-12s", $str));
 			push(@tmp, "GPRINT:nfs_$i:LAST:    Cur\\: %6.1lf");
@@ -607,9 +606,9 @@ sub nfss_cgi {
 	undef(@tmpz);
 	undef(@DEF);
 	for($n = 0; $n < 10; $n++) {
-		my $str = trim((split(',', $nfss->{graph_2}))[$n]);
+		my $str = trim((split(',', $nfss->{graph_2}))[$n]) || "";
 		if(grep { $_ eq $str } @nfsv) {
-			($i) = grep { $nfsv[$_] eq $str } 0..$#nfsv;
+			my ($i) = grep { $nfsv[$_] eq $str } 0..$#nfsv;
 			push(@DEF, "DEF:nfs_$i=$rrd:nfss_$i:AVERAGE");
 			push(@tmp, "LINE1:nfs_$i$AC[$n]:" . sprintf("%-12s", $str));
 			push(@tmp, "GPRINT:nfs_$i:LAST:    Cur\\: %6.1lf");
