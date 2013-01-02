@@ -422,7 +422,7 @@ sub mysql_update {
 	}
 
 	RRDs::update($rrd, $rrdata);
-	logger("$myself: Ok") if $debug;
+	logger("$myself: $rrdata") if $debug;
 	my $err = RRDs::error;
 	logger("ERROR: while updating $rrd: $err") if $err;
 }
