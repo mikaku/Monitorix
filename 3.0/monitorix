@@ -49,7 +49,7 @@ $SIG{'HUP' } = 'HUP_handler';
 $SIG{'ALRM'} = 'ALRM_handler';
 
 use constant VERSION	=> "2.9.9";
-use constant RELDATE	=> "20-Nov-2012";
+use constant RELDATE	=> "31-Dec-2012";
 
 my @suppsys = ("Linux", "FreeBSD", "OpenBSD", "NetBSD");
 my %config;
