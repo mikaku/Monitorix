@@ -1,0 +1,601 @@
+#
+# Monitorix - A lightweight system monitoring tool.
+#
+# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+package ntp;
+
+use strict;
+use warnings;
+use Monitorix;
+use RRDs;
+use Exporter 'import';
+our @EXPORT = qw(ntp_init ntp_update ntp_cgi);
+
+sub ntp_init {
+	my $myself = (caller(0))[3];
+	my ($package, $config, $debug) = @_;
+	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $ntp = $config->{ntp};
+
+	my $info;
+	my @ds;
+	my @tmp;
+	my $n;
+
+	if(-e $rrd) {
+		$info = RRDs::info($rrd);
+		for my $key (keys %$info) {
+			if(index($key, 'ds[') == 0) {
+				if(index($key, '.type') != -1) {
+					push(@ds, substr($key, 3, index($key, ']') - 3));
+				}
+			}
+		}
+		if(scalar(@ds) / 14 != scalar(my @nl = split(',', $ntp->{list}))) {
+			logger("Detected size mismatch between 'list' (" . scalar(my @nl = split(',', $ntp->{list})) . ") and $rrd (" . scalar(@ds) / 14 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
+			rename($rrd, "$rrd.bak");
+		}
+	}
+
+	if(!(-e $rrd)) {
+		logger("Creating '$rrd' file.");
+		for($n = 0; $n < scalar(my @nl = split(',', $ntp->{list})); $n++) {
+			push(@tmp, "DS:ntp" . $n . "_del:GAUGE:120:U:U");
+			push(@tmp, "DS:ntp" . $n . "_off:GAUGE:120:U:U");
+			push(@tmp, "DS:ntp" . $n . "_jit:GAUGE:120:U:U");
+			push(@tmp, "DS:ntp" . $n . "_str:GAUGE:120:0:U");
+			push(@tmp, "DS:ntp" . $n . "_c01:GAUGE:120:0:U");
+			push(@tmp, "DS:ntp" . $n . "_c02:GAUGE:120:0:U");
+			push(@tmp, "DS:ntp" . $n . "_c03:GAUGE:120:0:U");
+			push(@tmp, "DS:ntp" . $n . "_c04:GAUGE:120:0:U");
+			push(@tmp, "DS:ntp" . $n . "_c05:GAUGE:120:0:U");
+			push(@tmp, "DS:ntp" . $n . "_c06:GAUGE:120:0:U");
+			push(@tmp, "DS:ntp" . $n . "_c07:GAUGE:120:0:U");
+			push(@tmp, "DS:ntp" . $n . "_c08:GAUGE:120:0:U");
+			push(@tmp, "DS:ntp" . $n . "_c09:GAUGE:120:0:U");
+			push(@tmp, "DS:ntp" . $n . "_c10:GAUGE:120:0:U");
+		}
+		eval {
+			RRDs::create($rrd,
+				"--step=60",
+				@tmp,
+				"RRA:AVERAGE:0.5:1:1440",
+				"RRA:AVERAGE:0.5:30:336",
+				"RRA:AVERAGE:0.5:60:744",
+				"RRA:AVERAGE:0.5:1440:365",
+				"RRA:MIN:0.5:1:1440",
+				"RRA:MIN:0.5:30:336",
+				"RRA:MIN:0.5:60:744",
+				"RRA:MIN:0.5:1440:365",
+				"RRA:MAX:0.5:1:1440",
+				"RRA:MAX:0.5:30:336",
+				"RRA:MAX:0.5:60:744",
+				"RRA:MAX:0.5:1440:365",
+				"RRA:LAST:0.5:1:1440",
+				"RRA:LAST:0.5:30:336",
+				"RRA:LAST:0.5:60:744",
+				"RRA:LAST:0.5:1440:365",
+			);
+		};
+		my $err = RRDs::error;
+		if($@ || $err) {
+			logger("$@") unless !$@;
+			if($err) {
+				logger("ERROR: while creating $rrd: $err");
+				if($err eq "RRDs::error") {
+					logger("... is the RRDtool Perl package installed?");
+				}
+			}
+			return;
+		}
+	}
+
+	push(@{$config->{func_update}}, $package);
+	logger("$myself: Ok") if $debug;
+}
+
+sub ntp_update {
+	my $myself = (caller(0))[3];
+	my ($package, $config, $debug) = @_;
+	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $ntp = $config->{ntp};
+
+	my @data;
+	my $del;
+	my $off;
+	my $jit;
+	my $str;
+	my $cod;
+
+	my $n;
+	my $rrdata = "N";
+
+	my $e = 0;
+	foreach my $h (split(',', $ntp->{list})) {
+		$h = trim($h);
+		open(IN, "ntpq -pn $h |");
+		@data = <IN>;
+		close(IN);
+		$cod = $str = $del = $off = $jit = 0;
+		foreach(@data) {
+			if(/^\*/) {
+				(undef, $cod, $str, undef, undef, undef, undef, $del, $off, $jit) = split(' ', $_);
+				$cod =~ s/\.//g;
+				chomp($jit);
+				last;
+			}
+		}
+		$del = 0 unless defined($del);
+		$off = 0 unless defined($off);
+		$jit = 0 unless defined($jit);
+		$str = 0 unless defined($str);
+		$del /= 1000;
+		$off /= 1000;
+		$jit /= 1000;
+		$rrdata .= ":$del:$off:$jit:$str";
+		my @i = split(',', $ntp->{desc}->{$h});
+		for($n = 0; $n < 10; $n++) {
+			if($cod eq trim($i[$n])) {
+				$rrdata .= ":1";
+			} else {
+				$rrdata .= ":0";
+			}
+		}
+		$e++;
+	}
+
+	RRDs::update($rrd, $rrdata);
+	logger("$myself: $rrdata") if $debug;
+	my $err = RRDs::error;
+	logger("ERROR: while updating $rrd: $err") if $err;
+}
+
+sub ntp_cgi {
+	my ($package, $config, $cgi) = @_;
+
+	my $ntp = $config->{ntp};
+	my @rigid = split(',', $ntp->{rigid});
+	my @limit = split(',', $ntp->{limit});
+	my $tf = $cgi->{tf};
+	my $colors = $cgi->{colors};
+	my $graph = $cgi->{graph};
+	my $silent = $cgi->{silent};
+
+	my $u = "";
+	my $width;
+	my $height;
+	my @riglim;
+	my @PNG;
+	my @PNGz;
+	my @tmp;
+	my @tmpz;
+	my $e;
+	my $e2;
+	my $n;
+	my $n2;
+	my $str;
+	my $err;
+	my @AC = (
+		"#FFA500",
+		"#44EEEE",
+		"#44EE44",
+		"#4444EE",
+		"#448844",
+		"#EE4444",
+		"#EE44EE",
+		"#EEEE44",
+		"#B4B444",
+		"#444444",
+	);
+
+	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $title = $config->{graph_title}->{$package};
+	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
+
+	$title = !$silent ? $title : "";
+
+
+	# text mode
+	#
+	if(lc($config->{iface_mode}) eq "text") {
+		if($title) {
+			main::graph_header($title, 2);
+			print("    <tr>\n");
+			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+		}
+		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"AVERAGE",
+			"-r $tf->{res}");
+		$err = RRDs::error;
+		print("ERROR: while fetching $rrd: $err\n") if $err;
+		my $line1;
+		my $line2;
+		my $line3;
+		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
+		print("    ");
+		for($n = 0; $n < scalar(my @nl = split(',', $ntp->{list})); $n++) {
+			my $l = trim($nl[$n]);
+			$line1 = "                                  ";
+			$line2 .= "     Delay   Offset   Jitter   Str";
+			$line3 .= "----------------------------------";
+			foreach (split(',', $ntp->{desc}->{$l})) {
+				$line1 .= "     ";
+				$line2 .= sprintf(" %4s", trim($_));
+				$line3 .= "-----";
+			}
+			if($line1) {
+				my $i = length($line1);
+				printf(sprintf("%${i}s", sprintf("NTP Server: %s", $l)));
+			}
+		}
+		print("\n");
+		print("Time$line2\n");
+		print("----$line3 \n");
+		my $line;
+		my @row;
+		my $time;
+		my $n2;
+		my $n3;
+		my $from;
+		my $to;
+		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
+			$line = @$data[$n];
+			$time = $time - (1 / $tf->{ts});
+			printf(" %2d$tf->{tc}", $time);
+			for($n2 = 0; $n2 < scalar(my @nl = split(',', $ntp->{list})); $n2++) {
+				my $l = trim($nl[$n2]);
+				undef(@row);
+				$from = $n2 * 14;
+				$to = $from + 4;
+				push(@row, @$line[$from..$to]);
+				printf("  %8.3f %8.3f %8.3f   %2d ", @row);
+				for($n3 = 0; $n3 < scalar(my @i = (split(',', $ntp->{desc}->{$l}))); $n3++) {
+					$from = $n2 * 14 + 4 + $n3;
+					my ($c) = @$line[$from] || 0;
+					printf(" %4d", $c);
+				}
+			}
+			print("\n");
+		}
+		print("    </pre>\n");
+		if($title) {
+			print("    </td>\n");
+			print("    </tr>\n");
+			main::graph_footer();
+		}
+		print("  <br>\n");
+		return;
+	}
+
+
+	# graph mode
+	#
+	if($silent eq "yes" || $silent eq "imagetag") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "_";
+	}
+	if($silent eq "imagetagbig") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "";
+	}
+
+	for($n = 0; $n < scalar(my @nl = split(',', $ntp->{list})); $n++) {
+		for($n2 = 1; $n2 <= 3; $n2++) {
+			$str = $u . $package . $n . $n2 . "." . $tf->{when} . ".png";
+			push(@PNG, $str);
+			unlink("$PNG_DIR" . $str);
+			if(lc($config->{enable_zoom}) eq "y") {
+				$str = $u . $package . $n . $n2 . "z." . $tf->{when} . ".png";
+				push(@PNGz, $str);
+				unlink("$PNG_DIR" . $str);
+			}
+		}
+	}
+
+	$e = 0;
+	foreach my $host (split(',', $ntp->{list})) {
+		$host = trim($host);
+		if($e) {
+			print("   <br>\n");
+		}
+		if($title) {
+			main::graph_header($title, 2);
+		}
+		undef(@riglim);
+		if(trim($rigid[0]) eq 1) {
+			push(@riglim, "--upper-limit=" . trim($limit[0]));
+		} else {
+			if(trim($rigid[0]) eq 2) {
+				push(@riglim, "--upper-limit=" . trim($limit[0]));
+				push(@riglim, "--rigid");
+			}
+		}
+		undef(@tmp);
+		undef(@tmpz);
+		push(@tmp, "LINE2:ntp" . $e . "_del#4444EE:Delay");
+		push(@tmp, "GPRINT:ntp" . $e . "_del" . ":LAST:     Current\\:%6.3lf");
+		push(@tmp, "GPRINT:ntp" . $e . "_del" . ":AVERAGE:    Average\\:%6.3lf");
+		push(@tmp, "GPRINT:ntp" . $e . "_del" . ":MIN:    Min\\:%6.3lf");
+		push(@tmp, "GPRINT:ntp" . $e . "_del" . ":MAX:    Max\\:%6.3lf\\n");
+		push(@tmp, "LINE2:ntp" . $e . "_off#44EEEE:Offset");
+		push(@tmp, "GPRINT:ntp" . $e . "_off" . ":LAST:    Current\\:%6.3lf");
+		push(@tmp, "GPRINT:ntp" . $e . "_off" . ":AVERAGE:    Average\\:%6.3lf");
+		push(@tmp, "GPRINT:ntp" . $e . "_off" . ":MIN:    Min\\:%6.3lf");
+		push(@tmp, "GPRINT:ntp" . $e . "_off" . ":MAX:    Max\\:%6.3lf\\n");
+		push(@tmp, "LINE2:ntp" . $e . "_jit#EE4444:Jitter");
+		push(@tmp, "GPRINT:ntp" . $e . "_jit" . ":LAST:    Current\\:%6.3lf");
+		push(@tmp, "GPRINT:ntp" . $e . "_jit" . ":AVERAGE:    Average\\:%6.3lf");
+		push(@tmp, "GPRINT:ntp" . $e . "_jit" . ":MIN:    Min\\:%6.3lf");
+		push(@tmp, "GPRINT:ntp" . $e . "_jit" . ":MAX:    Max\\:%6.3lf\\n");
+		push(@tmpz, "LINE2:ntp" . $e . "_del#4444EE:Delay");
+		push(@tmpz, "LINE2:ntp" . $e . "_off#44EEEE:Offset");
+		push(@tmpz, "LINE2:ntp" . $e . "_jit#EE4444:Jitter");
+		if($title) {
+			print("    <tr>\n");
+			print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		}
+		($width, $height) = split('x', $config->{graph_size}->{main});
+		if($silent =~ /imagetag/) {
+			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+			@tmp = @tmpz;
+		}
+		RRDs::graph("$PNG_DIR" . "$PNG[$e * 3]",
+			"--title=$config->{graphs}->{_ntp1}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Seconds",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			@{$cgi->{version12}},
+			@{$colors->{graph_colors}},
+			"DEF:ntp" . $e . "_del=$rrd:ntp" . $e . "_del:AVERAGE",
+			"DEF:ntp" . $e . "_off=$rrd:ntp" . $e . "_off:AVERAGE",
+			"DEF:ntp" . $e . "_jit=$rrd:ntp" . $e . "_jit:AVERAGE",
+			"COMMENT: \\n",
+			@tmp,
+			"COMMENT: \\n",
+			"COMMENT: \\n",);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3]: $err\n") if $err;
+		if(lc($config->{enable_zoom}) eq "y") {
+			($width, $height) = split('x', $config->{graph_size}->{zoom});
+			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 3]",
+				"--title=$config->{graphs}->{_ntp1}  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=PNG",
+				"--vertical-label=Seconds",
+				"--width=$width",
+				"--height=$height",
+				@riglim,
+				@{$cgi->{version12}},
+				@{$colors->{graph_colors}},
+				"DEF:ntp" . $e . "_del=$rrd:ntp" . $e . "_del:AVERAGE",
+				"DEF:ntp" . $e . "_off=$rrd:ntp" . $e . "_off:AVERAGE",
+				"DEF:ntp" . $e . "_jit=$rrd:ntp" . $e . "_jit:AVERAGE",
+				@tmpz);
+			$err = RRDs::error;
+			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3]: $err\n") if $err;
+		}
+		$e2 = $e + 1;
+		if($title || ($silent =~ /imagetag/ && $graph =~ /ntp$e2/)) {
+			if(lc($config->{enable_zoom}) eq "y") {
+				if(lc($config->{disable_javascript_void}) eq "y") {
+					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
+				}
+				else {
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
+				}
+			} else {
+				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3] . "'>\n");
+			}
+		}
+		if($title) {
+			print("    </td>\n");
+			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		}
+
+		undef(@riglim);
+		if(trim($rigid[1]) eq 1) {
+			push(@riglim, "--upper-limit=" . trim($limit[1]));
+		} else {
+			if(trim($rigid[1]) eq 2) {
+				push(@riglim, "--upper-limit=" . trim($limit[1]));
+				push(@riglim, "--rigid");
+			}
+		}
+		undef(@tmp);
+		undef(@tmpz);
+		push(@tmp, "LINE2:ntp" . $e . "_str#44EEEE:Stratum");
+		push(@tmp, "GPRINT:ntp" . $e . "_str" . ":LAST:              Current\\:%2.0lf\\n");
+		push(@tmpz, "LINE2:ntp" . $e . "_str#44EEEE:Stratum");
+		($width, $height) = split('x', $config->{graph_size}->{small});
+		if($silent =~ /imagetag/) {
+			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+			@tmp = @tmpz;
+		}
+		RRDs::graph("$PNG_DIR" . $PNG[$e * 3 + 1],
+			"--title=$config->{graphs}->{_ntp2}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Level",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			"--lower-limit=0",
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:ntp" . $e . "_str=$rrd:ntp" . $e . "_str:AVERAGE",
+			@tmp);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . $PNG[$e * 3 + 1] . ": $err\n") if $err;
+		if(lc($config->{enable_zoom}) eq "y") {
+			($width, $height) = split('x', $config->{graph_size}->{zoom});
+			RRDs::graph("$PNG_DIR" . $PNGz[$e * 3 + 1],
+				"--title=$config->{graphs}->{_ntp2}  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=PNG",
+				"--vertical-label=Level",
+				"--width=$width",
+				"--height=$height",
+				@riglim,
+				"--lower-limit=0",
+				@{$cgi->{version12}},
+				@{$cgi->{version12_small}},
+				@{$colors->{graph_colors}},
+				"DEF:ntp" . $e . "_str=$rrd:ntp" . $e . "_str:AVERAGE",
+				@tmpz);
+			$err = RRDs::error;
+			print("ERROR: while graphing $PNG_DIR" . $PNGz[$e * 3 + 1] . ": $err\n") if $err;
+		}
+		$e2 = $e + 2;
+		if($title || ($silent =~ /imagetag/ && $graph =~ /ntp$e2/)) {
+			if(lc($config->{enable_zoom}) eq "y") {
+				if(lc($config->{disable_javascript_void}) eq "y") {
+					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
+				}
+				else {
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
+				}
+			} else {
+				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "'>\n");
+			}
+		}
+
+		undef(@riglim);
+		if(trim($rigid[2]) eq 1) {
+			push(@riglim, "--upper-limit=" . trim($limit[2]));
+		} else {
+			if(trim($rigid[2]) eq 2) {
+				push(@riglim, "--upper-limit=" . trim($limit[2]));
+				push(@riglim, "--rigid");
+			}
+		}
+		undef(@tmp);
+		undef(@tmpz);
+		my @i = split(',', $ntp->{desc}->{$host});
+		for($n = 0; $n < 10; $n++) {
+			if(trim($i[$n])) {
+				$str = sprintf("%-4s", trim($i[$n]));
+				push(@tmp, "LINE2:ntp" . $e . "_c" . sprintf("%02d", ($n + 1)) . $AC[$n] . ":$str");
+				push(@tmp, "COMMENT:   \\g");
+				push(@tmpz, "LINE2:ntp" . $e . "_c" . sprintf("%02d", ($n + 1)) . $AC[$n] . ":$str");
+				if(!(($n + 1) % 5)) {
+					push(@tmp, ("COMMENT: \\n"));
+				}
+			}
+		}
+		($width, $height) = split('x', $config->{graph_size}->{small});
+		if($silent =~ /imagetag/) {
+			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+			@tmp = @tmpz;
+		}
+		RRDs::graph("$PNG_DIR" . $PNG[$e * 3 + 2],
+			"--title=$config->{graphs}->{_ntp3}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Hits",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			"--lower-limit=0",
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:ntp" . $e . "_c01=$rrd:ntp" . $e . "_c01:AVERAGE",
+			"DEF:ntp" . $e . "_c02=$rrd:ntp" . $e . "_c02:AVERAGE",
+			"DEF:ntp" . $e . "_c03=$rrd:ntp" . $e . "_c03:AVERAGE",
+			"DEF:ntp" . $e . "_c04=$rrd:ntp" . $e . "_c04:AVERAGE",
+			"DEF:ntp" . $e . "_c05=$rrd:ntp" . $e . "_c05:AVERAGE",
+			"DEF:ntp" . $e . "_c06=$rrd:ntp" . $e . "_c06:AVERAGE",
+			"DEF:ntp" . $e . "_c07=$rrd:ntp" . $e . "_c07:AVERAGE",
+			"DEF:ntp" . $e . "_c08=$rrd:ntp" . $e . "_c08:AVERAGE",
+			"DEF:ntp" . $e . "_c09=$rrd:ntp" . $e . "_c09:AVERAGE",
+			"DEF:ntp" . $e . "_c10=$rrd:ntp" . $e . "_c10:AVERAGE",
+			@tmp);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . $PNG[$e * 3 + 2] . ": $err\n") if $err;
+		if(lc($config->{enable_zoom}) eq "y") {
+			($width, $height) = split('x', $config->{graph_size}->{zoom});
+			RRDs::graph("$PNG_DIR" . $PNGz[$e * 3 + 2],
+				"--title=$config->{graphs}->{_ntp3}  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=PNG",
+				"--vertical-label=Hits",
+				"--width=$width",
+				"--height=$height",
+				@riglim,
+				"--lower-limit=0",
+				@{$cgi->{version12}},
+				@{$cgi->{version12_small}},
+				@{$colors->{graph_colors}},
+				"DEF:ntp" . $e . "_c01=$rrd:ntp" . $e . "_c01:AVERAGE",
+				"DEF:ntp" . $e . "_c02=$rrd:ntp" . $e . "_c02:AVERAGE",
+				"DEF:ntp" . $e . "_c03=$rrd:ntp" . $e . "_c03:AVERAGE",
+				"DEF:ntp" . $e . "_c04=$rrd:ntp" . $e . "_c04:AVERAGE",
+				"DEF:ntp" . $e . "_c05=$rrd:ntp" . $e . "_c05:AVERAGE",
+				"DEF:ntp" . $e . "_c06=$rrd:ntp" . $e . "_c06:AVERAGE",
+				"DEF:ntp" . $e . "_c07=$rrd:ntp" . $e . "_c07:AVERAGE",
+				"DEF:ntp" . $e . "_c08=$rrd:ntp" . $e . "_c08:AVERAGE",
+				"DEF:ntp" . $e . "_c09=$rrd:ntp" . $e . "_c09:AVERAGE",
+				"DEF:ntp" . $e . "_c10=$rrd:ntp" . $e . "_c10:AVERAGE",
+				@tmpz);
+			$err = RRDs::error;
+			print("ERROR: while graphing $PNG_DIR" . $PNGz[$e * 3 + 2] . ": $err\n") if $err;
+		}
+		$e2 = $e + 3;
+		if($title || ($silent =~ /imagetag/ && $graph =~ /ntp$e2/)) {
+			if(lc($config->{enable_zoom}) eq "y") {
+				if(lc($config->{disable_javascript_void}) eq "y") {
+					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
+				}
+				else {
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
+				}
+			} else {
+				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "'>\n");
+			}
+		}
+
+		if($title) {
+			print("    </td>\n");
+			print("    </tr>\n");
+	
+			print("    <tr>\n");
+			print "      <td bgcolor='$colors->{title_bg_color}' colspan='2'>\n";
+			print "       <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
+			print "       <font size='-1'>\n";
+			print "        <b style='{color: " . $colors->{title_fg_color} . "}'>&nbsp;&nbsp;$host<b>\n";
+			print "       </font></font>\n";
+			print "      </td>\n";
+			print("    </tr>\n");
+			main::graph_footer();
+		}
+		$e++;
+	}
+	print("  <br>\n");
+	return;
+}
+
+1;
