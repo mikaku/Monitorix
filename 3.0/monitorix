@@ -301,7 +301,7 @@ EOF
 				next;
 			}
 			if($g eq "fail2ban") {
-				for($n = 0; $n < scalar(my @fail2ban_list = split(',', $config{fail2ban_list})); $n++) {
+				for($n = 0; $n < scalar(my @fail2ban_list = split(',', $config{fail2ban}->{list})); $n++) {
 					my $name = trim($fail2ban_list[$n]);
 					$gname = "_" . $g;
 					print(OUT "              <option value='" . $gname . $n . "'>" . $name . "</option>\n");
