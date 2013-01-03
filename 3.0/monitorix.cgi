@@ -2,7 +2,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -426,7 +426,7 @@ if(!$silent) {
 	print("  <a href='http://www.monitorix.org'><img src='" . $config{url} . "logo_bot.png' border='0'></a>\n");
 	print("  <br>\n");
 	print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "' size='-2'>\n");
-	print("Copyright &copy; 2005-2012 Jordi Sanfeliu\n");
+	print("Copyright &copy; 2005-2013 Jordi Sanfeliu\n");
 	print("  </font>\n");
 	print("  </body>\n");
 	print("</html>\n");
