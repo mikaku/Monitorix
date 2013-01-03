@@ -157,10 +157,10 @@ sub icecast_update {
 		undef(@br);
 		foreach my $i (split(',', $icecast->{desc}->{$ils})) {
 			my $m = "Mount Point " . trim($i);
-			my ($b) = ($data =~ m/$m.*?<tr><td>Bitrate:<\/td><td class=\"streamdata\">(\d*?)<\/td><\/tr>/g);
 			my ($l) = ($data =~ m/$m.*?<tr><td>Current Listeners:<\/td><td class=\"streamdata\">(\d*?)<\/td>/g);
-			$b = 0 unless defined($b);
+			my ($b) = ($data =~ m/$m.*?<tr><td>Bitrate:<\/td><td class=\"streamdata\">(\d*?)<\/td><\/tr>/g);
 			$l = 0 unless defined($l);
+			$b = 0 unless defined($b);
 			push(@ls, $l);
 			push(@br, $b);
 		}
@@ -494,14 +494,14 @@ sub icecast_cgi {
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:ice" . $e . "_mp0=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-			"DEF:ice" . $e . "_mp1=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-			"DEF:ice" . $e . "_mp2=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-			"DEF:ice" . $e . "_mp3=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-			"DEF:ice" . $e . "_mp4=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-			"DEF:ice" . $e . "_mp5=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-			"DEF:ice" . $e . "_mp6=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-			"DEF:ice" . $e . "_mp7=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-			"DEF:ice" . $e . "_mp8=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
+			"DEF:ice" . $e . "_mp1=$rrd:icecast" . $e . "_mp1_br:AVERAGE",
+			"DEF:ice" . $e . "_mp2=$rrd:icecast" . $e . "_mp2_br:AVERAGE",
+			"DEF:ice" . $e . "_mp3=$rrd:icecast" . $e . "_mp3_br:AVERAGE",
+			"DEF:ice" . $e . "_mp4=$rrd:icecast" . $e . "_mp4_br:AVERAGE",
+			"DEF:ice" . $e . "_mp5=$rrd:icecast" . $e . "_mp5_br:AVERAGE",
+			"DEF:ice" . $e . "_mp6=$rrd:icecast" . $e . "_mp6_br:AVERAGE",
+			"DEF:ice" . $e . "_mp7=$rrd:icecast" . $e . "_mp7_br:AVERAGE",
+			"DEF:ice" . $e . "_mp8=$rrd:icecast" . $e . "_mp8_br:AVERAGE",
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . $PNG[$e * 2 + 1] . ": $err\n") if $err;
@@ -519,14 +519,14 @@ sub icecast_cgi {
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:ice" . $e . "_mp0=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-				"DEF:ice" . $e . "_mp1=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-				"DEF:ice" . $e . "_mp2=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-				"DEF:ice" . $e . "_mp3=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-				"DEF:ice" . $e . "_mp4=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-				"DEF:ice" . $e . "_mp5=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-				"DEF:ice" . $e . "_mp6=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-				"DEF:ice" . $e . "_mp7=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
-				"DEF:ice" . $e . "_mp8=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
+				"DEF:ice" . $e . "_mp1=$rrd:icecast" . $e . "_mp1_br:AVERAGE",
+				"DEF:ice" . $e . "_mp2=$rrd:icecast" . $e . "_mp2_br:AVERAGE",
+				"DEF:ice" . $e . "_mp3=$rrd:icecast" . $e . "_mp3_br:AVERAGE",
+				"DEF:ice" . $e . "_mp4=$rrd:icecast" . $e . "_mp4_br:AVERAGE",
+				"DEF:ice" . $e . "_mp5=$rrd:icecast" . $e . "_mp5_br:AVERAGE",
+				"DEF:ice" . $e . "_mp6=$rrd:icecast" . $e . "_mp6_br:AVERAGE",
+				"DEF:ice" . $e . "_mp7=$rrd:icecast" . $e . "_mp7_br:AVERAGE",
+				"DEF:ice" . $e . "_mp8=$rrd:icecast" . $e . "_mp8_br:AVERAGE",
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . $PNGz[$e * 2 + 1] . ": $err\n") if $err;
