@@ -9,3 +9,6 @@
 - Fixed variables naming in 'mail' graph when using Postfix MTA that prevented
   to see the values bounced, discarded and forwarded.
 - Fixed a number of small bugs.
+- Fixed a bad naming of the bitrate variables when creating the Bitrate graph
+  of the Icecast Streaming Media Server.
+
