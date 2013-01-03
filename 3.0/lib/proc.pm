@@ -355,11 +355,11 @@ sub proc_cgi {
 	while($n < $ncpu) {
 		if($title) {
 			if($n == 0) {
-				main::graph_header($title, $proc->{per_row});
+				main::graph_header($title, $proc->{graphs_per_row});
 			}
 			print("    <tr>\n");
 		}
-		for($n2 = 0; $n2 < $proc->{per_row}; $n2++) {
+		for($n2 = 0; $n2 < $proc->{graphs_per_row}; $n2++) {
 			last unless $n < $ncpu;
 			if($title) {
 				print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
