@@ -1,5 +1,6 @@
-N.N.N  - NN-XXX-NNNN
+3.0.0  - NN-XXX-2013
 ====================
+- Complete rewrite.
 - Introduced some modifications to the device name detection for FreeBSD.
 	(thanks to Chris Rees, utisoft AT gmail.com)
 - Improved support of Linux NFSv4 spliting the operation names in two different
@@ -9,6 +10,19 @@ N.N.N  - NN-XXX-NNNN
 - Fixed an intermix usage of alarm() and sleep() substituting it by alarm() and
   pause().
 - Fixed a bug in multihost introduced by the groups code.
+
+- Added a new option in 'port' to define the number of graphs per row.
+- Fixed a missing description in the first entry of each network interface in
+  the options list.
+- Fixed a missing argument on each *_init() function preventing show an "Ok"
+  message when debugging is enabled.
+- Fixed some bugs in Groups.
+- Fixed a typo in the percentage variable in FS alert.
+- Fixed variables naming in 'mail' graph when using Postfix MTA that prevented
+  to see the values bounced, discarded and forwarded.
+- Fixed a number of small bugs.
+- Fixed a bad naming of the bitrate variables when creating the Bitrate graph
+  of the Icecast Streaming Media Server.
 
 
 2.6.0  - 19-Sep-2012

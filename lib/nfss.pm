@@ -1,0 +1,1251 @@
+#
+# Monitorix - A lightweight system monitoring tool.
+#
+# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+package nfss;
+
+use strict;
+use warnings;
+use Monitorix;
+use RRDs;
+use Exporter 'import';
+our @EXPORT = qw(nfss_init nfss_update nfss_cgi);
+
+sub nfss_init {
+	my $myself = (caller(0))[3];
+	my ($package, $config, $debug) = @_;
+	my $rrd = $config->{base_lib} . $package . ".rrd";
+
+	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
+		logger("$myself is not supported yet by your operating system ($config->{os}).");
+		return;
+	}
+
+	if(!(-e $rrd)) {
+		logger("Creating '$rrd' file.");
+		eval {
+			RRDs::create($rrd,
+				"--step=60",
+				"DS:nfss_0:COUNTER:120:0:U",
+				"DS:nfss_1:COUNTER:120:0:U",
+				"DS:nfss_2:COUNTER:120:0:U",
+				"DS:nfss_3:COUNTER:120:0:U",
+				"DS:nfss_4:COUNTER:120:0:U",
+				"DS:nfss_5:COUNTER:120:0:U",
+				"DS:nfss_6:COUNTER:120:0:U",
+				"DS:nfss_7:COUNTER:120:0:U",
+				"DS:nfss_8:COUNTER:120:0:U",
+				"DS:nfss_9:COUNTER:120:0:U",
+				"DS:nfss_10:COUNTER:120:0:U",
+				"DS:nfss_11:COUNTER:120:0:U",
+				"DS:nfss_12:COUNTER:120:0:U",
+				"DS:nfss_13:COUNTER:120:0:U",
+				"DS:nfss_14:COUNTER:120:0:U",
+				"DS:nfss_15:COUNTER:120:0:U",
+				"DS:nfss_16:COUNTER:120:0:U",
+				"DS:nfss_17:COUNTER:120:0:U",
+				"DS:nfss_18:COUNTER:120:0:U",
+				"DS:nfss_19:COUNTER:120:0:U",
+				"DS:nfss_20:COUNTER:120:0:U",
+				"DS:nfss_21:COUNTER:120:0:U",
+				"DS:nfss_22:COUNTER:120:0:U",
+				"DS:nfss_23:COUNTER:120:0:U",
+				"DS:nfss_24:COUNTER:120:0:U",
+				"DS:nfss_25:COUNTER:120:0:U",
+				"DS:nfss_26:COUNTER:120:0:U",
+				"DS:nfss_27:COUNTER:120:0:U",
+				"DS:nfss_28:COUNTER:120:0:U",
+				"DS:nfss_29:COUNTER:120:0:U",
+				"DS:nfss_30:COUNTER:120:0:U",
+				"DS:nfss_31:COUNTER:120:0:U",
+				"DS:nfss_32:COUNTER:120:0:U",
+				"DS:nfss_33:COUNTER:120:0:U",
+				"DS:nfss_34:COUNTER:120:0:U",
+				"DS:nfss_35:COUNTER:120:0:U",
+				"DS:nfss_36:COUNTER:120:0:U",
+				"DS:nfss_37:COUNTER:120:0:U",
+				"DS:nfss_38:COUNTER:120:0:U",
+				"DS:nfss_39:COUNTER:120:0:U",
+				"DS:nfss_40:COUNTER:120:0:U",
+				"DS:nfss_41:COUNTER:120:0:U",
+				"DS:nfss_42:COUNTER:120:0:U",
+				"DS:nfss_43:COUNTER:120:0:U",
+				"DS:nfss_44:COUNTER:120:0:U",
+				"DS:nfss_45:COUNTER:120:0:U",
+				"DS:nfss_46:COUNTER:120:0:U",
+				"DS:nfss_47:COUNTER:120:0:U",
+				"DS:nfss_48:COUNTER:120:0:U",
+				"DS:nfss_49:COUNTER:120:0:U",
+				"DS:nfss_rc_1:COUNTER:120:0:U",
+				"DS:nfss_rc_2:COUNTER:120:0:U",
+				"DS:nfss_rc_3:COUNTER:120:0:U",
+				"DS:nfss_rc_4:COUNTER:120:0:U",
+				"DS:nfss_rc_5:COUNTER:120:0:U",
+				"DS:nfss_fh_1:COUNTER:120:0:U",
+				"DS:nfss_fh_2:COUNTER:120:0:U",
+				"DS:nfss_fh_3:COUNTER:120:0:U",
+				"DS:nfss_fh_4:COUNTER:120:0:U",
+				"DS:nfss_fh_5:COUNTER:120:0:U",
+				"DS:nfss_io_1:COUNTER:120:0:U",
+				"DS:nfss_io_2:COUNTER:120:0:U",
+				"DS:nfss_io_3:COUNTER:120:0:U",
+				"DS:nfss_th_0:COUNTER:120:0:U",
+				"DS:nfss_th_1:COUNTER:120:0:U",
+				"DS:nfss_th_2:COUNTER:120:0:U",
+				"DS:nfss_th_3:COUNTER:120:0:U",
+				"DS:nfss_th_4:COUNTER:120:0:U",
+				"DS:nfss_th_5:COUNTER:120:0:U",
+				"DS:nfss_th_6:COUNTER:120:0:U",
+				"DS:nfss_th_7:COUNTER:120:0:U",
+				"DS:nfss_th_8:COUNTER:120:0:U",
+				"DS:nfss_th_9:COUNTER:120:0:U",
+				"DS:nfss_th_10:COUNTER:120:0:U",
+				"DS:nfss_net_1:COUNTER:120:0:U",
+				"DS:nfss_net_2:COUNTER:120:0:U",
+				"DS:nfss_net_3:COUNTER:120:0:U",
+				"DS:nfss_net_4:COUNTER:120:0:U",
+				"DS:nfss_net_5:COUNTER:120:0:U",
+				"DS:nfss_rpc_1:COUNTER:120:0:U",
+				"DS:nfss_rpc_2:COUNTER:120:0:U",
+				"DS:nfss_rpc_3:COUNTER:120:0:U",
+				"DS:nfss_rpc_4:COUNTER:120:0:U",
+				"DS:nfss_rpc_5:COUNTER:120:0:U",
+				"RRA:AVERAGE:0.5:1:1440",
+				"RRA:AVERAGE:0.5:30:336",
+				"RRA:AVERAGE:0.5:60:744",
+				"RRA:AVERAGE:0.5:1440:365",
+				"RRA:MIN:0.5:1:1440",
+				"RRA:MIN:0.5:30:336",
+				"RRA:MIN:0.5:60:744",
+				"RRA:MIN:0.5:1440:365",
+				"RRA:MAX:0.5:1:1440",
+				"RRA:MAX:0.5:30:336",
+				"RRA:MAX:0.5:60:744",
+				"RRA:MAX:0.5:1440:365",
+				"RRA:LAST:0.5:1:1440",
+				"RRA:LAST:0.5:30:336",
+				"RRA:LAST:0.5:60:744",
+				"RRA:LAST:0.5:1440:365",
+			);
+		};
+		my $err = RRDs::error;
+		if($@ || $err) {
+			logger("$@") unless !$@;
+			if($err) {
+				logger("ERROR: while creating $rrd: $err");
+				if($err eq "RRDs::error") {
+					logger("... is the RRDtool Perl package installed?");
+				}
+			}
+			return;
+		}
+	}
+
+	push(@{$config->{func_update}}, $package);
+	logger("$myself: Ok") if $debug;
+}
+
+sub nfss_update {
+	my $myself = (caller(0))[3];
+	my ($package, $config, $debug) = @_;
+	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $nfss = $config->{nfss};
+
+	my @rc;
+	my @fh;
+	my @io;
+	my @th;
+	my @net;
+	my @rpc;
+	my @nfss;
+
+	my $n;
+	my $rrdata = "N";
+
+	if($config->{os} eq "Linux") {
+		if(open(IN, "/proc/net/rpc/nfsd")) {
+			while(<IN>) {
+				if(/^rc\s+(\d+)\s+(\d+)\s+(\d+)$/) {
+					@rc = ($1, $2, $3);
+				}
+				if(/^fh\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$/) {
+					@fh = ($1, $2, $3, $4, $5);
+				}
+				if(/^io\s+(\d+)\s+(\d+)$/) {
+					@io = ($1, $2);
+				}
+				if(/^th /) {
+					my @tmp = split(' ', $_);
+					(undef, undef, @th) = @tmp;
+				}
+				if(/^net\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$/) {
+					@net = ($1, $2, $3, $4);
+				}
+				if(/^rpc\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$/) {
+					@rpc = ($1, $2, $3, $4, $5);
+				}
+				my $version = "";
+				$version = "4ops" if $nfss->{version} eq "4";
+				if(/^proc$version /) {
+					my @tmp = split(' ', $_);
+					(undef, undef, @nfss) = @tmp;
+				}
+			}
+			close(IN);
+		} else {
+			logger("$myself: it doesn't seems you have a NFS server running in this machine.");
+			return;
+		}
+	}
+
+	for($n = 0; $n < 50; $n++) {
+		if(!defined($nfss[$n])) {
+			$nfss[$n] = 0;
+		}
+		$rrdata .= ":" . $nfss[$n];
+	}
+	$rrdata .= ":$rc[0]:$rc[1]:$rc[2]:0:0";
+	$rrdata .= ":$fh[0]:$fh[1]:$fh[2]:$fh[3]:$fh[4]";
+	$rrdata .= ":$io[0]:$io[1]:0";
+	for($n = 0; $n < 11; $n++) {
+		$rrdata .= ":" . int($th[$n]);
+	}
+	$rrdata .= ":$net[0]:$net[1]:$net[2]:$net[3]:0";
+	$rrdata .= ":$rpc[0]:$rpc[1]:$rpc[2]:$rpc[3]:$rpc[4]";
+	RRDs::update($rrd, $rrdata);
+	logger("$myself: $rrdata") if $debug;
+	my $err = RRDs::error;
+	logger("ERROR: while updating $rrd: $err") if $err;
+}
+
+sub nfss_cgi {
+	my ($package, $config, $cgi) = @_;
+
+	my $nfss = $config->{nfss};
+	my @rigid = split(',', $nfss->{rigid});
+	my @limit = split(',', $nfss->{limit});
+	my $tf = $cgi->{tf};
+	my $colors = $cgi->{colors};
+	my $graph = $cgi->{graph};
+	my $silent = $cgi->{silent};
+
+	my $u = "";
+	my $width;
+	my $height;
+	my @riglim;
+	my @tmp;
+	my @tmpz;
+	my @DEF;
+	my $n;
+	my $err;
+	my @AC = (
+		"#FFA500",
+		"#44EEEE",
+		"#44EE44",
+		"#4444EE",
+		"#448844",
+		"#EE4444",
+		"#EE44EE",
+		"#EEEE44",
+		"#963C74",
+		"#CCCCCC",
+	);
+	my @LC = (
+		"#FFA500",
+		"#00EEEE",
+		"#00EE00",
+		"#0000EE",
+		"#448844",
+		"#EE0000",
+		"#EE00EE",
+		"#EEEE00",
+		"#B4B444",
+		"#888888",
+	);
+
+	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $title = $config->{graph_title}->{$package};
+	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
+
+	my @nfsv2 = ("null", "getattr", "setattr", "root", "lookup", "readlink", "read", "wrcache", "write", "create", "remove", "rename", "link", "symlink", "mkdir", "rmdir", "readdir", "fsstat");
+	my @nfsv3 = ("null", "getattr", "setattr", "lookup", "access", "readlink", "read", "write", "create", "mkdir", "symlink", "mknod", "remove", "rmdir", "rename", "link", "readdir", "readdirplus", "fsstat", "fsinfo", "pathconf", "commit");
+	my @nfssv4 = ("op0-unused", "op1-unused", "op2-future", "access", "close", "commit", "create", "delegpurge", "delegreturn", "getattr", "getfh", "link", "lock", "lockt", "locku", "lookup", "lookup_root", "nverify", "open", "openattr", "open_conf", "open_dgrd", "putfh", "putpubfh", "putrootfh", "read", "readdir", "readlink", "remove", "rename", "renew", "restorefh", "savefh", "secinfo", "setattr", "setcltid", "setcltidconf", "verify", "write", "rellockowner", "bc_ctl", "bind_conn", "exchange_id", "create_ses", "destroy_ses", "free_stateid", "getdirdeleg", "getdevinfo", "getdevlist", "layoutcommit", "layoutget", "layoutreturn", "secinfononam", "sequence", "set_ssv", "test_stateid", "want_deleg", "destroy_clid", "reclaim_comp");
+
+	my @nfsv;
+
+	# default version is NFS v3
+	if($nfss->{version} eq "2") {
+		@nfsv = @nfsv2;
+	} elsif($nfss->{version} eq "4") {
+		@nfsv = @nfssv4;
+	} else {
+		@nfsv = @nfsv3;
+	}
+
+	$title = !$silent ? $title : "";
+	$title =~ s/NFS/NFS v$nfss->{version}/;
+
+
+	# text mode
+	#
+	if(lc($config->{iface_mode}) eq "text") {
+		if($title) {
+			main::graph_header($title, 2);
+			print("    <tr>\n");
+			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+		}
+		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"AVERAGE",
+			"-r $tf->{res}");
+		$err = RRDs::error;
+		print("ERROR: while fetching $rrd: $err\n") if $err;
+		my $str;
+		my $line1;
+		my $line2;
+		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
+		foreach my $t (@nfsv) {
+			$str = sprintf("%12s ", $t);
+			$line1 .= $str;
+			$line2 .= "-------------";
+		}
+		$line1 .= sprintf("%12s %12s %12s ", "hits", "misses", "nocache");
+		$line2 .= "-------------" . "-------------" . "-------------";
+		$line1 .= sprintf("%12s %12s %12s %12s %12s ", "lookup", "anon", "ncachedir", "ncachedir", "stale");
+		$line2 .= "-------------" . "-------------" . "-------------" . "-------------" . "-------------";
+		$line1 .= sprintf("%12s %12s ", "read", "written");
+		$line2 .= "-------------" . "-------------";
+		$line1 .= sprintf("%12s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s ", "threads", "<10%", "<20%", "<30%", "<40%", "<50%", "<60%", "<70%", "<80%", "<90%", "<100%");
+		$line2 .= "-------------" . "-------" . "-------" . "-------" . "-------" . "-------" . "-------" . "-------" . "-------" . "-------" . "-------";
+		$line1 .= sprintf("%12s %12s %12s %12s ", "packets", "udp", "tcp", "tcpconn");
+		$line2 .= "-------------" . "-------------" . "-------------" . "-------------";
+		$line1 .= sprintf("%12s %12s %12s %12s %12s ", "calls", "badcalls", "badauth", "badclnt", "xdrcall");
+		$line2 .= "-------------" . "-------------" . "-------------" . "-------------" . "-------------";
+		print("Time $line1\n");
+		print("-----$line2\n");
+		my $line;
+		my @row;
+		my $time;
+		my $n2;
+		my @nfs;
+		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
+			$line = @$data[$n];
+			undef($line1);
+			undef(@row);
+			(@nfs) = @$line[0..scalar(@nfsv) - 1];
+			for($n2 = 0; $n2 < scalar(@nfs);$n2++) {
+				push(@row, $nfs[$n2]);
+				$line1 .= "%12d ";
+			}
+			push(@row, @$line[50..52]);
+			$line1 .= "%12d %12d %12d ";
+			push(@row, @$line[55..59]);
+			$line1 .= "%12d %12d %12d %12d %12d ";
+			push(@row, @$line[60..61]);
+			$line1 .= "%12d %12d ";
+			push(@row, @$line[63..73]);
+			$line1 .= "%12d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d ";
+			push(@row, @$line[74..77]);
+			$line1 .= "%12d %12d %12d %12d ";
+			push(@row, @$line[79..83]);
+			$line1 .= "%12d %12d %12d %12d %12d ";
+			$time = $time - (1 / $tf->{ts});
+			printf(" %2d$tf->{tc} $line1\n", $time, @row);
+		}
+		print("    </pre>\n");
+		if($title) {
+			print("    </td>\n");
+			print("    </tr>\n");
+			main::graph_footer();
+		}
+		print("  <br>\n");
+		return;
+	}
+
+
+	# graph mode
+	#
+	if($silent eq "yes" || $silent eq "imagetag") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "_";
+	}
+	if($silent eq "imagetagbig") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "";
+	}
+	my $PNG1 = $u . $package . "1." . $tf->{when} . ".png";
+	my $PNG2 = $u . $package . "2." . $tf->{when} . ".png";
+	my $PNG3 = $u . $package . "3." . $tf->{when} . ".png";
+	my $PNG4 = $u . $package . "4." . $tf->{when} . ".png";
+	my $PNG5 = $u . $package . "5." . $tf->{when} . ".png";
+	my $PNG6 = $u . $package . "6." . $tf->{when} . ".png";
+	my $PNG7 = $u . $package . "7." . $tf->{when} . ".png";
+	my $PNG8 = $u . $package . "8." . $tf->{when} . ".png";
+	my $PNG9 = $u . $package . "9." . $tf->{when} . ".png";
+	my $PNG1z = $u . $package . "1z." . $tf->{when} . ".png";
+	my $PNG2z = $u . $package . "2z." . $tf->{when} . ".png";
+	my $PNG3z = $u . $package . "3z." . $tf->{when} . ".png";
+	my $PNG4z = $u . $package . "4z." . $tf->{when} . ".png";
+	my $PNG5z = $u . $package . "5z." . $tf->{when} . ".png";
+	my $PNG6z = $u . $package . "6z." . $tf->{when} . ".png";
+	my $PNG7z = $u . $package . "7z." . $tf->{when} . ".png";
+	my $PNG8z = $u . $package . "8z." . $tf->{when} . ".png";
+	my $PNG9z = $u . $package . "9z." . $tf->{when} . ".png";
+	unlink ("$PNG_DIR" . "$PNG1",
+		"$PNG_DIR" . "$PNG2",
+		"$PNG_DIR" . "$PNG3",
+		"$PNG_DIR" . "$PNG4",
+		"$PNG_DIR" . "$PNG5",
+		"$PNG_DIR" . "$PNG6",
+		"$PNG_DIR" . "$PNG7",
+		"$PNG_DIR" . "$PNG8",
+		"$PNG_DIR" . "$PNG9");
+	if(lc($config->{enable_zoom}) eq "y") {
+		unlink ("$PNG_DIR" . "$PNG1z",
+			"$PNG_DIR" . "$PNG2z",
+			"$PNG_DIR" . "$PNG3z",
+			"$PNG_DIR" . "$PNG4z",
+			"$PNG_DIR" . "$PNG5z",
+			"$PNG_DIR" . "$PNG6z",
+			"$PNG_DIR" . "$PNG7z",
+			"$PNG_DIR" . "$PNG8z",
+			"$PNG_DIR" . "$PNG9z");
+	}
+	if($title) {
+		main::graph_header($title, 2);
+	}
+	if(trim($rigid[0]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[0]));
+	} else {
+		if(trim($rigid[0]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[0]));
+			push(@riglim, "--rigid");
+		}
+	}
+	if($title) {
+		print("    <tr>\n");
+		print("    <td valign='top' bgcolor='$colors->{title_bg_color}'>\n");
+	}
+	for($n = 0; $n < 10; $n++) {
+		my $str = trim((split(',', $nfss->{graph_0}))[$n]) || "";
+		if(grep { $_ eq $str } @nfsv) {
+			my ($i) = grep { $nfsv[$_] eq $str } 0..$#nfsv;
+			push(@DEF, "DEF:nfs_$i=$rrd:nfss_$i:AVERAGE");
+			push(@tmp, "LINE1:nfs_$i$AC[$n]:" . sprintf("%-12s", $str));
+			push(@tmp, "GPRINT:nfs_$i:LAST:    Cur\\: %6.1lf");
+			push(@tmp, "GPRINT:nfs_$i:AVERAGE:    Avg\\: %6.1lf");
+			push(@tmp, "GPRINT:nfs_$i:MIN:    Min\\: %6.1lf");
+			push(@tmp, "GPRINT:nfs_$i:MAX:    Max\\: %6.1lf\\n");
+			push(@tmpz, "LINE2:nfs_$i$AC[$n]:" . sprintf("%-12s", $str));
+		} else {
+			push(@tmp, "COMMENT: \\n");
+		}
+	}
+	($width, $height) = split('x', $config->{graph_size}->{main});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		@tmp = @tmpz;
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+	}
+	RRDs::graph("$PNG_DIR" . "$PNG1",
+		"--title=$config->{graphs}->{_nfss1}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=PNG",
+		"--vertical-label=Requests/s",
+		"--width=$width",
+		"--height=$height",
+		@riglim,
+		"--lower-limit=0",
+		@{$cgi->{version12}},
+		@{$colors->{graph_colors}},
+		@DEF,
+		@tmp,
+		"COMMENT: \\n");
+	$err = RRDs::error;
+	print("ERROR: while graphing $PNG_DIR" . "$PNG1: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		RRDs::graph("$PNG_DIR" . "$PNG1z",
+			"--title=$config->{graphs}->{_nfss1}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Requests/s",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			"--lower-limit=0",
+			@{$cgi->{version12}},
+			@{$colors->{graph_colors}},
+			@DEF,
+			@tmpz);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss1/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+			}
+			else {
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "'>\n");
+		}
+	}
+
+	undef(@riglim);
+	if(trim($rigid[1]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[1]));
+	} else {
+		if(trim($rigid[1]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[1]));
+			push(@riglim, "--rigid");
+		}
+	}
+	undef(@tmp);
+	undef(@tmpz);
+	undef(@DEF);
+	for($n = 0; $n < 10; $n++) {
+		my $str = trim((split(',', $nfss->{graph_1}))[$n]) || "";
+		if(grep { $_ eq $str } @nfsv) {
+			my ($i) = grep { $nfsv[$_] eq $str } 0..$#nfsv;
+			push(@DEF, "DEF:nfs_$i=$rrd:nfss_$i:AVERAGE");
+			push(@tmp, "LINE1:nfs_$i$AC[$n]:" . sprintf("%-12s", $str));
+			push(@tmp, "GPRINT:nfs_$i:LAST:    Cur\\: %6.1lf");
+			push(@tmp, "GPRINT:nfs_$i:AVERAGE:    Avg\\: %6.1lf");
+			push(@tmp, "GPRINT:nfs_$i:MIN:    Min\\: %6.1lf");
+			push(@tmp, "GPRINT:nfs_$i:MAX:    Max\\: %6.1lf\\n");
+			push(@tmpz, "LINE2:nfs_$i$AC[$n]:" . sprintf("%-12s", $str));
+		} else {
+			push(@tmp, "COMMENT: \\n");
+		}
+	}
+	($width, $height) = split('x', $config->{graph_size}->{main});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		@tmp = @tmpz;
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+	}
+	RRDs::graph("$PNG_DIR" . "$PNG2",
+		"--title=$config->{graphs}->{_nfss2}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=PNG",
+		"--vertical-label=Requests/s",
+		"--width=$width",
+		"--height=$height",
+		@riglim,
+		"--lower-limit=0",
+		@{$cgi->{version12}},
+		@{$colors->{graph_colors}},
+		@DEF,
+		@tmp);
+	$err = RRDs::error;
+	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		RRDs::graph("$PNG_DIR" . "$PNG2z",
+			"--title=$config->{graphs}->{_nfss2}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Requests/s",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			"--lower-limit=0",
+			@{$cgi->{version12}},
+			@{$colors->{graph_colors}},
+			@DEF,
+			@tmpz);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss2/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+			}
+			else {
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "'>\n");
+		}
+	}
+
+	undef(@riglim);
+	if(trim($rigid[2]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[2]));
+	} else {
+		if(trim($rigid[2]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[2]));
+			push(@riglim, "--rigid");
+		}
+	}
+	undef(@tmp);
+	undef(@tmpz);
+	undef(@DEF);
+	for($n = 0; $n < 10; $n++) {
+		my $str = trim((split(',', $nfss->{graph_2}))[$n]) || "";
+		if(grep { $_ eq $str } @nfsv) {
+			my ($i) = grep { $nfsv[$_] eq $str } 0..$#nfsv;
+			push(@DEF, "DEF:nfs_$i=$rrd:nfss_$i:AVERAGE");
+			push(@tmp, "LINE1:nfs_$i$AC[$n]:" . sprintf("%-12s", $str));
+			push(@tmp, "GPRINT:nfs_$i:LAST:    Cur\\: %6.1lf");
+			push(@tmp, "GPRINT:nfs_$i:AVERAGE:    Avg\\: %6.1lf");
+			push(@tmp, "GPRINT:nfs_$i:MIN:    Min\\: %6.1lf");
+			push(@tmp, "GPRINT:nfs_$i:MAX:    Max\\: %6.1lf\\n");
+			push(@tmpz, "LINE2:nfs_$i$AC[$n]:" . sprintf("%-12s", $str));
+		} else {
+			push(@tmp, "COMMENT: \\n");
+		}
+	}
+	($width, $height) = split('x', $config->{graph_size}->{main});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		@tmp = @tmpz;
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+	}
+	RRDs::graph("$PNG_DIR" . "$PNG3",
+		"--title=$config->{graphs}->{_nfss3}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=PNG",
+		"--vertical-label=Requests/s",
+		"--width=$width",
+		"--height=$height",
+		@riglim,
+		"--lower-limit=0",
+		@{$cgi->{version12}},
+		@{$colors->{graph_colors}},
+		@DEF,
+		@tmp);
+	$err = RRDs::error;
+	print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		RRDs::graph("$PNG_DIR" . "$PNG3z",
+			"--title=$config->{graphs}->{_nfss3}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Requests/s",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			"--lower-limit=0",
+			@{$cgi->{version12}},
+			@{$colors->{graph_colors}},
+			@DEF,
+			@tmpz);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss3/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+			}
+			else {
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "'>\n");
+		}
+	}
+	if($title) {
+		print("    </td>\n");
+		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
+	}
+
+	undef(@riglim);
+	if(trim($rigid[3]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[3]));
+	} else {
+		if(trim($rigid[3]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[3]));
+			push(@riglim, "--rigid");
+		}
+	}
+	undef(@tmp);
+	undef(@tmpz);
+	push(@tmp, "AREA:in#44EE44:Read");
+	push(@tmp, "AREA:out#4444EE:Written");
+	push(@tmp, "AREA:out#4444EE:");
+	push(@tmp, "AREA:in#44EE44:");
+	push(@tmp, "LINE1:out#0000EE");
+	push(@tmp, "LINE1:in#00EE00");
+	push(@tmpz, "AREA:in#44EE44:Read");
+	push(@tmpz, "AREA:out#4444EE:Written");
+	push(@tmpz, "AREA:out#4444EE:");
+	push(@tmpz, "AREA:in#44EE44:");
+	push(@tmpz, "LINE1:out#0000EE");
+	push(@tmpz, "LINE1:in#00EE00");
+	($width, $height) = split('x', $config->{graph_size}->{small});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		@tmp = @tmpz;
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+	}
+	RRDs::graph("$PNG_DIR" . "$PNG4",
+		"--title=$config->{graphs}->{_nfss4}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=PNG",
+		"--vertical-label=bytes/s",
+		"--width=$width",
+		"--height=$height",
+		@riglim,
+		"--lower-limit=0",
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
+		@{$colors->{graph_colors}},
+		"DEF:in=$rrd:nfss_io_1:AVERAGE",
+		"DEF:out=$rrd:nfss_io_2:AVERAGE",
+		@tmp);
+	$err = RRDs::error;
+	print("ERROR: while graphing $PNG_DIR" . "$PNG4: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		RRDs::graph("$PNG_DIR" . "$PNG4z",
+			"--title=$config->{graphs}->{_nfss4}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=bytes/s",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			"--lower-limit=0",
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:in=$rrd:nfss_io_1:AVERAGE",
+			"DEF:out=$rrd:nfss_io_2:AVERAGE",
+			@tmpz);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG4z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss4/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG4z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
+			}
+			else {
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG4z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG4 . "'>\n");
+		}
+	}
+
+	undef(@riglim);
+	if(trim($rigid[4]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[4]));
+	} else {
+		if(trim($rigid[4]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[4]));
+			push(@riglim, "--rigid");
+		}
+	}
+	undef(@tmp);
+	undef(@tmpz);
+	push(@tmp, "AREA:udp#44EEEE:UDP");
+	push(@tmp, "GPRINT:udp:LAST:                  Current\\: %7.1lf\\n");
+	push(@tmp, "AREA:tcp#4444EE:TCP");
+	push(@tmp, "GPRINT:tcp:LAST:                  Current\\: %7.1lf\\n");
+	push(@tmp, "AREA:tcpconn#EE44EE:TCP Connections");
+	push(@tmp, "GPRINT:tcpconn:LAST:      Current\\: %7.1lf\\n");
+	push(@tmp, "LINE1:udp#00EEEE");
+	push(@tmp, "LINE1:tcp#0000EE");
+	push(@tmp, "LINE1:tcpconn#EE00EE");
+	push(@tmpz, "AREA:udp#44EEEE:UDP");
+	push(@tmpz, "AREA:tcp#4444EE:TCP");
+	push(@tmpz, "AREA:tcpconn#EE44EE:TCP Connections");
+	push(@tmpz, "LINE1:udp#00EEEE");
+	push(@tmpz, "LINE1:tcp#0000EE");
+	push(@tmpz, "LINE1:tcpconn#EE00EE");
+	($width, $height) = split('x', $config->{graph_size}->{small});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		@tmp = @tmpz;
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+	}
+	RRDs::graph("$PNG_DIR" . "$PNG5",
+		"--title=$config->{graphs}->{_nfss5}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=PNG",
+		"--vertical-label=Values/s",
+		"--width=$width",
+		"--height=$height",
+		@riglim,
+		"--lower-limit=0",
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
+		@{$colors->{graph_colors}},
+		"DEF:packets=$rrd:nfss_net_1:AVERAGE",
+		"DEF:udp=$rrd:nfss_net_2:AVERAGE",
+		"DEF:tcp=$rrd:nfss_net_3:AVERAGE",
+		"DEF:tcpconn=$rrd:nfss_net_4:AVERAGE",
+		@tmp);
+	$err = RRDs::error;
+	print("ERROR: while graphing $PNG_DIR" . "$PNG5: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		RRDs::graph("$PNG_DIR" . "$PNG5z",
+			"--title=$config->{graphs}->{_nfss5}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Values/s",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			"--lower-limit=0",
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:packets=$rrd:nfss_net_1:AVERAGE",
+			"DEF:udp=$rrd:nfss_net_2:AVERAGE",
+			"DEF:tcp=$rrd:nfss_net_3:AVERAGE",
+			"DEF:tcpconn=$rrd:nfss_net_4:AVERAGE",
+			@tmpz);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG5z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss5/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG5z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
+			}
+			else {
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG5z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG5 . "'>\n");
+		}
+	}
+
+	undef(@riglim);
+	if(trim($rigid[5]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[5]));
+	} else {
+		if(trim($rigid[5]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[5]));
+			push(@riglim, "--rigid");
+		}
+	}
+	undef(@tmp);
+	undef(@tmpz);
+	push(@tmp, "LINE1:calls#FFA500:Calls");
+	push(@tmp, "GPRINT:calls:LAST:                Current\\: %7.1lf\\n");
+	push(@tmp, "LINE1:badcalls#44EEEE:Badcalls");
+	push(@tmp, "GPRINT:badcalls:LAST:             Current\\: %7.1lf\\n");
+	push(@tmp, "LINE1:badauth#44EE44:Badauth");
+	push(@tmp, "GPRINT:badauth:LAST:              Current\\: %7.1lf\\n");
+	push(@tmp, "LINE1:badclnt#EE4444:Badclnt");
+	push(@tmp, "GPRINT:badclnt:LAST:              Current\\: %7.1lf\\n");
+	push(@tmp, "LINE1:xdrcall#4444EE:XDRcall");
+	push(@tmp, "GPRINT:xdrcall:LAST:              Current\\: %7.1lf\\n");
+	push(@tmpz, "LINE1:calls#FFA500:Calls");
+	push(@tmpz, "LINE1:badcalls#44EEEE:Badcalls");
+	push(@tmpz, "LINE1:badauth#44EE44:Badauth");
+	push(@tmpz, "LINE1:badclnt#EE4444:Badclnt");
+	push(@tmpz, "LINE1:xdrcall#4444EE:XDRcall");
+	($width, $height) = split('x', $config->{graph_size}->{small});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		@tmp = @tmpz;
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+	}
+	RRDs::graph("$PNG_DIR" . "$PNG6",
+		"--title=$config->{graphs}->{_nfss6}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=PNG",
+		"--vertical-label=Values/s",
+		"--width=$width",
+		"--height=$height",
+		@riglim,
+		"--lower-limit=0",
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
+		@{$colors->{graph_colors}},
+		"DEF:calls=$rrd:nfss_rpc_1:AVERAGE",
+		"DEF:badcalls=$rrd:nfss_rpc_2:AVERAGE",
+		"DEF:badauth=$rrd:nfss_rpc_3:AVERAGE",
+		"DEF:badclnt=$rrd:nfss_rpc_4:AVERAGE",
+		"DEF:xdrcall=$rrd:nfss_rpc_4:AVERAGE",
+		@tmp);
+	$err = RRDs::error;
+	print("ERROR: while graphing $PNG_DIR" . "$PNG6: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		RRDs::graph("$PNG_DIR" . "$PNG6z",
+			"--title=$config->{graphs}->{_nfss6}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Values/s",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			"--lower-limit=0",
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:calls=$rrd:nfss_rpc_1:AVERAGE",
+			"DEF:badcalls=$rrd:nfss_rpc_2:AVERAGE",
+			"DEF:badauth=$rrd:nfss_rpc_3:AVERAGE",
+			"DEF:badclnt=$rrd:nfss_rpc_4:AVERAGE",
+			"DEF:xdrcall=$rrd:nfss_rpc_4:AVERAGE",
+			@tmpz);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG6z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss6/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG6z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG6 . "' border='0'></a>\n");
+			}
+			else {
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG6z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG6 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG6 . "'>\n");
+		}
+	}
+
+	undef(@riglim);
+	if(trim($rigid[6]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[6]));
+	} else {
+		if(trim($rigid[6]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[6]));
+			push(@riglim, "--rigid");
+		}
+	}
+	undef(@tmp);
+	undef(@tmpz);
+#	push(@tmp, "LINE1:threads#444444:Threads usage");
+#	push(@tmp, "GPRINT:threads:LAST:        Current\\: %7.1lf\\n");
+	push(@tmp, "LINE1:th1#33FF00:<10%\\g");
+	push(@tmp, "GPRINT:th1:LAST:\\: %7.1lf        ");
+	push(@tmp, "LINE1:th2#FFCC00:< 60%\\g");
+	push(@tmp, "GPRINT:th2:LAST:\\: %7.1lf\\n");
+	push(@tmp, "LINE1:th3#66FF00:<20%\\g");
+	push(@tmp, "GPRINT:th3:LAST:\\: %7.1lf        ");
+	push(@tmp, "LINE1:th4#FF9900:< 70%\\g");
+	push(@tmp, "GPRINT:th4:LAST:\\: %7.1lf\\n");
+	push(@tmp, "LINE1:th5#99FF00:<30%\\g");
+	push(@tmp, "GPRINT:th5:LAST:\\: %7.1lf        ");
+	push(@tmp, "LINE1:th6#FF6600:< 80%\\g");
+	push(@tmp, "GPRINT:th6:LAST:\\: %7.1lf\\n");
+	push(@tmp, "LINE1:th7#CCFF00:<40%\\g");
+	push(@tmp, "GPRINT:th7:LAST:\\: %7.1lf        ");
+	push(@tmp, "LINE1:th8#FF3300:< 90%\\g");
+	push(@tmp, "GPRINT:th8:LAST:\\: %7.1lf\\n");
+	push(@tmp, "LINE1:th9#FFFF00:<50%\\g");
+	push(@tmp, "GPRINT:th9:LAST:\\: %7.1lf        ");
+	push(@tmp, "LINE1:th10#FF0000:<100%\\g");
+	push(@tmp, "GPRINT:th10:LAST:\\: %7.1lf\\n");
+#	push(@tmpz, "LINE1:threads#444444:Threads usage");
+	push(@tmpz, "LINE1:th1#33FF00:<10%");
+	push(@tmpz, "LINE1:th3#66FF00:<20%");
+	push(@tmpz, "LINE1:th5#99FF00:<30%");
+	push(@tmpz, "LINE1:th7#CCFF00:<40%");
+	push(@tmpz, "LINE1:th9#FFFF00:<50%");
+	push(@tmpz, "LINE1:th2#FFCC00:<60%");
+	push(@tmpz, "LINE1:th4#FF9900:<70%");
+	push(@tmpz, "LINE1:th6#FF6600:<80%");
+	push(@tmpz, "LINE1:th8#FF3300:<90%");
+	push(@tmpz, "LINE1:th10#FF0000:<100%");
+	($width, $height) = split('x', $config->{graph_size}->{small});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		@tmp = @tmpz;
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+	}
+	RRDs::graph("$PNG_DIR" . "$PNG7",
+		"--title=$config->{graphs}->{_nfss7}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=PNG",
+		"--vertical-label=Values/s",
+		"--width=$width",
+		"--height=$height",
+		@riglim,
+		"--lower-limit=0",
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
+		@{$colors->{graph_colors}},
+		"DEF:threads=$rrd:nfss_th_0:AVERAGE",
+		"DEF:th1=$rrd:nfss_th_1:AVERAGE",
+		"DEF:th2=$rrd:nfss_th_2:AVERAGE",
+		"DEF:th3=$rrd:nfss_th_3:AVERAGE",
+		"DEF:th4=$rrd:nfss_th_4:AVERAGE",
+		"DEF:th5=$rrd:nfss_th_5:AVERAGE",
+		"DEF:th6=$rrd:nfss_th_6:AVERAGE",
+		"DEF:th7=$rrd:nfss_th_7:AVERAGE",
+		"DEF:th8=$rrd:nfss_th_8:AVERAGE",
+		"DEF:th9=$rrd:nfss_th_9:AVERAGE",
+		"DEF:th10=$rrd:nfss_th_10:AVERAGE",
+		@tmp);
+	$err = RRDs::error;
+	print("ERROR: while graphing $PNG_DIR" . "$PNG7: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		RRDs::graph("$PNG_DIR" . "$PNG7z",
+			"--title=$config->{graphs}->{_nfss7}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Values/s",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			"--lower-limit=0",
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:threads=$rrd:nfss_th_0:AVERAGE",
+			"DEF:th1=$rrd:nfss_th_1:AVERAGE",
+			"DEF:th2=$rrd:nfss_th_2:AVERAGE",
+			"DEF:th3=$rrd:nfss_th_3:AVERAGE",
+			"DEF:th4=$rrd:nfss_th_4:AVERAGE",
+			"DEF:th5=$rrd:nfss_th_5:AVERAGE",
+			"DEF:th6=$rrd:nfss_th_6:AVERAGE",
+			"DEF:th7=$rrd:nfss_th_7:AVERAGE",
+			"DEF:th8=$rrd:nfss_th_8:AVERAGE",
+			"DEF:th9=$rrd:nfss_th_9:AVERAGE",
+			"DEF:th10=$rrd:nfss_th_10:AVERAGE",
+			@tmpz);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG7z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss7/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG7z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG7 . "' border='0'></a>\n");
+			}
+			else {
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG7z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG7 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG7 . "'>\n");
+		}
+	}
+
+	undef(@riglim);
+	if(trim($rigid[7]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[7]));
+	} else {
+		if(trim($rigid[7]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[7]));
+			push(@riglim, "--rigid");
+		}
+	}
+	undef(@tmp);
+	undef(@tmpz);
+	push(@tmp, "AREA:hits#44EEEE:Hits");
+	push(@tmp, "GPRINT:hits:LAST:                 Current\\: %7.1lf\\n");
+	push(@tmp, "AREA:misses#4444EE:Misses");
+	push(@tmp, "GPRINT:misses:LAST:               Current\\: %7.1lf\\n");
+	push(@tmp, "AREA:nocache#EEEE44:Nocache");
+	push(@tmp, "GPRINT:nocache:LAST:              Current\\: %7.1lf\\n");
+	push(@tmp, "LINE1:hits#00EEEE");
+	push(@tmp, "LINE1:misses#0000EE");
+	push(@tmp, "LINE1:nocache#EEEE44");
+	push(@tmpz, "AREA:hits#44EEEE:Hits");
+	push(@tmpz, "AREA:misses#4444EE:Misses");
+	push(@tmpz, "AREA:nocache#EEEE44:Nocache");
+	push(@tmpz, "LINE1:hits#00EEEE");
+	push(@tmpz, "LINE1:misses#0000EE");
+	push(@tmpz, "LINE1:nocache#EEEE44");
+	($width, $height) = split('x', $config->{graph_size}->{small});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		@tmp = @tmpz;
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+	}
+	RRDs::graph("$PNG_DIR" . "$PNG8",
+		"--title=$config->{graphs}->{_nfss8}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=PNG",
+		"--vertical-label=Requests/s",
+		"--width=$width",
+		"--height=$height",
+		@riglim,
+		"--lower-limit=0",
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
+		@{$colors->{graph_colors}},
+		"DEF:hits=$rrd:nfss_rc_1:AVERAGE",
+		"DEF:misses=$rrd:nfss_rc_2:AVERAGE",
+		"DEF:nocache=$rrd:nfss_rc_3:AVERAGE",
+		@tmp);
+	$err = RRDs::error;
+	print("ERROR: while graphing $PNG_DIR" . "$PNG8: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		RRDs::graph("$PNG_DIR" . "$PNG8z",
+			"--title=$config->{graphs}->{_nfss8}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Requests/s",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			"--lower-limit=0",
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:hits=$rrd:nfss_rc_1:AVERAGE",
+			"DEF:misses=$rrd:nfss_rc_2:AVERAGE",
+			"DEF:nocache=$rrd:nfss_rc_3:AVERAGE",
+			@tmpz);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG8z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss8/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG8z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG8 . "' border='0'></a>\n");
+			}
+			else {
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG8z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG8 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG8 . "'>\n");
+		}
+	}
+
+	undef(@riglim);
+	if(trim($rigid[8]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[8]));
+	} else {
+		if(trim($rigid[8]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[8]));
+			push(@riglim, "--rigid");
+		}
+	}
+	undef(@tmp);
+	undef(@tmpz);
+	push(@tmp, "LINE1:lookup#FFA500:Lookups");
+	push(@tmp, "GPRINT:lookup:LAST:              Current\\: %7.1lf\\n");
+	push(@tmp, "LINE1:anon#44EE44:Anonymous lockups");
+	push(@tmp, "GPRINT:anon:LAST:    Current\\: %7.1lf\\n");
+	push(@tmp, "LINE1:ncachedir1#44EEEE:Ncachedir");
+	push(@tmp, "GPRINT:ncachedir1:LAST:            Current\\: %7.1lf\\n");
+	push(@tmp, "LINE1:ncachedir2#4444EE:Ncachedir");
+	push(@tmp, "GPRINT:ncachedir2:LAST:            Current\\: %7.1lf\\n");
+	push(@tmp, "LINE1:stale#EE4444:Stale");
+	push(@tmp, "GPRINT:stale:LAST:                Current\\: %7.1lf\\n");
+	push(@tmpz, "LINE1:lookup#FFA500:Lookup");
+	push(@tmpz, "LINE1:anon#44EE44:Anonymous");
+	push(@tmpz, "LINE1:ncachedir1#44EEEE:Ncachedir");
+	push(@tmpz, "LINE1:ncachedir2#4444EE:Ncachedir");
+	push(@tmpz, "LINE1:stale#EE4444:Stale");
+	($width, $height) = split('x', $config->{graph_size}->{small});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		@tmp = @tmpz;
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+	}
+	RRDs::graph("$PNG_DIR" . "$PNG9",
+		"--title=$config->{graphs}->{_nfss9}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=PNG",
+		"--vertical-label=Values/s",
+		"--width=$width",
+		"--height=$height",
+		@riglim,
+		"--lower-limit=0",
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
+		@{$colors->{graph_colors}},
+		"DEF:lookup=$rrd:nfss_fh_1:AVERAGE",
+		"DEF:anon=$rrd:nfss_fh_2:AVERAGE",
+		"DEF:ncachedir1=$rrd:nfss_fh_3:AVERAGE",
+		"DEF:ncachedir2=$rrd:nfss_fh_4:AVERAGE",
+		"DEF:stale=$rrd:nfss_fh_4:AVERAGE",
+		@tmp);
+	$err = RRDs::error;
+	print("ERROR: while graphing $PNG_DIR" . "$PNG9: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		RRDs::graph("$PNG_DIR" . "$PNG9z",
+			"--title=$config->{graphs}->{_nfss9}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Values/s",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			"--lower-limit=0",
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:lookup=$rrd:nfss_fh_1:AVERAGE",
+			"DEF:anon=$rrd:nfss_fh_2:AVERAGE",
+			"DEF:ncachedir1=$rrd:nfss_fh_3:AVERAGE",
+			"DEF:ncachedir2=$rrd:nfss_fh_4:AVERAGE",
+			"DEF:stale=$rrd:nfss_fh_4:AVERAGE",
+			@tmpz);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG9z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss9/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG9z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG9 . "' border='0'></a>\n");
+			}
+			else {
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG9z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG9 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG9 . "'>\n");
+		}
+	}
+
+	if($title) {
+		print("    </td>\n");
+		print("    </tr>\n");
+		main::graph_footer();
+	}
+	print("  <br>\n");
+	return;
+}
+
+1;
