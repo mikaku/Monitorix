@@ -413,7 +413,6 @@ sub hptemp_cgi {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-
 	if(scalar(my @hptemp1 = split(',', $hptemp->{list}->{1}))) {
 		undef(@tmp);
 		undef(@tmpz);

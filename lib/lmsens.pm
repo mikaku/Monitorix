@@ -751,11 +751,11 @@ sub lmsens_cgi {
 			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "'>\n");
 		}
 	}
+
 	if($title) {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-
 	undef(@tmp);
 	undef(@tmpz);
 	push(@tmp, ("LINE2:mb0#FFA500:MB 0\\g", "GPRINT:mb0:LAST:\\:%3.0lf   "));

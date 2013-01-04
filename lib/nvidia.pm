@@ -403,11 +403,11 @@ sub nvidia_cgi {
 			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "'>\n");
 		}
 	}
+
 	if($title) {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-
 	undef(@tmp);
 	undef(@tmpz);
 	push(@tmp, "LINE2:gpu0#FFA500:Card 0\\g");

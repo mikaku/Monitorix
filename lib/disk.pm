@@ -411,11 +411,11 @@ sub disk_cgi {
 				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3] . "'>\n");
 			}
 		}
+
 		if($title) {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-
 		undef(@tmp);
 		undef(@tmpz);
 		for($n = 0; $n < 8; $n += 2) {

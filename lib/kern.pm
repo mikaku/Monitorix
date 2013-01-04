@@ -713,11 +713,11 @@ sub kern_cgi {
 			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "'>\n");
 		}
 	}
+
 	if($title) {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-
 	undef(@tmp);
 	undef(@tmpz);
 	push(@tmp, "AREA:cs#44AAEE:Context switches");

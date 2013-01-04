@@ -408,11 +408,11 @@ sub ntp_cgi {
 				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3] . "'>\n");
 			}
 		}
+
 		if($title) {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-
 		undef(@riglim);
 		if(trim($rigid[1]) eq 1) {
 			push(@riglim, "--upper-limit=" . trim($limit[1]));

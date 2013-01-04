@@ -508,11 +508,11 @@ sub nfsc_cgi {
 			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "'>\n");
 		}
 	}
+
 	if($title) {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-
 	undef(@riglim);
 	if(trim($rigid[2]) eq 1) {
 		push(@riglim, "--upper-limit=" . trim($limit[2]));
