@@ -399,8 +399,17 @@ sub int_update {
 }
 
 sub int_cgi {
-	my ($myself, $title) = @_;
+	my ($package, $config, $cgi) = @_;
 
+	my $int = $config->{int};
+	my @rigid = split(',', $int->{rigid});
+	my @limit = split(',', $int->{limit});
+	my $tf = $cgi->{tf};
+	my $colors = $cgi->{colors};
+	my $graph = $cgi->{graph};
+	my $silent = $cgi->{silent};
+
+	my $u = "";
 	my $width;
 	my $height;
 	my @riglim;
@@ -765,25 +774,13 @@ sub int_cgi {
 			"#EE00EE",
 			"#EEEE00");
 
-	my $PNG1 = $u . $myself . "1." . $when . ".png";
-	my $PNG2 = $u . $myself . "2." . $when . ".png";
-	my $PNG3 = $u . $myself . "3." . $when . ".png";
-	my $PNG1z = $u . $myself . "1z." . $when . ".png";
-	my $PNG2z = $u . $myself . "2z." . $when . ".png";
-	my $PNG3z = $u . $myself . "3z." . $when . ".png";
+	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $title = $config->{graph_title}->{$package};
+	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
 
 	$title = !$silent ? $title : "";
 
-	unlink ("$PNG_DIR" . "$PNG1",
-		"$PNG_DIR" . "$PNG2",
-		"$PNG_DIR" . "$PNG3");
-	if($ENABLE_ZOOM eq "Y") {
-		unlink ("$PNG_DIR" . "$PNG1z",
-			"$PNG_DIR" . "$PNG2z",
-			"$PNG_DIR" . "$PNG3z");
-	}
-
-	if($os eq "Linux") {
+	if($config->{os} eq "Linux") {
 		open(IN, "/proc/interrupts");
 		my $timer_pos = 0;
 		my $i8042_pos = 0;
@@ -808,7 +805,7 @@ sub int_cgi {
 				$good_pos = $timer_pos > $i8042_pos ? $i8042_pos : $timer_pos;
 				$good_pos = $good_pos ? $good_pos : $timer_pos;
 				$num = unpack("A4", $_);
-				undef($name);
+				$name = "";
 				if(length($_) >= $good_pos) {
 					$name = substr($_, $good_pos);
 					$name = defined($name) ? $name : "";
@@ -826,7 +823,7 @@ sub int_cgi {
 			}
 		}
 		close(IN);
-	} elsif ($os eq "FreeBSD" || $os eq "OpenBSD") {
+	} elsif(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD")) {
 		open(IN, "vmstat -i | sort |");
 		my @allfields;
 		my $num;
@@ -869,20 +866,23 @@ sub int_cgi {
 		}
 	}
 
-	if($IFACE_MODE eq "text") {
+
+	# text mode
+	#
+	if(lc($config->{iface_mode}) eq "text") {
 		if($title) {
-			graph_header($title, 2);
+			main::graph_header($title, 2);
 			print("    <tr>\n");
-			print("    <td bgcolor='$title_bg_color'>\n");
+			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 		}
-		my (undef, undef, undef, $data) = RRDs::fetch("$INT_RRD",
-			"--start=-$nwhen$twhen",
+		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"AVERAGE",
-			"-r $res");
+			"-r $tf->{res}");
 		$err = RRDs::error;
-		print("ERROR: while fetching $INT_RRD: $err\n") if $err;
+		print("ERROR: while fetching $rrd: $err\n") if $err;
 		my $line1;
-		print("    <pre style='font-size: 12px; color: $fg_color';>\n");
+		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
 		print("Time   ");
 		for($n = 0; $n < 256; $n++) {
 			if(defined($INT[$n])) {
@@ -895,11 +895,11 @@ sub int_cgi {
 		my $line;
 		my @row;
 		my $time;
-		for($n = 0, $time = $tb; $n < ($tb * $ts); $n++) {
+		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
 			$line = @$data[$n];
 			@row = @$line;
-			$time = $time - (1 / $ts);
-			printf(" %2d$tc   ", $time);
+			$time = $time - (1 / $tf->{ts});
+			printf(" %2d$tf->{tc}   ", $time);
 			for($n2 = 0; $n2 < 256; $n2++) {
 				if(defined($INT[$n2])) {
 					printf(" %8d", $row[$n2]);
@@ -911,15 +911,54 @@ sub int_cgi {
 		if($title) {
 			print("    </td>\n");
 			print("    </tr>\n");
-			graph_footer();
+			main::graph_footer();
 		}
-		return 1;
+		print("  <br>\n");
+		return;
+	}
+
+
+	# graph mode
+	#
+	if($silent eq "yes" || $silent eq "imagetag") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "_";
+	}
+	if($silent eq "imagetagbig") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "";
+	}
+
+	my $PNG1 = $u . $package . "1." . $tf->{when} . ".png";
+	my $PNG2 = $u . $package . "2." . $tf->{when} . ".png";
+	my $PNG3 = $u . $package . "3." . $tf->{when} . ".png";
+	my $PNG1z = $u . $package . "1z." . $tf->{when} . ".png";
+	my $PNG2z = $u . $package . "2z." . $tf->{when} . ".png";
+	my $PNG3z = $u . $package . "3z." . $tf->{when} . ".png";
+	unlink ("$PNG_DIR" . "$PNG1",
+		"$PNG_DIR" . "$PNG2",
+		"$PNG_DIR" . "$PNG3");
+	if(lc($config->{enable_zoom}) eq "y") {
+		unlink ("$PNG_DIR" . "$PNG1z",
+			"$PNG_DIR" . "$PNG2z",
+			"$PNG_DIR" . "$PNG3z");
 	}
 
 	if($title) {
-		graph_header($title, 2);
+		main::graph_header($title, 2);
 	}
-
+	if(trim($rigid[0]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[0]));
+	} else {
+		if(trim($rigid[0]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[0]));
+			push(@riglim, "--rigid");
+		}
+	}
+	if($title) {
+		print("    <tr>\n");
+		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+	}
 	my $i;
 	for($n = 0, $n1 = 0, $n2 = 0, $n3 = 0; $n < 256; $n++) {
 		if(defined($NAME[$n])) {
@@ -935,17 +974,17 @@ sub int_cgi {
 				($i) = split(',', $INT[$n]);
 			}
 			if($i < 3 || $NAME[$n] =~ /timer/) {
-				push(@DEF2, ("DEF:int" . $n . "=" . $INT_RRD . ":int_" . $n . ":AVERAGE"));
+				push(@DEF2, ("DEF:int" . $n . "=" . $rrd . ":int_" . $n . ":AVERAGE"));
 				push(@AREA2, ("AREA:int" . $n . $ACOLOR2[$n2] . ":(" . $INT[$n] . ")" . $NAME[$n]));
 				push(@LINE2, ("LINE1:int" . $n . $LCOLOR2[$n2]));
 				$n2++;
 			} elsif($i < 6 || $NAME[$n] =~ /^xen/) {
-				push(@DEF3, ("DEF:int" . $n . "=" . $INT_RRD . ":int_" . $n . ":AVERAGE"));
+				push(@DEF3, ("DEF:int" . $n . "=" . $rrd . ":int_" . $n . ":AVERAGE"));
 				push(@AREA3, ("AREA:int" . $n . $ACOLOR3[$n3] . ":(" . $INT[$n] . ")" . $NAME[$n]));
 				push(@LINE3, ("LINE1:int" . $n . $LCOLOR3[$n3]));
 				$n3++;
 			} else {
-				push(@DEF1, ("DEF:int" . $n . "=" . $INT_RRD . ":int_" . $n . ":AVERAGE"));
+				push(@DEF1, ("DEF:int" . $n . "=" . $rrd . ":int_" . $n . ":AVERAGE"));
 				push(@AREA1, ("AREA:int" . $n . $ACOLOR1[$n1] . ":(" . $INT[$n] . ")" . $NAME[$n]));
 				push(@LINE1, ("LINE1:int" . $n . $LCOLOR1[$n1]));
 				$n1++;
@@ -956,52 +995,40 @@ sub int_cgi {
 		}
 	}
 	push(@AREA1, ("COMMENT: \\n"));
-	if($INT1_RIGID eq 1) {
-		push(@riglim, "--upper-limit=$INT1_LIMIT");
-	} else {
-		if($INT1_RIGID eq 2) {
-			push(@riglim, "--upper-limit=$INT1_LIMIT");
-			push(@riglim, "--rigid");
-		}
-	}
-	if($title) {
-		print("    <tr>\n");
-		print("    <td bgcolor='$title_bg_color'>\n");
-	}
-	($width, $height) = split('x', $GRAPH_SIZE{main});
+	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
-		($width, $height) = split('x', $GRAPH_SIZE{remote}) if $silent eq "imagetag";
-		($width, $height) = split('x', $GRAPH_SIZE{main}) if $silent eq "imagetagbig";
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 	}
 	RRDs::graph("$PNG_DIR" . "$PNG1",
-		"--title=$rgraphs{_int1}  ($nwhen$twhen)",
-		"--start=-$nwhen$twhen",
+		"--title=$config->{graphs}->{_int1}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
 		"--vertical-label=Ticks/s",
 		"--width=$width",
 		"--height=$height",
 		@riglim,
 		"--lower-limit=0",
-		@VERSION12,
-		@graph_colors,
+		@{$cgi->{version12}},
+		@{$colors->{graph_colors}},
 		@DEF1,
 		@AREA1,
 		@LINE1);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG1: $err\n") if $err;
-	if($ENABLE_ZOOM eq "Y") {
-		($width, $height) = split('x', $GRAPH_SIZE{zoom});
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		RRDs::graph("$PNG_DIR" . "$PNG1z",
-			"--title=$rgraphs{_int1}  ($nwhen$twhen)",
-			"--start=-$nwhen$twhen",
+			"--title=$config->{graphs}->{_int1}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
 			"--vertical-label=Ticks/s",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
 			"--lower-limit=0",
-			@VERSION12,
-			@graph_colors,
+			@{$cgi->{version12}},
+			@{$colors->{graph_colors}},
 			@DEF1,
 			@AREA1,
 			@LINE1);
@@ -1009,67 +1036,67 @@ sub int_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /int1/)) {
-		if($ENABLE_ZOOM eq "Y") {
-			if($DISABLE_JAVASCRIPT_VOID eq "Y") {
-				print("      <a href=\"" . $URL . $IMGS_DIR . $PNG1z . "\"><img src='" . $URL . $IMGS_DIR . $PNG1 . "' border='0'></a>\n");
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $URL . $IMGS_DIR . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $URL . $IMGS_DIR . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $URL . $IMGS_DIR . $PNG1 . "'>\n");
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "'>\n");
 		}
 	}
+
 	if($title) {
 		print("    </td>\n");
-		print("    <td valign='top' bgcolor='" . $title_bg_color . "'>\n");
+		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-
 	undef(@riglim);
-	if($INT2_RIGID eq 1) {
-		push(@riglim, "--upper-limit=$INT2_LIMIT");
+	if(trim($rigid[1]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[1]));
 	} else {
-		if($INT2_RIGID eq 2) {
-			push(@riglim, "--upper-limit=$INT2_LIMIT");
+		if(trim($rigid[1]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[1]));
 			push(@riglim, "--rigid");
 		}
 	}
-	($width, $height) = split('x', $GRAPH_SIZE{small});
+	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
-		($width, $height) = split('x', $GRAPH_SIZE{remote}) if $silent eq "imagetag";
-		($width, $height) = split('x', $GRAPH_SIZE{main}) if $silent eq "imagetagbig";
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 	}
 	RRDs::graph("$PNG_DIR" . "$PNG2",
-		"--title=$rgraphs{_int2}  ($nwhen$twhen)",
-		"--start=-$nwhen$twhen",
+		"--title=$config->{graphs}->{_int2}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
 		"--vertical-label=Ticks/s",
 		"--width=$width",
 		"--height=$height",
 		@riglim,
 		"--lower-limit=0",
-		@VERSION12,
-		@VERSION12_small,
-		@graph_colors,
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
+		@{$colors->{graph_colors}},
 		@DEF2,
 		@AREA2,
 		@LINE2);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
-	if($ENABLE_ZOOM eq "Y") {
-		($width, $height) = split('x', $GRAPH_SIZE{zoom});
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		RRDs::graph("$PNG_DIR" . "$PNG2z",
-			"--title=$rgraphs{_int2}  ($nwhen$twhen)",
-			"--start=-$nwhen$twhen",
+			"--title=$config->{graphs}->{_int2}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
 			"--vertical-label=Ticks/s",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
 			"--lower-limit=0",
-			@VERSION12,
-			@VERSION12_small,
-			@graph_colors,
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
 			@DEF2,
 			@AREA2,
 			@LINE2);
@@ -1077,64 +1104,64 @@ sub int_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /int2/)) {
-		if($ENABLE_ZOOM eq "Y") {
-			if($DISABLE_JAVASCRIPT_VOID eq "Y") {
-				print("      <a href=\"" . $URL . $IMGS_DIR . $PNG2z . "\"><img src='" . $URL . $IMGS_DIR . $PNG2 . "' border='0'></a>\n");
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $URL . $IMGS_DIR . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $URL . $IMGS_DIR . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $URL . $IMGS_DIR . $PNG2 . "'>\n");
+			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "'>\n");
 		}
 	}
 
 	undef(@riglim);
-	if($INT3_RIGID eq 1) {
-		push(@riglim, "--upper-limit=$INT3_LIMIT");
+	if(trim($rigid[2]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[2]));
 	} else {
-		if($INT3_RIGID eq 2) {
-			push(@riglim, "--upper-limit=$INT3_LIMIT");
+		if(trim($rigid[2]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[2]));
 			push(@riglim, "--rigid");
 		}
 	}
-	($width, $height) = split('x', $GRAPH_SIZE{small});
+	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
-		($width, $height) = split('x', $GRAPH_SIZE{remote}) if $silent eq "imagetag";
-		($width, $height) = split('x', $GRAPH_SIZE{main}) if $silent eq "imagetagbig";
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 	}
 	if(@DEF3 && @AREA3 && @LINE3) {
 		RRDs::graph("$PNG_DIR" . "$PNG3",
-			"--title=$rgraphs{_int3}  ($nwhen$twhen)",
-			"--start=-$nwhen$twhen",
+			"--title=$config->{graphs}->{_int3}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
 			"--vertical-label=Ticks/s",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
 			"--lower-limit=0",
-			@VERSION12,
-			@VERSION12_small,
-			@graph_colors,
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
 			@DEF3,
 			@AREA3,
 			@LINE3);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
-		if($ENABLE_ZOOM eq "Y") {
-			($width, $height) = split('x', $GRAPH_SIZE{zoom});
+		if(lc($config->{enable_zoom}) eq "y") {
+			($width, $height) = split('x', $config->{graph_size}->{zoom});
 			RRDs::graph("$PNG_DIR" . "$PNG3z",
-				"--title=$rgraphs{_int3}  ($nwhen$twhen)",
-				"--start=-$nwhen$twhen",
+				"--title=$config->{graphs}->{_int3}  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
 				"--vertical-label=Ticks/s",
 				"--width=$width",
 				"--height=$height",
 				@riglim,
 				"--lower-limit=0",
-				@VERSION12,
-				@VERSION12_small,
-				@graph_colors,
+				@{$cgi->{version12}},
+				@{$cgi->{version12_small}},
+				@{$colors->{graph_colors}},
 				@DEF3,
 				@AREA3,
 				@LINE3);
@@ -1142,24 +1169,25 @@ sub int_cgi {
 			print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
 		}
 		if($title || ($silent =~ /imagetag/ && $graph =~ /int3/)) {
-			if($ENABLE_ZOOM eq "Y") {
-				if($DISABLE_JAVASCRIPT_VOID eq "Y") {
-					print("      <a href=\"" . $URL . $IMGS_DIR . $PNG3z . "\"><img src='" . $URL . $IMGS_DIR . $PNG3 . "' border='0'></a>\n");
+			if(lc($config->{enable_zoom}) eq "y") {
+				if(lc($config->{disable_javascript_void}) eq "y") {
+					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $URL . $IMGS_DIR . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $URL . $IMGS_DIR . $PNG3 . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $URL . $IMGS_DIR . $PNG3 . "'>\n");
+				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "'>\n");
 			}
 		}
 	}
 	if($title) {
 		print("    </td>\n");
 		print("    </tr>\n");
-		graph_footer();
+		main::graph_footer();
 	}
-	return 1;
+	print("  <br>\n");
+	return;
 }
 
 1;
