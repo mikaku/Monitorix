@@ -180,6 +180,8 @@ sub mysql_update {
 			}
 			$dbh = DBI->connect(
 				"DBI:mysql:mysql_socket=$sock",
+				$user,
+				$pass,
 				{ PrintError => $print_error, }
 			) or logger("$myself: Cannot connect to MySQL '$sock'.") and next;
 		}
