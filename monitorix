@@ -49,7 +49,7 @@ $SIG{'HUP' } = 'HUP_handler';
 $SIG{'ALRM'} = 'ALRM_handler';
 
 use constant VERSION	=> "2.9.9";
-use constant RELDATE	=> "31-Dec-2012";
+use constant RELDATE	=> "01-Jan-2013";
 
 my @suppsys = ("Linux", "FreeBSD", "OpenBSD", "NetBSD");
 my %config;
@@ -165,7 +165,6 @@ sub create_index {
 	my $n;
 	my $gname;
 	my $theme = $config{theme};
-	my %multihost = %{$config{multihost}};
 	my $bgcolor;
 	my $table_back_color;
 	my $title_back_color;
@@ -232,18 +231,20 @@ EOF
 
 	print(OUT "        <td bgcolor='$bgcolor'>\n");
 	print(OUT "          <select name='mode' size='1'>\n");
-	print(OUT "            <option value='localhost'>Local Host</option>\n");
+	print(OUT "            <optgroup label='Local Host'>\n");
+	print(OUT "            <option value='localhost'>localhost</option>\n");
+	print(OUT "            </optgroup>\n");
 
-	if(scalar(my @remotehost_list = split(',', $multihost{remotehost_list})) && lc($multihost{enabled}) eq "y") {
+	if(scalar(my @remotehost_list = split(',', $config{multihost}->{remotehost_list})) && lc($config{multihost}->{enabled}) eq "y") {
 		print(OUT "            <optgroup label='Multihost'>\n");
-		print(OUT "            <option value='multihost.all'>All Hosts</option>\n");
+		print(OUT "            <option value='multihost.all'>All</option>\n");
 		for($n = 0; $n < scalar(@remotehost_list); $n++) {
 			print(OUT "              <option value='multihost.$n'>" . trim($remotehost_list[$n]) . "</option>\n");
                               }
 		print(OUT "            </optgroup>\n");
 
-		if(lc($multihost{groups}) eq "y" ) {
-			my @remotegroup_list = split(',', $multihost{remotegroup_list});
+		if(lc($config{multihost}->{groups}) eq "y" ) {
+			my @remotegroup_list = split(',', $config{multihost}->{remotegroup_list});
 			print(OUT "            <optgroup label='Multihost-Groups'>\n");
 			print(OUT "            <option value='multihost.group'>All Groups</option>\n");
 			for($n = 0; $n < scalar(@remotegroup_list); $n++) {
@@ -253,11 +254,11 @@ EOF
 		}
 	}
 
-	if(scalar(my @pc_list = split(',', $config{pc_list})) && lc($config{graph_enable}->{pc}) eq "y") {
-		print(OUT "            <optgroup label='LAN PCs'>\n");
-		print(OUT "              <option value='pc.all'>All LAN PCs</option>\n");
-		for($n = 0; $n < scalar(@pc_list); $n++) {
-			print(OUT "              <option value='pc.$n'>" . trim($pc_list[$n]) . "</option>\n");
+	if(scalar(my @tfl = split(',', $config{traffacct}->{list})) && lc($config{traffacct}->{enabled}) eq "y") {
+		print(OUT "            <optgroup label='Traffic Accounting'>\n");
+		print(OUT "              <option value='traffacct.all'>All</option>\n");
+		for($n = 0; $n < scalar(@tfl); $n++) {
+			print(OUT "              <option value='traffacct.$n'>" . trim($tfl[$n]) . "</option>\n");
                               }
 		print(OUT "            </optgroup>\n");
 	}
