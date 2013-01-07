@@ -74,7 +74,7 @@ sub multihost {
 				my $h2 = trim($remotehost_list[$n2]);
 				if($h eq $h2) {
 					push(@host, $h);
-					push(@url, $multihost->{remotehost_url}->{$n2});
+					push(@url, $multihost->{remotehost_desc}->{$n2});
 				}
 			}
 		}
@@ -82,18 +82,18 @@ sub multihost {
 		my @remotehost_list = split(',', $multihost->{remotehost_list});
 		for($n = 0; $n < scalar(@remotehost_list); $n++) {
 			push(@host, trim($remotehost_list[$n]));
-			push(@url, $multihost->{remotehost_url}->{$n});
+			push(@url, $multihost->{remotehost_desc}->{$n});
 		}
 	}
 
-	$multihost->{imgs_per_row} = 1 unless $multihost->{imgs_per_row} > 1;
+	$multihost->{graphs_per_row} = 1 unless $multihost->{graphs_per_row} > 1;
 	my $graph = ($cgi->{graph} eq "all" || $cgi->{graph} =~ m/group\[0-9]*/) ? "_system1" : $cgi->{graph};
 
 	if($cgi->{val} eq "all" || $cgi->{val} =~ m/group[0-9]*/) {
-		for($n = 0; $n < scalar(@host); $n += $multihost->{imgs_per_row}) {
+		for($n = 0; $n < scalar(@host); $n += $multihost->{graphs_per_row}) {
 			print "<table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n";
 			print " <tr>\n";
-			for($n2 = 0; $n2 < $multihost->{imgs_per_row}; $n2++) {
+			for($n2 = 0; $n2 < $multihost->{graphs_per_row}; $n2++) {
 				if($n < scalar(@host)) {
 					print "  <td bgcolor='$colors->{title_bg_color}'>\n";
 					print "   <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
@@ -105,7 +105,7 @@ sub multihost {
 			}
 			print " </tr>\n";
 			print " <tr>\n";
-			for($n2 = 0, $n = $n - $multihost->{imgs_per_row}; $n2 < $multihost->{imgs_per_row}; $n2++) {
+			for($n2 = 0, $n = $n - $multihost->{graphs_per_row}; $n2 < $multihost->{graphs_per_row}; $n2++) {
 				if($n < scalar(@host)) {
 					print "  <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
 					print "   <iframe src=$url[$n]$config->{base_cgi}/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetag height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
@@ -116,7 +116,7 @@ sub multihost {
 			}
 			print " </tr>\n";
 			print " <tr>\n";
-			for($n2 = 0, $n = $n - $multihost->{imgs_per_row}; $n2 < $multihost->{imgs_per_row}; $n2++) {
+			for($n2 = 0, $n = $n - $multihost->{graphs_per_row}; $n2 < $multihost->{graphs_per_row}; $n2++) {
 				if($n < scalar(@host)) {
 				if(lc($multihost->{footer_url}) eq "y") {
 					print "  <td bgcolor='$colors->{title_bg_color}'>\n";
@@ -129,7 +129,7 @@ sub multihost {
 				}
 				$n++;
 			}
-			$n = $n - $multihost->{imgs_per_row};
+			$n = $n - $multihost->{graphs_per_row};
 			print " </tr>\n";
 			print "</table>\n";
 			print "<br>\n";
