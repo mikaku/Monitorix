@@ -2,6 +2,9 @@
 ====================
 - Complete rewrite.
 - Added a new option in 'port' to define the number of graphs per row.
+- Added two new options 'ftp_log' and 'ftp_log_date_format' to be able to
+  read FTP connections from its own log file.
+	(suggested by Luca Ferrario, luca AT ferrario.net)
 - Fixed a missing description in the first entry of each network interface in
   the options list.
 - Fixed a missing argument on each *_init() function preventing show an "Ok"
