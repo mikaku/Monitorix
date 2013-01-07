@@ -1,16 +1,6 @@
 3.0.0  - NN-XXX-2013
 ====================
 - Complete rewrite.
-- Introduced some modifications to the device name detection for FreeBSD.
-	(thanks to Chris Rees, utisoft AT gmail.com)
-- Improved support of Linux NFSv4 spliting the operation names in two different
-  arrays (client and server).
-- Fixed a typo in 'monitorix.cgi' that prevented honoring the NFSC_VERSION
-  option.
-- Fixed an intermix usage of alarm() and sleep() substituting it by alarm() and
-  pause().
-- Fixed a bug in multihost introduced by the groups code.
-
 - Added a new option in 'port' to define the number of graphs per row.
 - Fixed a missing description in the first entry of each network interface in
   the options list.
@@ -23,6 +13,20 @@
 - Fixed a number of small bugs.
 - Fixed a bad naming of the bitrate variables when creating the Bitrate graph
   of the Icecast Streaming Media Server.
+
+Changes introduced to 2.6.0 version:
+- Introduced some modifications to the device name detection for FreeBSD.
+	(thanks to Chris Rees, utisoft AT gmail.com)
+- Improved support of Linux NFSv4 spliting the operation names in two different
+  arrays (client and server).
+- Fixed a typo in 'monitorix.cgi' that prevented honoring the NFSC_VERSION
+  option.
+- Fixed an intermix usage of alarm() and sleep() substituting it by alarm() and
+  pause().
+- Fixed a bug in multihost introduced by the groups code.
+- Fixed to include the username and password when connecting to MySQL using a
+  socket.
+	(thanks to Luca Ferrario, luca AT ferrario.net)
 
 
 2.6.0  - 19-Sep-2012
