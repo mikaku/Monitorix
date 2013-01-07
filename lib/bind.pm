@@ -259,7 +259,7 @@ sub bind_update {
 		my $data = XMLin($response->content);
 		my $value;
 
-		$value = $data->{bind}->{statistics}->{server}->{requests}->{opcode}->{QUERY}->{counter};
+		$value = $data->{bind}->{statistics}->{server}->{requests}->{opcode}->{counter};
 		$str = $n . "totalinq";
 		$totalinq = $value - ($config->{bind_hist}->{$str} || 0);
 		$totalinq = 0 unless $totalinq != $value;
