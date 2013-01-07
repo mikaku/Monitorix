@@ -133,7 +133,7 @@ sub serv_update {
 
 	# This graph is refreshed only every 5 minutes
 	my (undef, $min) = localtime(time);
-	return if($min % 5);
+#	return if($min % 5);
 
 	if(-r $config->{secure_log}) {
 		$date = strftime("%b %e", localtime);
@@ -146,10 +146,6 @@ sub serv_update {
 				if($config->{os} eq "Linux") {
 					if(/START: pop3/) {
 						$pop3++;
-					}
-					if(/START: ftp/ ||
-					  (/ proftpd\[/ && /Login successful./)) {
-						$ftp++;
 					}
 					if(/START: telnet/) {
 						$telnet++;
@@ -166,8 +162,8 @@ sub serv_update {
 	}
 
 	if(-r $config->{imap_log}) {
-		$config->{imap_date_log_format} = $config->{imap_date_log_format} || "%b %d";
-		my $date_dovecot = strftime($config->{imap_date_log_format}, localtime);
+		$config->{imap_log_date_format} = $config->{imap_log_date_format} || "%b %d";
+		my $date_dovecot = strftime($config->{imap_log_date_format}, localtime);
 		my $date_uw = strftime("%b %e %T", localtime);
 		open(IN, "$config->{imap_log}");
 		while(<IN>) {
@@ -235,6 +231,27 @@ sub serv_update {
 		while(<IN>) {
 			if(/\[$date:/) {
 				$cups++;
+			}
+		}
+		close(IN);
+	}
+
+	if(-r $config->{ftp_log}) {
+		$config->{ftp_log_date_format} = $config->{ftp_log_date_format} || "%b %e";
+		my $date = strftime($config->{ftp_log_date_format}, localtime);
+		open(IN, "$config->{ftp_log}");
+		while(<IN>) {
+			if(/$date/) {
+				# ProFTPD log
+				if(/START: ftp/ || (/ proftpd\[/ && /Login successful./) || /\"PASS .*\" 230/) {
+					$ftp++;
+					next;
+				}
+				# vsftpd log
+				if(/OK LOGIN:/) {
+					$ftp++;
+					next;
+				}
 			}
 		}
 		close(IN);
@@ -411,7 +428,7 @@ sub serv_update {
 	$config->{serv_hist}->{'val05'} = $val05;
 
 	$rrdata .= ":$l_ssh:$l_ftp:$l_telnet:$l_imap:$l_smb:$l_fax:$l_cups:$l_pop3:$l_smtp:$l_spam:$l_virus:$l_f2b:$l_val02:$l_val03:$l_val04:$l_val05";
-	RRDs::update($rrd, $rrdata);
+##	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;
 	my $err = RRDs::error;
 	logger("ERROR: while updating $rrd: $err") if $err;
