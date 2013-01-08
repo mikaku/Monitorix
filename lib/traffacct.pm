@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use Monitorix;
 use RRDs;
+use MIME::Lite;
 use Exporter 'import';
 our @EXPORT = qw(traffacct_init traffacct_update traffacct_cgi traffacct_getcounters traffacct_sendreports);
 
@@ -256,6 +257,26 @@ sub traffacct_getcounters {
 
 }
 
+sub adjust($) {
+	my $bytes = (shift);
+	my $adjust = 0;
+	my $b = "  ";
+
+	if($bytes > 0  &&  $bytes < 1048576) {
+		$adjust = $bytes/1024;
+		$b = "KB";
+	}
+	if($bytes > 1048576  &&  $bytes < 1073741824) {
+		$adjust = $bytes/1024/1024;
+		$b = "MB";
+	}
+	if($bytes > 1073741824  &&  $bytes < 1000000000000) {
+		$adjust = $bytes/1024/1024/1024;
+		$b = "GB";
+	}
+	return sprintf("%3u%s", $adjust, $b);
+}
+
 sub traffacct_sendreports {
 	my $myself = (caller(0))[3];
 	my ($config, $debug) = @_;
@@ -264,20 +285,94 @@ sub traffacct_sendreports {
 	my $n;
 	my $to;
 
-#	my $report_dir = $config->{base_lib} . $config->{report_dir};
-#	if(! -x $report_dir . "send_reports") {
-#		logger("$myself: unable to find the script '" . $REPORT_DIR . "send_reports" . "'.");
-#		return;
-#	}
-#	logger("Sending monthly traffic reports.");
-#	for($n = 0; $n < $PC_MAX; $n++) {
-#		if($PC_LIST[$n]) {
-#			$to = $PC_REPORT_MAIL[$n];
-#			$to = $PC_DEFAULT_MAIL unless $PC_REPORT_MAIL[$n];
-#			logger("$myself: $PC_LIST[$n] -> $to [$PC_REPORT_LANG]");
-#			system("cd $REPORT_DIR ; " . $REPORT_DIR . "send_reports -h $PC_LIST[$n] -c $opt_c &");
-#		}
-#	}
+	use constant SMTP_HOST	=> "localhost";
+	use constant FROM	=> "noreply\@example.com";
+	use constant PREFIX	=> "http://127.0.0.1";
+	use constant SUBJECT	=> "Monitorix: monthly traffic report";
+
+	my $url;
+	my $ua;
+	my (undef, undef, undef, undef, $prev_month, $prev_year) = localtime(time - 3600);
+
+	my $usage_dir = $config->{base_lib} . $config->{usage_dir};
+	my $report_dir = $config->{base_lib} . $config->{report_dir};
+	logger("Sending monthly network traffic reports.");
+
+	my @tal = split(',', $traffacct->{list});
+	for($n = 0; $n < $traffacct->{max}; $n++) {
+		my $name = trim($tal[$n]);
+		next if(!$name);
+
+		my @traffic = ();
+		my $tot_in = 0;
+		my $tot_out = 0;
+		my $tot = 0;
+		if(open(IN, $usage_dir . $name)) {
+			push(@traffic, "DAY              INPUT             OUTPUT                 TOTAL\n");
+			push(@traffic, "---------------------------------------------------------------\n");
+			while(<IN>) {
+				my ($day, $in, $out) = split(' ', $_);
+				chomp($day);
+				chomp($in);
+				chomp($day);
+				$tot_in += $in;
+				$tot_out += $out;
+				$tot = $in + $out;
+				push(@traffic, sprintf("%3u %12u %s %12u %s %15u %s\n", $day, $in, adjust($in), $out, adjust($out), $tot, adjust($tot)));
+			}
+			close(IN);
+		} else {
+			next;
+		}
+		push(@traffic, "---------------------------------------------------------------\n");
+		$tot = $tot_in + $tot_out;
+		push(@traffic, sprintf("%16u %s %12u %s %15u %s\n", $tot_in, adjust($tot_in), $tot_out, adjust($tot_out), $tot, adjust($tot)));
+
+		my $to = trim((split(',', $traffacct->{desc}->{$n}))[1]);
+		$to = $traffacct->{default_mail} unless $to;
+
+		# get the monthly graph
+#		$url = PREFIX . $BASE_CGI . "/monitorix.cgi?mode=pc.$n&graph=all&when=month&color=$THEME_COLOR&silent=imagetagbig";
+#		$ua = LWP::UserAgent->new(timeout => 30);
+#		$ua->request(HTTP::Request->new('GET', $url));
+#		$url = PREFIX . $BASE_URL . "/" . $IMGS_DIR . "pc" . $n . ".month.png";
+#		my $graph = $ua->request(HTTP::Request->new('GET', $url));
+
+		# create the multipart container and add attachments
+		my $msg = new MIME::Lite(
+			From		=> FROM,
+			To		=> $to,
+			Subject		=> SUBJECT . " - $name",
+			Type		=> "multipart/related",
+			Organization	=> "Monitorix",
+		);
+
+		$msg->attach(
+			Type		=> 'text/html',
+			Path		=> $report_dir . $traffacct->{report_lang} . '.html',
+		);
+		$msg->attach(
+			Type		=> 'image/png',
+			Id		=> 'image_01',
+			Path		=> $config->{base_dir} . "logo_bot.png",
+		);
+		$msg->attach(
+			Type		=> 'image/png',
+			Id		=> 'image_02',
+			Data		=> "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+		);
+		$msg->attach(
+			Type		=> 'text/plain',
+			Id		=> 'text_01',
+			Data		=> join("", @traffic),
+		);
+		$msg->send('smtp', SMTP_HOST, Timeout => 60);
+
+		# rename the processed file to avoid reusing
+		my $new = sprintf("%s.%02u-%u", $usage_dir . $name, $prev_month + 1, $prev_year + 1900);
+		rename($usage_dir . $name, $new);
+		logger("$myself: $name -> $to [$traffacct->{report_lang}]");
+	}
 }
 
 sub traffacct_cgi {
