@@ -32,8 +32,6 @@ use Config::General;
 use Getopt::Std;
 use Cwd 'abs_path';
 
-use Data::Dumper;
-
 # Force a standard locale
 $ENV{LANG} = "";
 setlocale(LC_TIME, "C");
@@ -106,18 +104,29 @@ sub ALRM_handler {
 				no strict "refs";
 				eval { &$update($f, \%config, $d); };
 				if($@) {
-					logger("$update(): $@");
+					logger("$myself: $update(): $@");
 				}
 			}
 		}
-		if(lc($config{graph_enable}->{pc}) eq "y" && lc($config{pc_enable_monthly_reports}) eq "y") {
-			# collect traffic accounting every day at 00:00h
-			if($min == 0 && $hour == 0) {
-				get_counters();
+		if(lc($config{traffacct}->{enabled}) eq "y" && lc($config{traffacct}->{enable_monthly_reports}) eq "y") {
+			my $d = "traffacct";
+			undef($d) if(!grep {trim($_) eq $d} (@{$config{debug}}));
 
-				# send reports every first day of a month at 00:00h
+			# at 00:00h
+			if($min == 0 && $hour == 0) {
+
+				# collect traffic accounting every day
+				eval { traffacct::traffacct_getcounters(\%config, $d); };
+				if($@) {
+					logger("$myself: traffacct::traffacct_getcounters(): $@");
+				}
+
+				# send reports every first day of a month
 				if($mday == 1) {
-					send_reports();
+					eval { traffacct_sendreports(\%config, $d); };
+					if($@) {
+						logger("$myself: traffacct_sendreports(): $@");
+					}
 				}
 			}
 		}
@@ -254,11 +263,11 @@ EOF
 		}
 	}
 
-	if(scalar(my @tfl = split(',', $config{traffacct}->{list})) && lc($config{traffacct}->{enabled}) eq "y") {
+	if(scalar(my @tal = split(',', $config{traffacct}->{list})) && lc($config{traffacct}->{enabled}) eq "y") {
 		print(OUT "            <optgroup label='Traffic Accounting'>\n");
 		print(OUT "              <option value='traffacct.all'>All</option>\n");
-		for($n = 0; $n < scalar(@tfl); $n++) {
-			print(OUT "              <option value='traffacct.$n'>" . trim($tfl[$n]) . "</option>\n");
+		for($n = 0; $n < scalar(@tal); $n++) {
+			print(OUT "              <option value='traffacct.$n'>" . trim($tal[$n]) . "</option>\n");
                               }
 		print(OUT "            </optgroup>\n");
 	}
@@ -432,7 +441,7 @@ if($options{d}) {
 	if($options{d} ne "none" && $options{d} ne "all") {
 		@{$config{debug}} = split(',', $options{d});
 		foreach my $t (@{$config{debug}}) {
-			if(!grep {trim($_) eq $t} (split(',', $config{graph_name}))) {
+			if(!grep {trim($_) eq $t} (split(',', $config{graph_name} . ", traffacct"))) {
 				die("Invalid debug key '$t'");
 			}
 		}
@@ -483,6 +492,9 @@ foreach (split(',', $config{graph_name} . ", traffacct")) {
 		logger("WARNING: unexpected errors in function $init()") if($@);
 	}
 }
+
+use Data::Dumper;
+print Dumper($config{func_update});
 
 if(!scalar($config{func_update})) {
 	logger("nothing to do, exiting.");

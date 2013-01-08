@@ -206,6 +206,27 @@ sub flush_accounting_rules {
 				system("iptables -X $_");
 			}
 		}
+		if(open(IN, "iptables -nxvL FORWARD --line-numbers |")) {
+			my @rules;
+			my @names;
+			while(<IN>) {
+				my ($rule, undef, undef, $name) = split(' ', $_);
+				if($name =~ /monitorix_daily_/ || /monitorix_total_/) {
+					push(@rules, $rule);
+					push(@names, $name);
+				}
+			}
+			close(IN);
+			@rules = reverse(@rules);
+			foreach(@rules) {
+				system("iptables -D FORWARD $_");
+				$num++;
+			}
+			foreach(@names) {
+				system("iptables -F $_");
+				system("iptables -X $_");
+			}
+		}
 		logger("$num iptables rules have been flushed.") if $debug;
 	}
 	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {

@@ -349,7 +349,7 @@ if(!$silent) {
 
 	print("  <td bgcolor='" . $colors{bg_color} . "'>\n");
 	print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "'>\n");
-	if($mode eq "localhost" || $mode eq "pc") {
+	if($mode eq "localhost" || $mode eq "traffacct") {
 		$title = $config{hostname};
 	} elsif($mode eq "multihost") {
 		$graph = $graph eq "all" ? "_system1" : $graph;
@@ -414,8 +414,13 @@ if($mode eq "localhost") {
 	}
 } elsif($mode eq "multihost") {
 	multihost(\%config, \%colors, \%cgi);
-} elsif($mode eq "pc") {
-	pc();
+} elsif($mode eq "traffacct") {
+	eval "use $mode qw(traffacct_cgi)";
+	if($@) {
+		print(STDERR "WARNING: unable to find module '$mode'\n");
+		exit;
+	}
+	traffacct_cgi($mode, \%config, \%cgi);
 }
 
 if(!$silent) {
