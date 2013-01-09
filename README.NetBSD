@@ -5,15 +5,15 @@ See the monitorix.conf(5) man page for a detailed help of each configuration
 option.
 
 This is the list of things that still need attention:
-   - IP filter not supported yet, hence some network activity graphs won't work.
-   - File usage in 'VFS usage' graph doesn't work.
-   - [PROC]   - Per processor kernel usage graph is not available because the
-                command 'sysctl kern.cp_time2' doesn't work yet.
-   - [PORT]   - Network port activity not supported yet.
-   - [PCLAN]  - PC LAN Internet activity is not supported yet. Help needed!
-   - [SERV]   - Some services may not work.
-   - [HPTEMP] - HP Temperatures may not work because of the lack of HP software.
-   - [NFSS]   - NFS server is not supported yet.
-   - [NFSC]   - NFS client is not supported yet.
-   - [INT]    - Device interrupt activity not supported yet.
+   IP filter not supported yet, hence some network activity graphs won't work.
+   File usage in 'VFS usage' graph doesn't work.
+   [PROC]	- Per processor kernel usage graph is not available because the
+		  command 'sysctl kern.cp_time2' doesn't work yet.
+   [PORT]	- Network port activity not supported yet.
+   [TRAFFACCT]	- Network activity is not supported yet. Help is needed!
+   [SERV]	- Some services may not work.
+   [HPTEMP]	- Temperatures may not work because of the lack of HP support.
+   [NFSS]	- NFS server is not supported yet.
+   [NFSC]	- NFS client is not supported yet.
+   [INT]	- Device interrupt activity not supported yet.
 
