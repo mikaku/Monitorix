@@ -215,8 +215,6 @@ sub net_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $net = $config->{net};
-	my @rigid = split(',', $net->{rigid});
-	my @limit = split(',', $net->{limit});
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -353,6 +351,8 @@ sub net_cgi {
 
 		$nl[$n] = trim($nl[$n]);
 		my $nd = trim((split(',', $net->{desc}->{$nl[$n]}))[0]);
+		my $rigid = trim((split(',', $net->{desc}->{$nl[$n]}))[1]);
+		my $limit = trim((split(',', $net->{desc}->{$nl[$n]}))[2]);
 
 		if($title) {
 			if($n) {
@@ -364,11 +364,11 @@ sub net_cgi {
 		}
 
 		undef(@riglim);
-		if(trim($rigid[0]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
+		if(trim($rigid) eq 1) {
+			push(@riglim, "--upper-limit=" . trim($limit));
 		} else {
-			if(trim($rigid[0]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[0]));
+			if(trim($rigid) eq 2) {
+				push(@riglim, "--upper-limit=" . trim($limit));
 				push(@riglim, "--rigid");
 			}
 		}
@@ -471,11 +471,11 @@ sub net_cgi {
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
 		undef(@riglim);
-		if(trim($rigid[1]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[1]));
+		if(trim($rigid) eq 1) {
+			push(@riglim, "--upper-limit=" . trim($limit));
 		} else {
-			if(trim($rigid[1]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[1]));
+			if(trim($rigid) eq 2) {
+				push(@riglim, "--upper-limit=" . trim($limit));
 				push(@riglim, "--rigid");
 			}
 		}
@@ -554,11 +554,11 @@ sub net_cgi {
 		}
 
 		undef(@riglim);
-		if(trim($rigid[2]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[2]));
+		if(trim($rigid) eq 1) {
+			push(@riglim, "--upper-limit=" . trim($limit));
 		} else {
-			if(trim($rigid[2]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[2]));
+			if(trim($rigid) eq 2) {
+				push(@riglim, "--upper-limit=" . trim($limit));
 				push(@riglim, "--rigid");
 			}
 		}
