@@ -1199,85 +1199,75 @@ Default value: \fIr\fP
 .SS Devices interrupt activity (int.rrd)
 Only the limit and rigid values may be set here.
 .SS Monitoring the Internet traffic of LAN PCs, devices or whole networks
-If your server acts as the gateway for a group of PCs, devices or even whole networks in your local LAN, you may want to know much Internet traffic each one is generating.
+If your server acts as the gateway for a group of PCs, devices or even whole networks in your local LAN, you may want to know how much Internet traffic each one is generating.
 .P
-This graph requires the \fIiptables\fP command on Linux systems, and the \fIipfw\fP command on FreeBSD and OpenBSD systems.
+This graph requires the \fIiptables\fP command on GNU/Linux systems, and the \fIipfw\fP command on FreeBSD and OpenBSD systems.
 .P
 The following are the options you will need to configure to accomplish all of this.
 .P
-.BI PC_LAN
+.BI enabled
 .RS
 This option enables this feature.
 .P
-Default value: \fIN\fP
+Default value: \fIn\fP
 .RE
 .P
-.BI PC_MAX
+.BI max
 .RS
-This is the number of LAN devices you want to monitor. There is no limit, but keep in mind that every time this number changes, Monitorix will resize its current \fIpc.rrd\fP file, removing all historical data.
+This is the number of LAN devices you want to monitor. There is no limit, but keep in mind that every time this number changes, Monitorix will resize its current \fItraffacct.rrd\fP file, removing all historical data.
 .P
 Default value: \fI10\fP
 .RE
 .P
-.BI PC_IMGS_PER_ROW
+.BI graphs_per_row
 .RS
 If your horizontal screen resolution is pretty wide, you may want to increase the number of graphs that appear on each row.
 .P
 Default value: \fI2\fP
 .RE
 .P
-.BI PC_LIST
+.BI list
 .RS
 This is the list of names of PCs, LAN devices or whole networks that you want to monitor. The only requirement is that all they must utilize this server as their gateway.
 .P
-If the names in this list are able to be resolved by a DNS query then you don't need to define the \fBPC_IP\fP list (below) with corresponding IP addresses.
+If the names in this list are able to be resolved by a DNS query then you don't need to define the \fBdesc\fP list (below) with corresponding IP addresses, unless you want monthly reports.
 .P
 An example would be:
 .P
 .RS
-our @PC_LIST = (
-.br
-	"pc8",
-.br
-	"printer",
-.br
-	"scanner",
-.br
-	"lan3",
-.br
-);
+list = pc8, printer, scanner, lan3
 .RE
 .RE
 .P
-.BI PC_IP
+.BI desc
 .RS
-This is the list of IP addresses and network masks corresponding to the entries defined in the \fBPC_LIST\fP. This list is only used when the those entries are not resolvable through a DNS query.
+This is the list of IP addresses with network masks and email addresses corresponding to the entries defined in the \fBlist\fP. This option is only used when the those entries are not resolvable through a DNS query.
 .P
 An example would be:
 .P
 .RS
-our @PC_IP = (
+<desc>
 .br
-	"192.168.1.108/32",
+	0 = 192.168.1.101/32, ace@example.com
 .br
-	"192.168.1.122/32",
+	1 = 192.168.1.102/32, gene@example.com
 .br
-	"192.168.1.203/32",
+	2 = 192.168.1.103/32, paul@example.com
 .br
-	"192.168.2.0/24",
+	3 = 192.168.1.104/32, peter@example.com
 .br
-);
+</desc
 .RE
 .RE
-.P
-.BI PC_ENABLE_MONTHLY_REPORTS
+.SS Monthly reports (... continued)
+.BI enabled
 .RS
-If this option is set to \fIY\fP, Monitorix will send a report of all the monthly Internet activity of the defined devices in \fBPC_LIST\fP to the specified email address on the first day of each month.
+If this option is set to \fIy\fP, Monitorix will send a report of all the monthly Internet activity of the defined devices in \fBlist\fP to the specified email address on the first day of each month.
 .P
-Default value: \fIN\fP
+Default value: \fIn\fP
 .RE
 .P
-.BI PC_REPORT_LANG
+.BI language
 .RS
 Define here the language used in the monthly report.
 .P
@@ -1286,32 +1276,25 @@ The possible values are: \fIca\fP, \fIde\fP, \fIen\fP, \fIit\fP and \fIpl\fP.
 Default value: \fIen\fP
 .RE
 .P
-.BI PC_DEFAULT_MAIL
+.BI default_mail
 .RS
-This is the default email address used to send the monthly reports. This option is only used if the \fBPC_REPORT_MAIL\fP array is empty.
+This is the default email address used to send the monthly reports. This option is only used if the second paramater in \fBdesc\fP list is empty.
 .P
 Default value: \fIroot@localhost\fP
 .RE
 .P
-.BI PC_REPORT_MAIL
+.BI smtp_hostname
 .RS
-This is the list of email addresses (one per entry) that corresponds to each name listed in the \fBPC_LIST\fP array. If this list is empty then the \fBPC_DEFAULT_MAIL\fP option will be used as the default email address for all the PCs.
+This is the hostname that will be used as a SMTP relay to deliver the monthly report emails.
 .P
-An example would be:
-.P
-.RS
-our @PC_MAIL = (
-.br
-	"user1@example.com",
-.br
-	"user2@example.com",
-.br
-	"user3@example.com",
-.br
-	"admin@example.com",
-.br
-);
+Default value: \fIlocalhost\fP
 .RE
+.P
+.BI from_address
+.RS
+This is the address that will be used as remitent for all the monthly report emails.
+.P
+Default value: \fInoreply@example.com\fP
 .RE
 .SS Monitoring remote servers (Multihost)
 The \fIMultihost\fP feature allows you to monitor an unlimitted number of remote servers that already have Monitorix installed. 
@@ -1420,7 +1403,7 @@ This is where you can enter the upper-limit value for a graph.
 .SH AUTHOR
 Monitorix is written by Jordi Sanfeliu <jordi@fibranet.cat>
 .SH COPYRIGHT
-Copyright \(co 2005-2012 Jordi Sanfeliu
+Copyright \(co 2005-2013 Jordi Sanfeliu
 .br
 Licensed under the GNU General Public License v2 (GPL).
 .SH SEE ALSO
