@@ -93,7 +93,7 @@ File                        Recommended location		Description
 monitorix                   /usr/bin/			main program (daemon)
 monitorix.cgi               <base_dir>/cgi-bin/		CGI (viewer)
 monitorix.conf              /etc/			configuration file
-lib/*.pm                    
+lib/*.pm                    /usr/libexec/monitorix/	modules
 Changes                     /usr/share/doc/		changes log file
 COPYING                     /usr/share/doc/		license
 logo_bot.png                <base_dir>			bottom logo
