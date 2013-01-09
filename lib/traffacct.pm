@@ -25,6 +25,7 @@ use warnings;
 use Monitorix;
 use RRDs;
 use MIME::Lite;
+use LWP::UserAgent;
 use Exporter 'import';
 our @EXPORT = qw(traffacct_init traffacct_update traffacct_cgi traffacct_getcounters traffacct_sendreports);
 
@@ -257,7 +258,7 @@ sub traffacct_getcounters {
 
 }
 
-sub adjust($) {
+sub adjust {
 	my $bytes = (shift);
 	my $adjust = 0;
 	my $b = "  ";
@@ -282,20 +283,15 @@ sub traffacct_sendreports {
 	my ($config, $debug) = @_;
 	my $traffacct = $config->{traffacct};
 
-	my $n;
-	my $to;
-
-	use constant SMTP_HOST	=> "localhost";
-	use constant FROM	=> "noreply\@example.com";
-	use constant PREFIX	=> "http://127.0.0.1";
-	use constant SUBJECT	=> "Monitorix: monthly traffic report";
-
-	my $url;
-	my $ua;
 	my (undef, undef, undef, undef, $prev_month, $prev_year) = localtime(time - 3600);
+	my $n;
 
 	my $usage_dir = $config->{base_lib} . $config->{usage_dir};
 	my $report_dir = $config->{base_lib} . $config->{report_dir};
+	my $base_url = $config->{base_url};
+	my $base_cgi = $config->{base_cgi};
+	my $imgs_dir = $config->{imgs_dir};
+
 	logger("Sending monthly network traffic reports.");
 
 	my @tal = split(',', $traffacct->{list});
@@ -329,27 +325,27 @@ sub traffacct_sendreports {
 		push(@traffic, sprintf("%16u %s %12u %s %15u %s\n", $tot_in, adjust($tot_in), $tot_out, adjust($tot_out), $tot, adjust($tot)));
 
 		my $to = trim((split(',', $traffacct->{desc}->{$n}))[1]);
-		$to = $traffacct->{default_mail} unless $to;
+		$to = $traffacct->{reports}->{default_mail} unless $to;
 
 		# get the monthly graph
-#		$url = PREFIX . $BASE_CGI . "/monitorix.cgi?mode=pc.$n&graph=all&when=month&color=$THEME_COLOR&silent=imagetagbig";
-#		$ua = LWP::UserAgent->new(timeout => 30);
-#		$ua->request(HTTP::Request->new('GET', $url));
-#		$url = PREFIX . $BASE_URL . "/" . $IMGS_DIR . "pc" . $n . ".month.png";
-#		my $graph = $ua->request(HTTP::Request->new('GET', $url));
+		my $url = "http://127.0.0.1" . $base_cgi . "/monitorix.cgi?mode=traffacct.$n&graph=all&when=1month&color=&silent=imagetagbig";
+		my $ua = LWP::UserAgent->new(timeout => 30);
+		$ua->request(HTTP::Request->new('GET', $url));
+		$url = "http://127.0.0.1" . $base_url . "/" . $imgs_dir . "traffacct" . $n . ".1month.png";
+		my $image = $ua->request(HTTP::Request->new('GET', $url));
 
 		# create the multipart container and add attachments
 		my $msg = new MIME::Lite(
-			From		=> FROM,
+			From		=> $traffacct->{reports}->{from_address},
 			To		=> $to,
-			Subject		=> SUBJECT . " - $name",
+			Subject		=> "Monitorix: monthly traffic report - $name",
 			Type		=> "multipart/related",
 			Organization	=> "Monitorix",
 		);
 
 		$msg->attach(
 			Type		=> 'text/html',
-			Path		=> $report_dir . $traffacct->{report_lang} . '.html',
+			Path		=> $report_dir . $traffacct->{reports}->{language} . '.html',
 		);
 		$msg->attach(
 			Type		=> 'image/png',
@@ -359,19 +355,19 @@ sub traffacct_sendreports {
 		$msg->attach(
 			Type		=> 'image/png',
 			Id		=> 'image_02',
-			Data		=> "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+			Data		=> $image->content,
 		);
 		$msg->attach(
 			Type		=> 'text/plain',
 			Id		=> 'text_01',
 			Data		=> join("", @traffic),
 		);
-		$msg->send('smtp', SMTP_HOST, Timeout => 60);
+		$msg->send('smtp', $traffacct->{reports}->{smtp_hostname}, Timeout => 60);
 
-		# rename the processed file to avoid reusing
+		# rename the processed file to avoid reusing it
 		my $new = sprintf("%s.%02u-%u", $usage_dir . $name, $prev_month + 1, $prev_year + 1900);
 		rename($usage_dir . $name, $new);
-		logger("$myself: $name -> $to [$traffacct->{report_lang}]");
+		logger("$myself: $name -> $to [$traffacct->{reports}->{language}]");
 	}
 }
 
