@@ -90,9 +90,9 @@ sub system_init {
 	}
 
 	# check dependencies
-	if(lc($config->{enable_alerts}) eq "y") {
-		if(! -x $config->{alert_loadavg_script}) {
-			logger("$myself: ERROR: script '$config->{alert_loadavg_script}' doesn't exist or don't has execution permissions.");
+	if(lc($config->{alerts}->{enabled}) eq "y") {
+		if(! -x $config->{alerts}->{loadavg_script}) {
+			logger("$myself: ERROR: script '$config->{alerts}->{loadavg_script}' doesn't exist or don't has execution permissions.");
 		}
 	}
 
@@ -276,16 +276,16 @@ sub system_update {
 	);
 
 	# SYSTEM alert
-	if(lc($config->{enable_alerts}) eq "y") {
-		if(!$config->{alert_loadavg_threshold} || $load15 < $config->{alert_loadavg_threshold}) {
+	if(lc($config->{alerts}->{enabled}) eq "y") {
+		if(!$config->{alerts}->{loadavg_threshold} || $load15 < $config->{alerts}->{loadavg_threshold}) {
 			$config->{system_hist} = 0;
 		} else {
 			if(!$config->{system_hist}) {
 				$config->{system_hist} = time;
 			}
-			if($config->{system_hist} > 0 && (time - $config->{system_hist}) > $config->{alert_loadavg_timeintvl}) {
-				if(-x $config->{alert_loadavg_script}) {
-					system($config->{alert_loadavg_script} . " " .$config->{alert_loadavg_timeintvl} . " " . $config->{alert_loadavg_threshold} . " " . $load15);
+			if($config->{system_hist} > 0 && (time - $config->{system_hist}) > $config->{alerts}->{loadavg_timeintvl}) {
+				if(-x $config->{alerts}->{loadavg_script}) {
+					system($config->{alerts}->{loadavg_script} . " " .$config->{alerts}->{loadavg_timeintvl} . " " . $config->{alerts}->{loadavg_threshold} . " " . $load15);
 				}
 				$config->{system_hist} = time;
 			}

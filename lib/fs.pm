@@ -355,16 +355,16 @@ sub fs_update {
 				$use = ($used * 100) / ($used + $free);
 
 				# FS alert
-				if($f eq "/" && lc($config->{enable_alerts}) eq "y") {
-					if(!$config->{alert_rootfs_threshold} || $use < $config->{alert_rootfs_threshold}) {
+				if($f eq "/" && lc($config->{alerts}->{enabled}) eq "y") {
+					if(!$config->{alerts}->{rootfs_threshold} || $use < $config->{alerts}->{rootfs_threshold}) {
 						$config->{fs_hist}->{rootalert} = 0;
 					} else {
 						if(!$config->{fs_hist}->{rootalert}) {
 							$config->{fs_hist}->{rootalert} = time;
 						}
-						if($config->{fs_hist}->{rootalert} > 0 && (time - $config->{fs_hist}->{rootalert}) > $config->{alert_rootfs_timeintvl}) {
-							if(-x $config->{alert_rootfs_script}) {
-								system($config->{alert_rootfs_script} . " " . $config->{alert_rootfs_timeintvl} . " " . $config->{alert_rootfs_threshold} . " " . $use);
+						if($config->{fs_hist}->{rootalert} > 0 && (time - $config->{fs_hist}->{rootalert}) > $config->{alerts}->{rootfs_timeintvl}) {
+							if(-x $config->{alerts}->{rootfs_script}) {
+								system($config->{alerts}->{rootfs_script} . " " . $config->{alerts}->{rootfs_timeintvl} . " " . $config->{alerts}->{rootfs_threshold} . " " . $use);
 							}
 							$config->{fs_hist}->{rootalert} = time;
 						}
