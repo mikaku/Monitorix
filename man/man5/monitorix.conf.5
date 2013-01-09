@@ -1,55 +1,55 @@
 .\" Monitorix manpage.
-.\" Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+.\" Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 .\"
 .\" This is the man page for the monitorix.conf configuration file.
 .\"
-.TH monitorix.conf 5 "Sep 2012" 2.6.0 "Monitorix configuration file"
+.TH monitorix.conf 5 "Jan 2013" 3.0.0beta1 "Monitorix configuration file"
 .SH NAME
 monitorix.conf \- Configuration file for Monitorix.
-.SH SYNOPSIS
+.SH DESCRIPTION
 Monitorix is a free, open source, lightweight system monitoring tool designed to monitor as many services and system resources as possible. It has been created to be used on production UNIX/Linux servers, but due to its simplicity and small size may also be used to monitor embedded devices as well.
 .P
 It consists mainly of two programs: a collector, called \fBmonitorix\fP, which is a Perl daemon that is started automatically like any other system service, and a CGI script called \fBmonitorix.cgi\fP.
 .P
 Every time \fBmonitorix\fP is started it reads the configuration file from the path specified in the command line (using the \fB-c\fP option), and once checked, it creates the \fIindex.html\fP file that will act as the Monitorix main page.
 .P
-It also creates a file called \fI$BASE_DIR/cgi-bin/monitorix.conf.path\fP that includes the absolute path of the configuration file. This file will be read by \fBmonitorix.cgi\fP to determine the exact location of the configuration file. If for any reason it is unable to locate this file, Monitorix will try two alternate locations: \fI/etc/monitorix.conf\fP and \fI/usr/local/etc/monitorix.conf\fP.
-.SH DESCRIPTION
-The configuration file is a Perl file where values are directly assigned to variables that Monitorix uses during normal operation; you should take care to conform to basic Perl syntax.
+It also creates a file called \fI<base_dir>/cgi-bin/monitorix.conf.path\fP that includes the absolute path of the configuration file. This file will be read by \fBmonitorix.cgi\fP to determine the exact location of the configuration file. If for any reason it is unable to locate this file, Monitorix will try two alternate locations: \fI/etc/monitorix.conf\fP and \fI/usr/local/etc/monitorix.conf\fP.
 .SH CONFIGURATION OPTIONS
-Because this file follows the Perl syntax, you will find different type of options (scalar or normal variables, arrays and associative arrays), each one prefixed with $, @ and % respectively. This is important to keep in mind as the prefix symbols indicate what type of values each option accepts.
+Blank lines are ignored, and whitespace before and after a token or value is ignored as well as tabulators, although a value can contain whitespace within. Lines which begin with a # are considered comments and ignored.
 .P
-Remember to enclose all values with double quotes.
+If you want to comment out a large block you can use C-style comments. A /* signals the begin of a comment block and the */ signals the end of the comment block.
 .P
-.BI TITLE
+If an option has multiple values their must be separated by comma.
+.P
+.BI title
 .RS
-A description of the server, where it is located, the Company name, etc.
+A description of the server; where it is located, the Company name, etc.
 .P
 Default value: \fIPlace a Title Here\fP
 .RE
 .P
-.BI HOSTNAME
+.BI hostname
 .RS
 The name of the host.
 .P
 Default value: none
 .RE
 .P
-.BI THEME_COLOR
+.BI theme_color
 .RS
 RRDtool comes with a default white theme, and since Monitorix introduces its own black theme, you have two predefined themes to choose from.
 .P
 Default value: \fIblack\fP
 .RE
 .P
-.BI REFRESH_RATE
+.BI refresh_rate
 .RS
 The refresh rate (in seconds) of the statistics web page displayed in your browser. If set to 0, page refreshing is disabled.
 .P
 Default value: \fI150\fP
 .RE
 .P
-.BI IFACE_MODE
+.BI iface_mode
 .RS
 The interface mode defines the manner in which data is shown in the browser. Since version 1.4.0 it has been possible to display the graphic data using plain text tables. This allows Monitorix to be used by those running screen reader software, and also simplifies automatic data processing through scripts.
 .P
@@ -63,28 +63,28 @@ The possible values are:
 Default value: \fIgraph\fP
 .RE
 .P
-.BI ENABLE_ZOOM
+.BI enable_zoom
 .RS
 Zoom allows double clicking any graph in order to see a larger version (zoomed in). This is especially useful for seeing additional detail.
 .P
-Default value: \fIY\fP
+Default value: \fIy\fP
 .RE
 .P
-.BI NETSTATS_IN_BPS
+.BI netstats_in_bps
 .RS
 This option toggles network values between bits and bytes per second.
 .P
-Default value: \fIN\fP
+Default value: \fIn\fP
 .RE
 .P
-.BI DISABLE_JAVASCRIPT_VOID
+.BI disable_javascript_void
 .RS
 This option enables or disables the use of use javascript:void-URLs when opening windows with zoomed graphs. Some people likes to open links in the background by pressing the middle mouse button in Firefox, and with the default javascript:void-URLs the only they get is an empty window with nothing in it.
 .P
-Default value: \fIN\fP
+Default value: \fIn\fP
 .RE
 .P
-.BI BASE_DIR
+.BI base_dir
 .RS
 This is the absolute path to the directory where all the web elements are located:
 .P
@@ -107,7 +107,7 @@ Default value: \fI/usr/share/monitorix/\fP
 (depends on the operating system)
 .RE
 .P
-.BI BASE_LIB
+.BI base_lib
 .RS
 This is the absolute path to the directory where all of the monthly reports, daily traffic usage, and RRD files are located:
 .P
@@ -124,220 +124,236 @@ Default value: \fI/var/lib/monitorix/\fP
 (depends on the operating system)
 .RE
 .P
-.BI BASE_URL
+.BI base_url
 .RS
 This is the URL prefix that Monitorix utilizes when refering to its own pages and files.
 .P
 Default value: \fI/monitorix\fP
 .RE
 .P
-.BI BASE_CGI
+.BI base_cgi
 .RS
 This is the URL prefix that Monitorix utilizes when refering to \fBmonitorix.cgi\fP.
 .P
 Default value: \fI/monitorix-cgi\fP
 .RE
 .P
-.BI LOG_FILE
+.BI log_file
 .RS
 This is the path to the Monitorix log file. Please check this file periodically and especially after every update to confirm proper operation.
 .P
 Default value: \fI/var/log/monitorix\fP
 .RE
 .P
-.BI SECURE_LOG
+.BI secure_log
 .RS
 This is the path to the system log (also known as \fIsecure\fP, \fIauth.log\fP, etc.) Monitorix uses this file to report SSH, POP3, FTP and Telnet successful logins.
 .P
 Default value: \fI/var/log/secure\fP
 .RE
 .P
-.BI MAIL_LOG
+.BI mail_log
 .RS
 This is the path to the mail log file. Monitorix uses this file to report messages sent (supporting Sendmail and Postfix formats), and the MailScanner log format for spam-mail and virus-mail alerts.
 .P
 Default value: \fI/var/log/maillog\fP
 .RE
 .P
-.BI MILTER_GL
+.BI milter_gl
 .RS
 This is the path to the dump file of \fImilter-greylist\fP.
 .P
-Default value: \fI/var/lib/milter-greylist/db/greylist.db\fP
+Default value: \fI/var/milter-greylist/greylist.db\fP
 .RE
 .P
-.BI IMAP_LOG
+.BI imap_log
 .RS
 This is the path to the IMAP (Dovecot or UW-IMAP) log file. Monitorix uses this file to report IMAP and POP3 successful logins.
 .P
 Default value: \fI/var/log/imap\fP
 .RE
 .P
-.BI HYLAFAX_LOG
+.BI hylafax_log
 .RS
 This is the path to the Hylafax log file. Monitorix uses this file to report successful FAX dispatches.
 .P
 Default value: \fI/var/spool/hylafax/etc/xferfaxlog\fP
 .RE
 .P
-.BI CUPS_LOG
+.BI cups_log
 .RS
 This is the path to the CUPS page log file. Monitorix uses this file to report on print jobs.
 .P
 Default value: \fI/var/log/cups/page_log\fP
 .RE
 .P
-.BI FAIL2BAN_LOG
+.BI ftp_log
+.RS
+This is the path to the FTP server (ProFTPD or vsftpd) log. Monitorix uses this file to report FTP successful logins and other FTP-related information.
+.P
+Default value: \fI/var/log/vsftpd.log\fP
+.RE
+.P
+.BI fail2ban_log
 .RS
 This is the path to the Fail2ban log file. Monitorix uses this file to report IP addresses banned.
 .P
 Default value: \fI/var/log/fail2ban.log\fP
 .RE
 .P
-.BI SPAMASSASSIN_LOG
+.BI spamassassin_log
 .RS
 This is the path to the Spamassassin log file. Monitorix uses this file to report spam-mail alerts.
 .P
 Default value: \fI/var/log/maillog\fP
 .RE
 .P
-.BI CLAMAV_LOG
+.BI clamav_log
 .RS
 This is the path to the Clamav log file. Monitorix uses this file to report virus-mail alerts.
 .P
 Default value: \fI/var/log/clamav/clamav.log\fP
 .RE
 .P
-.BI CG_LOGDIR
+.BI cg_logdir
 .RS
 This is the path to the CommuniGate logs directory. Monitorix uses these files to report the number of mail messages successfully received and sent, and to report IMAP and POP3 successful logins.
 .P
 Default value: \fI/var/CommuniGate/SystemLogs/\fP
 .RE
 .P
-.BI SQUID_LOG
+.BI squid_log
 .RS
 This is the path to the Squid log file. Monitorix uses this file to report on Squid Proxy requests.
 .P
 Default value: \fI/var/log/squid/access.log\fP
 .RE
 .P
-.BI IMAP_DATE_LOG_FORMAT
+.BI imap_log_date_format
 .RS
-This is the Dovecot date format as it appears in the \fBIMAP_LOG\fP file.
+This is the Dovecot date format as it appears in the \fBimap_log\fP file.
 .P
 Default value: \fI%b %d\fP
 .RE
 .P
-.BI ENABLE_ALERTS
+.BI ftp_log_date_format
+.RS
+This is the FTP server (ProFTPD or vsftpd) date format as it appears in the \fBftp_log\fP file.
+.P
+Default value: \fI%b %e\fP
+.RE
+.P
+.SS Alert capabilities
+.BI enable_alerts
 .RS
 This enables or disables the alert capabilities that were introduced in Monitorix version 1.4.0. Only two alerts are currently implemented; one for the average CPU load and one for the root filesystem disk use. They work as follows:
 .P
-The CPU load average uses the third value (the one that represents the last 15 minutes of load average), and if it reaches the \fBALERT_LOADAVG_THRESHOLD\fP value for the interval of time defined in \fBALERT_LOADAVG_TIMEINTVL\fP, Monitorix will execute the external alert script defined in \fBALERT_LOADAVG_SCRIPT\fP.
+The CPU load average uses the third value (the one that represents the last 15 minutes of load average), and if it reaches the \fBloadavg_threshold\fP value for the interval of time defined in \fBloadavg_timeintvl\fP, Monitorix will execute the external alert script defined in \fBloadavg_script\fP.
 .P
-For the root filesystem disk use, if the percentage of disk space used reaches the \fBALERT_ROOTFS_THRESHOLD\fP value for the interval of time defined in \fBALERT_ROOTFS_TIMEINTVL\fP, Monitorix will execute the external alert script defined in \fBALERT_ROOTFS_SCRIPT\fP.
+For the root filesystem disk use, if the percentage of disk space used reaches the \fBrootfs_threshold\fP value for the interval of time defined in \fBrootfs_timeintvl\fP, Monitorix will execute the external alert script defined in \fBrootfs_script\fP.
 .P
 The default Monitorix installation includes an example alert shell-script called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
 .P
-Default value: \fIN\fP
+Default value: \fIn\fP
 .RE
 .P
-.BI ALERT_LOADAVG_TIMEINTVL
+.BI loadavg_timeintvl
 .RS
 This is the period of time (in seconds) that the threshold needs to be exceeded before the external alert script is executed.
 .P
 Default value: \fI3600\fP
 .RE
 .P
-.BI ALERT_LOADAVG_THRESHOLD
+.BI loadavg_threshold
 .RS
-This is the value that needs to be reached or exceeded within the specified time period in \fBALERT_LOADAVG_TIMEINTVL\fP to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+This is the value that needs to be reached or exceeded within the specified time period in \fBloadavg_timeintvl\fP to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
 .P
 The value of this option is compared against the last 15 minutes of CPU load average.
 .P
 Default value: \fI5.0\fP
 .RE
 .P
-.BI ALERT_LOADAVG_SCRIPT
+.BI loadavg_script
 .RS
 This is the full path name of the script that will be executed by this alert.
 .P
 It will receive the following three parameters:
 .P
-1st - the value currently defined in \fBALERT_LOADAVG_TIMEINTVL\fP
+1st - the value currently defined in \fBloadavg_timeintvl\fP
 .br
-2nd - the value currently defined in \fBALERT_LOADAVG_THRESHOLD\fP
+2nd - the value currently defined in \fBloadavg_threshold\fP
 .br
 3rd - the current 15min CPU load average
 .P
 Default value: \fI/path/to/script.sh\fP
 .RE
 .P
-.BI ALERT_ROOTFS_TIMEINTVL
+.BI rootfs_timeintvl
 .RS
 This is the period of time (in seconds) that the threshold needs to be exceeded before the external alert script is executed.
 .P
 Default value: \fI3600\fP
 .RE
 .P
-.BI ALERT_ROOTFS_THRESHOLD
+.BI rootfs_threshold
 .RS
-This is the value that needs to be reached or exceeded within the specified time period in \fBALERT_ROOTFS_TIMEINTVL\fP to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+This is the value that needs to be reached or exceeded within the specified time period in \fBrootfs_timeintvl\fP to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
 .P
 The value of this option is compared to the current root filesystem disk usage.
 .P
 Default value: \fI100\fP
 .RE
 .P
-.BI ALERT_ROOTFS_SCRIPT
+.BI rootfs_script
 .RS
 This is the full path name of the script that will be executed by this alert.
 .P
 It will receive the following three parameters:
 .P
-1st - the value currently defined in \fBALERT_ROOTFS_TIMEINTVL\fP
+1st - the value currently defined in \fBrootfs_timeintvl\fP
 .br
-2nd - the value currently defined in \fBALERT_ROOTFS_THRESHOLD\fP
+2nd - the value currently defined in \fBrootfs_threshold\fP
 .br
 3rd - the current root filesystem disk usage
 .P
 Default value: \fI/path/to/script.sh\fP
 .RE
 .P
-.BI GRAPH_ENABLE
+.SS Enable or disable graphs
+.BI graph_enable
 .RS
-This enables or disables the monitoring of each graph. Placing a \fIY\fP on a desired graph and restarting Monitorix will automatically create the RRD file for that graph and start gathering information according to its settings.
+This enables or disables the monitoring of each graph. Placing a \fIy\fP on a desired graph and restarting Monitorix will automatically create the RRD file for that graph and start gathering information according to its settings.
 .RE
 .SS System load average and usage (system.rrd)
 Only the limit and rigid values may be set here.
 .SS Global kernel usage (kern.rrd)
-.BI KERN_GRAPH_MODE
+.BI graph_mode
 .RS
-This changes the layout of the kernel usage graph, the possible values are \fIR\fP for a real graph, or \fIS\fP for a stacked graph (every line or area is stacked on top of the previous element).
+This changes the layout of the kernel usage graph, the possible values are \fIr\fP for a real graph, or \fIs\fP for a stacked graph (every line or area is stacked on top of the previous element).
 .P
-Default value: \fIR\fP
+Default value: \fIr\fP
 .RE
 .P
-.BI KERN_DATA
+.BI list
 .RS
-This is the list of values offered in modern Linux kernels. Older Linux kernels or other Operating Systems may not have all of them. Placing a \fIY\fP or an \fIN\fP will enable or disable the value in the graph.
+This is the list of values offered in modern Linux kernels. Older Linux kernels or other Operating Systems may not have all of them. Placing a \fIy\fP or an \fIn\fP will enable or disable the value in the graph.
 .RE
 .SS Kernel usage per processor (proc.rrd)
-.BI PROC_MAX
+.BI max
 .RS
 This is the number of processors or cores that your system has. There is no limit, however keep in mind that every time this number is changed Monitorix will resize the \fIproc.rrd\fP file accordingly, removing all historical data.
 .P
 Default value: \fI4\fP
 .RE
 .P
-.BI PROC_PER_ROW
+.BI graphs_per_row
 .RS
-This is the number of processor graphs that will be put in a row. Consider the interaction of this parameter with the \fBPROC_SIZE\fP and \fBPROC_DATA\fP options (below) in order to adjust the size and number of graphs in relation to your horizontal screen size.
+This is the number of processor graphs that will be put in a row. Consider the interaction of this parameter with the \fBsize\fP and \fBdata\fP options (below) in order to adjust the size and number of graphs in relation to your horizontal screen size.
 .P
 Default value: \fI2\fP
 .RE
 .P
-.BI PROC_SIZE
+.BI size
 .RS
 This option sets the size of all processors graphs.
 .P
@@ -359,28 +375,24 @@ The possible values are:
 Default value: \fImedium\fP
 .RE
 .P
-.BI PROC_DATA
+.BI DATA
 .RS
 This option will completely enable or disable the legend in the processor graphs.
 .P
-Default value: \fIY\fP
+Default value: \fIy\fP
 .RE
 .SS HP ProLiant System Health (hptemp.rrd)
-.BI HPTEMP_1
-.br
-.BI HPTEMP_2
-.br
-.BI HPTEMP_3
+.BI list
 .RS
-These arrays will hold the defined temperature sensors for each graph. You must have installed the latest version of \fIhplog\fP that comes with HP ProLiant System Health Application and Command Line Utilities.
+This list will hold the defined temperature sensors for each graph. You must have installed the command line \fIhplog\fP that comes with HP ProLiant System Health Application and Command Line Utilities.
 .P
 Each graph has a limited number of IDs:
 .P
-\fBHPTEMP_1\fP up to 8 IDs
+\fB0\fP up to 8 IDs
 .br
-\fBHPTEMP_2\fP up to 6 IDs
+\fB1\fP up to 6 IDs
 .br
-\fBHPTEMP_3\fP up to 6 IDs
+\fB2\fP up to 6 IDs
 .P
 The following is a configuration example of selected IDs:
 .P
@@ -425,45 +437,21 @@ ID     TYPE        LOCATION      STATUS    CURRENT  THRESHOLD
 18  Basic Sensor SCSI Backplane  Normal    32F/  0C 140F/ 60C 
 .P
 .RS
-our @HPTEMP_1 = (
+<list>
 .br
-	"2",
+	0 = 2, 3
 .br
-	"3",
+	1 = 1, 5, 18
 .br
-);
+	2 = 7, 9, 10, 11, 12, 13
 .br
-our @HPTEMP_2 = (
-.br
-	"1",
-.br
-	"5",
-.br
-	"18",
-.br
-);
-.br
-our @HPTEMP_3 = (
-.br
-	"7",
-.br
-	"9",
-.br
-	"10",
-.br
-	"11",
-.br
-	"12",
-.br
-	"13",
-.br
-);
+</list>
 .RE
 .RE
 .SS LM-Sensors and GPU temperatures (lmsens.rrd)
-.BI SENSORS_LIST
+.BI list
 .RS
-You may specify in this associative array the sensors you want to monitor with the same names as they appear in your \fIsensors\fP command.
+In this list you may specify the sensors you want to monitor with the same names as they appear in your \fIsensors\fP command.
 .P
 For example, imagine a \fIsensors\fP output like this:
 .P
@@ -517,72 +505,72 @@ M/B Temp:   +36.00 C
 .br
 CPU Temp:   +29.00 C
 .P
-Then you may want to configure the \fBSENSORS_LIST\fP associative array as:
+Then you may want to configure that \fBlist\fP as:
 .P
 .RS
-our %SENSORS_LIST = (
+<list>
 .br
-	"CORE0" => "Core 0",
+	core0   = Core 0
 .br
-	"CORE1" => "Core 1",
+	core1   = Core 1
 .br
-	"MB0"   => "M/B Temp",
+	mb0     = M/B Temp
 .br
-	"CPU0"  => "CPU Temp",
+	cpu0    = CPU Temp
 .br
-	"FAN0"  => "CPU",
+	fan0    = CPU
 .br
-	"FAN1"  => "System",
+	fan1    = System
 .br
-	"FAN2"  => "Power",
+	fan2    = Power
 .br
-	"FAN3"  => "Aux",
+	fan3    = Aux
 .br
-	"VOLT0"  => "3.3V",
+	volt0   = 3.3V
 .br
-	"VOLT1"  => "VCore",
+	volt1   = VCore
 .br
-	"VOLT2"  => "Vdimm",
+	volt2   = Vdimm
 .br
-	"VOLT3"  => "Vchip",
+	volt3   = Vchip
 .br
-	"VOLT4"  => "\\\\+5V",
+	volt4   = \\+5V
 .br
-	"VOLT5"  => "12V",
+	volt5   = 12V
 .br
-	"VOLT6"  => "5VSB",
+	volt6   = 5VSB
 .br
-	"VOLT7"  => "3VSB",
+	volt7   = 3VSB
 .br
-	"VOLT8"  => "Battery",
+	volt8   = Battery
 .br
-	"GPU0"   => "nvidia",
+	gpu0    = nvidia
 .br
-);
+</list>
 .RE
 .P
-Note that you need to precede the plus and minus signs in the voltage labels with double forward slashes.
+Note that you need to escape the plus and minus signs in the voltage labels.
 .P
-The last one, \fIGPU0\fP, is set here just in case you have an NVIDIA card and want to monitor its temperature. Currently only NVIDIA cards are supported so the value \fInvidia\fP is mandatory.
+The last one, \fIgpu0\fP, is set here just in case you have an NVIDIA card and want to monitor its temperature. Currently only NVIDIA cards are supported so the value \fInvidia\fP is mandatory.
 .P
-This array has the following maximums allowed:
+This list has the following maximums allowed:
 .P
 .RS
-Up to 16 \fICORE\fP keys
+Up to 16 \fIcore\fP keys
 .br
-Up to 2 \fIMB\fP keys
+Up to 2 \fImb\fP keys
 .br
-Up to 4 \fICPU\fP keys
+Up to 4 \fIcpu\fP keys
 .br
-Up to 9 \fIFAN\fP keys
+Up to 9 \fIfan\fP keys
 .br
-Up to 12 \fIVOLT\fP keys
+Up to 12 \fIvolt\fP keys
 .br
-Up to 9 \fIGPU\fP keys
+Up to 9 \fIgpu\fP keys
 .RE
 .RE
 .SS NVIDIA temperatures and usage (nvidia.rrd)
-.BI NVIDIA_MAX
+.BI max
 .RS
 This is the number of NVIDIA cards currently plugged in your system. 
 .P
@@ -593,36 +581,30 @@ Default value: \fI1\fP
 .SS Disk drive temperatures and health (disk.rrd)
 This graph is able to monitor an unlimited number of disk drives.
 .P
-.BI DISK_LIST
+.BI list
 .RS
-This is a two-dimensional array of groups of disk device names that you want to monitor. Each group will become a graph and there may be an unlimited number of groups.
+This is a list of groups of disk device names that you want to monitor. Each group will become a graph and there may be an unlimited number of groups.
 .P
-WARNING: Every time the number of groups in this list changes, Monitorix will resize the \fIdisk.rrd\fP file accordingly, removing all historical data.
+WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIdisk.rrd\fP file accordingly, removing all historical data.
 .P
 To collect the disk drive temperatures and health the commands \fIsmartmontools\fP or \fIhddtemp\fP are required.
 .P
 It is recommended that you first check if either \fIsmartctl\fP or \fIhddtemp\fP are able to collect data from the disk drive(s) that you plan to monitor. You may test this with the following command:
 .P
 .RS
-# hddtemp /dev/sda
+# hddtemp /dev/sdb
 .br
-/dev/sda: WDC WD1600AABS-00M1A0: 48°C
+/dev/sdb: WDC WD1600AABS-00M1A0: 48°C
 .P
 .RE
-If you see good results as above, you can add it in the list like this:
+If you see good results as above, you can add it to the group 0 like this:
 .P
 .RS
-our @DISK_LIST = (
+<list>
 .br
-	[
+	0 = /dev/sda, /dev/sdb
 .br
-		"/dev/sda",
-.br
-		"/dev/sdb",
-.br
-	],
-.br
-);
+</list>
 .RE
 .P
 The maximum number of disk device names allowed per group is 8.
@@ -630,182 +612,109 @@ The maximum number of disk device names allowed per group is 8.
 .SS Filesystem usage and I/O activity (fs.rrd)
 This graph is able to monitor an unlimited number of filesystems.
 .P
-.BI FS_LIST
+.BI list
 .RS
-This is a two-dimensional array of groups of mounted filesystems that you want to monitor. Each group will become a graph and there may be an unlimited number of groups.
+This is a list of groups of mounted filesystems that you want to monitor. Each group will become a graph and there may be an unlimited number of groups.
 .P
-WARNING: Every time the number of groups in this list changes, Monitorix will resize the \fIfs.rrd\fP file accordingly, removing all historical data.
+WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIfs.rrd\fP file accordingly, removing all historical data.
 .P
 Take special care to use the same name as appears in the output of the \fIdf\fP command (the \fIswap\fP device is a special case). An example would be:
 .P
 .RS
-our @FS_LIST = (
+<list>
 .br
-	[
+	0 = /, swap, boot, home, /mnt/backup
 .br
-		"/",
-.br
-		"swap",
-.br
-		"/boot",
-.br
-		"/home",
-.br
-		"/mnt/backup",
-.br
-	],
-.br
-);
+</list>
 .RE
 .P
 The maximum number of filesystems allowed per group is 8.
 .RE
 .P
-.BI FS_DESC
+.BI desc
 .RS
-This associative array complements the \fBFS_LIST\fP array. It basically allows you to change the name that will appear in the graph, hiding the real name of the mount point. If no association is defined, then Monitorix will display the name specified in the \fBFS_LIST\fP array.
+This list complements the \fBlist\fP option. It basically allows you to change the name that will appear in the graph, hiding the real name of the mount point. If no association is defined, then Monitorix will display the name specified in the \fBlist\fP option.
 .P
 .RS
-our %FS_DESC = (
+<desc>
 .br
-	"/"            => "Root FS",
+	/            = Root FS
 .br
-	"/home"        => "My Home",
+	/home        = My Home
 .br
-	"/mnt/backup"  => "Backups",
+	/mnt/backup  = Backups
 .br
-);
+</desc>
 .RE
 .P
 You can define as much entries as you want.
 .RE
 .P
-.BI FS_DEV
+.BI devmap
 .RS
-This associative array complements the \fBFS_LIST\fP array. Monitorix tries itself to detect automatically the device name associated to each filesystem defined in the \fBFS_LIST\fP array to show its I/O activity. If you feel Monitorix failed to detect it then you can help it using this associative array.
+This list complements the \fBlist\fP option. When Monitorix is started it tries to detect automatically the device name associated to each filesystem defined in the \fBlist\fP option in order to be able to show its I/O activity. If for any reason Monitorix failed to detect it, then you can help it using this option.
 .P
 .RS
-our %FS_DEV = (
+<devmap>
 .br
-	"/"            => "/dev/sda1",
+	/mnt/backup  = /dev/cciss/c0d2p6
 .br
-	"/home"        => "/dev/mapper/dm-0",
-.br
-	"/mnt/backup"  => "/dev/mapper/dm-1",
-.br
-);
+</devmap>
 .RE
 .P
 You can define as much entries as you want.
 .RE
 .SS Network traffic and usage (net.rrd)
-.BI NET_LIST
+.BI list
 .RS
 This is the list of network interfaces that you may want to monitor. An example would be:
 .P
 .RS
-our @NET_LIST = (
+list = eth0, eth1
 .br
-	"eth0",
-.br
-	"eth1",
-.br
-);
 .RE
 .P
 The maximum number of entries allowed is 10.
 .RE
 .P
-.BI NET_DESC
+.BI desc
 .RS
-This is the array where each network interface listed in \fBNET_LIST\fP is described. Put one description for each interface listed. An example would be:
+This is the option where each network interface specified in \fBlist\fP is described. Each definition consists of three parameters separated by comma: the description of the interface and the rigid and limit values.
+.P
+Put one description for each interface listed. An example would be:
 .P
 .RS
-our @NET_DESC = (
+<desc>
 .br
-	"FastEthernet LAN",
+	eth0 = FastEthernet LAN, 0, 1000
 .br
-	"ADSL 10Mbs Internet",
+	eth1 = ADSL 10Mbs Internet, 0, 1000
 .br
-);
+</desc>
 .RE
 .P
 The maximum number of entries allowed is 10.
 .RE
 .P
-.BI NET_RIGID
+.BI gateway
 .RS
-This is the location where the scaling of the network graph can be specified.
-.P
-The possible values are:
-.P
-\fI0\fP   No rigid actually, no lower-limit and no upper-limit.
-.br
-\fI1\fP   No rigid actually, but with lower-limit and upper-limit.
-.br
-\fI2\fP   Rigid with lower-limit and upper-limit.
-.P
-There must be an entry here for each network interface listed in \fBNET_LIST\fP. An example would be:
-.P
-.RS
-our @NET_RIGID = (
-.br
-	"0",
-.br
-	"2",
-.br
-);
-.RE
-.P
-The maximum number of entries allowed is 10.
-.RE
-.P
-.BI NET_LIMIT
-.RS
-This is where you can enter the upper value limit for the graph. Since Monitorix uses bytes/s instead of bits/s, the value entered here must be in bytes.
-.P
-Remember to put an entry here for each network interface listed in \fBNET_LIST\fP. Following the description of the above example, it would be:
-.P
-.RS
-our @NET_LIMIT = (
-.br
-	"10000000",
-.br
-	"1000000",
-.br
-);
-.RE
-.P
-That is:
-.P
-"Fast Ethernet LAN" means 100Mb/s, which means ~10MB/s which means 10000000 bytes.
-.P
-and
-.P
-"ADSL 10Mb Internet" means 10Mb/s, which means ~1MB/s which means 1000000 bytes.
-.P
-The maximum number of entries allowed is 10.
-.RE
-.P
-.BI NET_GATEWAY
-.RS
-This is where the network interface that acts as the gateway for this server is defined. This is mainly used if you plan to monitor the network traffic usage of the PCs on your LAN using the \fBPC_LIST\fP option below.
+This is where the network interface that acts as the gateway for this server is defined. This is mainly used if you plan to monitor network traffic usage of your devices/networks using the \fBtraffacct\fP graph below.
 .RE
 .SS System services demand (serv.rrd)
-.BI SERV_MODE
+.BI mode
 .RS
 This option toggles the way the System Services Demand data is represented in the graph. There are two possible values:
 .P
 .RS
-\fII\fP  for incremental style
+\fIi\fP  for incremental style
 .br
-\fIL\fP  for load (spikes) style
+\fIl\fP  for load (spikes) style
 .RE
 .P
-Default value: \fII\fP
+Default value: \fIi\fP
 .RE
 .SS Mail statistics (mail.rrd)
-.BI MAIL_MTA
+.BI mta
 .RS
 This option specifies the MTA that Monitorix will use to collect mail statistics. The currently supported MTAs are:
 .RS
@@ -814,12 +723,12 @@ This option specifies the MTA that Monitorix will use to collect mail statistics
 \fIPostfix\fP
 .RE
 .P
-NOTE: the \fIpflogsumm\fP utility is required when using \fBPostfix\fP MTA.
+NOTE: the \fIpflogsumm\fP utility is required when using the \fBPostfix\fP MTA.
 .P
 Default value: \fIsendmail\fP
 .RE
 .P
-.BI MAIL_GREYLIST
+.BI greylist
 .RS
 This option specifies the Greylisting implementation that Monitorix will use to collect statistical information. In the future more Greylisting software will be supported.
 .P
@@ -831,35 +740,50 @@ The currently supported Greylist software is:
 Default value: \fImilter-greylist\fP
 .RE
 .SS Network port traffic (port.rrd)
-This graph requires the \fIiptables\fP command on Linux systems, and the \fIipfw\fP command on FreeBSD and OpenBSD systems.
+This graph requires the \fIiptables\fP command on Linux systems and the \fIipfw\fP command on FreeBSD and OpenBSD systems.
 .P
-.BI PORT_MAX
+.BI max
 .RS
 This is the number of network ports that you want to monitor. There is no limit to the number of ports monitored, but keep in mind that every time this number changes, Monitorix will resize the \fIport.rrd\fP file accordingly, removing all historical data.
 .P
 Default value: \fI9\fP
 .RE
 .P
-.BI PORT_RULE
+.BI rule
 .RS
 This is the rule number that Monitorix will use when using the \fIipfw\fP command to manage network port activity on FreeBSD and OpenBSD systems. Change it if you think it might conflict with any other rule number.
 .P
 Default value: \fI24000\fP
 .RE
 .P
-.BI PORT_LIST
+.BI list
 .RS
-You may define here up to \fBPORT_MAX\fP network port numbers. If you see a red color in the background of a network port graph, it means that there is not a daemon listening on that port. This can be useful to know if some service gone down unexpectedly.
+You may define here up to \fBmax\fP network port numbers. If you see a red color in the background of a network port graph, it means that there is not a daemon listening on that port. This can be useful to know if some service gone down unexpectedly.
 .RE
 .P
-.BI PORT_NAME
+.BI desc
 .RS
-This array complements the \fBPORT_LIST\fP array. Each option pairs with the one in the same position of the array. It basically permits naming network ports.
+This is the option where each network port specified in \fBlist\fP is described. Each port definition consists of four parameters separated by comma: the port description, the network protocol, and the rigid and limit values.
+.P
+An example would be:
+.RS
+<desc>
+.br
+	25 = SMTP, tcp, 0, 1000
+.br
+	80 = HTTP, tcp, 0, 1000
+.br
+	53 = DNS, udp, 0, 1000
+.br
+</desc>
+.RE
 .RE
 .P
-.BI PORT_PROT
+.BI graphs_per_row
 .RS
-This array complements the \fBPORT_LIST\fP array. Each option pairs with the one in the same position of the array. It permits defining the protocol type to be used in the traffic reporting. The protocol type must be valid and supported by your system.
+This is the number of graphs that will be put in a row. Consider the interaction of this parameter with the \fBmax\fP option in order to adjust the size and number of graphs in relation to your horizontal screen size.
+.P
+Default value: \fI3\fP
 .RE
 .SS Users using the system (user.rrd)
 Only the limit and rigid values may be set here.
@@ -868,11 +792,11 @@ This graph requires that \fImod_status\fP be loaded and \fIExtendedStatus\fP opt
 .P
 This graph is able to monitor an unlimited number of local and remote Apache web servers.
 .P
-.BI APACHE_LIST
+.BI list
 .RS
 This is a list of URLs of the monitored Apache web servers.
 .P
-WARNING: Every time the number of entries in this list changes, Monitorix will resize the \fIapache.rrd\fP file accordingly, removing all historical data.
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIapache.rrd\fP file accordingly, removing all historical data.
 .P
 Default value: \fIhttp://localhost:80/\fP
 .RE
@@ -881,14 +805,14 @@ This graph may require adding some lines in the configuration file \fInginx.conf
 .P
 This graph requires the \fIiptables\fP command on Linux systems, and the \fIipfw\fP command on FreeBSD and OpenBSD systems.
 .P
-.BI NGINX_PORT
+.BI port
 .RS
 This is the network port the Nginx web server is listening on.
 .P
 Default value: \fI80\fP
 .RE
 .P
-.BI NGINX_RULE
+.BI rule
 .RS
 This is the rule number that Monitorix will use when using the \fIipfw\fP command to manage Nginx network activity on FreeBSD and OpenBSD systems. Change it if you think it might conflict with any other rule number.
 .P
@@ -899,11 +823,11 @@ This graph requires that \fImod_status\fP is loaded in order to collect status i
 .P
 This graph is able to monitor an unlimited number of local and remote Lighttpd web servers.
 .P
-.BI LIGHTTPD_LIST
+.BI list
 .RS
 This is a list of URLs of the monitored Lighttpd web servers.
 .P
-WARNING: Every time the number of entries of this list changes, Monitorix will resize the \fIlighttpd.rrd\fP file accordingly, removing all historical data.
+WARNING: Every time the number of entries of this option changes, Monitorix will resize the \fIlighttpd.rrd\fP file accordingly, removing all historical data.
 .P
 Default value: \fIhttp://localhost:80/\fP
 .RE
@@ -923,56 +847,39 @@ This graph is able to monitor an unlimited number of local and remote MySQL web 
 .P
 NOTE: It is strongly recommended that you restart the MySQL service in order to avoid high spikes that could prevent correct display of the first plotted data.
 .P
-.BI MYSQL_CONN_TYPE
+.BI conn_type
 .RS
 This option toggles the way how Monitorix establishes the connection with the MySQL server. There are two possible values:
 .P
 .RS
-\fIHost\fP    using the network (hostname and IP address)
+\fIhost\fP    using the network (hostname and IP address)
 .br
-\fISocket\fP  using a socket file
+\fIsocket\fP  using a socket file
 .RE
 .P
-Default value: \fIHost\fP
+Default value: \fIhost\fP
 .RE
 .P
-.BI MYSQL_HOST_LIST
+.BI list
 .RS
-This is the list of hostnames of MySQL servers.
+This is the list of hostnames or path to sockets of MySQL servers.
 .P
-WARNING: Every time the number of entries of this list change Monitorix will resize the \fImysql.rrd\fP file accordingly, removing all historical data.
+WARNING: Every time the number of entries of this option change Monitorix will resize the \fImysql.rrd\fP file accordingly, removing all historical data.
 .P
 Default value: \fIlocalhost\fP
 .RE
 .P
-.BI MYSQL_PORT_LIST
+.BI desc
 .RS
-This is the TCP port number to use for the connection of each hostname listed in the \fBMYSQL_HOST_LIST\fP.
+This is the option where each entry specified in the list is described. Each definition consists of three parameters separated by comma: the port, the username and the password.
 .P
-Default value: \fI3306\fP
-.RE
-.P
-.BI MYSQL_USER_LIST
+An example would be:
 .RS
-This is the user name used to connect to each hostname listed in the \fBMYSQL_HOST_LIST\fP. See the example above.
-.P
-Default value: \fInone\fP
-.RE
-.P
-.BI MYSQL_PASS_LIST
-.RS
-This is the password used to connect to each hostname listed in the \fBMYSQL_HOST_LIST\fP. See the example above.
-.P
-Default value: \fInone\fP
-.RE
-.P
-.BI MYSQL_SOCK_LIST
-.RS
-This is the list of socket files of MySQL servers.
-.P
-WARNING: Every time the number of entries of this list change Monitorix will resize the \fImysql.rrd\fP file accordingly, removing all historical data.
-.P
-Default value: \fI/var/lib/mysql/mysql.sock\fP
+<desc>
+.br
+	localhost = 3306, user, secret
+.br
+</desc>
 .RE
 .P
 Some of the values shown in the graphs are the result of a calculation of two values from either \fISHOW [GLOBAL] STATUS\fP or \fISHOW VARIABLES\fP. The following is an explanation of them:
@@ -1020,18 +927,18 @@ This value should be reasonably far from 100%, otherwise consider incrementing t
 This value should be reasonably far from 100%, otherwise consider incrementing the \fIinnodb_buffer_pool_size\fP parameter in \fImy.cnf\fP.
 .SS Squid Proxy Web Cache (squid.rrd)
 .P
-.BI SQUID_CMD
+.BI cmd
 .RS
 This command displays statistics about the Squid HTTP proxy process and is the main command used to collect all data.
 .P
 Default value: \fIsquidclient -h 127.0.0.1\fP
 .P
 .RE
-.BI SQUID_GRAPH_1
+.BI graph_0
 .br
-.BI SQUID_GRAPH_2
+.BI graph_1
 .RS
-These arrays hold the selected Squid result or status codes to be shown in each graph. Feel free to mix result status and code status in any of the two arrays.
+These two lists hold the selected Squid result or status codes to be shown in each graph. Feel free to mix result status and code status in any of the two options.
 .P
 For more information about the list of all the result and status codes, please refer to http://wiki.squid-cache.org/SquidFaq/SquidLogs.
 .P
@@ -1039,7 +946,7 @@ Each graph has a limit number of 9 entries.
 .RE
 .SS NFS server statistics (nfss.rrd)
 .P
-.BI NFSS_VERSION
+.BI version
 .RS
 This option specifies which NFS server version is running in the system in order to correctly gather the correct values.
 .P
@@ -1055,19 +962,19 @@ The possible values are:
 Default value: \fI3\fP
 .P
 .RE
-.BI NFSS_GRAPH_1
+.BI graph_0
 .br
-.BI NFSS_GRAPH_2
+.BI graph_1
 .br
-.BI NFSS_GRAPH_3
+.BI graph_2
 .RS
-These arrays hold the defined NFS server activity statistics to be shown in each graph. Put every statistic name exactly as they appear in the output of the \fInfsstat\fP command.
+These three lists hold the defined NFS server activity statistics to be shown in each graph. Put every statistic name exactly as they appear in the output of the \fInfsstat\fP command.
 .P
 Each graph has a limit number of 10 entries.
 .RE
 .SS NFS client statistics (nfsc.rrd)
 .P
-.BI NFSC_VERSION
+.BI version
 .RS
 This option specifies which NFS server version is running in the system in order to correctly gather the correct values.
 .P
@@ -1083,29 +990,29 @@ The possible values are:
 Default value: \fI3\fP
 .P
 .RE
-.BI NFSC_GRAPH_1
+.BI graph_1
 .br
-.BI NFSC_GRAPH_2
+.BI graph_2
 .br
-.BI NFSC_GRAPH_3
+.BI graph_3
 .br
-.BI NFSC_GRAPH_4
+.BI graph_4
 .br
-.BI NFSC_GRAPH_5
+.BI graph_5
 .RS
-These arrays hold the defined NFS client activity statistics to be shown in each graph. Put every statistic name exactly as they appear in the output of the \fInfsstat\fP command.
+These five lists hold the defined NFS client activity statistics to be shown in each graph. Put every statistic name exactly as they appear in the output of the \fInfsstat\fP command.
 .P
 Each graph has the following limit number of entries:
 .P
-\fBNFSC_GRAPH_1\fP up to 10 entries
+\fBgraph_1\fP up to 10 entries
 .br
-\fBNFSC_GRAPH_2\fP up to 10 entries
+\fBgraph_2\fP up to 10 entries
 .br
-\fBNFSC_GRAPH_3\fP up to 4 entries
+\fBgraph_3\fP up to 4 entries
 .br
-\fBNFSC_GRAPH_4\fP up to 4 entries
+\fBgraph_4\fP up to 4 entries
 .br
-\fBNFSC_GRAPH_5\fP up to 4 entries
+\fBgraph_5\fP up to 4 entries
 .RE
 .SS BIND statistics (bind.rrd)
 This graph requires a BIND server with version 9.5 or higher, and in order to see all statistics provided by BIND you must configure the \fIstatistics-channels\fP like this:
@@ -1118,306 +1025,96 @@ statistics-channels {
 .P
 This graph is able to monitor an unlimited number of BIND servers.
 .P
-.BI BIND_URL_LIST
+.BI list
 .RS
 This is a list of URLs of BIND servers status pages.
 .P
-WARNING: Every time the number of entries in this list changes, Monitorix will resize the \fIbind.rrd\fP file accordingly, removing all historical data.
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIbind.rrd\fP file accordingly, removing all historical data.
 .P
 Default value: \fIhttp://localhost:8053/\fP
 .RE
 .P
-.BI BIND_IN_QUERIES_LIST
+.BI in_queries_list
 .RS
-This is a two-dimensional array of RR (Resource Records) types for each BIND server. The RR types defined here will appear in the Incoming Queries graph which shows the number of incoming queries for each RR type.
+This is a list of RR (Resource Records) types for each BIND server specified in \fBlist\fP option. The RR types defined here will appear in the Incoming Queries graph which shows the number of incoming queries for each RR type.
 .P
 For a complete list of RR types check the BIND 9 Administrator Reference Manual at <http://ftp.isc.org/www/bind/arm95/Bv9ARM.html>.
 .P
-our @BIND_IN_QUERIES_LIST = (
+<in_queries_list>
 .br
-	[
+	http://localhost:8053/ = A, AAAA, ANY, DS, MX, NS, PTR, SOA, SRV, TXT, NAPTR, A6, CNAME, SPF, KEY, DNSKEY, HINFO, WKS, PX, NSAP
 .br
-		"A",
-.br
-		"AAAA",
-.br
-		"ANY",
-.br
-		"DS",
-.br
-		"MX",
-.br
-		"NS",
-.br
-		"PTR",
-.br
-		"SOA",
-.br
-		"SRV",
-.br
-		"TXT",
-.br
-		"NAPTR",
-.br
-		"A6",
-.br
-		"CNAME",
-.br
-		"SPF",
-.br
-		"KEY",
-.br
-		"DNSKEY",
-.br
-		"HINFO",
-.br
-		"WKS",
-.br
-		"PX",
-.br
-		"NSAP",
-.br
-	],
-.br
-);
+</in_queries_list>
 .P
 The maximum number of RR types allowed for this graph is 20.
 .RE
 .P
-.BI BIND_OUT_QUERIES_LIST
+.BI out_queries_list
 .RS
-This is a two-dimensional array of RR (Resource Records) types for each BIND server. The RR types defined here will appear in the Outgoing Queries graph (_default view) which shows the number of outgoing queries sent by the DNS server resolver for each RR type.
+This is a list of RR (Resource Records) types for each BIND server. The RR types defined here will appear in the Outgoing Queries graph (_default view) which shows the number of outgoing queries sent by the DNS server resolver for each RR type.
 .P
-our @BIND_OUT_QUERIES_LIST = (
+<out_queries_list>
 .br
-	[
+	http://localhost:8053/ = A, AAAA, ANY, DS, MX, NS, PTR, SOA, SRV, TXT, NAPTR, A6, CNAME, SPF, KEY, DNSKEY, HINFO, WKS, PX, NSAP
 .br
-		"A",
-.br
-		"AAAA",
-.br
-		"ANY",
-.br
-		"DS",
-.br
-		"MX",
-.br
-		"NS",
-.br
-		"PTR",
-.br
-		"SOA",
-.br
-		"SRV",
-.br
-		"TXT",
-.br
-		"NAPTR",
-.br
-		"A6",
-.br
-		"CNAME",
-.br
-		"SPF",
-.br
-		"KEY",
-.br
-		"DNSKEY",
-.br
-		"HINFO",
-.br
-		"WKS",
-.br
-		"PX",
-.br
-		"NSAP",
-.br
-	],
-.br
-);
+</out_queries_list>
 .P
 The maximum number of RR types allowed for this graph is 20.
 .RE
 .P
-.BI BIND_SERVER_STATS_LIST
+.BI server_stats_list
 .RS
-This is a two-dimensional array of counters about incoming request processing. The counters defined here will appear in the Server Statistics graph.
+This is a list of counters about incoming request processing. The counters defined here will appear in the Server Statistics graph.
 .P
-our @BIND_SERVER_STATS_LIST = (
+<server_stats_list>
 .br
-	[
+	http://localhost:8053/ = Requestv4, Requestv6, ReqEdns0, ReqBadEDNSVer, ReqTSIG, ReqSIG0, ReqBadSIG, ReqTCP, Response, QrySuccess, QryAuthAns, QryNoauthAns, QryReferral, QryNxrrset, QrySERVFAIL, QryNXDOMAIN, QryRecursion, QryDuplicate, QryDropped, QryFailure
 .br
-		"Requestv4",
-.br
-		"Requestv6",
-.br
-		"ReqEdns0",
-.br
-		"ReqBadEDNSVer",
-.br
-		"ReqTSIG",
-.br
-		"ReqSIG0",
-.br
-		"ReqBadSIG",
-.br
-		"ReqTCP",
-.br
-		"Response",
-.br
-		"QrySuccess",
-.br
-		"QryAuthAns",
-.br
-		"QryNoauthAns",
-.br
-		"QryReferral",
-.br
-		"QryNxrrset",
-.br
-		"QrySERVFAIL",
-.br
-		"QryNXDOMAIN",
-.br
-		"QryRecursion",
-.br
-		"QryDuplicate",
-.br
-		"QryDropped",
-.br
-		"QryFailure",
-.br
-	],
-.br
-);
+</server_stats_list>
 .P
 The maximum number of counters allowed for this graph is 20.
 .RE
 .P
-.BI BIND_RESOLVER_STATS_LIST
+.BI resolver_stats_list
 .RS
-This is a two-dimensional array of counters about name resolution performed in the internal resolver. The counters defined here will appear in the Resolver Statistics graph (_default view).
+This is a list of counters about name resolution performed in the internal resolver. The counters defined here will appear in the Resolver Statistics graph (_default view).
 .P
-our @BIND_RESOLVER_STATS_LIST = (
+<resolver_stats_list>
 .br
-	[
+	http://localhost:8053/ = Queryv4, Queryv6, Responsev4, Responsev6, NXDOMAIN, SERVFAIL, FORMERR, OtherError, EDNS0Fail, Truncated, Lame, Retry, QueryTimeout, GlueFetchv4, GlueFetchv6, GlueFetchv4Fail, GlueFetchv6Fail, ValAttempt, ValOk, ValNegOk
 .br
-		"Queryv4",
-.br
-		"Queryv6",
-.br
-		"Responsev4",
-.br
-		"Responsev6",
-.br
-		"NXDOMAIN",
-.br
-		"SERVFAIL",
-.br
-		"FORMERR",
-.br
-		"OtherError",
-.br
-		"EDNS0Fail",
-.br
-		"Truncated",
-.br
-		"Lame",
-.br
-		"Retry",
-.br
-		"QueryTimeout",
-.br
-		"GlueFetchv4",
-.br
-		"GlueFetchv6",
-.br
-		"GlueFetchv4Fail",
-.br
-		"GlueFetchv6Fail",
-.br
-		"ValAttempt",
-.br
-		"ValOk",
-.br
-		"ValNegOk",
-.br
-	],
-.br
-);
+</resolver_stats_list>
 .P
 The maximum number of counters allowed for this graph is 20.
 .RE
 .P
-.BI BIND_CACHE_RRSETS_LIST
+.BI cache_rrsets_list
 .RS
-This is a two-dimensional array of RR (Resource Records) types for each BIND server. The RR types defined here will appear in the Cache DB RRsets graph (_default view) which shows the number of RRsets per RR type (positive or negative) and nonexistent names stored in the cache database.
+This is a list of RR (Resource Records) types for each BIND server. The RR types defined here will appear in the Cache DB RRsets graph (_default view) which shows the number of RRsets per RR type (positive or negative) and nonexistent names stored in the cache database.
 .P
-our @BIND_CACHE_RRSETS_LIST = (
+<cache_rrsets_list>
 .br
-	[
+	http://localhost:8053/ = A, !A, AAAA, !AAAA, DLV, !DLV, DS, !DS, MX, NS, CNAME, !CNAME, SOA, !SOA, !ANY, PTR, RRSIG, NSEC, DNSKEY, NXDOMAIN
 .br
-		"A",
-.br
-		"!A",
-.br
-		"AAAA",
-.br
-		"!AAAA",
-.br
-		"DLV",
-.br
-		"!DLV",
-.br
-		"DS",
-.br
-		"!DS",
-.br
-		"MX",
-.br
-		"NS",
-.br
-		"CNAME",
-.br
-		"!CNAME",
-.br
-		"SOA",
-.br
-		"!SOA",
-.br
-		"!ANY",
-.br
-		"PTR",
-.br
-		"RRSIG",
-.br
-		"NSEC",
-.br
-		"DNSKEY",
-.br
-		"NXDOMAIN",
-.br
-	],
-.br
-);
+</cache_rrsets_list>
 .P
 The maximum number of RR types allowed for this graph is 20.
 .RE
 .SS NTP statistics (ntp.rrd)
 This graph is able to monitor an unlimited number of NTP servers.
 .P
-.BI NTP_HOST_LIST
+.BI list
 .RS
 This is a list of NTP servers.
 .P
-WARNING: Every time the number of entries in this list changes, Monitorix will resize the \fIntp.rrd\fP file accordingly, removing all historical data.
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIntp.rrd\fP file accordingly, removing all historical data.
 .P
 Default value: \fIlocalhost\fP
 .RE
 .P
-.BI NTP_CODE_LIST
+.BI desc
 .RS
-This is a two-dimensional array of group of Reference Identifier and Kiss-o'-Death Codes for every hostname specified in the \fBNTP_HOST_LIST\fP option.
+This is a list of groups of Reference Identifier and Kiss-o'-Death Codes for every hostname specified in the \fBlist\fP option.
 .P
 For more information on these NTP codes:
 .br
@@ -1425,223 +1122,82 @@ For more information on these NTP codes:
 .br
 <http://www.iana.org/go/rfc5905>
 .P
-our @NTP_CODE_LIST = (
+<desc>
 .br
-	[
+	localhost = AUTH, AUTO, CRYP, DENY, GPS, INIT, NKEY, RATE, RMOT, RSTR
 .br
-		"AUTH",
-.br
-		"AUTO",
-.br
-		"CRYP",
-.br
-		"DENY",
-.br
-		"GPS",
-.br
-		"INIT",
-.br
-		"NKEY",
-.br
-		"RATE",
-.br
-		"RMOT",
-.br
-		"RSTR",
-.br
-	],
-.br
-	[
-.br
-		"DENY",
-.br
-		"RMOT",
-.br
-		"RSTR",
-.br
-	],
-.br
-);
+</desc>
 .P
 The maximum number of codes allowed for each hostname is 10.
 .RE
 .SS Fail2ban statistics (fail2ban.rrd)
 This graph is able to monitor an unlimited number of Fail2ban jails.
 .P
-.BI FAIL2BAN_PER_ROW
+.BI list
+.RS
+This is the list that describes the groups of jails in \fBdesc\fP. Put one description for each group. For every group specified you need to specify its description in the \fBdesc\fP option.
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIfail2ban.rrd\fP file accordingly, removing all historical data.
+.P
+An example would be:
+.P
+list = Security, Overload / Abuse
+.RE
+.P
+.BI desc
+.RS
+This is a list of jails per group defined in your Fail2ban configuration.
+.P
+<desc>
+.br
+	0 = [apache], [apache-mod-security], [apache-overflows], [courierauth], [ssh], [pam-generic], [php-url-fopen], [vsftpd]
+.br
+	1 = [apache-imdbphp], [apache-evasive], [apache-badbots], [apache-robots-txt], [communigate], [named-refused-udp], [named-refused-tcp], [trac-ticketspam]
+.br
+</desc>
+.P
+The maximum number of jails allowed for each group is 9.
+.RE
+.P
+.BI graphs_per_row
 .RS
 This is the number of fail2ban graphs that will be put in a row.
 .P
 Default value: \fI2\fP
 .RE
-.P
-.BI FAIL2BAN_LIST
-.RS
-This is a two-dimensional array of unlimited group of jails defined in your Fail2ban configuration. For every group specified there is the ability to specify a description in the \fBFAIL2BAN_DESC\fP array.
-.P
-WARNING: Every time the number of entries in this list changes, Monitorix will resize the \fIfail2ban.rrd\fP file accordingly, removing all historical data.
-.P
-our @FAIL2BAN_LIST = (
-.br
-	[
-.br
-		"[apache]",
-.br
-		"[apache-mod-security]",
-.br
-		"[courierauth]",
-.br
-		"[sshd]",
-.br
-		"[pam-generic]",
-.br
-		"[php-url-fopen]",
-.br
-		"[vsftpd]",
-.br
-	],
-.br
-	[
-.br
-		"[apache-imdbphp]",
-.br
-		"[apache-evasive]",
-.br
-	],
-.br
-);
-.P
-The maximum number of jails allowed for each group is 9.
-.RE
-.P
-.BI FAIL2BAN_DESC
-.RS
-This is the description of each group of jails in \fBFAIL2BAN_LIST\fP. Put one description for each group. An example would be:
-.P
-our @FAIL2BAN_DESC = (
-.br
-	"Security",
-.br
-	"Overload / Abuse",
-.br
-);
-.RE
 .SS Icecast Streaming Media Server (icecast.rrd)
 This graph is able to monitor an unlimited number of Icecast servers.
 .P
-.BI ICECAST_URL_LIST
+.BI list
 .RS
 This is a list of URLs of Icecast server status pages.
 .P
-WARNING: Every time the number of entries in this list changes, Monitorix will resize the \fIicecast.rrd\fP file accordingly, removing all historical data.
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIicecast.rrd\fP file accordingly, removing all historical data.
 .P
 Default value: \fIhttp://localhost:8000/status.xsl\fP
 .RE
 .P
-.BI ICECAST_MP_LIST
+.BI desc
 .RS
-This is a two-dimensional array of mountpoints configured for every URL specified in the \fBICECAST_URL_LIST\fP option.
+This is a list of mountpoints configured for every URL specified in the \fBlist\fP option.
 .P
-our @ICECAST_MP_LIST = (
+<desc>
 .br
-	[
+	http://localhost:8000/status.xsl = stream1, stream2, stream3
 .br
-		"/stream1",
-.br
-		"/stream2",
-.br
-		"/stream3",
-.br
-	],
-.br
-	[
-.br
-		"/stream1",
-.br
-		"/stream2",
-.br
-	],
-.br
-);
+</desc>
 .P
 The maximum number of mountpoints allowed for each URL is 9.
 .RE
 .P
-.BI ICECAST_GRAPH_MODE 
+.BI graph_mode 
 .RS
-This changes the layout of the listeners graph, the possible values are \fIR\fP for a real graph, or \fIS\fP for a stacked graph (every line or area is stacked on top of the previous element).
+This changes the layout of the listeners graph, the possible values are \fIr\fP for a real graph, or \fIs\fP for a stacked graph (every line or area is stacked on top of the previous element).
 .P
-Default value: \fIR\fP
+Default value: \fIr\fP
 .RE
 .SS Devices interrupt activity (int.rrd)
 Only the limit and rigid values may be set here.
-.SS Monitoring remote servers (Multihost)
-The \fIMultihost\fP feature allows you to monitor an unlimitted number of remote servers that already have Monitorix installed. 
-.P
-Monitorix assumes that every remote server has been configured with the same settings in the \fIBASE_URL\fP and \fIBASE_CGI\fP options. Future versions may introduce the ability to have different configurations between local and remote servers.
-.P
-.BI MULTIHOST
-.RS
-This option enables the \fIMultihost\fP feature.
-.P
-Default value: \fIN\fP
-.RE
-.P
-.BI MULTIHOST_FOOTER
-.RS
-If set to \fIY\fP Monitorix will show the original URL of each server at the bottom of the graph. Where security is important you may want to hide this information.
-.P
-Default value: \fIY\fP
-.RE
-.P
-.BI MULTIHOST_IMGS_PER_ROW
-.RS
-If your horizontal screen resolution is pretty wide, you may want to increase the number of graphs that appear on each row.
-.P
-Default value: \fI2\fP
-.RE
-.P
-.BI REMOTEHOST_LIST
-.RS
-This is a list of remote servers, with Monitorix already installed and working, that you plan to monitor from here. It consists of a series of name/value pairs with the right side being the URL or IP address and the left the server description.
-.P
-An example of this list would be:
-.P
-.RS
-our @REMOTEHOST_LIST = (
-.br
-	"WWW Linux",    "http://www.example.com",
-.br
-	"Backup Linux", "http://192.168.1.4",
-.br
-	"SMTP Linux",   "http://71.16.11.2:8080",
-.br
-);
-.RE
-.P
-As you can see all three entries use URLs to designate the location of each remote server. This means that each server most also have been installed on a CGI capable web server like Apache.
-.RE
-.P
-.BI GROUPS
-.RS
-This enables the server grouping for those environments where there are too much servers to display at the same time. Hence, you can group them in order to show them separatedly.
-.P
-Default value: \fIN\fP
-.RE
-.P
-.BI REMOTEGROUP_LIST
-.RS
-This is a list of groups of remote servers, with Monitorix already installed and working, that you plan to monitor from here. It consists of a series of name/value pairs with the right side being the names of the remote servers given in \fBREMOTEHOST_LIST\fP (separated by a colon) and in the left the group name.
-.P
-An example of this list would be:
-.P
-.RS
-our @REMOTEGROUP_LIST = (
-.br
-	"My Group",    "Backup Linux:SMTP Linux",
-.br
-);
-.RE
 .SS Monitoring the Internet traffic of LAN PCs, devices or whole networks
 If your server acts as the gateway for a group of PCs, devices or even whole networks in your local LAN, you may want to know much Internet traffic each one is generating.
 .P
@@ -1757,6 +1313,110 @@ our @PC_MAIL = (
 );
 .RE
 .RE
+.SS Monitoring remote servers (Multihost)
+The \fIMultihost\fP feature allows you to monitor an unlimitted number of remote servers that already have Monitorix installed. 
+.P
+Monitorix assumes that every remote server has been configured with the same settings in the \fIbase_url\fP and \fIbase_cgi\fP options. Future versions may introduce the ability to have different configurations between local and remote servers.
+.P
+.BI enabled
+.RS
+This option enables the \fIMultihost\fP feature.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI footer_url
+.RS
+If set to \fIy\fP Monitorix will show the original URL of each server at the bottom of the graph. Where security is important you may want to hide this information.
+.P
+Default value: \fIy\fP
+.RE
+.P
+.BI graphs_per_row
+.RS
+If your horizontal screen resolution is pretty wide, you may want to increase the number of graphs that appear on each row.
+.P
+Default value: \fI2\fP
+.RE
+.P
+.BI remotehost_list
+.RS
+This is a list with descriptive names of remote servers with Monitorix already installed and working that you plan to monitor from here.
+.P
+An example of this list would be:
+.P
+.RS
+remotehost_list = server 1, server 2, server 3
+.RE
+.RE
+.P
+.BI remotehost_desc
+.RS
+This is a numbered list that describes each of the names defined in the \fBremotehost_list\fP option.
+.P
+An example would be:
+.P
+.RS
+<remotehost_desc>
+.br
+	0 = http://www.example.com
+.br
+	1 = http://10.0.0.1
+.br
+	2 = http://192.168.0.100:8080
+.br
+</remotehost_desc>
+.RE
+.P
+As you can see all three entries use URLs to designate the location of each remote server. This means that each server most also have been installed on a CGI capable web server like Apache.
+.RE
+.P
+.BI groups
+.RS
+This enables the server grouping for those environments where there are too much servers to display at the same time. Hence, you can group them in order to show them separatedly.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI remotegroup_list
+.RS
+This is a list of groups of remote servers with Monitorix already installed and working that you plan to monitor from here.
+.P
+An example of this list would be:
+.P
+.RS
+remotegroup_list = My Group
+.RE
+.RE
+.P
+.BI remotegroup_desc
+.RS
+This is a numbered list that describes each of the names defined in the \fBremotegroup_list\fP option.
+.P
+An example would be:
+.P
+.RS
+<remotegroup_desc>
+.br
+	0 = server2, server 3
+.br
+</remotegroup_desc>
+.RE
+.RE
+.SS rigid and limit values
+.BI rigid
+.RS
+This value defines how the graph must be scaled. Its possible values are:
+.P
+\fI0\fP   No rigid. The graph will be scaled automatically.
+.br
+\fI2\fP   The graph will be scaled using the \fBlimit\fP value as its upper-limit value.
+.RE
+.BI limit
+.RS
+This is where you can enter the upper-limit value for a graph.
+.RE
+.P
 .SH AUTHOR
 Monitorix is written by Jordi Sanfeliu <jordi@fibranet.cat>
 .SH COPYRIGHT
