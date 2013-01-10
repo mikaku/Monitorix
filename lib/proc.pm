@@ -182,15 +182,15 @@ sub proc_update {
 			@deltas = (
 
 				# $p[0] and $l[0] are the 'cpu' word
-				$p[1] - $l[1],	# user
-				$p[2] - $l[2],	# nice
-				$p[3] - $l[3],	# sys
-				$p[4] - $l[4],	# idle
-				$p[5] - $l[5],	# iow
-				$p[6] - $l[6],	# irq
-				$p[7] - $l[7],	# sirq
-				$p[8] - $l[8],	# steal
-				$p[9] - $l[9],	# guest
+				($p[1] || 0) - ($l[1] || 0),	# user
+				($p[2] || 0) - ($l[2] || 0),	# nice
+				($p[3] || 0) - ($l[3] || 0),	# sys
+				($p[4] || 0) - ($l[4] || 0),	# idle
+				($p[5] || 0) - ($l[5] || 0),	# iow
+				($p[6] || 0) - ($l[6] || 0),	# irq
+				($p[7] || 0) - ($l[7] || 0),	# sirq
+				($p[8] || 0) - ($l[8] || 0),	# steal
+				($p[9] || 0) - ($l[9] || 0),	# guest
 			);
 			$total = $deltas[0] + $deltas[1] + $deltas[2] + $deltas[3] + $deltas[4] + $deltas[5] + $deltas[6] + $deltas[7] + $deltas[8];
 
