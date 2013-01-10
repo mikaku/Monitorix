@@ -47,7 +47,9 @@ install -m 0644 docs/monitorix.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/mo
 mkdir -p %{buildroot}%{_sysconfdir}
 install -m 0644 monitorix.conf %{buildroot}%{_sysconfdir}/monitorix.conf
 mkdir -p %{buildroot}%{_bindir}
-install -m 0755 monitorix %{buildroot}%{_bindir}
+install -m 0755 monitorix %{buildroot}%{_bindir}/monitorix
+mkdir -p %{buildroot}%{_libdir}/monitorix
+install -m 0644 lib/*.pm %{buildroot}%{_libdir}/monitorix
 mkdir -p %{buildroot}%{_datadir}/monitorix
 install -m 0644 logo_top.png %{buildroot}%{_datadir}/monitorix
 install -m 0644 logo_bot.png %{buildroot}%{_datadir}/monitorix
@@ -57,7 +59,6 @@ mkdir -p %{buildroot}%{_datadir}/monitorix/cgi-bin
 install -m 0755 monitorix.cgi %{buildroot}%{_datadir}/monitorix/cgi-bin
 mkdir -p %{buildroot}%{_localstatedir}/lib/monitorix/reports
 install -m 0644 reports/*.html %{buildroot}%{_localstatedir}/lib/monitorix/reports
-install -m 0755 reports/send_reports %{buildroot}%{_localstatedir}/lib/monitorix/reports
 mkdir -p %{buildroot}%{_localstatedir}/lib/monitorix/usage
 mkdir -p %{buildroot}%{_mandir}/man5
 mkdir -p %{buildroot}%{_mandir}/man8
@@ -78,6 +79,7 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/sysconfig/monitorix
 %config(noreplace) %{_sysconfdir}/monitorix.conf
 %{_bindir}/monitorix
+%{_libdir}/monitorix/*.pm
 %{_datadir}/monitorix/logo_top.png
 %{_datadir}/monitorix/logo_bot.png
 %{_datadir}/monitorix/monitorixico.png
@@ -85,7 +87,6 @@ rm -rf %{buildroot}
 %attr(777,apache,apache) %{_datadir}/monitorix/imgs
 %attr(755,root,root) %{_localstatedir}/lib/monitorix/usage
 %config(noreplace) %{_localstatedir}/lib/monitorix/reports/*.html
-%{_localstatedir}/lib/monitorix/reports/send_reports
 %doc %{_mandir}/man5/monitorix.conf.5.gz
 %doc %{_mandir}/man8/monitorix.8.gz
 %doc Changes COPYING README README.nginx README.FreeBSD README.OpenBSD README.NetBSD docs/monitorix-alert.sh docs/monitorix-lighttpd.conf

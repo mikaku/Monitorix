@@ -24,10 +24,11 @@ require 5.006;
 use strict;
 use warnings;
 use FindBin qw($Bin);
-use lib $Bin . '/lib';
+use lib "$Bin/lib";
+use lib "/usr/lib/monitorix";
 
 use Monitorix;
-use POSIX qw(WNOHANG LC_TIME setlocale uname pause);
+use POSIX qw(WNOHANG LC_TIME setlocale uname pause setsid);
 use Config::General;
 use Getopt::Std;
 use Cwd 'abs_path';
@@ -75,12 +76,8 @@ sub HUP_handler {
 	# upon receiving a SIGHUP signal the logfile is re-opened
 	close(STDOUT);
 	close(STDERR);
-	unless(open(STDOUT, ">> $config{log_file}")) {
-		logger("Can't write to LOG: $!");
-	}
-	unless(open(STDERR, ">> $config{log_file}")) {	# >>&STDOUT XXX
-		logger("Can't write to LOG: $!");
-	}
+	open(STDOUT, ">> $config{log_file}") || logger("Can't write to LOG: $!");
+	open(STDERR, ">> $config{log_file}") || logger("Can't write to LOG: $!");
 	logger("$myself: reopening log file.");
 }
 
@@ -135,29 +132,13 @@ sub ALRM_handler {
 }
 
 sub daemonize {
-	if(fork) {
-		exit(0);	# parent exits
-	}
-
-	setsid();
-	foreach(0 .. (sysconf(&POSIX::_SC_OPEN_MAX) || 1024)) {
-		close($_);
-	}
-	unless(chdir("/")) {
-		die("Can't chdir to /: $!");
-	}
-	unless(umask(022)) {
-		die("Unable to umask 022: $!");
-	}
-#	unless(open(STDIN, "< /dev/null")) {
-#		die("Can't read /dev/null: $!");
-#	}
-	unless(open(STDOUT, ">> $config{log_file}")) {
-		die("Can't write to LOG: $!");
-	}
-	unless(open(STDERR, ">> $config{log_file}")) {	# >>&STDOUT XXX
-		die("Can't write to LOG: $!");
-	}
+	chdir("/") || die "Can't chdir to /: $!";
+	open(STDIN, "< /dev/null") || die "Can't read /dev/null: $!";
+	open(STDOUT, ">> $config{log_file}") || die "Can't write to LOG: $!";
+	umask(022) || die "Unable to umask 022: $!";
+	exit if fork();	# parent exits
+	(setsid() != -1) || die "Can't start a new session: $!";
+	open(STDERR, ">> $config{log_file}") || die "Can't write to LOG: $!";
 }
 
 sub usage {
@@ -194,7 +175,7 @@ sub create_index {
 	}
 
 	if(!open(OUT, "> $config{base_dir}/index.html")) {
-		die "unable to create '${config{base_dir}}index.html'. $!";
+		die "unable to create '${config{base_dir}}index.html': $!";
 	}
 	print(OUT <<EOF);
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
@@ -387,7 +368,7 @@ if(!$options{c}) {
 }
 $options{c} = abs_path($options{c}) unless $^V lt 5.6.2;
 if(!stat($options{c})) {
-	die("can't open file '$options{c}'.\n");
+	die "can't open file '$options{c}': $!";
 }
 
 # load configuration file
@@ -404,7 +385,7 @@ my $release;
 my ($major, $minor) = split('\.', $release);
 $config{kernel} = $major . "." . $minor;
 if(!grep {$_ eq $config{os}} @suppsys) {
-	die("FATAL: your operating system ($config{os}) is not supported.\n");
+	die "FATAL: your operating system ($config{os}) is not supported.";
 }
 
 if(grep {$_ eq $config{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
@@ -418,13 +399,13 @@ $0 = sprintf("%s %s%s%s%s",
 	$options{d} ? " -d $options{d}" : "",
 	$options{v} ? " -v" : "");
 
-#daemonize();
+daemonize();
 logger("Starting Monitorix version " . VERSION . " (pid $$).");
 
 if($options{p}) {
 	$options{p} = abs_path($options{p});
 	open(OUT, "> $options{p}")
-		|| die("could not open '$options{p}' for writing");
+		|| die "could not open '$options{p}' for writing: $!";
 	print(OUT "$$");
 	close(OUT);
 }
@@ -432,9 +413,7 @@ if($options{p}) {
 # change to a safety directory
 unless(chdir("/tmp")) {
 	logger("can't chdir to /tmp: $!");
-	unless(chdir("/lost+found")) {
-		die("Can't chdir to /lost+found: $!");
-	}
+	chdir("/lost+found") || die "Can't chdir to /lost+found: $!";
 }
 
 if($options{d}) {
@@ -442,7 +421,7 @@ if($options{d}) {
 		@{$config{debug}} = split(',', $options{d});
 		foreach my $t (@{$config{debug}}) {
 			if(!grep {trim($_) eq $t} (split(',', $config{graph_name} . ", traffacct"))) {
-				die("Invalid debug key '$t'");
+				die "Invalid debug key '$t'";
 			}
 		}
 	}
@@ -494,8 +473,8 @@ foreach (split(',', $config{graph_name} . ", traffacct")) {
 }
 
 # XXX
-use Data::Dumper;
-print Dumper($config{func_update});
+#use Data::Dumper;
+#print Dumper($config{func_update});
 # XXX
 
 if(!scalar($config{func_update})) {
