@@ -428,7 +428,7 @@ sub serv_update {
 	$config->{serv_hist}->{'val05'} = $val05;
 
 	$rrdata .= ":$l_ssh:$l_ftp:$l_telnet:$l_imap:$l_smb:$l_fax:$l_cups:$l_pop3:$l_smtp:$l_spam:$l_virus:$l_f2b:$l_val02:$l_val03:$l_val04:$l_val05";
-##	RRDs::update($rrd, $rrdata);
+	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;
 	my $err = RRDs::error;
 	logger("ERROR: while updating $rrd: $err") if $err;

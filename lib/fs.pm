@@ -24,6 +24,8 @@ use strict;
 use warnings;
 use Monitorix;
 use RRDs;
+use Cwd 'abs_path';
+use File::Basename;
 use Exporter 'import';
 our @EXPORT = qw(fs_init fs_update fs_cgi);
 
