@@ -16,6 +16,9 @@
 - Fixed a number of small bugs.
 - Fixed a bad naming of the bitrate variables when creating the Bitrate graph
   of the Icecast Streaming Media Server.
+- Fixed to include the username and password when connecting to MySQL using a
+  socket.
+	(thanks to Luca Ferrario, luca AT ferrario.net)
 
 Changes introduced to 2.6.0 version:
 - Introduced some modifications to the device name detection for FreeBSD.
@@ -27,9 +30,6 @@ Changes introduced to 2.6.0 version:
 - Fixed an intermix usage of alarm() and sleep() substituting it by alarm() and
   pause().
 - Fixed a bug in multihost introduced by the groups code.
-- Fixed to include the username and password when connecting to MySQL using a
-  socket.
-	(thanks to Luca Ferrario, luca AT ferrario.net)
 
 
 2.6.0  - 19-Sep-2012
