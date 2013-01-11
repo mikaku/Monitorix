@@ -1,4 +1,4 @@
-3.0.0  - NN-XXX-2013
+3.0.0B1- 11-Jan-2013
 ====================
 - Complete rewrite.
 - Added a new option in 'port' to define the number of graphs per row.
