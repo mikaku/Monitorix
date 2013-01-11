@@ -164,6 +164,10 @@ sub fs_init {
 
 				# get the major and minor of $d
 				my $rdev = (stat($d))[6];
+				if(!$rdev) {
+					logger("$myself: Unable to detect the device name of '$d'. I/O stats for this filesystem won't be shown in graph.");
+					next;
+				}
 				my $minor = $rdev % 256;
 				my $major = int($rdev / 256);
 

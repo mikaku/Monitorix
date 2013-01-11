@@ -53,10 +53,10 @@ hands to work.
 Since the release 2.6.0 Monitorix includes support for NetBSD systems.
 
 With the release of the 3.0.0 version, Monitorix suffered another big rewrite
-which became it into a complete modular code structure reducing notably its
-memory footprint. That new version also included a number of new features and
-graphs, cleaned up all the code, fixed a lot of bugs and had a safest code as
-it used 'strict' in all its modules.
+which became it into a complete modular code structure reducing in some cases
+its memory footprint. That new version also included a number of new features
+and graphs, cleaned up all the code, fixed a lot of bugs and had a safest code
+as it used 'strict' in all its modules.
 
 With this new modular structure, Monitorix can now be packaged either into a
 single one package requiring all its dependences to be satisfied during the

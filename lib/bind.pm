@@ -261,6 +261,7 @@ sub bind_update {
 
 		$value = $data->{bind}->{statistics}->{server}->{requests}->{opcode}->{counter};
 		$str = $n . "totalinq";
+		$value = $value || 0;
 		$totalinq = $value - ($config->{bind_hist}->{$str} || 0);
 		$totalinq = 0 unless $totalinq != $value;
 		$totalinq /= 60;

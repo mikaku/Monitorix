@@ -127,7 +127,7 @@ sub hptemp_update {
 	close(IN);
 	my $str;
 	for($l = 0; $l < scalar(@data); $l++) {
-		foreach my $t (split(',', $hptemp->{graph_0})) {
+		foreach my $t (split(',', ($hptemp->{graph_0} || ""))) {
 			$str = sprintf("%2d", trim($t));
 			if($data[$l] =~ m/^$str  /) {
 				my $temp = trim(substr($data[$l], 47, 3));
@@ -135,7 +135,7 @@ sub hptemp_update {
 				push(@hptemp1, map {$_ eq "---" ? 0 : $_} ($temp));
 			}
 		}
-		foreach my $t (split(',', $hptemp->{graph_1})) {
+		foreach my $t (split(',', ($hptemp->{graph_1} || ""))) {
 			$str = sprintf("%2d", trim($t));
 			if($data[$l] =~ m/^$str  /) {
 				my $temp = trim(substr($data[$l], 47, 3));
@@ -143,7 +143,7 @@ sub hptemp_update {
 				push(@hptemp2, map {$_ eq "---" ? 0 : $_} ($temp));
 			}
 		}
-		foreach my $t (split(',', $hptemp->{graph_2})) {
+		foreach my $t (split(',', ($hptemp->{graph_2} || ""))) {
 			$str = sprintf("%2d", trim($t));
 			if($data[$l] =~ m/^$str  /) {
 				my $temp = trim(substr($data[$l], 47, 3));
@@ -319,7 +319,7 @@ sub hptemp_cgi {
 		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 	}
 
-	if(scalar(my @hptemp0 = split(',', $hptemp->{graph_0}))) {
+	if(scalar(my @hptemp0 = split(',', ($hptemp->{graph_0} || "")))) {
 		undef(@tmp);
 		undef(@tmpz);
 		for($n = 0; $n < 8; $n++) {
@@ -413,7 +413,7 @@ sub hptemp_cgi {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-	if(scalar(my @hptemp1 = split(',', $hptemp->{graph_1}))) {
+	if(scalar(my @hptemp1 = split(',', ($hptemp->{graph_1} || "")))) {
 		undef(@tmp);
 		undef(@tmpz);
 		for($n = 0; $n < 6; $n++) {
@@ -502,7 +502,7 @@ sub hptemp_cgi {
 		}
 	}
 
-	if(scalar(my @hptemp2 = split(',', $hptemp->{graph_2}))) {
+	if(scalar(my @hptemp2 = split(',', ($hptemp->{graph_2} || "")))) {
 		undef(@tmp);
 		undef(@tmpz);
 		for($n = 0; $n < 6; $n++) {
