@@ -22,6 +22,7 @@ Requires: perl-MailTools
 Requires: perl-MIME-Lite
 Requires: perl-DBI
 Requires: perl-XML-Simple
+Requires: perl-Config-General
 
 %description
 Monitorix is a free, open source, lightweight system monitoring tool designed
