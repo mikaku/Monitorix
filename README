@@ -96,6 +96,7 @@ logo_top.png                $BASE_DIR			top logo
 monitorixico.png            $BASE_DIR			favicon
 monitorix-alert.sh          /usr/share/doc/		alert example script
 monitorix-apache.conf       /etc/httpd/conf.d/		apache configuration
+monitorix.service           /usr/lib/systemd/system/	Arch Linux systemd service template
 monitorix.init              /etc/init.d/		redhat init script
 monitorix-deb.init          /etc/init.d/		debian init script
 monitorix.logrotate         /etc/logrotate.d/		logrotate script
