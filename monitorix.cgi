@@ -212,7 +212,7 @@ my $conf = new Config::General(
 %config = $conf->getall;
 
 $config{url} = $ENV{HTTPS} ? "https://" . $ENV{HTTP_HOST} : "http://" . $ENV{HTTP_HOST};
-$config{hostname} = $ENV{SERVER_NAME};
+$config{hostname} = $config{hostname} || $ENV{SERVER_NAME};
 if(!($config{hostname})) {	# called from the command line
 	$config{hostname} = "127.0.0.1";
 	$config{url} = "http://127.0.0.1";
