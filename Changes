@@ -6,7 +6,7 @@
 - Fixed a bad assigning in 'mail' that prevented from seeing the greylisting
   values in the graph.
 - Fixed a bug in CGI the prevented honoring the 'hostname' configuration option.
-	(thanks to graysky, da_audiophile AT yahoo.com)
+	(thanks to graysky, AT archlinux.us)
 
 
 3.0.0B1- 11-Jan-2013
