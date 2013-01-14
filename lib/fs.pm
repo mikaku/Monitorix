@@ -528,7 +528,8 @@ sub fs_cgi {
 		foreach my $k (sort keys %{$fs->{list}}) {
 			my @f = split(',', $fs->{list}->{$k});
 			for($n = 0; $n < scalar(@f); $n++) {
-				$str = sprintf("%23s", $fs->{desc}->{$f[$n]} || trim($f[$n]));
+				$f[$n] = trim($f[$n]);
+				$str = sprintf("%23s", $fs->{desc}->{$f[$n]} || $f[$n]);
 				$line1 .= $str;
 				$str = sprintf("   Use     I/O    Time ");
 				$line2 .= $str;
@@ -621,10 +622,11 @@ sub fs_cgi {
 		undef(@tmpz);
 		push(@tmp, "COMMENT: \\n");
 		for($n = 0; $n < 8; $n++) {
+			$f[$n] = trim($f[$n]);
 			if($f[$n]) {
 				my $color;
 
-				$str = $fs->{desc}->{$f[$n]} || trim($f[$n]);
+				$str = $fs->{desc}->{$f[$n]} || $f[$n];
 				if(trim($f[$n]) eq "/") {
 					$color = "#EE4444";
 				} elsif($str eq "swap") {
@@ -737,9 +739,10 @@ sub fs_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		for($n = 0; $n < 8; $n += 2) {
+			$f[$n] = trim($f[$n]);
 			my $color;
 			if($f[$n]) {
-				$str = $fs->{desc}->{$f[$n]} || trim($f[$n]);
+				$str = $fs->{desc}->{$f[$n]} || $f[$n];
 				if(trim($f[$n]) eq "/") {
 					$color = "#EE4444";
 				} elsif($str eq "swap") {
@@ -754,7 +757,7 @@ sub fs_cgi {
 				push(@tmp, "LINE2:ioa" . $n . $color . ":$str");
 			}
 			if($f[$n + 1]) {
-				$str = $fs->{desc}->{$f[$n + 1]} || trim($f[$n + 1]);
+				$str = $fs->{desc}->{$f[$n + 1]} || $f[$n + 1];
 				if(trim($f[$n + 1]) eq "/") {
 					$color = "#EE4444";
 				} elsif($str eq "swap") {
@@ -861,9 +864,10 @@ sub fs_cgi {
 				$vlabel = "Sectors/s";
 			}
 			for($n = 0; $n < 8; $n += 2) {
+				$f[$n] = trim($f[$n]);
 				my $color;
 				if($f[$n]) {
-					$str = $fs->{desc}->{$f[$n]} || trim($f[$n]);
+					$str = $fs->{desc}->{$f[$n]} || $f[$n];
 					if(trim($f[$n]) eq "/") {
 						$color = "#EE4444";
 					} elsif($str eq "swap") {
@@ -878,7 +882,7 @@ sub fs_cgi {
 					push(@tmp, "LINE2:tim" . $n . $color . ":$str");
 				}
 				if($f[$n + 1]) {
-					$str = $fs->{desc}->{$f[$n + 1]} || trim($f[$n + 1]);
+					$str = $fs->{desc}->{$f[$n + 1]} || $f[$n + 1];
 					if(trim($f[$n + 1]) eq "/") {
 						$color = "#EE4444";
 					} elsif($str eq "swap") {
@@ -897,10 +901,11 @@ sub fs_cgi {
 	   		$graph_title = "Disk data activity  ($tf->{nwhen}$tf->{twhen})";
 			$vlabel = "KB/s";
 			for($n = 0; $n < 8; $n += 2) {
+				$f[$n] = trim($f[$n]);
 				my $color;
 				my $str2;
 
-				$str2 = $fs->{desc}->{$f[$n]} || trim($f[$n]);
+				$str2 = $fs->{desc}->{$f[$n]} || $f[$n];
 				if($f[$n]) {
 					$str = sprintf("%-17s", $str2, 0, 17);
 					if(trim($f[$n]) eq "/") {
@@ -915,7 +920,7 @@ sub fs_cgi {
 					push(@tmp, "LINE2:tim" . $n . $color . ":$str");
 					push(@tmpz, "LINE2:tim" . $n . $color . ":$f[$n]\\g");
 				}
-				$str2 = $fs->{desc}->{$f[$n + 1]} || trim($f[$n + 1]);
+				$str2 = $fs->{desc}->{$f[$n + 1]} || $f[$n + 1];
 				if($f[$n + 1]) {
 					$str = sprintf("%-17s", $str2, 0, 17);
 					if(trim($f[$n + 1]) eq "/") {
