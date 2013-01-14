@@ -418,8 +418,8 @@ sub mail_update {
 	$gen[2] = 0;
 	$gen[3] = 0;
 	$gen[4] = 0;
-	$gen[5] = int($gl_records) || 0;
-	$gen[6] = 0;
+	$gen[5] = 0;
+	$gen[6] = int($gl_records) || 0;
 	$gen[7] = int($gl_greylisted) || 0;
 	$gen[8] = int($gl_whitelisted) || 0;
 	$gen[9] = 0;
