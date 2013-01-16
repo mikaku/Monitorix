@@ -931,6 +931,16 @@ This value should be reasonably far from 100%, otherwise consider incrementing t
 \fB(1 - (Innodb_buffer_pool_pages_free / Innodb_buffer_pool_pages_total)) * 100\fP
 .br
 This value should be reasonably far from 100%, otherwise consider incrementing the \fIinnodb_buffer_pool_size\fP parameter in \fImy.cnf\fP.
+.P
+\fBTemp. Tables To Disk\fP
+.br
+\fB(Created_temp_disk_tables / Created_temp_disk_tables + Created_temp_tables)) * 100\fP
+.br
+During operation, MySQL has to create some temporary tables (that can be explicit, so created by the web application, or implicit, so for example MySQL has to create one when he runs some "SELECT DISTINCT", "UNION" or "VIEW" queries). MySQL will prefer to save this tmp tables to memory, for a fast access. But if 'tmp_table_size' gets saturated, he has to write them on the disk instead, making the access slower.
+.br
+Therefore this value helps to know how many tmp tables go to the disk instead than to the memory. Keep in mind that some large queries, involving TEXT and BLOB columns, are directly written to the disk instead than to the memory, because they would be too big. So you probably will want to avoid having a high % of tmp tables written to the disk, but you will never reach 0% on a big site, and this is fine.
+.br
+Lower is better ... but 0% is not reachable and you should not try to reach it, usually.
 .SS Squid Proxy Web Cache (squid.rrd)
 .P
 .BI cmd

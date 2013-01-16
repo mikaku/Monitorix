@@ -87,7 +87,7 @@ sub mysql_init {
 			push(@tmp, "DS:mysql" . $n . "_bsent:GAUGE:120:0:U");
 			push(@tmp, "DS:mysql" . $n . "_qchr:GAUGE:120:0:100");
 			push(@tmp, "DS:mysql" . $n . "_cstmtex:GAUGE:120:0:U");
-			push(@tmp, "DS:mysql" . $n . "_val03:GAUGE:120:0:U");
+			push(@tmp, "DS:mysql" . $n . "_tttd:GAUGE:120:0:100");
 			push(@tmp, "DS:mysql" . $n . "_val04:GAUGE:120:0:U");
 			push(@tmp, "DS:mysql" . $n . "_val05:GAUGE:120:0:U");
 			push(@tmp, "DS:mysql" . $n . "_val06:GAUGE:120:0:U");
@@ -141,7 +141,9 @@ sub mysql_init {
 		RRDs::tune($rrd,
 			"--data-source-rename=mysql" . $n . "_val01:mysql" . $n . "_qchr",
 			"--data-source-rename=mysql" . $n . "_val02:mysql" . $n . "_cstmtex",
+			"--data-source-rename=mysql" . $n . "_val03:mysql" . $n . "_tttd",
 			"--maximum=mysql" . $n . "_qchr:100",
+			"--maximum=mysql" . $n . "_tttd:100",
 		);
 	}
 
@@ -213,7 +215,8 @@ sub mysql_update {
 		my $slow_queries = 0;
 		my $table_locks_waited = 0;
 		my $threads_created = 0;
-		my $qcache_hit_rate = 0;
+		my $created_tmp_disk_tables = 0;
+		my $created_tmp_tables = 0;
 
 		my $bytes_received = 0;
 		my $bytes_sent = 0;
@@ -308,6 +311,12 @@ sub mysql_update {
 			}
 			if($name eq "Threads_created") {
 				$threads_created = int($value);
+			}
+			if($name eq "Created_tmp_disk_tables") {
+				$created_tmp_disk_tables = int($value);
+			}
+			if($name eq "Created_tmp_tables") {
+				$created_tmp_tables = int($value);
 			}
 
 			if($name eq "Bytes_received") {
@@ -421,6 +430,8 @@ sub mysql_update {
 		my $connections_usage = 0;
 		my $key_buffer_usage = 0;
 		my $innodb_buffer_pool_usage = 0;
+		my $qcache_hit_rate = 0;
+		my $temp_tables_to_disk = 0;
 
 		$tcache_hit_rate = (1 - ($threads_created / $connections_real)) * 100
 			unless !$connections_real;
@@ -435,8 +446,9 @@ sub mysql_update {
 
 		$connections_usage = $connections_usage > 100 ? 100 : $connections_usage;
 		$qcache_hit_rate = $qcache_hits / ($qcache_hits + $Com_select) * 100;
+		$temp_tables_to_disk = $created_tmp_disk_tables / ($created_tmp_disk_tables + $created_tmp_tables) * 100;
 
-		$rrdata .= ":$queries:$slow_queries:$tcache_hit_rate:$qcache_usage:$opened_tables:$connections_usage:$connections:$table_locks_waited:$key_buffer_usage:$innodb_buffer_pool_usage:$com_select:$com_commit:$com_delete:$com_insert:$com_insert_s:$com_update:$com_replace:$com_replace_s:$com_rollback:$aborted_clients:$aborted_connects:$bytes_received:$bytes_sent:$qcache_hit_rate:0:0:0:0:0:0:0:0:0:0:0:0:0:0";
+		$rrdata .= ":$queries:$slow_queries:$tcache_hit_rate:$qcache_usage:$opened_tables:$connections_usage:$connections:$table_locks_waited:$key_buffer_usage:$innodb_buffer_pool_usage:$com_select:$com_commit:$com_delete:$com_insert:$com_insert_s:$com_update:$com_replace:$com_replace_s:$com_rollback:$aborted_clients:$aborted_connects:$bytes_received:$bytes_sent:$qcache_hit_rate:$temp_tables_to_disk:0:0:0:0:0:0:0:0:0:0:0:0:0";
 	}
 
 	RRDs::update($rrd, $rrdata);
@@ -506,8 +518,8 @@ sub mysql_cgi {
 		print("    ");
 		for($n = 0; $n < scalar(my @ml = split(',', $mysql->{list})); $n++) {
 			$line1 = "                                                                                                                                                                                                                          ";
-			$line2 .= "   Select  Commit  Delete  Insert  Insert_S  Update  Replace  Replace_S  Rollback  TCacheHit  QCache_U  Conns_U  KeyBuf_U  InnoDB_U  OpenedTbl  TLocks_W  Queries  SlowQrs  Conns  AbrtCli  AbrtConn  BytesRecv  BytesSent QCacheHitR StmtExec";
-			$line3 .= "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";
+			$line2 .= "   Select  Commit  Delete  Insert  Insert_S  Update  Replace  Replace_S  Rollback  TCacheHit  QCache_U  Conns_U  KeyBuf_U  InnoDB_U  OpenedTbl  TLocks_W  Queries  SlowQrs  Conns  AbrtCli  AbrtConn  BytesRecv  BytesSent QCacheHitR StmtExec TmpTbToDsk";
+			$line3 .= "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";
 			if($line1) {
 				my $i = length($line1);
 				if(lc($mysql->{conn_type}) eq "host") {
@@ -536,7 +548,7 @@ sub mysql_cgi {
 				$from = $n2 * 38;
 				$to = $from + 38;
 				push(@row, @$line[$from..$to]);
-				printf("   %6d  %6d  %6d  %6d  %8d  %6d  %7d   %8d  %8d        %2d%%       %2d%%      %2d%%       %2d%%       %2d%%     %6d    %6d   %6d   %6d %6d   %6d    %6d  %9d  %9d        %2d%%   %6d", @row);
+				printf("   %6d  %6d  %6d  %6d  %8d  %6d  %7d   %8d  %8d        %2d%%       %2d%%      %2d%%       %2d%%       %2d%%     %6d    %6d   %6d   %6d %6d   %6d    %6d  %9d  %9d        %2d%%   %6d        %2d%%", @row);
 			}
 			print("\n");
 		}
@@ -755,6 +767,11 @@ sub mysql_cgi {
 		push(@tmp, "GPRINT:tcache_hit_r:AVERAGE:  Avg\\: %4.1lf%%");
 		push(@tmp, "GPRINT:tcache_hit_r:MIN:  Min\\: %4.1lf%%");
 		push(@tmp, "GPRINT:tcache_hit_r:MAX:  Max\\: %4.1lf%%\\n");
+		push(@tmp, "LINE1:qcache_hitr#4444EE:Query Cache Hit Rate");
+		push(@tmp, "GPRINT:qcache_hitr:LAST:   Cur\\: %4.1lf%%");
+		push(@tmp, "GPRINT:qcache_hitr:AVERAGE:  Avg\\: %4.1lf%%");
+		push(@tmp, "GPRINT:qcache_hitr:MIN:  Min\\: %4.1lf%%");
+		push(@tmp, "GPRINT:qcache_hitr:MAX:  Max\\: %4.1lf%%\\n");
 		push(@tmp, "LINE1:qcache_usage#44EEEE:Query Cache Usage");
 		push(@tmp, "GPRINT:qcache_usage:LAST:      Cur\\: %4.1lf%%");
 		push(@tmp, "GPRINT:qcache_usage:AVERAGE:  Avg\\: %4.1lf%%");
@@ -775,17 +792,18 @@ sub mysql_cgi {
 		push(@tmp, "GPRINT:innodb_buf_u:AVERAGE:  Avg\\: %4.1lf%%");
 		push(@tmp, "GPRINT:innodb_buf_u:MIN:  Min\\: %4.1lf%%");
 		push(@tmp, "GPRINT:innodb_buf_u:MAX:  Max\\: %4.1lf%%\\n");
-		push(@tmp, "LINE1:qcache_hitr#4444EE:Query Cache Hit Rate");
-		push(@tmp, "GPRINT:qcache_hitr:LAST:   Cur\\: %4.1lf%%");
-		push(@tmp, "GPRINT:qcache_hitr:AVERAGE:  Avg\\: %4.1lf%%");
-		push(@tmp, "GPRINT:qcache_hitr:MIN:  Min\\: %4.1lf%%");
-		push(@tmp, "GPRINT:qcache_hitr:MAX:  Max\\: %4.1lf%%\\n");
+		push(@tmp, "LINE1:tmptbltodsk#888888:Temp. Tables to Disk");
+		push(@tmp, "GPRINT:tmptbltodsk:LAST:   Cur\\: %4.1lf%%");
+		push(@tmp, "GPRINT:tmptbltodsk:AVERAGE:  Avg\\: %4.1lf%%");
+		push(@tmp, "GPRINT:tmptbltodsk:MIN:  Min\\: %4.1lf%%");
+		push(@tmp, "GPRINT:tmptbltodsk:MAX:  Max\\: %4.1lf%%\\n");
 		push(@tmpz, "LINE2:tcache_hit_r#FFA500:Thread Cache Hit Rate");
+		push(@tmpz, "LINE2:qcache_hitr#4444EE:Query Cache Hit Rate");
 		push(@tmpz, "LINE2:qcache_usage#44EEEE:Query Cache Usage");
 		push(@tmpz, "LINE2:conns_u#44EE44:Connections Usage");
 		push(@tmpz, "LINE2:key_buf_u#EE4444:Key Buffer Usage");
 		push(@tmpz, "LINE2:innodb_buf_u#EE44EE:Innodb Buffer P. Usage");
-		push(@tmpz, "LINE2:qcache_hitr#4444EE:Query Cache Hit Rate");
+		push(@tmpz, "LINE2:tmptbltodsk#888888:Temp. Tables to Disk");
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -806,11 +824,12 @@ sub mysql_cgi {
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:tcache_hit_r=$rrd:mysql" . $e . "_tchr:AVERAGE",
+			"DEF:qcache_hitr=$rrd:mysql" . $e . "_qchr:AVERAGE",
 			"DEF:qcache_usage=$rrd:mysql" . $e . "_qcu:AVERAGE",
 			"DEF:conns_u=$rrd:mysql" . $e . "_conns_u:AVERAGE",
 			"DEF:key_buf_u=$rrd:mysql" . $e . "_kbu:AVERAGE",
 			"DEF:innodb_buf_u=$rrd:mysql" . $e . "_innbu:AVERAGE",
-			"DEF:qcache_hitr=$rrd:mysql" . $e . "_qchr:AVERAGE",
+			"DEF:tmptbltodsk=$rrd:mysql" . $e . "_tttd:AVERAGE",
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 1]: $err\n") if $err;
@@ -828,11 +847,12 @@ sub mysql_cgi {
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:tcache_hit_r=$rrd:mysql" . $e . "_tchr:AVERAGE",
+				"DEF:qcache_hitr=$rrd:mysql" . $e . "_qchr:AVERAGE",
 				"DEF:qcache_usage=$rrd:mysql" . $e . "_qcu:AVERAGE",
 				"DEF:conns_u=$rrd:mysql" . $e . "_conns_u:AVERAGE",
 				"DEF:key_buf_u=$rrd:mysql" . $e . "_kbu:AVERAGE",
 				"DEF:innodb_buf_u=$rrd:mysql" . $e . "_innbu:AVERAGE",
-				"DEF:qcache_hitr=$rrd:mysql" . $e . "_qchr:AVERAGE",
+				"DEF:tmptbltodsk=$rrd:mysql" . $e . "_tttd:AVERAGE",
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 6 + 1]: $err\n") if $err;
@@ -1039,6 +1059,7 @@ sub mysql_cgi {
 		push(@tmp, "LINE1:conns#00EEEE");
 		push(@tmp, "LINE1:acli#EEEE00");
 		push(@tmp, "LINE1:acon#EE0000");
+		push(@tmp, "COMMENT: \\n");
 		push(@tmpz, "AREA:conns#44EEEE:Connections");
 		push(@tmpz, "AREA:acli#EEEE44:Aborted Clients");
 		push(@tmpz, "AREA:acon#EE4444:Aborted Connects");
