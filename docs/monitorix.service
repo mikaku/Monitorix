@@ -1,0 +1,11 @@
+[Unit]
+Description=Monitorix
+Wants=local-fs.target
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/monitorix -c /etc/monitorix.conf -p /run/monitorix.pid
+PIDFile=/run/monitorix.pid
+
+[Install]
+WantedBy=multi-user.target
