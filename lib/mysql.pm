@@ -363,6 +363,7 @@ sub mysql_update {
 			}
 			if($name eq "Com_select") {
 				$str = $n . "com_select";
+				$value += $qcache_hits;
 				$com_select = $value - ($config->{mysql_hist}->{$str} || 0);
 				$com_select = 0 unless $com_select != $value;
 				$com_select /= 60;
