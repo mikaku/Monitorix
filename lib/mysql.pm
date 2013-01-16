@@ -271,7 +271,7 @@ sub mysql_update {
 				$str = $n . "opened_tables";
 				$opened_tables = $value - ($config->{mysql_hist}->{$str} || 0);
 				$opened_tables = 0 unless $opened_tables != $value;
-				$opened_tables /= 60;
+#				$opened_tables /= 60;
 				$config->{mysql_hist}->{$str} = $value;
 			}
 			if($name eq "Qcache_free_memory") {
@@ -301,7 +301,7 @@ sub mysql_update {
 				$str = $n . "table_locks_waited";
 				$table_locks_waited = $value - ($config->{mysql_hist}->{$str} || 0);
 				$table_locks_waited = 0 unless $table_locks_waited != $value;
-				$table_locks_waited /= 60;
+#				$table_locks_waited /= 60;
 				$config->{mysql_hist}->{$str} = $value;
 			}
 			if($name eq "Threads_created") {
@@ -873,7 +873,7 @@ sub mysql_cgi {
 			"--title=$config->{graphs}->{_mysql3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Open & Locks/s",
+			"--vertical-label=Open & Locks/min",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
@@ -892,7 +892,7 @@ sub mysql_cgi {
 				"--title=$config->{graphs}->{_mysql3}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=Open & Locks/s",
+				"--vertical-label=Open & Locks/min",
 				"--width=$width",
 				"--height=$height",
 				@riglim,
