@@ -898,9 +898,13 @@ Higher is better.
 .P
 \fBQuery Cache Hit Rate\fP
 .br
-\fBQcache_hits / Qcache_inserts\fP
+\fBQcache_hits / (Qcache_hits + Com_select) * 100\fP
 .br
-Higher should be considered better. This value should grow proportionally with the number of executed queries, if the query cache is performing well. Please also have a look at the \fBQuery cache usage\fP percentage to know if your query_cache configuration is appropriate.
+Higher should be considered better.
+.br
+A query cache size increase is recommended if the query cache usage is very close to 100% and the query cache hit rate is far from 100%. But sometimes a size increase will not lead to a better hit rate: this means that the increase was not needed and that the application do not run enough cacheable SELECT queries.
+.br
+This value should grow proportionally with the number of executed queries as long as the query cache is performing well. Please also have a look at the \fBQuery cache usage\fP percentage to know if your query_cache configuration is appropriate.
 .P
 \fBQuery Cache Usage\fP
 .br
