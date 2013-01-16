@@ -85,8 +85,8 @@ sub mysql_init {
 			push(@tmp, "DS:mysql" . $n . "_acon:GAUGE:120:0:U");
 			push(@tmp, "DS:mysql" . $n . "_brecv:GAUGE:120:0:U");
 			push(@tmp, "DS:mysql" . $n . "_bsent:GAUGE:120:0:U");
-			push(@tmp, "DS:mysql" . $n . "_qchr:GAUGE:120:0:U");
-			push(@tmp, "DS:mysql" . $n . "_val02:GAUGE:120:0:U");
+			push(@tmp, "DS:mysql" . $n . "_qchr:GAUGE:120:0:100");
+			push(@tmp, "DS:mysql" . $n . "_cstmtex:GAUGE:120:0:U");
 			push(@tmp, "DS:mysql" . $n . "_val03:GAUGE:120:0:U");
 			push(@tmp, "DS:mysql" . $n . "_val04:GAUGE:120:0:U");
 			push(@tmp, "DS:mysql" . $n . "_val05:GAUGE:120:0:U");
@@ -136,10 +136,11 @@ sub mysql_init {
 		}
 	}
 
-	# Since 3.0.0 the new 'Query_cache_hit_rate' is used.
+	# Since 3.0.0 the new values are used (Query_cache_hit_rate, Com_stmt_execute)
 	for($n = 0; $n < scalar(my @ml = split(',', $mysql->{list})); $n++) {
 		RRDs::tune($rrd,
 			"--data-source-rename=mysql" . $n . "_val01:mysql" . $n . "_qchr",
+			"--data-source-rename=mysql" . $n . "_val02:mysql" . $n . "_cstmtex",
 			"--maximum=mysql" . $n . "_qchr:100",
 		);
 	}
@@ -226,6 +227,7 @@ sub mysql_update {
 		my $Com_select = 0;
 		my $com_select = 0;
 		my $com_update = 0;
+		my $com_stmtex = 0;
 		my $sql = "show global status";
 		my $sth = $dbh->prepare($sql);
 		$sth->execute;
@@ -387,6 +389,13 @@ sub mysql_update {
 				$com_update /= 60;
 				$config->{mysql_hist}->{$str} = $value;
 			}
+			if($name eq "Com_stmt_execute") {
+				$str = $n . "com_stmtex";
+				$com_stmtex = $value - ($config->{mysql_hist}->{$str} || 0);
+				$com_stmtex = 0 unless $com_stmtex != $value;
+				$com_stmtex /= 60;
+				$config->{mysql_hist}->{$str} = $value;
+			}
 		}
 		$sth->finish;
 
@@ -497,8 +506,8 @@ sub mysql_cgi {
 		print("    ");
 		for($n = 0; $n < scalar(my @ml = split(',', $mysql->{list})); $n++) {
 			$line1 = "                                                                                                                                                                                                                          ";
-			$line2 .= "   Select  Commit  Delete  Insert  Insert_S  Update  Replace  Replace_S  Rollback  TCacheHit  QCache_U  Conns_U  KeyBuf_U  InnoDB_U  OpenedTbl  TLocks_W  Queries  SlowQrs  Conns  AbrtCli  AbrtConn  BytesRecv  BytesSent QCacheHitR";
-			$line3 .= "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";
+			$line2 .= "   Select  Commit  Delete  Insert  Insert_S  Update  Replace  Replace_S  Rollback  TCacheHit  QCache_U  Conns_U  KeyBuf_U  InnoDB_U  OpenedTbl  TLocks_W  Queries  SlowQrs  Conns  AbrtCli  AbrtConn  BytesRecv  BytesSent QCacheHitR StmtExec";
+			$line3 .= "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";
 			if($line1) {
 				my $i = length($line1);
 				if(lc($mysql->{conn_type}) eq "host") {
@@ -527,7 +536,7 @@ sub mysql_cgi {
 				$from = $n2 * 38;
 				$to = $from + 38;
 				push(@row, @$line[$from..$to]);
-				printf("   %6d  %6d  %6d  %6d  %8d  %6d  %7d   %8d  %8d        %2d%%       %2d%%      %2d%%       %2d%%       %2d%%     %6d    %6d   %6d   %6d %6d   %6d    %6d  %9d  %9d        %2d%%", @row);
+				printf("   %6d  %6d  %6d  %6d  %8d  %6d  %7d   %8d  %8d        %2d%%       %2d%%      %2d%%       %2d%%       %2d%%     %6d    %6d   %6d   %6d %6d   %6d    %6d  %9d  %9d        %2d%%   %6d", @row);
 			}
 			print("\n");
 		}
@@ -642,6 +651,11 @@ sub mysql_cgi {
 		push(@tmp, "GPRINT:com_rollback:AVERAGE:    Avg\\: %6.1lf");
 		push(@tmp, "GPRINT:com_rollback:MIN:    Min\\: %6.1lf");
 		push(@tmp, "GPRINT:com_rollback:MAX:    Max\\: %6.1lf\\n");
+		push(@tmp, "LINE1:com_stmtex#888888:Prep.Stmt.Exec");
+		push(@tmp, "GPRINT:com_stmtex:LAST: Cur\\: %6.1lf");
+		push(@tmp, "GPRINT:com_stmtex:AVERAGE:    Avg\\: %6.1lf");
+		push(@tmp, "GPRINT:com_stmtex:MIN:    Min\\: %6.1lf");
+		push(@tmp, "GPRINT:com_stmtex:MAX:    Max\\: %6.1lf\\n");
 		push(@tmpz, "LINE2:com_select#FFA500:Select");
 		push(@tmpz, "LINE2:com_commit#EEEE44:Commit");
 		push(@tmpz, "LINE2:com_delete#EE4444:Delete");
@@ -651,6 +665,7 @@ sub mysql_cgi {
 		push(@tmpz, "LINE2:com_replace#44EEEE:Replace");
 		push(@tmpz, "LINE2:com_replace_s#4444EE:Replace Sel");
 		push(@tmpz, "LINE2:com_rollback#444444:Rollback");
+		push(@tmpz, "LINE2:com_stmtex#888888:Prep.Stmt.Exec");
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -679,6 +694,7 @@ sub mysql_cgi {
 			"DEF:com_replace=$rrd:mysql" . $e . "_crep:AVERAGE",
 			"DEF:com_replace_s=$rrd:mysql" . $e . "_creps:AVERAGE",
 			"DEF:com_rollback=$rrd:mysql" . $e . "_crol:AVERAGE",
+			"DEF:com_stmtex=$rrd:mysql" . $e . "_cstmtex:AVERAGE",
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6]: $err\n") if $err;
@@ -704,6 +720,7 @@ sub mysql_cgi {
 				"DEF:com_replace=$rrd:mysql" . $e . "_crep:AVERAGE",
 				"DEF:com_replace_s=$rrd:mysql" . $e . "_creps:AVERAGE",
 				"DEF:com_rollback=$rrd:mysql" . $e . "_crol:AVERAGE",
+				"DEF:com_stmtex=$rrd:mysql" . $e . "_cstmtex:AVERAGE",
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 6]: $err\n") if $err;
@@ -937,6 +954,7 @@ sub mysql_cgi {
 		push(@tmp, "GPRINT:sqrs:LAST:         Current\\: %7.1lf\\n");
 		push(@tmp, "LINE1:qrs#00EEEE");
 		push(@tmp, "LINE1:sqrs#0000EE");
+		push(@tmp, "COMMENT: \\n");
 		push(@tmpz, "AREA:qrs#44EEEE:Queries");
 		push(@tmpz, "AREA:sqrs#4444EE:Slow Queries");
 		push(@tmpz, "LINE1:qrs#00EEEE");
