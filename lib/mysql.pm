@@ -186,7 +186,7 @@ sub mysql_update {
 			) or logger("$myself: Cannot connect to MySQL '$sock'.") and next;
 		}
 
-		# SHOW STATUS
+		# SHOW GLOBAL STATUS
 		my $aborted_clients = 0;
 		my $aborted_connects = 0;
 		my $connections = 0;
@@ -204,7 +204,19 @@ sub mysql_update {
 		my $slow_queries = 0;
 		my $table_locks_waited = 0;
 		my $threads_created = 0;
-		my $sql = "show status";
+
+		my $bytes_received = 0;
+		my $bytes_sent = 0;
+		my $com_commit = 0;
+		my $com_delete = 0;
+		my $com_insert = 0;
+		my $com_insert_s = 0;
+		my $com_replace = 0;
+		my $com_replace_s = 0;
+		my $com_rollback = 0;
+		my $com_select = 0;
+		my $com_update = 0;
+		my $sql = "show global status";
 		my $sth = $dbh->prepare($sql);
 		$sth->execute;
 		while(my ($name, $value) = $sth->fetchrow_array) {
@@ -285,25 +297,7 @@ sub mysql_update {
 			if($name eq "Threads_created") {
 				$threads_created = int($value);
 			}
-		}
-		$sth->finish;
 
-		# SHOW GLOBAL STATUS
-		my $bytes_received = 0;
-		my $bytes_sent = 0;
-		my $com_commit = 0;
-		my $com_delete = 0;
-		my $com_insert = 0;
-		my $com_insert_s = 0;
-		my $com_replace = 0;
-		my $com_replace_s = 0;
-		my $com_rollback = 0;
-		my $com_select = 0;
-		my $com_update = 0;
-		$sql = "show global status";
-		$sth = $dbh->prepare($sql);
-		$sth->execute;
-		while(my ($name, $value) = $sth->fetchrow_array) {
 			if($name eq "Bytes_received") {
 				$str = $n . "bytes_received";
 				$bytes_received = $value - ($config->{mysql_hist}->{$str} || 0);
