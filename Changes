@@ -1,5 +1,12 @@
 3.0.0B2- NN-Jan-2013
 ====================
+- Lot of improvements in the MySQL graph, which includes adding a new value
+  called 'Query_Cache_Hit_Rate", the number of select querys also includes
+  the value of Qcache_hits, new query type called Com_stmt_execute and the new
+  value Temp_tables_to_disk.
+	(thanks to Luca Ferrario, luca AT ferrario.net)
+- Added a systemd service file template.
+	(thanks to graysky, graysky AT archlinux.us)
 - Fixed a pair of typos in the section explaining 'hptemp' in the man page
   monitorix.conf.5.
 - Fixed from using unitialized variables in 'fs'.
@@ -7,6 +14,12 @@
   values in the graph.
 - Fixed a bug in CGI the prevented honoring the 'hostname' configuration option.
 	(thanks to graysky, graysky AT archlinux.us)
+- Fixed in 'mysql' to use "show global status' in all operations instead of
+  "show status" since the latter only refers to the current thread.
+	(thanks to Luca Ferrario, luca AT ferrario.net)
+- Fixed to add Qcache_hits value to Com_select in order to get the real value
+  (assuming that query caching is on).
+	(thanks to Luca Ferrario, luca AT ferrario.net)
 
 
 3.0.0B1- 11-Jan-2013
