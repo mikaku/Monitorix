@@ -24,14 +24,13 @@ require 5.006;
 use strict;
 use warnings;
 use FindBin qw($Bin);
-use lib "/usr/lib/monitorix";
-use lib "$Bin/lib";
+use lib $Bin . "/lib", "/usr/lib/monitorix";
 
 use Monitorix;
 use POSIX qw(WNOHANG LC_TIME setlocale uname pause setsid);
 use Config::General;
 use Getopt::Std;
-use Cwd 'abs_path';
+use Cwd qw(abs_path);
 
 # Force a standard locale
 $ENV{LANG} = "";

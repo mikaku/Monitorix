@@ -22,8 +22,7 @@
 use strict;
 use warnings;
 use FindBin qw($Bin);
-use lib "/usr/lib/monitorix";
-use lib "$Bin/lib";
+use lib $Bin . "/lib", "/usr/lib/monitorix";
 
 use Monitorix;
 use CGI qw(:standard);
