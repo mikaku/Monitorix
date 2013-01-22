@@ -1,4 +1,4 @@
-3.0.0B2- NN-Jan-2013
+3.0.0B2- NN-Feb-2013
 ====================
 - Lot of improvements in the MySQL graph, which includes adding a new value
   called 'Query_Cache_Hit_Rate", the number of select querys also includes
@@ -7,6 +7,9 @@
 	(thanks to Luca Ferrario, luca AT ferrario.net)
 - Added a systemd service file template.
 	(thanks to graysky, graysky AT archlinux.us)
+- Alerts are now enabled/disabled independently in each graph.
+- Added two new alerts in the 'mail' graph: one to control the number of
+  delivered messages and the other for the number of messages in the mail queue.
 - Fixed a pair of typos in the section explaining 'hptemp' in the man page
   monitorix.conf.5.
 - Fixed from using unitialized variables in 'fs'.
