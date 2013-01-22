@@ -31,6 +31,7 @@ sub system_init {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $system = $config->{system};
 
 	if(!(-e $rrd)) {
 		logger("Creating '$rrd' file.");
@@ -90,8 +91,8 @@ sub system_init {
 	}
 
 	# check dependencies
-	if(lc($config->{alerts}->{enabled}) eq "y") {
-		if(! -x $config->{alerts}->{loadavg_script}) {
+	if(lc($system->{alerts}->{enabled}) eq "y") {
+		if(! -x $system->{alerts}->{loadavg_script}) {
 			logger("$myself: ERROR: script '$config->{alerts}->{loadavg_script}' doesn't exist or don't has execution permissions.");
 		}
 	}
@@ -105,6 +106,7 @@ sub system_update {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $system = $config->{system};
 
 	my $load1;
 	my $load5;
@@ -276,16 +278,18 @@ sub system_update {
 	);
 
 	# SYSTEM alert
-	if(lc($config->{alerts}->{enabled}) eq "y") {
-		if(!$config->{alerts}->{loadavg_threshold} || $load15 < $config->{alerts}->{loadavg_threshold}) {
+	if(lc($system->{alerts}->{enabled}) eq "y") {
+		if(!$system->{alerts}->{loadavg_threshold} || $load15 < $system->{alerts}->{loadavg_threshold}) {
 			$config->{system_hist} = 0;
 		} else {
 			if(!$config->{system_hist}) {
 				$config->{system_hist} = time;
 			}
-			if($config->{system_hist} > 0 && (time - $config->{system_hist}) > $config->{alerts}->{loadavg_timeintvl}) {
-				if(-x $config->{alerts}->{loadavg_script}) {
-					system($config->{alerts}->{loadavg_script} . " " .$config->{alerts}->{loadavg_timeintvl} . " " . $config->{alerts}->{loadavg_threshold} . " " . $load15);
+			if($config->{system_hist} > 0 && (time - $config->{system_hist}) > $system->{alerts}->{loadavg_timeintvl}) {
+				if(-x $system->{alerts}->{loadavg_script}) {
+					system($system->{alerts}->{loadavg_script} . " " .$system->{alerts}->{loadavg_timeintvl} . " " . $system->{alerts}->{loadavg_threshold} . " " . $load15);
+				} else {
+					logger("$myself: ERROR: script '$config->{alerts}->{loadavg_script}' doesn't exist or don't has execution permissions.");
 				}
 				$config->{system_hist} = time;
 			}
