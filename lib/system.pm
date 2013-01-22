@@ -93,7 +93,7 @@ sub system_init {
 	# check dependencies
 	if(lc($system->{alerts}->{enabled}) eq "y") {
 		if(! -x $system->{alerts}->{loadavg_script}) {
-			logger("$myself: ERROR: script '$config->{alerts}->{loadavg_script}' doesn't exist or don't has execution permissions.");
+			logger("$myself: ERROR: script '$system->{alerts}->{loadavg_script}' doesn't exist or don't has execution permissions.");
 		}
 	}
 
