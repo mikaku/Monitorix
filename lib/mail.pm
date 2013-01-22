@@ -34,6 +34,7 @@ sub mail_init {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $mail = $config->{mail};
 
 	if(!(-e $rrd)) {
 		logger("Creating '$rrd' file.");
@@ -96,7 +97,15 @@ sub mail_init {
 		}
 	}
 
+	# check dependencies
+	if(lc($mail->{alerts}->{enabled}) eq "y") {
+		if(! -x $mail->{alerts}->{delvd_script}) {
+			logger("$myself: ERROR: script '$mail->{alerts}->{delvd_script}' doesn't exist or don't has execution permissions.");
+		}
+	}
+
 	$config->{mail_hist} = 0;
+	$config->{mail_hist_alert1} = 0;
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
 }
@@ -430,6 +439,40 @@ sub mail_update {
 	}
 	for($n = 0; $n < 10; $n++) {
 		$rrdata .= ":" . $gen[$n];
+	}
+
+	# MAIL alert
+	if(lc($mail->{alerts}->{enabled}) eq "y") {
+		if(!$mail->{alerts}->{delvd_threshold} || $delvd < $mail->{alerts}->{delvd_threshold}) {
+			$config->{mail_hist_alert1} = 0;
+		} else {
+			if(!$config->{mail_hist_alert1}) {
+				$config->{mail_hist_alert1} = time;
+			}
+			if($config->{mail_hist_alert1} > 0 && (time - $config->{mail_hist_alert1}) > $mail->{alerts}->{delvd_timeintvl}) {
+				if(-x $mail->{alerts}->{delvd_script}) {
+					system($mail->{alerts}->{delvd_script} . " " .$mail->{alerts}->{delvd_timeintvl} . " " . $mail->{alerts}->{delvd_threshold} . " " . $delvd);
+				} else {
+					logger("$myself: ERROR: script '$config->{alerts}->{delvd_script}' doesn't exist or don't has execution permissions.");
+				}
+				$config->{mail_hist_alert1} = time;
+			}
+		}
+		if(!$mail->{alerts}->{mqueued_threshold} || $queued < $mail->{alerts}->{mqueued_threshold}) {
+			$config->{mail_hist_alert1} = 0;
+		} else {
+			if(!$config->{mail_hist_alert1}) {
+				$config->{mail_hist_alert1} = time;
+			}
+			if($config->{mail_hist_alert1} > 0 && (time - $config->{mail_hist_alert1}) > $mail->{alerts}->{mqueued_timeintvl}) {
+				if(-x $mail->{alerts}->{mqueued_script}) {
+					system($mail->{alerts}->{mqueued_script} . " " .$mail->{alerts}->{mqueued_timeintvl} . " " . $mail->{alerts}->{mqueued_threshold} . " " . $queued);
+				} else {
+					logger("$myself: ERROR: script '$config->{alerts}->{mqueued_script}' doesn't exist or don't has execution permissions.");
+				}
+				$config->{mail_hist_alert1} = time;
+			}
+		}
 	}
 
 	RRDs::update($rrd, $rrdata);
