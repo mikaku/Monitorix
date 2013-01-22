@@ -260,6 +260,7 @@ sub fs_init {
 	}
 
 	$config->{fs_hist} = ();
+	$config->{fs_hist_alert1} = 0;
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
 }
@@ -370,18 +371,18 @@ sub fs_update {
 				# FS alert
 				if($f eq "/" && lc($fs->{alerts}->{enabled}) eq "y") {
 					if(!$fs->{alerts}->{rootfs_threshold} || $use < $fs->{alerts}->{rootfs_threshold}) {
-						$config->{fs_hist}->{rootalert} = 0;
+						$config->{fs_hist_alert1} = 0;
 					} else {
-						if(!$config->{fs_hist}->{rootalert}) {
-							$config->{fs_hist}->{rootalert} = time;
+						if(!$config->{fs_hist_alert1}) {
+							$config->{fs_hist_alert1} = time;
 						}
-						if($config->{fs_hist}->{rootalert} > 0 && (time - $config->{fs_hist}->{rootalert}) > $fs->{alerts}->{rootfs_timeintvl}) {
+						if($config->{fs_hist_alert1} > 0 && (time - $config->{fs_hist_alert1}) > $fs->{alerts}->{rootfs_timeintvl}) {
 							if(-x $fs->{alerts}->{rootfs_script}) {
 								system($fs->{alerts}->{rootfs_script} . " " . $fs->{alerts}->{rootfs_timeintvl} . " " . $fs->{alerts}->{rootfs_threshold} . " " . $use);
 							} else {
 								logger("$myself: ERROR: script '$fs->{alerts}->{rootfs_script}' doesn't exist or don't has execution permissions.");
 							}
-							$config->{fs_hist}->{rootalert} = time;
+							$config->{fs_hist_alert1} = time;
 						}
 					}
 				}
