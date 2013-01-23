@@ -248,7 +248,7 @@ Default value: \fI%b %e\fP
 This enables or disables the monitoring of each graph. Placing a \fIy\fP on a desired graph and restarting Monitorix will automatically create the RRD file for that graph and start gathering information according to its settings.
 .RE
 .SS System load average and usage (system.rrd)
-.BI alerts_enabled
+.BI loadavg_enabled
 .RS
 This section enables or disables the alert capabilities for this graph. Only the alert for the average CPU load is currently implemented. It works as follows:
 .P
@@ -628,7 +628,7 @@ This list complements the \fBlist\fP option. When Monitorix is started it tries 
 You can define as much entries as you want.
 .RE
 .P
-.BI alerts_enabled
+.BI rootfs_enabled
 .RS
 This section enables or disables the alert capabilities for this graph. Only the alert for the root filesystem disk usage is currently implemented. It works as follows:
 .P
@@ -745,13 +745,11 @@ The currently supported Greylist software is:
 Default value: \fImilter-greylist\fP
 .RE
 .P
-.BI alerts_enabled
+.BI delvd_enabled
 .RS
-This section enables or disables the alert capabilities for this graph. There are only two alerts implemented: the alert for the number of delivered messages and for the number of queued messages. They work as follows:
+This section enables or disables one of the alert capabilities for this graph; the alert for the number of delivered messages. It works as follows:
 .P
 If the number of delivered messages reaches the \fBdelvd_threshold\fP value for the interval of time defined in \fBdelvd_timeintvl\fP, Monitorix will execute the external alert script defined in \fBdelvd_script\fP.
-.P
-If the number of queued messages reaches the \fBmqueued_threshold\fP value for the interval of time defined in \fBmqueued_timeintvl\fP, Monitorix will execute the external alert script defined in \fBmqueued_script\fP.
 .P
 The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
 .P
@@ -787,6 +785,17 @@ It will receive the following three parameters:
 3rd - the number of delivered messages
 .P
 Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI mqueued_enabled
+.RS
+This section enables or disables one of the alert capabilities for this graph; the alert for the number of queued messages. It works as follows:
+.P
+If the number of queued messages reaches the \fBmqueued_threshold\fP value for the interval of time defined in \fBmqueued_timeintvl\fP, Monitorix will execute the external alert script defined in \fBmqueued_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
 .RE
 .P
 .BI mqueued_timeintvl
