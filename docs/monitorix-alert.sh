@@ -2,12 +2,11 @@
 #
 # Example script used to execute an alert action.
 #
-#  - in CPU alerts the current value is the last 15min load average
-#  - in FS alerts the current value is the root filesystem usage (%)
-#
+
+MAILTO="root@localhost"
 
 if [ $# != 3 ] ; then
-	echo "$0: Wrong number of parameters."
+	echo "$0: Wrong number of arguments."
 	exit 1
 fi
 
@@ -19,11 +18,11 @@ current_value=$3
 cat << EOF
 Message from hostname '$HOSTNAME'
 
-This system is reaching/exceeding the defined $ALERT_THRESHOLD threshold during the last $ALERT_TIMEINTVL seconds.
+This system is reaching/exceeding the defined '$ALERT_THRESHOLD' threshold value during the last '$ALERT_TIMEINTVL' seconds.
 
 The current value is: $current_value
 
 Please take proper actions to correct this situation.
 EOF
-) | mail -s "WARNING: Monitorix alert!" root
+) | mail -s "WARNING: Monitorix alert!" $MAILTO
 
