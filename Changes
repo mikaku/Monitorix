@@ -7,7 +7,8 @@
 	(thanks to Luca Ferrario, luca AT ferrario.net)
 - Added a systemd service file template.
 	(thanks to graysky, graysky AT archlinux.us)
-- Alerts are now enabled/disabled independently in each graph.
+- Alerts have been reimplemented and they are now configured independently for
+  each graph.
 - Added two new alerts in the 'mail' graph: one to control the number of
   delivered messages and the other for the number of messages in the mail queue.
 - Fixed a pair of typos in the section explaining 'hptemp' in the man page
