@@ -16,9 +16,9 @@ current_value=$3
 
 (
 cat << EOF
-Message from hostname '$HOSTNAME'
+Message from hostname '$HOSTNAME'.
 
-This system is reaching/exceeding the defined '$ALERT_THRESHOLD' threshold value during the last '$ALERT_TIMEINTVL' seconds.
+This system is reaching/exceeding the defined threshold value ($ALERT_THRESHOLD') during the last '$ALERT_TIMEINTVL' seconds.
 
 The current value is: $current_value
 

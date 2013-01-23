@@ -253,7 +253,7 @@ sub fs_init {
 	}
 
 	# check dependencies
-	if(lc($fs->{alerts}->{enabled}) eq "y") {
+	if(lc($fs->{alerts}->{rootfs_enabled}) eq "y") {
 		if(! -x $fs->{alerts}->{rootfs_script}) {
 			logger("$myself: ERROR: script '$fs->{alerts}->{rootfs_script}' doesn't exist or don't has execution permissions.");
 		}
@@ -369,7 +369,7 @@ sub fs_update {
 				$use = ($used * 100) / ($used + $free);
 
 				# FS alert
-				if($f eq "/" && lc($fs->{alerts}->{enabled}) eq "y") {
+				if($f eq "/" && lc($fs->{alerts}->{rootfs_enabled}) eq "y") {
 					if(!$fs->{alerts}->{rootfs_threshold} || $use < $fs->{alerts}->{rootfs_threshold}) {
 						$config->{fs_hist_alert1} = 0;
 					} else {
@@ -378,6 +378,7 @@ sub fs_update {
 						}
 						if($config->{fs_hist_alert1} > 0 && (time - $config->{fs_hist_alert1}) > $fs->{alerts}->{rootfs_timeintvl}) {
 							if(-x $fs->{alerts}->{rootfs_script}) {
+								logger("$myself: ALERT: executing script '$fs->{alerts}->{rootfs_script}'.");
 								system($fs->{alerts}->{rootfs_script} . " " . $fs->{alerts}->{rootfs_timeintvl} . " " . $fs->{alerts}->{rootfs_threshold} . " " . $use);
 							} else {
 								logger("$myself: ERROR: script '$fs->{alerts}->{rootfs_script}' doesn't exist or don't has execution permissions.");

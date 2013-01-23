@@ -98,9 +98,14 @@ sub mail_init {
 	}
 
 	# check dependencies
-	if(lc($mail->{alerts}->{enabled}) eq "y") {
+	if(lc($mail->{alerts}->{delvd_enabled}) eq "y") {
 		if(! -x $mail->{alerts}->{delvd_script}) {
 			logger("$myself: ERROR: script '$mail->{alerts}->{delvd_script}' doesn't exist or don't has execution permissions.");
+		}
+	}
+	if(lc($mail->{alerts}->{mqueued_enabled}) eq "y") {
+		if(! -x $mail->{alerts}->{mqueued_script}) {
+			logger("$myself: ERROR: script '$mail->{alerts}->{mqueued_script}' doesn't exist or don't has execution permissions.");
 		}
 	}
 
@@ -442,7 +447,7 @@ sub mail_update {
 	}
 
 	# MAIL alert
-	if(lc($mail->{alerts}->{enabled}) eq "y") {
+	if(lc($mail->{alerts}->{delvd_enabled}) eq "y") {
 		if(!$mail->{alerts}->{delvd_threshold} || $delvd < $mail->{alerts}->{delvd_threshold}) {
 			$config->{mail_hist_alert1} = 0;
 		} else {
@@ -451,13 +456,16 @@ sub mail_update {
 			}
 			if($config->{mail_hist_alert1} > 0 && (time - $config->{mail_hist_alert1}) > $mail->{alerts}->{delvd_timeintvl}) {
 				if(-x $mail->{alerts}->{delvd_script}) {
+					logger("$myself: ALERT: executing script '$mail->{alerts}->{delvd_script}'.");
 					system($mail->{alerts}->{delvd_script} . " " .$mail->{alerts}->{delvd_timeintvl} . " " . $mail->{alerts}->{delvd_threshold} . " " . $delvd);
 				} else {
-					logger("$myself: ERROR: script '$config->{alerts}->{delvd_script}' doesn't exist or don't has execution permissions.");
+					logger("$myself: ERROR: script '$mail->{alerts}->{delvd_script}' doesn't exist or don't has execution permissions.");
 				}
 				$config->{mail_hist_alert1} = time;
 			}
 		}
+	}
+	if(lc($mail->{alerts}->{mqueued_enabled}) eq "y") {
 		if(!$mail->{alerts}->{mqueued_threshold} || $queued < $mail->{alerts}->{mqueued_threshold}) {
 			$config->{mail_hist_alert1} = 0;
 		} else {
@@ -466,9 +474,10 @@ sub mail_update {
 			}
 			if($config->{mail_hist_alert1} > 0 && (time - $config->{mail_hist_alert1}) > $mail->{alerts}->{mqueued_timeintvl}) {
 				if(-x $mail->{alerts}->{mqueued_script}) {
+					logger("$myself: ALERT: executing script '$mail->{alerts}->{mqueued_script}'.");
 					system($mail->{alerts}->{mqueued_script} . " " .$mail->{alerts}->{mqueued_timeintvl} . " " . $mail->{alerts}->{mqueued_threshold} . " " . $queued);
 				} else {
-					logger("$myself: ERROR: script '$config->{alerts}->{mqueued_script}' doesn't exist or don't has execution permissions.");
+					logger("$myself: ERROR: script '$mail->{alerts}->{mqueued_script}' doesn't exist or don't has execution permissions.");
 				}
 				$config->{mail_hist_alert1} = time;
 			}
