@@ -11,6 +11,7 @@
   each graph.
 - Added two new alerts in the 'mail' graph: one to control the number of
   delivered messages and the other for the number of messages in the mail queue.
+- Added the ability to also support outgoing connections in the 'port' graph.
 - Fixed a pair of typos in the section explaining 'hptemp' in the man page
   monitorix.conf.5.
 - Fixed from using unitialized variables in 'fs'.
