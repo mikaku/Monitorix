@@ -49,7 +49,7 @@ sub port_init {
 			}
 		}
 		if(scalar(@ds) / 2 != $port->{max}) {
-			logger("Detected size mismatch between 'max = $port->{max}' and $rrd (" . scalar(@ds) / 2 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
+			logger("$myself: Detected size mismatch between 'max = $port->{max}' and $rrd (" . scalar(@ds) / 2 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 	}
@@ -105,10 +105,19 @@ sub port_init {
 			$pl[$n] = trim($pl[$n]);
 			if($pl[$n]) {
 				my $p = lc((split(',', $port->{desc}->{$pl[$n]}))[1]) || "all";
-				system("iptables -N monitorix_IN_$n 2>/dev/null");
-				system("iptables -I INPUT -p $p --dport $pl[$n] -j monitorix_IN_$n -c 0 0");
-				system("iptables -N monitorix_OUT_$n 2>/dev/null");
-				system("iptables -I OUTPUT -p $p --sport $pl[$n] -j monitorix_OUT_$n -c 0 0");
+				my $conn = lc((split(',', $port->{desc}->{$pl[$n]}))[2]);
+				$conn = uc(trim($conn));
+				if($conn eq "IN") {
+					system("iptables -N monitorix_IN_$n 2>/dev/null");
+					system("iptables -I INPUT -p $p --sport 1024:65535 --dport $pl[$n] -m state --state NEW,ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
+					system("iptables -I OUTPUT -p $p --sport $pl[$n] --dport 1024:65535 -m state --state ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
+				} elsif($conn eq "OUT") {
+					system("iptables -N monitorix_OUT_$n 2>/dev/null");
+					system("iptables -I INPUT -p $p --sport $pl[$n] --dport 1024:65535 -m state --state ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
+					system("iptables -I OUTPUT -p $p --sport 1024:65535 --dport $pl[$n] -m state --state NEW,ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
+				} else {
+					logger("$myself: Invalid connection type '$conn', must be 'in' or 'out'.");
+				}
 			}
 		}
 	}
@@ -163,7 +172,7 @@ sub port_update {
 		while(<IN>) {
 			for($n = 0; $n < $port->{max}; $n++) {
 				$out[$n] = 0 unless $out[$n];
-				if(/ monitorix_OUT_$n /) {
+				if(/ monitorix_IN_$n /) {
 					my (undef, $bytes) = split(' ', $_);
 					chomp($bytes);
 					$out[$n] = $bytes - ($config->{port_hist_out}[$n] || 0);
@@ -349,8 +358,8 @@ sub port_cgi {
 			$pl[$n] = trim($pl[$n]);
 			my $pn = trim((split(',', $port->{desc}->{$pl[$n]}))[0]);
 			my $pp = trim((split(',', $port->{desc}->{$pl[$n]}))[1]);
-			my $prig = trim((split(',', $port->{desc}->{$pl[$n]}))[2]);
-			my $plim = trim((split(',', $port->{desc}->{$pl[$n]}))[3]);
+			my $prig = trim((split(',', $port->{desc}->{$pl[$n]}))[3]);
+			my $plim = trim((split(',', $port->{desc}->{$pl[$n]}))[4]);
 			undef(@riglim);
 			if(trim($prig) eq 1) {
 				push(@riglim, "--upper-limit=" . trim($plim));
