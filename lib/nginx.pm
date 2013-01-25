@@ -83,9 +83,9 @@ sub nginx_init {
 	}
 
 	if($config->{os} eq "Linux") {
-		system("iptables -N nginx_IN 2>/dev/null");
-		system("iptables -I INPUT -p tcp --sport 1024:65535 --dport $nginx->{port} -m state --state NEW,ESTABLISHED,RELATED -j nginx_IN -c 0 0");
-		system("iptables -I OUTPUT -p tcp --sport $nginx->{port} --dport 1024:65535 -m state --state ESTABLISHED,RELATED -j nginx_IN -c 0 0");
+		system("iptables -N monitorix_nginx_IN 2>/dev/null");
+		system("iptables -I INPUT -p tcp --sport 1024:65535 --dport $nginx->{port} -m state --state NEW,ESTABLISHED,RELATED -j monitorix_nginx_IN -c 0 0");
+		system("iptables -I OUTPUT -p tcp --sport $nginx->{port} --dport 1024:65535 -m state --state ESTABLISHED,RELATED -j monitorix_nginx_IN -c 0 0");
 	}
 	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 		system("ipfw delete $nginx->{rule} 2>/dev/null");
