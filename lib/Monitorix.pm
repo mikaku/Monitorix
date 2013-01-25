@@ -166,41 +166,38 @@ sub flush_accounting_rules {
 		my $num = 0;
 
 		logger("Flushing out iptables rules.") if $debug;
-		if(open(IN, "iptables -nxvL INPUT --line-numbers |")) {
-			my @rules;
+		{
 			my @names;
-			while(<IN>) {
-				my ($rule, undef, undef, $name) = split(' ', $_);
-				if($name =~ /monitorix_IN/ || /monitorix_nginx_IN/) {
-					push(@rules, $rule);
-					push(@names, $name);
+			if(open(IN, "iptables -nxvL INPUT --line-numbers |")) {
+				my @rules;
+				while(<IN>) {
+					my ($rule, undef, undef, $name) = split(' ', $_);
+					if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
+						push(@rules, $rule);
+						push(@names, $name);
+					}
+				}
+				close(IN);
+				@rules = reverse(@rules);
+				foreach(@rules) {
+					system("iptables -D INPUT $_");
+					$num++;
 				}
 			}
-			close(IN);
-			@rules = reverse(@rules);
-			foreach(@rules) {
-				system("iptables -D INPUT $_");
-				$num++;
-			}
-			foreach(@names) {
-				system("iptables -X $_");
-			}
-		}
-		if(open(IN, "iptables -nxvL OUTPUT --line-numbers |")) {
-			my @rules;
-			my @names;
-			while(<IN>) {
-				my ($rule, undef, undef, $name) = split(' ', $_);
-				if($name =~ /monitorix_OUT/ || /monitorix_nginx_OUT/) {
-					push(@rules, $rule);
-					push(@names, $name);
+			if(open(IN, "iptables -nxvL OUTPUT --line-numbers |")) {
+				my @rules;
+				while(<IN>) {
+					my ($rule, undef, undef, $name) = split(' ', $_);
+					if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
+						push(@rules, $rule);
+					}
 				}
-			}
-			close(IN);
-			@rules = reverse(@rules);
-			foreach(@rules) {
-				system("iptables -D OUTPUT $_");
-				$num++;
+				close(IN);
+				@rules = reverse(@rules);
+				foreach(@rules) {
+					system("iptables -D OUTPUT $_");
+					$num++;
+				}
 			}
 			foreach(@names) {
 				system("iptables -X $_");
