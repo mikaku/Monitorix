@@ -23,7 +23,7 @@ package Monitorix;
 use strict;
 use warnings;
 use Exporter 'import';
-our @EXPORT = qw(logger trim get_nvidia_data flush_accounting_rules);
+our @EXPORT = qw(logger trim max get_nvidia_data flush_accounting_rules);
 
 sub logger {
 	my ($msg) = @_;
@@ -40,6 +40,14 @@ sub trim {
 		$str =~ s/\s+$//;
 		return $str;
 	}
+}
+
+sub max {
+	my ($max, @args) = @_;
+	foreach (@args) {
+		$max = $_ if $_ > $max;
+	}
+	return $max;
 }
 
 sub get_nvidia_data {
