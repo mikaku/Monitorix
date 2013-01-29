@@ -44,7 +44,7 @@ sub trim {
 
 sub max {
 	my ($max, @args) = @_;
-	foreach (@args) {
+	foreach(@args) {
 		$max = $_ if $_ > $max;
 	}
 	return $max;

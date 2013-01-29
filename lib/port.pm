@@ -48,8 +48,8 @@ sub port_init {
 				}
 			}
 		}
-		if(scalar(@ds) / 2 != $port->{max}) {
-			logger("$myself: Detected size mismatch between 'max = $port->{max}' and $rrd (" . scalar(@ds) / 2 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
+		if(scalar(@ds) / 4 != $port->{max}) {
+			logger("$myself: Detected size mismatch between 'max = $port->{max}' and $rrd (" . scalar(@ds) / 4 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 	}
@@ -57,8 +57,10 @@ sub port_init {
 	if(!(-e $rrd)) {
 		logger("Creating '$rrd' file.");
 		for($n = 0; $n < $port->{max}; $n++) {
-			push(@tmp, "DS:port" . $n . "_in:GAUGE:120:0:U");
-			push(@tmp, "DS:port" . $n . "_out:GAUGE:120:0:U");
+			push(@tmp, "DS:port" . $n . "_i_in:GAUGE:120:0:U");
+			push(@tmp, "DS:port" . $n . "_i_out:GAUGE:120:0:U");
+			push(@tmp, "DS:port" . $n . "_o_in:GAUGE:120:0:U");
+			push(@tmp, "DS:port" . $n . "_o_out:GAUGE:120:0:U");
 		}
 		eval {
 			RRDs::create($rrd,
@@ -106,17 +108,18 @@ sub port_init {
 			if($pl[$n]) {
 				my $p = lc((split(',', $port->{desc}->{$pl[$n]}))[1]) || "all";
 				my $conn = lc((split(',', $port->{desc}->{$pl[$n]}))[2]);
-				$conn = uc(trim($conn));
-				if($conn eq "IN") {
+				if($conn =~ /in/ || $conn =~ /in\/out/) {
 					system("iptables -N monitorix_IN_$n 2>/dev/null");
 					system("iptables -I INPUT -p $p --sport 1024:65535 --dport $pl[$n] -m state --state NEW,ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
 					system("iptables -I OUTPUT -p $p --sport $pl[$n] --dport 1024:65535 -m state --state ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
-				} elsif($conn eq "OUT") {
+				}
+				if($conn =~ /out/ || $conn =~ /in\/out/) {
 					system("iptables -N monitorix_OUT_$n 2>/dev/null");
 					system("iptables -I INPUT -p $p --sport $pl[$n] --dport 1024:65535 -m state --state ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
 					system("iptables -I OUTPUT -p $p --sport 1024:65535 --dport $pl[$n] -m state --state NEW,ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
-				} else {
-					logger("$myself: Invalid connection type '$conn', must be 'in' or 'out'.");
+				}
+				if($conn !~ /in/ && $conn !~ /out/) {
+					logger("$myself: Invalid connection type '$conn'; must be 'in', 'out' or 'in/out'.");
 				}
 			}
 		}
@@ -128,6 +131,7 @@ sub port_init {
 			$pl[$n] = trim($pl[$n]);
 			if($pl[$n]) {
 				my $p = lc((split(',', $port->{desc}->{$pl[$n]}))[1]) || "all";
+				# in/out support pending XXX
 				system("ipfw -q add $port->{rule} count $p from me $pl[$n] to any");
 				system("ipfw -q add $port->{rule} count $p from any to me $pl[$n]");
 			}
@@ -146,8 +150,10 @@ sub port_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $port = $config->{port};
 
-	my @in;
-	my @out;
+	my @i_in;
+	my @i_out;
+	my @o_in;
+	my @o_out;
 
 	my $n;
 	my $rrdata = "N";
@@ -156,14 +162,23 @@ sub port_update {
 		open(IN, "iptables -nxvL INPUT |");
 		while(<IN>) {
 			for($n = 0; $n < $port->{max}; $n++) {
-				$in[$n] = 0 unless $in[$n];
+				$i_in[$n] = 0 unless $i_in[$n];
+				$o_in[$n] = 0 unless $o_in[$n];
 				if(/ monitorix_IN_$n /) {
 					my (undef, $bytes) = split(' ', $_);
 					chomp($bytes);
-					$in[$n] = $bytes - ($config->{port_hist_in}[$n] || 0);
-					$in[$n] = 0 unless $in[$n] != $bytes;
-					$config->{port_hist_in}[$n] = $bytes;
-					$in[$n] /= 60;
+					$i_in[$n] = $bytes - ($config->{port_hist_i_in}[$n] || 0);
+					$i_in[$n] = 0 unless $i_in[$n] != $bytes;
+					$config->{port_hist_i_in}[$n] = $bytes;
+					$i_in[$n] /= 60;
+				}
+				if(/ monitorix_OUT_$n /) {
+					my (undef, $bytes) = split(' ', $_);
+					chomp($bytes);
+					$o_in[$n] = $bytes - ($config->{port_hist_o_in}[$n] || 0);
+					$o_in[$n] = 0 unless $o_in[$n] != $bytes;
+					$config->{port_hist_o_in}[$n] = $bytes;
+					$o_in[$n] /= 60;
 				}
 			}
 		}
@@ -171,14 +186,23 @@ sub port_update {
 		open(IN, "iptables -nxvL OUTPUT |");
 		while(<IN>) {
 			for($n = 0; $n < $port->{max}; $n++) {
-				$out[$n] = 0 unless $out[$n];
+				$o_out[$n] = 0 unless $o_out[$n];
+				$i_out[$n] = 0 unless $i_out[$n];
+				if(/ monitorix_OUT_$n /) {
+					my (undef, $bytes) = split(' ', $_);
+					chomp($bytes);
+					$o_out[$n] = $bytes - ($config->{port_hist_o_out}[$n] || 0);
+					$o_out[$n] = 0 unless $o_out[$n] != $bytes;
+					$config->{port_hist_o_out}[$n] = $bytes;
+					$o_out[$n] /= 60;
+				}
 				if(/ monitorix_IN_$n /) {
 					my (undef, $bytes) = split(' ', $_);
 					chomp($bytes);
-					$out[$n] = $bytes - ($config->{port_hist_out}[$n] || 0);
-					$out[$n] = 0 unless $out[$n] != $bytes;
-					$config->{port_hist_out}[$n] = $bytes;
-					$out[$n] /= 60;
+					$i_out[$n] = $bytes - ($config->{port_hist_i_out}[$n] || 0);
+					$i_out[$n] = 0 unless $i_out[$n] != $bytes;
+					$config->{port_hist_i_out}[$n] = $bytes;
+					$i_out[$n] /= 60;
 				}
 			}
 		}
@@ -189,18 +213,20 @@ sub port_update {
 		open(IN, "ipfw show $port->{rule} 2>/dev/null |");
 		while(<IN>) {
 			for($n = 0; $n < $port->{max}; $n++) {
-				$in[$n] = 0 unless $in[$n];
+				$i_in[$n] = 0 unless $i_in[$n];
+				$o_in[$n] = 0 unless $o_in[$n];
 				$pl[$n] = trim($pl[$n]);
 				if(/ from any to me dst-port $pl[$n]$/) {
 					my (undef, undef, $bytes) = split(' ', $_);
 					chomp($bytes);
-					$in[$n] = $bytes;
+					$i_in[$n] = $bytes;
 				}
-				$out[$n] = 0 unless $out[$n];
+				$o_out[$n] = 0 unless $o_out[$n];
+				$i_out[$n] = 0 unless $i_out[$n];
 				if(/ from me $pl[$n] to any$/) {
 					my (undef, undef, $bytes) = split(' ', $_);
 					chomp($bytes);
-					$out[$n] = $bytes;
+					$i_out[$n] = $bytes;
 				}
 			}
 		}
@@ -208,7 +234,7 @@ sub port_update {
 	}
 
 	for($n = 0; $n < $port->{max}; $n++) {
-		$rrdata .= ":$in[$n]:$out[$n]";
+		$rrdata .= ":$i_in[$n]:$i_out[$n]:$o_in[$n]:$o_out[$n]";
 	}
 	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;
@@ -240,6 +266,7 @@ sub port_cgi {
 	my $vlabel = "bytes/s";
 	my $n;
 	my $n2;
+	my $n3;
 	my $str;
 	my $err;
 
@@ -276,9 +303,12 @@ sub port_cgi {
 		for($n = 0; $n < $port->{max} && $n < scalar(my @pl = split(',', $port->{list})); $n++) {
 			$pl[$n] = trim($pl[$n]);
 			my $pn = trim((split(',', $port->{desc}->{$pl[$n]}))[0]);
-			printf("   %-5s %-8s", $pl[$n], $pn);
-			$line1 .= "   K$T/s_I  K$T/s_O";
-			$line2 .= "-----------------";
+			my $pc = trim((split(',', $port->{desc}->{$pl[$n]}))[2]);
+			foreach(split('/', $pc)) {
+				printf("   %-5s %10s", $pl[$n], uc(trim($_)) . "-" . $pn);
+				$line1 .= "    K$T/s_I   K$T/s_O";
+				$line2 .= "-------------------";
+			}
 		}
 		print("\n");
 		print("Time$line1\n");
@@ -294,17 +324,32 @@ sub port_cgi {
 			$time = $time - (1 / $tf->{ts});
 			printf(" %2d$tf->{tc} ", $time);
 			for($n2 = 0; $n2 < $port->{max} && $n2 < scalar(my @pl = split(',', $port->{list})); $n2++) {
-				$from = $n2 * 2;
-				$to = $from + 1;
-				my ($kin, $kout) = @$line[$from..$to];
-				$kin /= 1024;
-				$kout /= 1024;
+				$pl[$n2] = trim($pl[$n2]);
+				my $pc = trim((split(',', $port->{desc}->{$pl[$n2]}))[2]);
+				$from = $n2 * 4;
+				$to = $from + 3;
+				my ($i_in, $i_out, $o_in, $o_out) = @$line[$from..$to];
+				my $k_i_in = ($i_in || 0) / 1024;
+				my $k_i_out = ($i_out || 0) / 1024;
+				my $k_o_in = ($o_in || 0) / 1024;
+				my $k_o_out = ($o_out || 0) / 1024;
+
 				if(lc($config->{netstats_in_bps}) eq "y") {
-					$kin *= 8;
-					$kout *= 8;
+					$k_i_in *= 8;
+					$k_i_out *= 8;
+					$k_o_in *= 8;
+					$k_o_out *= 8;
 				}
-				@row = ($kin, $kout);
-				printf("  %6d  %6d ", @row);
+				foreach(split('/', $pc)) {
+					if(lc($_) eq "in") {
+						@row = ($k_i_in, $k_i_out);
+						printf("   %6d   %6d ", @row);
+					}
+					if(lc($_) eq "out") {
+						@row = ($k_o_in, $k_o_out);
+						printf("   %6d   %6d ", @row);
+					}
+				}
 			}
 			print("\n");
 		}
@@ -330,27 +375,34 @@ sub port_cgi {
 		$u = "";
 	}
 
-	for($n = 0; $n < $port->{max}; $n++) {
-		$str = $u . $package . $n . "." . $tf->{when} . ".png";
-		push(@PNG, $str);
-		unlink("$PNG_DIR" . $str);
-		if(lc($config->{enable_zoom}) eq "y") {
-			$str = $u . $package . $n . "z." . $tf->{when} . ".png";
-			push(@PNGz, $str);
+	my $max = max($port->{max}, scalar(my @pl = split(',', $port->{list})));
+	for($n = 0; $n < $max; $n++) {
+		$pl[$n] = trim($pl[$n]);
+		my $pc = trim((split(',', $port->{desc}->{$pl[$n]}))[2]);
+		foreach my $conn (split('/', $pc)) {
+			$str = $u . $package . $n . substr($conn, 0 ,1) . "." . $tf->{when} . ".png";
+			push(@PNG, $str);
 			unlink("$PNG_DIR" . $str);
+			if(lc($config->{enable_zoom}) eq "y") {
+				$str = $u . $package . $n . substr($conn, 0 ,1) . "z." . $tf->{when} . ".png";
+				push(@PNGz, $str);
+				unlink("$PNG_DIR" . $str);
+			}
 		}
 	}
 
-	$n = 0;
-	while($n < $port->{max} && $n < scalar(my @pl = split(',', $port->{list}))) {
+	$n = $n3 = 0;
+	$n2 = 1;
+	while($n < $max) {
 		if($title) {
 			if($n == 0) {
 				main::graph_header($title, $port->{graphs_per_row});
+				print("    <tr>\n");
 			}
-			print("    <tr>\n");
 		}
-		for($n2 = 0; $n2 < $port->{graphs_per_row}; $n2++) {
-			last unless ($n < $port->{max} && $n < scalar(@pl));
+
+		my $pc = trim((split(',', $port->{desc}->{$pl[$n]}))[2]);
+		foreach my $pcon (split('/', $pc)) {
 			if($title) {
 				print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
 			}
@@ -403,28 +455,51 @@ sub port_cgi {
 				push(@warning, $colors->{warning_color});
 			}
 
-			$name = substr($pn, 0, 15);
+			$name = substr(uc($pcon) . "-" . $pn, 0, 15);
 			undef(@tmp);
 			undef(@tmpz);
 			undef(@CDEF);
-			push(@tmp, "AREA:B_in#44EE44:Input");
-			push(@tmp, "AREA:B_out#4444EE:Output");
-			push(@tmp, "AREA:B_out#4444EE:");
-			push(@tmp, "AREA:B_in#44EE44:");
-			push(@tmp, "LINE1:B_out#0000EE");
-			push(@tmp, "LINE1:B_in#00EE00");
-			push(@tmpz, "AREA:B_in#44EE44:Input");
-			push(@tmpz, "AREA:B_out#4444EE:Output");
-			push(@tmpz, "AREA:B_out#4444EE:");
-			push(@tmpz, "AREA:B_in#44EE44:");
-			push(@tmpz, "LINE1:B_out#0000EE");
-			push(@tmpz, "LINE1:B_in#00EE00");
-			if(lc($config->{netstats_in_bps}) eq "y") {
-				push(@CDEF, "CDEF:B_in=in,8,*");
-				push(@CDEF, "CDEF:B_out=out,8,*");
-			} else {
-				push(@CDEF, "CDEF:B_in=in");
-				push(@CDEF, "CDEF:B_out=out");
+			if(lc($pcon) eq "in") {
+				push(@tmp, "AREA:B_i_in#44EE44:Input");
+				push(@tmp, "AREA:B_i_out#4444EE:Output");
+				push(@tmp, "AREA:B_i_out#4444EE:");
+				push(@tmp, "AREA:B_i_in#44EE44:");
+				push(@tmp, "LINE1:B_i_out#0000EE");
+				push(@tmp, "LINE1:B_i_in#00EE00");
+				push(@tmpz, "AREA:B_i_in#44EE44:Input");
+				push(@tmpz, "AREA:B_i_out#4444EE:Output");
+				push(@tmpz, "AREA:B_i_out#4444EE:");
+				push(@tmpz, "AREA:B_i_in#44EE44:");
+				push(@tmpz, "LINE1:B_i_out#0000EE");
+				push(@tmpz, "LINE1:B_i_in#00EE00");
+				if(lc($config->{netstats_in_bps}) eq "y") {
+					push(@CDEF, "CDEF:B_i_in=i_in,8,*");
+					push(@CDEF, "CDEF:B_i_out=i_out,8,*");
+				} else {
+					push(@CDEF, "CDEF:B_i_in=i_in");
+					push(@CDEF, "CDEF:B_i_out=i_out");
+				}
+			}
+			if(lc($pcon) eq "out") {
+				push(@tmp, "AREA:B_o_in#44EE44:Input");
+				push(@tmp, "AREA:B_o_out#4444EE:Output");
+				push(@tmp, "AREA:B_o_out#4444EE:");
+				push(@tmp, "AREA:B_o_in#44EE44:");
+				push(@tmp, "LINE1:B_o_out#0000EE");
+				push(@tmp, "LINE1:B_o_in#00EE00");
+				push(@tmpz, "AREA:B_o_in#44EE44:Input");
+				push(@tmpz, "AREA:B_o_out#4444EE:Output");
+				push(@tmpz, "AREA:B_o_out#4444EE:");
+				push(@tmpz, "AREA:B_o_in#44EE44:");
+				push(@tmpz, "LINE1:B_o_out#0000EE");
+				push(@tmpz, "LINE1:B_o_in#00EE00");
+				if(lc($config->{netstats_in_bps}) eq "y") {
+					push(@CDEF, "CDEF:B_o_in=o_in,8,*");
+					push(@CDEF, "CDEF:B_o_out=o_out,8,*");
+				} else {
+					push(@CDEF, "CDEF:B_o_in=o_in");
+					push(@CDEF, "CDEF:B_o_out=o_out");
+				}
 			}
 			($width, $height) = split('x', $config->{graph_size}->{mini});
 			if($silent =~ /imagetag/) {
@@ -434,7 +509,7 @@ sub port_cgi {
 				push(@tmp, "COMMENT: \\n");
 				push(@tmp, "COMMENT: \\n");
 			}
-			RRDs::graph("$PNG_DIR" . "$PNG[$n]",
+			RRDs::graph("$PNG_DIR" . "$PNG[$n3]",
 				"--title=$name traffic  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -447,15 +522,17 @@ sub port_cgi {
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
 				@warning,
-				"DEF:in=$rrd:port" . $n . "_in:AVERAGE",
-				"DEF:out=$rrd:port" . $n . "_out:AVERAGE",
+				"DEF:i_in=$rrd:port" . $n . "_i_in:AVERAGE",
+				"DEF:i_out=$rrd:port" . $n . "_i_out:AVERAGE",
+				"DEF:o_in=$rrd:port" . $n . "_o_in:AVERAGE",
+				"DEF:o_out=$rrd:port" . $n . "_o_out:AVERAGE",
 				@CDEF,
 				@tmp);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNG[$n]: $err\n") if $err;
+			print("ERROR: while graphing $PNG_DIR" . "$PNG[$n3]: $err\n") if $err;
 			if(lc($config->{enable_zoom}) eq "y") {
 				($width, $height) = split('x', $config->{graph_size}->{zoom});
-				RRDs::graph("$PNG_DIR" . "$PNGz[$n]",
+				RRDs::graph("$PNG_DIR" . "$PNGz[$n3]",
 					"--title=$name traffic  ($tf->{nwhen}$tf->{twhen})",
 					"--start=-$tf->{nwhen}$tf->{twhen}",
 					"--imgformat=PNG",
@@ -468,33 +545,43 @@ sub port_cgi {
 					@{$cgi->{version12_small}},
 					@{$colors->{graph_colors}},
 					@warning,
-					"DEF:in=$rrd:port" . $n . "_in:AVERAGE",
-					"DEF:out=$rrd:port" . $n . "_out:AVERAGE",
+					"DEF:i_in=$rrd:port" . $n . "_i_in:AVERAGE",
+					"DEF:i_out=$rrd:port" . $n . "_i_out:AVERAGE",
+					"DEF:o_in=$rrd:port" . $n . "_o_in:AVERAGE",
+					"DEF:o_out=$rrd:port" . $n . "_o_out:AVERAGE",
 					@CDEF,
 					@tmpz);
 				$err = RRDs::error;
-				print("ERROR: while graphing $PNG_DIR" . "$PNGz[$n]: $err\n") if $err;
+				print("ERROR: while graphing $PNG_DIR" . "$PNGz[$n3]: $err\n") if $err;
 			}
-			if($title || ($silent =~ /imagetag/ && $graph =~ /port$n/)) {
+			if($title || ($silent =~ /imagetag/ && $graph =~ /port$n3/)) {
 				if(lc($config->{enable_zoom}) eq "y") {
 					if(lc($config->{disable_javascript_void}) eq "y") {
-						print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$n] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$n] . "' border='0'></a>\n");
+						print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$n3] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$n3] . "' border='0'></a>\n");
 					}
 					else {
-						print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$n] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$n] . "' border='0'></a>\n");
+						print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$n3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$n3] . "' border='0'></a>\n");
 					}
 				} else {
-					print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$n] . "'>\n");
+					print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$n3] . "'>\n");
 				}
 			}
 			if($title) {
 				print("    </td>\n");
 			}
-			$n++;
+
+			if($n2 < $port->{graphs_per_row} && $n2 < $max) {
+				$n2++;
+			} else {
+				if($title) {
+					print("    </tr>\n");
+					print("    <tr>\n");
+				}
+				$n2 = 1;
+			}
+			$n3++;
 		}
-		if($title) {
-			print("    </tr>\n");
-		}
+		$n++;
 	}
 	if($title) {
 		main::graph_footer();
