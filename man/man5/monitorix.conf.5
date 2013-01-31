@@ -13,7 +13,7 @@ It consists mainly of two programs: a collector, called \fBmonitorix\fP, which i
 .P
 Every time \fBmonitorix\fP is started it reads the configuration file from the path specified in the command line (using the \fB-c\fP option), and once checked, it creates the \fIindex.html\fP file that will act as the Monitorix main page.
 .P
-It also creates a file called \fI<base_dir>/cgi-bin/monitorix.conf.path\fP that includes the absolute path of the configuration file. This file will be read by \fBmonitorix.cgi\fP to determine the exact location of the configuration file. If for any reason it is unable to locate this file, Monitorix will try two alternate locations: \fI/etc/monitorix.conf\fP and \fI/usr/local/etc/monitorix.conf\fP.
+It also creates a file called \fI<base_dir>/cgi/monitorix.conf.path\fP that includes the absolute path of the configuration file. This file will be read by \fBmonitorix.cgi\fP to determine the exact location of the configuration file. If for any reason it is unable to locate this file, Monitorix will try two alternate locations: \fI/etc/monitorix.conf\fP and \fI/usr/local/etc/monitorix.conf\fP.
 .SH CONFIGURATION OPTIONS
 Blank lines are ignored, and whitespace before and after a token or value is ignored as well as tabulators, although a value can contain whitespace within. Lines which begin with a # are considered comments and ignored.
 .P
@@ -89,7 +89,7 @@ Default value: \fIn\fP
 This is the absolute path to the directory where all the web elements are located:
 .P
 .RS
-\fIcgi-bin/\fP          \fBmonitorix.cgi\fP script directory
+\fIcgi/\fP              \fBmonitorix.cgi\fP script directory
 .br
 \fIimgs/\fP             .png graph images directory
 .br

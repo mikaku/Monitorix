@@ -56,8 +56,8 @@ install -m 0644 logo_top.png %{buildroot}%{_datadir}/monitorix
 install -m 0644 logo_bot.png %{buildroot}%{_datadir}/monitorix
 install -m 0644 monitorixico.png %{buildroot}%{_datadir}/monitorix
 mkdir -p %{buildroot}%{_datadir}/monitorix/imgs
-mkdir -p %{buildroot}%{_datadir}/monitorix/cgi-bin
-install -m 0755 monitorix.cgi %{buildroot}%{_datadir}/monitorix/cgi-bin
+mkdir -p %{buildroot}%{_datadir}/monitorix/cgi
+install -m 0755 monitorix.cgi %{buildroot}%{_datadir}/monitorix/cgi
 mkdir -p %{buildroot}%{_localstatedir}/lib/monitorix/reports
 install -m 0644 reports/*.html %{buildroot}%{_localstatedir}/lib/monitorix/reports
 mkdir -p %{buildroot}%{_localstatedir}/lib/monitorix/usage
@@ -84,7 +84,7 @@ rm -rf %{buildroot}
 %{_datadir}/monitorix/logo_top.png
 %{_datadir}/monitorix/logo_bot.png
 %{_datadir}/monitorix/monitorixico.png
-%{_datadir}/monitorix/cgi-bin/monitorix.cgi
+%{_datadir}/monitorix/cgi/monitorix.cgi
 %attr(777,apache,apache) %{_datadir}/monitorix/imgs
 %attr(755,root,root) %{_localstatedir}/lib/monitorix/usage
 %config(noreplace) %{_localstatedir}/lib/monitorix/reports/*.html

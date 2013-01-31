@@ -41,7 +41,7 @@ sub hptemp_init {
 	# save the output of 'hplog -t' since only 'root' is able to run it
 	my @data = <IN>;
 	close(IN);
-	open(OUT, "> $config->{base_dir}/cgi-bin/monitorix.hplog");
+	open(OUT, "> $config->{base_dir}/cgi/monitorix.hplog");
 	print(OUT @data);
 	close(OUT);
 
