@@ -3,7 +3,7 @@
 .\"
 .\" This is the man page for the monitorix.conf configuration file.
 .\"
-.TH monitorix.conf 5 "Jan 2013" 3.0.0beta1 "Monitorix configuration file"
+.TH monitorix.conf 5 "Feb 2013" 3.0.0beta2 "Monitorix configuration file"
 .SH NAME
 monitorix.conf \- Configuration file for Monitorix.
 .SH DESCRIPTION
@@ -852,17 +852,17 @@ You may define here up to \fBmax\fP network port numbers. If you see a red color
 .P
 .BI desc
 .RS
-This is the option where each network port specified in \fBlist\fP is described. Each port definition consists of four parameters separated by comma: the port description, the network protocol, and the rigid and limit values.
+This is the option where each network port specified in \fBlist\fP is described. Each port definition consists of five parameters separated by comma: the port description, the network protocol, the connection type (\fIin\fP, \fIout\fP or \fIin/out\fP) and the rigid and limit values.
 .P
 An example would be:
 .RS
 <desc>
 .br
-	25 = SMTP, tcp, 0, 1000
+	25 = SMTP, tcp, in/out, 0, 1000
 .br
-	80 = HTTP, tcp, 0, 1000
+	80 = HTTP, tcp, in, 0, 1000
 .br
-	53 = DNS, udp, 0, 1000
+	53 = DNS, udp, in, 0, 1000
 .br
 </desc>
 .RE
