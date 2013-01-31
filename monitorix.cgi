@@ -108,7 +108,7 @@ sub multihost {
 			for($n2 = 0, $n = $n - $multihost->{graphs_per_row}; $n2 < $multihost->{graphs_per_row}; $n2++) {
 				if($n < scalar(@host)) {
 					print "  <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
-					print "   <iframe src=$url[$n]$config->{base_cgi}/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetag height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+					print "   <iframe src=$url[$n]$config->{base_cgi}monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetag height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
 					print "  </td>\n";
 
 				}
@@ -145,7 +145,7 @@ sub multihost {
 		print "   </tr>\n";
 		print "   <tr>\n";
 		print "    <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
-		print "     <iframe src=$url[$cgi->{val}]$config->{base_cgi}/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetagbig height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+		print "     <iframe src=$url[$cgi->{val}]$config->{base_cgi}monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetagbig height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
 		print "    </td>\n";
 		print "   </tr>\n";
 		print "   <tr>\n";
@@ -198,7 +198,7 @@ FATAL: Monitorix is unable to continue!
 File 'monitorix.conf.path' not found.
 
 Please make sure that 'base_dir' option is correctly configured and that
-this CGI is located in the 'base_dir'/cgi-bin/ directory.
+this CGI is located in the 'base_dir'/cgi/ directory.
 
 And don't forget to restart Monitorix for the changes to take effect.
 EOF
@@ -216,7 +216,7 @@ if(!($config{hostname})) {	# called from the command line
 	$config{hostname} = "127.0.0.1";
 	$config{url} = "http://127.0.0.1";
 }
-$config{url} .= $config{base_url} . "/";
+$config{url} .= $config{base_url};
 
 # get the current OS and kernel version
 my $release;
@@ -234,8 +234,10 @@ if($mode ne "localhost") {
 	($mode, $val)  = split(/\./, $mode);
 }
 
-print("Content-Type: text/html\n");
-print("\n");
+if(lc($config{httpd_builtin}->{enabled} ne "y")) {
+	print("Content-Type: text/html\n");
+	print("\n");
+}
 
 # default white theme colors
 $colors{graph_colors} = ();
@@ -318,7 +320,7 @@ if(!$silent) {
 	print("<html>\n");
 	print("  <head>\n");
 	print("    <title>$config{title}</title>\n");
-	print("    <link rel='shortcut icon' href='" . $config{base_url} . "/" . $config{favicon} . "'>\n");
+	print("    <link rel='shortcut icon' href='" . $config{base_url} . $config{favicon} . "'>\n");
 	if($config{refresh_rate}) {
 		print("    <meta http-equiv='Refresh' content='" . $config{refresh_rate} . "'>\n");
 	}
@@ -428,7 +430,7 @@ if(!$silent) {
 	print("  </font>\n");
 	print("  </center>\n");
 	print("  <p>\n");
-	print("  <a href='http://www.monitorix.org'><img src='" . $config{url} . "logo_bot.png' border='0'></a>\n");
+	print("  <a href='http://www.monitorix.org'><img src='" . $config{url} . $config{logo_bottom} . "' border='0'></a>\n");
 	print("  <br>\n");
 	print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "' size='-2'>\n");
 	print("Copyright &copy; 2005-2013 Jordi Sanfeliu\n");

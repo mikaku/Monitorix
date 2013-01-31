@@ -23,7 +23,8 @@ package Monitorix;
 use strict;
 use warnings;
 use Exporter 'import';
-our @EXPORT = qw(logger trim max get_nvidia_data flush_accounting_rules);
+use POSIX qw(setuid setgid setsid);
+our @EXPORT = qw(logger trim max httpd_setup get_nvidia_data flush_accounting_rules);
 
 sub logger {
 	my ($msg) = @_;
@@ -48,6 +49,30 @@ sub max {
 		$max = $_ if $_ > $max;
 	}
 	return $max;
+}
+
+sub httpd_setup {
+	my ($config, $debug) = @_;
+	my $pid;
+
+	if($pid = fork()) {
+		$config->{httpd_pid} = $pid;
+		return;	# parent returns
+	}
+
+	my (undef, undef, $uid) = getpwnam($config->{httpd_builtin}->{user});
+	my (undef, undef, $gid) = getgrnam($config->{httpd_builtin}->{group});
+	my $port = $config->{httpd_builtin}->{port};
+
+	setgid($gid);
+	setuid($uid);
+	setsid();
+	$SIG{$_} = 'DEFAULT' for keys %SIG;		# reset all sighandlers
+	$0 = "monitorix-httpd listening on $port";	# change process' name
+	chdir($config->{base_dir});
+
+	my $server = HTTPServer->new($port);
+	$server->run();		# ->background
 }
 
 sub get_nvidia_data {
