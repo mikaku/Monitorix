@@ -350,7 +350,7 @@ sub traffacct_sendreports {
 		$msg->attach(
 			Type		=> 'image/png',
 			Id		=> 'image_01',
-			Path		=> $config->{base_dir} . "logo_bot.png",
+			Path		=> $config->{base_dir} . $config->{logo_bottom},
 		);
 		$msg->attach(
 			Type		=> 'image/png',
