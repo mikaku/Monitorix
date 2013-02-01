@@ -1,3 +1,8 @@
+3.0.0RC- NN-Feb-2013
+====================
+- Changed the path 'cgi-bin' to 'cgi'.
+
+
 3.0.0B2- 01-Feb-2013
 ====================
 - Lot of improvements in the MySQL graph, which includes adding a new value
