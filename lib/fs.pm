@@ -632,7 +632,7 @@ sub fs_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		push(@tmp, "COMMENT: \\n");
-		for($n = 0; $n < 8; $n++) {
+		for($n2 = 0, $n = 0; $n < 8; $n++) {
 			$f[$n] = trim($f[$n]);
 			if($f[$n]) {
 				my $color;
@@ -645,7 +645,7 @@ sub fs_cgi {
 				} elsif($str eq "/boot") {
 					$color = "#666666";
 				} else {
-					$color = $LC[$n];
+					$color = $LC[$n2++];
 				}
 				push(@tmpz, "LINE2:fs" . $n . $color . ":$str");
 				$str = sprintf("%-23s", $str);
@@ -749,7 +749,7 @@ sub fs_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
-		for($n = 0; $n < 8; $n += 2) {
+		for($n2 = 0, $n = 0; $n < 8; $n += 2) {
 			$f[$n] = trim($f[$n]);
 			my $color;
 			if($f[$n]) {
@@ -761,7 +761,7 @@ sub fs_cgi {
 				} elsif($str eq "/boot") {
 					$color = "#666666";
 				} else {
-					$color = $LC[$n];
+					$color = $LC[$n2++];
 				}
 				push(@tmpz, "LINE2:ioa" . $n . $color . ":$str\\g");
 				$str = sprintf("%-17s", substr($str, 0, 17));
@@ -776,7 +776,7 @@ sub fs_cgi {
 				} elsif($str eq "/boot") {
 					$color = "#666666";
 				} else {
-					$color = $LC[$n + 1];
+					$color = $LC[$n2++];
 				}
 				push(@tmpz, "LINE2:ioa" . ($n + 1) . $color . ":$str\\g");
 				$str = sprintf("%-17s", substr($str, 0, 17));
@@ -874,7 +874,7 @@ sub fs_cgi {
 	   			$graph_title = "Disk sectors activity  ($tf->{nwhen}$tf->{twhen})";
 				$vlabel = "Sectors/s";
 			}
-			for($n = 0; $n < 8; $n += 2) {
+			for($n2 = 0, $n = 0; $n < 8; $n += 2) {
 				$f[$n] = trim($f[$n]);
 				my $color;
 				if($f[$n]) {
@@ -886,7 +886,7 @@ sub fs_cgi {
 					} elsif($str eq "/boot") {
 						$color = "#666666";
 					} else {
-						$color = $LC[$n];
+						$color = $LC[$n2++];
 					}
 					push(@tmpz, "LINE2:tim" . $n . $color . ":$str\\g");
 					$str = sprintf("%-17s", substr($str, 0, 17));
@@ -901,7 +901,7 @@ sub fs_cgi {
 					} elsif($str eq "/boot") {
 						$color = "#666666";
 					} else {
-						$color = $LC[$n + 1];
+						$color = $LC[$n2++];
 					}
 					push(@tmpz, "LINE2:tim" . ($n + 1) . $color . ":$str\\g");
 					$str = sprintf("%-17s", substr($str, 0, 17));
@@ -911,7 +911,7 @@ sub fs_cgi {
 		} elsif(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 	   		$graph_title = "Disk data activity  ($tf->{nwhen}$tf->{twhen})";
 			$vlabel = "KB/s";
-			for($n = 0; $n < 8; $n += 2) {
+			for($n2 = 0, $n = 0; $n < 8; $n += 2) {
 				$f[$n] = trim($f[$n]);
 				my $color;
 				my $str2;
@@ -926,7 +926,7 @@ sub fs_cgi {
 					} elsif($str eq "/boot") {
 						$color = "#666666";
 					} else {
-						$color = $LC[$n];
+						$color = $LC[$n2++];
 					}
 					push(@tmp, "LINE2:tim" . $n . $color . ":$str");
 					push(@tmpz, "LINE2:tim" . $n . $color . ":$f[$n]\\g");
@@ -941,7 +941,7 @@ sub fs_cgi {
 					} elsif($str eq "/boot") {
 						$color = "#666666";
 					} else {
-						$color = $LC[$n + 1];
+						$color = $LC[$n2++];
 					}
 					push(@tmp, "LINE2:tim" . ($n + 1) . $color . ":$str\\n");
 					push(@tmpz, "LINE2:tim" . ($n + 1) . $color . ":$f[$n + 1]\\g");
