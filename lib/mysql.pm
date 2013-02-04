@@ -445,7 +445,11 @@ sub mysql_update {
 			unless !$innodb_buffer_pool_pages_total;
 
 		$connections_usage = $connections_usage > 100 ? 100 : $connections_usage;
-		$qcache_hit_rate = $qcache_hits / ($qcache_hits + $Com_select) * 100;
+		if($qcache_hits + $Com_select == 0) {
+			$qcache_hit_rate = 0;
+		} else {
+			$qcache_hit_rate = $qcache_hits / ($qcache_hits + $Com_select) * 100;
+		}
 		$temp_tables_to_disk = $created_tmp_disk_tables / ($created_tmp_disk_tables + $created_tmp_tables) * 100;
 
 		$rrdata .= ":$queries:$slow_queries:$tcache_hit_rate:$qcache_usage:$opened_tables:$connections_usage:$connections:$table_locks_waited:$key_buffer_usage:$innodb_buffer_pool_usage:$com_select:$com_commit:$com_delete:$com_insert:$com_insert_s:$com_update:$com_replace:$com_replace_s:$com_rollback:$aborted_clients:$aborted_connects:$bytes_received:$bytes_sent:$qcache_hit_rate:$com_stmtex:$temp_tables_to_disk:0:0:0:0:0:0:0:0:0:0:0:0";
