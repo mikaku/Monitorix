@@ -1,6 +1,9 @@
 3.0.0RC- NN-Feb-2013
 ====================
 - Changed the path 'cgi-bin' to 'cgi'.
+- Fixed color sequence in the 'fs' graph. 
+- Fixed a division by zero in 'mysql' graph.
+- Fixed excessive bottom padding in 'fs' graph.
 
 
 3.0.0B2- 01-Feb-2013
