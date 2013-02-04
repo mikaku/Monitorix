@@ -633,8 +633,8 @@ sub fs_cgi {
 		undef(@tmpz);
 		push(@tmp, "COMMENT: \\n");
 		for($n2 = 0, $n = 0; $n < 8; $n++) {
-			$f[$n] = trim($f[$n]);
 			if($f[$n]) {
+				$f[$n] = trim($f[$n]);
 				my $color;
 
 				$str = $fs->{desc}->{$f[$n]} || $f[$n];
@@ -750,9 +750,9 @@ sub fs_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		for($n2 = 0, $n = 0; $n < 8; $n += 2) {
-			$f[$n] = trim($f[$n]);
 			my $color;
 			if($f[$n]) {
+				$f[$n] = trim($f[$n]);
 				$str = $fs->{desc}->{$f[$n]} || $f[$n];
 				if(trim($f[$n]) eq "/") {
 					$color = "#EE4444";
