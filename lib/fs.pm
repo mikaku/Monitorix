@@ -638,11 +638,11 @@ sub fs_cgi {
 				my $color;
 
 				$str = $fs->{desc}->{$f[$n]} || $f[$n];
-				if(trim($f[$n]) eq "/") {
+				if($f[$n] eq "/") {
 					$color = "#EE4444";
-				} elsif($str eq "swap") {
+				} elsif($f[$n] eq "swap") {
 					$color = "#CCCCCC";
-				} elsif($str eq "/boot") {
+				} elsif($f[$n] eq "/boot") {
 					$color = "#666666";
 				} else {
 					$color = $LC[$n2++];
@@ -754,11 +754,11 @@ sub fs_cgi {
 			if($f[$n]) {
 				$f[$n] = trim($f[$n]);
 				$str = $fs->{desc}->{$f[$n]} || $f[$n];
-				if(trim($f[$n]) eq "/") {
+				if($f[$n] eq "/") {
 					$color = "#EE4444";
-				} elsif($str eq "swap") {
+				} elsif($f[$n] eq "swap") {
 					$color = "#CCCCCC";
-				} elsif($str eq "/boot") {
+				} elsif($f[$n] eq "/boot") {
 					$color = "#666666";
 				} else {
 					$color = $LC[$n2++];
@@ -768,12 +768,13 @@ sub fs_cgi {
 				push(@tmp, "LINE2:ioa" . $n . $color . ":$str");
 			}
 			if($f[$n + 1]) {
+				$f[$n + 1] = trim($f[$n + 1]);
 				$str = $fs->{desc}->{$f[$n + 1]} || $f[$n + 1];
-				if(trim($f[$n + 1]) eq "/") {
+				if($f[$n + 1] eq "/") {
 					$color = "#EE4444";
-				} elsif($str eq "swap") {
+				} elsif($f[$n + 1] eq "swap") {
 					$color = "#CCCCCC";
-				} elsif($str eq "/boot") {
+				} elsif($f[$n + 1] eq "/boot") {
 					$color = "#666666";
 				} else {
 					$color = $LC[$n2++];
@@ -875,15 +876,15 @@ sub fs_cgi {
 				$vlabel = "Sectors/s";
 			}
 			for($n2 = 0, $n = 0; $n < 8; $n += 2) {
-				$f[$n] = trim($f[$n]);
 				my $color;
 				if($f[$n]) {
+					$f[$n] = trim($f[$n]);
 					$str = $fs->{desc}->{$f[$n]} || $f[$n];
-					if(trim($f[$n]) eq "/") {
+					if($f[$n] eq "/") {
 						$color = "#EE4444";
-					} elsif($str eq "swap") {
+					} elsif($f[$n] eq "swap") {
 						$color = "#CCCCCC";
-					} elsif($str eq "/boot") {
+					} elsif($f[$n] eq "/boot") {
 						$color = "#666666";
 					} else {
 						$color = $LC[$n2++];
@@ -893,12 +894,13 @@ sub fs_cgi {
 					push(@tmp, "LINE2:tim" . $n . $color . ":$str");
 				}
 				if($f[$n + 1]) {
+					$f[$n + 1] = trim($f[$n + 1]);
 					$str = $fs->{desc}->{$f[$n + 1]} || $f[$n + 1];
-					if(trim($f[$n + 1]) eq "/") {
+					if($f[$n + 1] eq "/") {
 						$color = "#EE4444";
-					} elsif($str eq "swap") {
+					} elsif($f[$n + 1] eq "swap") {
 						$color = "#CCCCCC";
-					} elsif($str eq "/boot") {
+					} elsif($f[$n + 1] eq "/boot") {
 						$color = "#666666";
 					} else {
 						$color = $LC[$n2++];
@@ -912,18 +914,18 @@ sub fs_cgi {
 	   		$graph_title = "Disk data activity  ($tf->{nwhen}$tf->{twhen})";
 			$vlabel = "KB/s";
 			for($n2 = 0, $n = 0; $n < 8; $n += 2) {
-				$f[$n] = trim($f[$n]);
 				my $color;
 				my $str2;
 
 				$str2 = $fs->{desc}->{$f[$n]} || $f[$n];
 				if($f[$n]) {
+					$f[$n] = trim($f[$n]);
 					$str = sprintf("%-17s", $str2, 0, 17);
-					if(trim($f[$n]) eq "/") {
+					if($f[$n] eq "/") {
 						$color = "#EE4444";
-					} elsif($str eq "swap") {
+					} elsif($f[$n] eq "swap") {
 						$color = "#CCCCCC";
-					} elsif($str eq "/boot") {
+					} elsif($f[$n] eq "/boot") {
 						$color = "#666666";
 					} else {
 						$color = $LC[$n2++];
@@ -933,12 +935,13 @@ sub fs_cgi {
 				}
 				$str2 = $fs->{desc}->{$f[$n + 1]} || $f[$n + 1];
 				if($f[$n + 1]) {
+					$f[$n + 1] = trim($f[$n + 1]);
 					$str = sprintf("%-17s", $str2, 0, 17);
-					if(trim($f[$n + 1]) eq "/") {
+					if($f[$n + 1] eq "/") {
 						$color = "#EE4444";
-					} elsif($str eq "swap") {
+					} elsif($f[$n + 1] eq "swap") {
 						$color = "#CCCCCC";
-					} elsif($str eq "/boot") {
+					} elsif($f[$n + 1] eq "/boot") {
 						$color = "#666666";
 					} else {
 						$color = $LC[$n2++];
