@@ -4,6 +4,9 @@
 - Fixed color sequence in the 'fs' graph. 
 - Fixed a division by zero in 'mysql' graph.
 - Fixed excessive bottom padding in 'fs' graph.
+- Fixed to use always the same colors for '/', 'swap' and '/boot' values in 'fs'
+  graph.
+- Fixed a bad naming in the title of 'traffacct' graph.
 
 
 3.0.0B2- 01-Feb-2013
