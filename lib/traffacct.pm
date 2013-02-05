@@ -456,6 +456,7 @@ sub traffacct_cgi {
 			last unless $name;
 			print("  <tr>\n");
 			for($n2 = 0; $n2 < $traffacct->{graphs_per_row}; $n2++) {
+				$name = trim($tal[$n]);
 				last unless ($n < $traffacct->{max} && $n < scalar(@tal));
 				print("  <td bgcolor='$colors->{title_bg_color}'>\n");
 				undef(@tmp);
