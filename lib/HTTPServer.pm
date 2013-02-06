@@ -22,125 +22,86 @@ package HTTPServer;
 
 use strict;
 use warnings;
-use Monitorix;
-use POSIX qw(strftime getpid);
+use POSIX qw(strftime);
 use HTTP::Server::Simple::CGI;
 use base qw(HTTP::Server::Simple::CGI);
 
-my %dispatch = (
-	'/' 			=> \&do_req,
-	'/logo_top.png' 	=> \&do_req,
-	'/logo_bot.png' 	=> \&do_req,
-	'/monitorixico.png' 	=> \&do_req,
-	'/monitorix.cgi' 	=> \&do_req,
-);
+sub logger {
+	my $url = shift;
+
+	print STDERR localtime() . " - [$ENV{REMOTE_ADDR}] The requested URL $url was not found on this server.\n";
+}
 
 sub handle_request {
 	my ($self, $cgi) = @_;
-	my $method = $ENV{REQUEST_METHOD};
+	my $target;
+	my @data;
 
 	return if fork();	# parent returns
 
 	my $url = $cgi->path_info();
-	print STDERR getpid() . " = '$url'\n";
+	print STDERR "'$url'\n";
 
-	my $handler = $dispatch{$url};
-
-	# sanitizes the $url
+	# sanitizes the $target
+	$target = $url;
 	while() {
-		my $cur = length($url);
-		$url =~ s/\.\.\///;
-		$url =~ s/^\///;
-		last unless $cur ne length $url;
+		my $cur = length($target);
+		$target =~ s/\.\.\///;
+		$target =~ s/^\///;
+		last unless $cur ne length $target;
 	}
-	$url = "/$url";
+	$target = "/$target";
 
+	$target =~ s/^\///;	# removes the leading slash
+	$target = "index.html" unless $target;
+	if($target eq "monitorix.cgi") {
+#		chdir("cgi");
+		chdir("/home/jordi/github/Monitorix/");		# XXX
+		open(P, "./$target |");
+		@data = <P>;
+		close(P);
+	} else {
+		if(open(IN, $target)) {
+			@data = <IN>;
+			close(IN);
+		}
+	}
 
-	# XXX
-	print "HTTP/1.0 200 OK\r\n";
-	do_req($url, $cgi);
-	exit;
-
-
-	if(ref($handler) eq "CODE") {
+	if(scalar(@data)) {
 		print "HTTP/1.0 200 OK\r\n";
-		$handler->($url, $cgi);
+		print "Date: " . strftime("%a, %d %b %Y %H:%M:%S %z", localtime) . "\r\n";
+		print "Server: Monitorix HTTP Server\r\n";
+		print "Connection: close\r\n";
+		print "Content-Type: text/html; charset=ISO-8859-1\r\n";
+		print "\r\n";
+		foreach(@data) {
+			print $_;
+		}
 	} else {
 		print "HTTP/1.0 404 Not found\r\n";
-		print   $cgi->header,
-			$cgi->start_html('404 Not Found'),
-			$cgi->h1('Not Found'),
-			$cgi->end_html;
-		print "The requested URL $url was not found on this server.<p>";
-		print "<hr>";
-		print "<i>Monitorix HTTP Server listening on 8080</i>";
-		print "<p>";
-	}
-
-	if (lc($method) eq 'post') {
-		print "Received POST request";
-	} else {
-		print "Received request of type $method";
+		print "Date: " . strftime("%a, %d %b %Y %H:%M:%S %z", localtime) . "\r\n";
+		print "Server: Monitorix HTTP Server\r\n";
+		print "Connection: close\r\n";
+		print "Content-Type: text/html; charset=ISO-8859-1\r\n";
+		print "\r\n";
+		print "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n";
+		print "<html><head>\r\n";
+		print "<title>404 Not Found</title>\r\n";
+		print "</head><body>\r\n";
+		print "<h1>Not Found</h1>\r\n";
+		print "The requested URL $url was not found on this server.<p>\r\n";
+		print "<hr>\r\n";
+		print "<address>Monitorix HTTP Server listening on 8080</address>\r\n";
+		print "</body></html>\r\n";
+		logger($url);
 	}
 
 #	use Data::Dumper;
 #	print "<pre>";
 #	print Dumper(\@_);
+#	print Dumper(\%ENV);
+
 	exit(0);
 }
-
-sub do_req {
-	my ($url, $cgi) = @_;
-	return if !ref $cgi;
-
-	print STDERR "\t$url\n";
-
-#	my $who = $cgi->param('name');
-#	print $cgi->header,
-#		$cgi->start_html("Hello"),
-#		$cgi->h1("Hello $who!"),
-#		$cgi->end_html;
-
-	print "Date: " . strftime("%a, %d %b %Y %H:%M:%S %z", localtime) . "\r\n";
-	print "Server: Monitorix HTTP Server\r\n";
-	print "Connection: close\r\n";
-	print $cgi->header;
-
-	$url =~ s/^\///;	# removes the leading slash
-	$url = "index.html" unless $url;
-	if($url eq "monitorix.cgi") {
-#		chdir("cgi");
-		chdir("/home/jordi/github/Monitorix/");		# XXX
-		open(P, "./$url |");
-		foreach(<P>) {
-			print $_;
-		}
-		close(P);
-	} else {
-		if(open(IN, $url)) {
-			while(<IN>) {
-				print $_;
-			}
-			close(IN);
-		} else {
-			print "ERROR: '$url' not found!<br>";
-		}
-	}
-}
-
-
-#sub handle_request {
-#	my ($self, $cgi) = @_;
-#	my $method = $ENV{REQUEST_METHOD};
-#	if (lc($method) == 'post') {
-#		my $file = $cgi->param('POSTDATA');
-#		open OUT, '>file.xml' or warn $!;
-#		print OUT $file;
-#		close OUT;
-#		print 'Received data.';
-#	} else {
-#		print 'Please POST a file.';
-#	}
-#}
 
 1;
