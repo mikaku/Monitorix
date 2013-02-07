@@ -82,12 +82,14 @@ sub handle_request {
 		my $cur = length($target);
 		$target =~ s/\.\.\///;
 		$target =~ s/^\///;
+		$target =~ s/\/$//;
 		last unless $cur ne length $target;
 	}
 	$target = "/$target";
 
 	$target =~ s/^$base_url//;	# removes the 'base_url' part
 	$target =~ s/^$base_cgi//;	# removes the 'base_cgi' part
+	$target =~ s/^\///;		# removes leading slash
 	$target = "index.html" unless $target;
 	($mimetype) = ($target =~ m/.*\.(html|cgi|png)$/);
 

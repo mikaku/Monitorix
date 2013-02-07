@@ -74,7 +74,7 @@ sub multihost {
 				my $h2 = trim($remotehost_list[$n2]);
 				if($h eq $h2) {
 					push(@host, $h);
-					push(@url, $multihost->{remotehost_desc}->{$n2});
+					push(@url, (split(',', $multihost->{remotehost_desc}->{$n}))[0] . (split(',', $multihost->{remotehost_desc}->{$n}))[1]);
 				}
 			}
 		}
@@ -82,7 +82,7 @@ sub multihost {
 		my @remotehost_list = split(',', $multihost->{remotehost_list});
 		for($n = 0; $n < scalar(@remotehost_list); $n++) {
 			push(@host, trim($remotehost_list[$n]));
-			push(@url, $multihost->{remotehost_desc}->{$n});
+			push(@url, (split(',', $multihost->{remotehost_desc}->{$n}))[0] . (split(',', $multihost->{remotehost_desc}->{$n}))[1]);
 		}
 	}
 
@@ -108,7 +108,7 @@ sub multihost {
 			for($n2 = 0, $n = $n - $multihost->{graphs_per_row}; $n2 < $multihost->{graphs_per_row}; $n2++) {
 				if($n < scalar(@host)) {
 					print "  <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
-					print "   <iframe src=$url[$n]$config->{base_cgi}monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetag height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+					print "   <iframe src=" . (split(',', $multihost->{remotehost_desc}->{$n}))[0] . (split(',', $multihost->{remotehost_desc}->{$n}))[2] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetag height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
 					print "  </td>\n";
 
 				}
@@ -122,7 +122,7 @@ sub multihost {
 					print "  <td bgcolor='$colors->{title_bg_color}'>\n";
 					print "   <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
 					print "   <font size='-1'>\n";
-					print "    <b>&nbsp;&nbsp;<a href='" . $url[$n] . $config->{base_url} . "/' style='{color: " . $colors->{title_fg_color} . "}'>$url[$n]</a><b>\n";
+					print "    <b>&nbsp;&nbsp;<a href='" . $url[$n] . "' style='{color: " . $colors->{title_fg_color} . "}'>$url[$n]</a><b>\n";
 					print "   </font></font>\n";
 					print "  </td>\n";
 				}
@@ -145,7 +145,7 @@ sub multihost {
 		print "   </tr>\n";
 		print "   <tr>\n";
 		print "    <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
-		print "     <iframe src=$url[$cgi->{val}]$config->{base_cgi}monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetagbig height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+		print "     <iframe src=" . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0] . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetagbig height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
 		print "    </td>\n";
 		print "   </tr>\n";
 		print "   <tr>\n";
@@ -153,7 +153,7 @@ sub multihost {
 			print "   <td bgcolor='$colors->{title_bg_color}'>\n";
 			print "    <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
 			print "    <font size='-1'>\n";
-			print "    <b>&nbsp;&nbsp;<a href='" . $url[$cgi->{val}] . "/monitorix/' style='{color: " . $colors->{title_fg_color} . "}'>$url[$cgi->{val}]</a><b>\n";
+			print "    <b>&nbsp;&nbsp;<a href='" . $url[$cgi->{val}] . "' style='{color: " . $colors->{title_fg_color} . "}'>$url[$cgi->{val}]</a><b>\n";
 			print "    </font></font>\n";
 			print "   </td>\n";
 		}
@@ -320,7 +320,7 @@ if(!$silent) {
 	print("<html>\n");
 	print("  <head>\n");
 	print("    <title>$config{title}</title>\n");
-	print("    <link rel='shortcut icon' href='" . $config{base_url} . $config{favicon} . "'>\n");
+	print("    <link rel='shortcut icon' href='" . $config{base_url} . "/" . $config{favicon} . "'>\n");
 	if($config{refresh_rate}) {
 		print("    <meta http-equiv='Refresh' content='" . $config{refresh_rate} . "'>\n");
 	}
@@ -430,7 +430,7 @@ if(!$silent) {
 	print("  </font>\n");
 	print("  </center>\n");
 	print("  <p>\n");
-	print("  <a href='http://www.monitorix.org'><img src='" . $config{url} . $config{logo_bottom} . "' border='0'></a>\n");
+	print("  <a href='http://www.monitorix.org'><img src='" . $config{url} . "/" . $config{logo_bottom} . "' border='0'></a>\n");
 	print("  <br>\n");
 	print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "' size='-2'>\n");
 	print("Copyright &copy; 2005-2013 Jordi Sanfeliu\n");

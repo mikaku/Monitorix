@@ -185,7 +185,7 @@ sub create_index {
 <html>
  <head>
   <title>$config{title}</title>
-  <link rel="shortcut icon" href="$config{base_url}$config{favicon}">
+  <link rel="shortcut icon" href="$config{base_url}/$config{favicon}">
  </head>
  <body bgcolor="$bgcolor" text="#888888" vlink="#888888" link="#888888">
   <center>
@@ -195,7 +195,7 @@ sub create_index {
   <table>
     <tr>
       <td>
-        <a href="http://www.monitorix.org/"><img src="$config{base_url}$config{logo_top}" border="0"></a>
+        <a href="http://www.monitorix.org/"><img src="$config{base_url}/$config{logo_top}" border="0"></a>
       </td>
     </tr>
     <tr>
@@ -205,7 +205,7 @@ sub create_index {
     </tr>
   </table>
   <p>
-  <form action="$config{base_cgi}monitorix.cgi" method="get">
+  <form action="$config{base_cgi}/monitorix.cgi" method="get">
     <table cellspacing="5" cellpadding="0" bgcolor="$table_back_color" border="1">
       <tr>
         <td bgcolor="$title_back_color">
