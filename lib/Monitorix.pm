@@ -55,14 +55,27 @@ sub httpd_setup {
 	my ($config, $debug) = @_;
 	my $pid;
 
+	my (undef, undef, $uid) = getpwnam($config->{httpd_builtin}->{user});
+	my (undef, undef, $gid) = getgrnam($config->{httpd_builtin}->{group});
+	my $port = $config->{httpd_builtin}->{port};
+
+	if(!defined($uid)) {
+		logger("ERROR: invalid user defined for the HTTPd built-in server.");
+		return;
+	}
+	if(!defined($gid)) {
+		logger("ERROR: invalid group defined for the HTTPd built-in server.");
+		return;
+	}
+	if(!defined($port)) {
+		logger("ERROR: invalid port defined for the HTTPd built-in server.");
+		return;
+	}
+
 	if($pid = fork()) {
 		$config->{httpd_pid} = $pid;
 		return;	# parent returns
 	}
-
-	my (undef, undef, $uid) = getpwnam($config->{httpd_builtin}->{user});
-	my (undef, undef, $gid) = getgrnam($config->{httpd_builtin}->{group});
-	my $port = $config->{httpd_builtin}->{port};
 
 	setgid($gid);
 	setuid($uid);
