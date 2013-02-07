@@ -29,7 +29,7 @@ use base qw(HTTP::Server::Simple::CGI);
 sub logger {
 	my ($url, $type) = @_;
 
-	if(open(OUT, ">> $main::config{httpd_builtin}->{logfile}")) {
+	if(open(OUT, ">> $main::config{httpd_builtin}->{log_file}")) {
 		if($type eq "OK") {
 			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] \"$ENV{REQUEST_METHOD} $url - $ENV{HTTP_USER_AGENT}\"\n";
 		} else {
@@ -37,7 +37,7 @@ sub logger {
 		}
 		close(OUT);
 	} else {
-		print STDERR localtime() . " - ERROR: unable to open logfile '$main::config{httpd_builtin}->{logfile}'.\n";
+		print STDERR localtime() . " - ERROR: unable to open logfile '$main::config{httpd_builtin}->{log_file}'.\n";
 	}
 }
 
