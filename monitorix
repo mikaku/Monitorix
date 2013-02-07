@@ -51,7 +51,7 @@ use constant VERSION	=> "3.0.0beta2";
 use constant RELDATE	=> "01-Feb-2013";
 
 my @suppsys = ("Linux", "FreeBSD", "OpenBSD", "NetBSD");
-my %config;
+our %config;
 our %options;
 
 sub INT_handler {
@@ -446,7 +446,7 @@ if(open(OUT, "> " . $config{base_dir} . "/cgi/monitorix.conf.path")) {
 
 if(lc($config{httpd_builtin}->{enabled} eq "y")) {
 	httpd_setup(\%config, $options{d});
-	logger("HTTP built-in server pid is '$config{httpd_pid}'.");
+	logger("HTTP built-in server pid is '$config{httpd_pid}'.") if (defined($config{httpd_pid}));
 }
 
 flush_accounting_rules(\%config, $options{d});
