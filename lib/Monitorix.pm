@@ -85,7 +85,8 @@ sub httpd_setup {
 	chdir($config->{base_dir});
 
 	my $server = HTTPServer->new($port);
-	$server->run();		# ->background
+	$server->run();
+	exit(0);
 }
 
 sub get_nvidia_data {
