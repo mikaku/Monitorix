@@ -70,6 +70,7 @@ sub handle_request {
 	my $port = $main::config{httpd_builtin}->{port};
 	my $mimetype;
 	my $target;
+	my $target_cgi;
 	my @data;
 
 	return if fork();	# parent returns
@@ -85,21 +86,24 @@ sub handle_request {
 		$target =~ s/\/$//;
 		last unless $cur ne length $target;
 	}
-	$target = "/$target";
+	$target = $target_cgi = "/$target";
 
 	$target =~ s/^$base_url//;	# removes the 'base_url' part
-	$target =~ s/^$base_cgi//;	# removes the 'base_cgi' part
-	$target =~ s/^\///;		# removes leading slash
-	$target = "index.html" unless $target;
+	$target_cgi =~ s/^$base_cgi//;	# removes the 'base_cgi' part
+	if(!$target || $target eq $base_url) {
+		$target = "index.html" unless $target;
+	}
 	($mimetype) = ($target =~ m/.*\.(html|cgi|png)$/);
 
-	if($target eq "monitorix.cgi") {
+	$target =~ s/^\///;		# removes leading slash
+	$target_cgi =~ s/^\///;		# removes leading slash
+	if($target_cgi eq "monitorix.cgi") {
 #		chdir("cgi");
 		chdir("/home/jordi/github/Monitorix/");		# XXX
-		open(EXEC, "./$target |");
+		open(EXEC, "./$target_cgi |");
 		@data = <EXEC>;
 		close(EXEC);
-	} else {
+	} elsif($target) {
 		if(open(IN, $target)) {
 			@data = <IN>;
 			close(IN);
