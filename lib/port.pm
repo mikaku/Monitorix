@@ -557,13 +557,13 @@ sub port_cgi {
 			if($title || ($silent =~ /imagetag/ && $graph =~ /port$n3/)) {
 				if(lc($config->{enable_zoom}) eq "y") {
 					if(lc($config->{disable_javascript_void}) eq "y") {
-						print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$n3] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$n3] . "' border='0'></a>\n");
+						print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$n3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$n3] . "' border='0'></a>\n");
 					}
 					else {
-						print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$n3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$n3] . "' border='0'></a>\n");
+						print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$n3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$n3] . "' border='0'></a>\n");
 					}
 				} else {
-					print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$n3] . "'>\n");
+					print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$n3] . "'>\n");
 				}
 			}
 			if($title) {
