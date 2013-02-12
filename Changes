@@ -1,5 +1,6 @@
 3.0.0RC- NN-Feb-2013
 ====================
+- Added an HTTP built-in server.
 - Changed the path 'cgi-bin' to 'cgi'.
 - Fixed color sequence in the 'fs' graph. 
 - Fixed a division by zero in 'mysql' graph.
@@ -7,6 +8,7 @@
 - Fixed to use always the same colors for '/', 'swap' and '/boot' values in 'fs'
   graph.
 - Fixed a bad naming in the title of 'traffacct' graph.
+- Fixed all URLs of the .png files.
 
 
 3.0.0B2- 01-Feb-2013
