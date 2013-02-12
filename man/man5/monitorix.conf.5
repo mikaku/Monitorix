@@ -142,7 +142,7 @@ Default value: \fI/monitorix-cgi\fP
 .RS
 This enables or disables the HTTP server that Monitorix has built-in. This is specially useful for system administrators that don't want to install a web server (Apache, Lighttpd, Nginx, etc.) to see the Monitorix graphs.
 .P
-Default value: \fIn\fP
+Default value: \fIy\fP
 .RE
 .P
 .BI port
@@ -1470,18 +1470,18 @@ remotehost_list = server 1, server 2, server 3
 .P
 .BI remotehost_desc
 .RS
-This is a numbered list that describes each of the names defined in the \fBremotehost_list\fP option.
+This is a numbered list that describes each of the names defined in the \fBremotehost_list\fP option and the remote values of \fIbase_url\fR and \fIbase_cgi\fR options.
 .P
 An example would be:
 .P
 .RS
 <remotehost_desc>
 .br
-	0 = http://www.example.com
+	0 = http://www.example.com,/monitorix,/monitorix-cgi
 .br
-	1 = http://10.0.0.1
+	1 = http://10.0.0.1,/monitorix,/monitorix-cgi
 .br
-	2 = http://192.168.0.100:8080
+	2 = http://192.168.0.100:8080,/,/
 .br
 </remotehost_desc>
 .RE
