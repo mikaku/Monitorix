@@ -137,7 +137,35 @@ This is the URL prefix that Monitorix utilizes when refering to \fBmonitorix.cgi
 .P
 Default value: \fI/monitorix-cgi\fP
 .RE
+.SS HTTP built-in server
+.BI enabled
+.RS
+This enables or disables the HTTP server that Monitorix has built-in. This is specially useful for system administrators that don't want to install a web server (Apache, Lighttpd, Nginx, etc.) to see the Monitorix graphs.
+.RE
 .P
+.BI port
+.RS
+This is the network port from where the HTTP server will listen on.
+.P
+Default value: \fI8080\fP
+.RE
+.P
+.BI user/group
+.RS
+This sets the user and group that the HTTP server will run as.
+.P
+Default value for user: \fInobody\fP
+.br
+Default value for group: \fInobody\fP
+.RE
+.P
+.BI log_file
+.RS
+This is the path to the HTTP server log file.
+.P
+Default value: \fI/var/log/monitorix-httpd\fP
+.RE
+.SS Log files pathnames
 .BI log_file
 .RS
 This is the path to the Monitorix log file. Please check this file periodically and especially after every update to confirm proper operation.
@@ -1504,7 +1532,6 @@ This value defines how the graph must be scaled. Its possible values are:
 .RS
 This is where you can enter the upper-limit value for a graph.
 .RE
-.P
 .SH AUTHOR
 Monitorix is written by Jordi Sanfeliu <jordi@fibranet.cat>
 .SH COPYRIGHT
