@@ -63,13 +63,17 @@ single one package requiring all its dependences to be satisfied during the
 installation, or into several small packages one for each graph which is more
 suitable for embedded systems.
 
+Another interesting new feature in 3.0.0 version is that Monitorix comes with
+its own HTTP server built in. This should satisfy all the people that don't want
+to install an HTTP server (Apache, Nginx, lighttpd, etc.) to see the Monitorix
+graphs.
+
 
 REQUIREMENTS
 ===============================================================================
 Monitorix requires some others packages to be installed that your GNU/Linux
 distribution may or may not have:
 
-- A CGI capable Web server (Apache, Nginx, lighttpd, etc.)
 - Perl
 - Perl-CGI
 - Perl-MailTools
@@ -79,6 +83,7 @@ distribution may or may not have:
 - Perl-XML-Simple
 - Perl-Config-General
 - RRDtool and its Perl bindings (perl-rrdtool or rrdtool-perl)
+- (Optional) a CGI capable Web server (Apache, Nginx, lighttpd, etc.)
 
 You can download RRDtool from different places:
 	http://pkgs.repoforge.org/rrdtool/
@@ -133,8 +138,8 @@ At this point, Monitorix will start gathering the system information based on
 the configuration setup in 'monitorix.conf' file, and after some minutes, you
 should be able to see the results from your favorite browser pointing at:
 
-http://localhost/monitorix/
-(don't forget to (re)start your webserver)
+http://localhost:8080/monitorix/
+(don't forget to (re)start your webserver if you disabled the HTTPd built-in)
 
 
 AUTHORS
