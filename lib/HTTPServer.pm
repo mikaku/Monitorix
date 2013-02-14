@@ -98,8 +98,7 @@ sub handle_request {
 	$target =~ s/^\///;		# removes leading slash
 	$target_cgi =~ s/^\///;		# removes leading slash
 	if($target_cgi eq "monitorix.cgi") {
-#		chdir("cgi");
-		chdir("/home/jordi/github/Monitorix/");		# XXX
+		chdir("cgi");
 		open(EXEC, "./$target_cgi |");
 		@data = <EXEC>;
 		close(EXEC);
