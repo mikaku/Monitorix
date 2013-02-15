@@ -74,7 +74,6 @@ rm -rf %{buildroot}
 %files
 %defattr(-, root, root)
 %{_initrddir}/monitorix
-%config(noreplace) %{_sysconfdir}/httpd/conf.d/monitorix.conf
 %config(noreplace) %{_sysconfdir}/logrotate.d/monitorix
 %config(noreplace) %{_sysconfdir}/sysconfig/monitorix
 %config(noreplace) %{_sysconfdir}/monitorix.conf
