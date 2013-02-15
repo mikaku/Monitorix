@@ -60,8 +60,8 @@ as it used 'strict' and 'warnings' in all its modules.
 
 With this new modular structure, Monitorix can now be packaged either into a
 single one package requiring all its dependences to be satisfied during the
-installation, or into several small packages one for each graph which is more
-suitable for embedded systems.
+installation, or into several small packages one for each graph which should
+reduce notably its memory footprint.
 
 Another interesting new feature in 3.0.0 version is that Monitorix comes with
 its own HTTP server built in. This should satisfy all the people that don't want
