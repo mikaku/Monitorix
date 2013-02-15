@@ -77,6 +77,11 @@ sub httpd_setup {
 		return;	# parent returns
 	}
 
+	# create the HTTPd logfile
+	open(OUT, "> " . $config->{httpd_builtin}->{log_file});
+	close(OUT);
+	chown($uid, $gid, $config->{httpd_builtin}->{log_file});
+
 	setgid($gid);
 	setuid($uid);
 	setsid();

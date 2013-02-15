@@ -74,6 +74,9 @@ sub HUP_handler {
 	my ($signal) = @_;
 	my $myself = (caller(0))[3];
 
+	my (undef, undef, $uid) = getpwnam($config{httpd_builtin}->{user});
+	my (undef, undef, $gid) = getgrnam($config{httpd_builtin}->{group});
+
 	logger("SIG$signal caught.");
 
 	# upon receiving a SIGHUP signal the logfile is re-opened
@@ -82,6 +85,11 @@ sub HUP_handler {
 	open(STDOUT, ">> $config{log_file}") || logger("Can't write to LOG: $!");
 	open(STDERR, ">> $config{log_file}") || logger("Can't write to LOG: $!");
 	logger("$myself: reopening log file.");
+
+	# create the HTTPd logfile
+	open(OUT, "> " . $config{httpd_builtin}->{log_file});
+	close(OUT);
+	chown($uid, $gid, $config{httpd_builtin}->{log_file});
 }
 
 sub ALRM_handler {
