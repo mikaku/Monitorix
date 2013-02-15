@@ -76,6 +76,7 @@ sub handle_request {
 	return if fork();	# parent returns
 
 	my $url = $cgi->path_info();
+	$0 = "monitorix-httpd";	# change process' name
 
 	# sanitizes the $target
 	$target = $url;
