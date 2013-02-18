@@ -3,17 +3,17 @@
 .\"
 .\" This is the man page for the monitorix.conf configuration file.
 .\"
-.TH monitorix.conf 5 "Feb 2013" 3.0.0beta2 "Monitorix configuration file"
+.TH monitorix.conf 5 "Feb 2013" 3.0.0 "Monitorix configuration file"
 .SH NAME
 monitorix.conf \- Configuration file for Monitorix.
 .SH DESCRIPTION
-Monitorix is a free, open source, lightweight system monitoring tool designed to monitor as many services and system resources as possible. It has been created to be used on production UNIX/Linux servers, but due to its simplicity and small size may also be used to monitor embedded devices as well.
+Monitorix is a free, open source, lightweight system monitoring tool designed to monitor as many services and system resources as possible. It has been created to be used on production Linux/UNIX servers, but due to its simplicity and small size may also be used to monitor embedded devices as well.
 .P
-It consists mainly of two programs: a collector, called \fBmonitorix\fP, which is a Perl daemon that is started automatically like any other system service, and a CGI script called \fBmonitorix.cgi\fP.
+It consists mainly of two programs: a collector, called \fBmonitorix\fP, which is a Perl daemon that is started automatically like any other system service, and a CGI script called \fBmonitorix.cgi\fP. Since 3.0 version Monitorix includes its own HTTP server built in, so you don't need to install any web server to use it.
 .P
 Every time \fBmonitorix\fP is started it reads the configuration file from the path specified in the command line (using the \fB-c\fP option), and once checked, it creates the \fIindex.html\fP file that will act as the Monitorix main page.
 .P
-It also creates a file called \fI<base_dir>/cgi/monitorix.conf.path\fP that includes the absolute path of the configuration file. This file will be read by \fBmonitorix.cgi\fP to determine the exact location of the configuration file. If for any reason it is unable to locate this file, Monitorix will try two alternate locations: \fI/etc/monitorix.conf\fP and \fI/usr/local/etc/monitorix.conf\fP.
+It also creates a file called \fI<base_dir>/cgi/monitorix.conf.path\fP that includes the absolute path of the configuration file. This file will be read by \fBmonitorix.cgi\fP to determine the exact location of the configuration file.
 .SH CONFIGURATION OPTIONS
 Blank lines are ignored, and whitespace before and after a token or value is ignored as well as tabulators, although a value can contain whitespace within. Lines which begin with a # are considered comments and ignored.
 .P
@@ -1539,7 +1539,7 @@ Monitorix is written by Jordi Sanfeliu <jordi@fibranet.cat>
 .SH COPYRIGHT
 Copyright \(co 2005-2013 Jordi Sanfeliu
 .br
-Licensed under the GNU General Public License v2 (GPL).
+Licensed under the GNU General Public License version 2 (GPLv2).
 .SH SEE ALSO
 .BR monitorix (8),
 .BR rrdtool (1)

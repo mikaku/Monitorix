@@ -1,4 +1,4 @@
-3.0.0RC- NN-Feb-2013
+3.0.0  - 18-Feb-2013
 ====================
 - Added an HTTP built-in server.
 - Changed the path 'cgi-bin' to 'cgi'.
