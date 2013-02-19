@@ -85,7 +85,7 @@ sub handle_request {
 		$target =~ s/\.\.\///;
 		$target =~ s/^\///;
 		$target =~ s/\/$//;
-		last unless $cur ne length $target;
+		last unless $cur ne length($target);
 	}
 	$target = $target_cgi = "/$target";
 
