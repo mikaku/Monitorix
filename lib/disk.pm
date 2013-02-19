@@ -134,13 +134,16 @@ sub disk_update {
 	my $rrdata = "N";
 
 	foreach my $k (sort keys %{$disk->{list}}) {
-		my @dsk = split(',', $disk->{list}->{$k});
+		# values delimitted by ", " (comma + space)
+		my @dsk = split(', ', $disk->{list}->{$k});
 		for($n = 0; $n < 8; $n++) {
 			$temp = 0;
 			$smart1 = 0;
 			$smart2 = 0;
 			if($dsk[$n]) {
 				my $d = trim($dsk[$n]);
+				$d =~ s/^\"//;
+				$d =~ s/\"$//;
 	  			open(IN, "smartctl -A $d |");
 				while(<IN>) {
 					if(/^  5/ && /Reallocated_Sector_Ct/) {
@@ -239,7 +242,8 @@ sub disk_cgi {
 		my $line3;
 		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
 		foreach my $k (sort keys %{$disk->{list}}) {
-			my @d = split(',', $disk->{list}->{$k});
+			# values delimitted by ", " (comma + space)
+			my @d = split(', ', $disk->{list}->{$k});
 			for($n = 0; $n < scalar(@d); $n++) {
 				$str = sprintf(" DISK %d               ", $n + 1);
 				$line1 .= $str;
@@ -262,7 +266,8 @@ sub disk_cgi {
 			printf(" %2d$tf->{tc} ", $time);
 			$e = 0;
 			foreach my $k (sort keys %{$disk->{list}}) {
-				my @d = split(',', $disk->{list}->{$k});
+				# values delimitted by ", " (comma + space)
+				my @d = split(', ', $disk->{list}->{$k});
 				for($n2 = 0; $n2 < scalar(@d); $n2++) {
 					$from = ($e * 8 * 3) + ($n2 * 3);
 					$to = $from + 3;
@@ -311,7 +316,8 @@ sub disk_cgi {
 
 	$e = 0;
 	foreach my $k (sort keys %{$disk->{list}}) {
-		my @d = split(',', $disk->{list}->{$k});
+		# values delimitted by ", " (comma + space)
+		my @d = split(', ', $disk->{list}->{$k});
 
 		if($e) {
 			print("   <br>\n");
