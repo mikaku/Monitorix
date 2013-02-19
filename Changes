@@ -1,3 +1,8 @@
+3.N.N  - NN-XXX-2013
+====================
+- Fixed to delimit the values in 'disk->list->[n]' by ", " (comma + space).
+
+
 3.0.0  - 18-Feb-2013
 ====================
 - Added an HTTP built-in server.
