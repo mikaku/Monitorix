@@ -333,6 +333,9 @@ sub traffacct_sendreports {
 		$ua->request(HTTP::Request->new('GET', $url));
 		$url = "http://127.0.0.1" . $base_url . "/" . $imgs_dir . "traffacct" . $n . ".1month.png";
 		my $image = $ua->request(HTTP::Request->new('GET', $url));
+		if(!$image->is_success) {
+			logger("$myself: ERROR: Unable to connect to '$url'.");
+		}
 
 		# create the multipart container and add attachments
 		my $msg = new MIME::Lite(
