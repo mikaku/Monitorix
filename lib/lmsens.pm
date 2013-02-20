@@ -130,12 +130,12 @@ sub lmsens_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $lmsens = $config->{lmsens};
 
-	my @mb;
-	my @cpu;
-	my @fan;
-	my @core;
-	my @volt;
-	my @gpu;
+	my @mb = (0) x 2;
+	my @cpu = (0) x 4;
+	my @fan = (0) x 9;
+	my @core = (0) x 16;
+	my @volt = (0) x 12;
+	my @gpu = (0) x 9;
 
 	my $l;
 	my $n;
@@ -143,9 +143,14 @@ sub lmsens_update {
 
 	if($config->{os} eq "Linux") {
 		if($lmsens->{list}) {
-	  		open(IN, "sensors |");
-			my @data = <IN>;
-			close(IN);
+			my @data;
+	  		#if(open(IN, "sensors |")) {
+	  		if(open(IN, "< sensors.txt")) {
+				@data = <IN>;
+				close(IN);
+			} else {
+				logger("$myself: WARNING: unable to execute 'sensors' command.");
+			}
 			my $str;
 			for($l = 0; $l < scalar(@data); $l++) {
 				for($n = 0; $n < 2; $n++) {
@@ -159,6 +164,9 @@ sub lmsens_update {
 							$tmp = $data[$l];
 						}
 						my ($value, undef) = split(' ', $tmp);
+						if($value =~ m/^\+?(\d{1,3}\.*\d*)/) {
+							$value = $1;
+						}
 						$mb[$n] = int($value);
 					}
 				}
@@ -173,6 +181,9 @@ sub lmsens_update {
 							$tmp = $data[$l];
 						}
 						my ($value, undef) = split(' ', $tmp);
+						if($value =~ m/^\+?(\d{1,3}\.*\d*)/) {
+							$value = $1;
+						}
 						$cpu[$n] = int($value);
 					}
 				}
@@ -201,6 +212,9 @@ sub lmsens_update {
 							$tmp = $data[$l];
 						}
 						my ($value, undef) = split(' ', $tmp);
+						if($value =~ m/^\+?(\d{1,3}\.*\d*)/) {
+							$value = $1;
+						}
 						$core[$n] = int($value);
 					}
 				}
