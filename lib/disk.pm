@@ -33,6 +33,21 @@ sub disk_init {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $disk = $config->{disk};
 
+	foreach my $k (sort keys %{$disk->{list}}) {
+		# values delimitted by ", " (comma + space)
+		my @dsk = split(', ', $disk->{list}->{$k});
+		for(my $n = 0; $n < 8; $n++) {
+			if($dsk[$n]) {
+				my $d = trim($dsk[$n]);
+				$d =~ s/^\"//;
+				$d =~ s/\"$//;
+	  			next if -e $d;
+				logger("ERROR: $myself: invalid or inexistent device name '$d'.");
+				return;
+			}
+		}
+	}
+
 	my $info;
 	my @ds;
 	my @tmp;
@@ -168,7 +183,14 @@ sub disk_update {
 					}
 				}
 				close(IN);
-				$temp = `hddtemp -wqn $d` unless $temp;
+				if(!$temp) {
+	  				if(open(IN, "hddtemp -wqn $d |")) {
+						$temp = <IN>;
+						close(IN);
+					} else {
+						logger("$myself: 'smartctl' failed to get data from '$d' and 'hddtemp' seems doesn't exist.");
+					}
+				}
 				chomp($temp);
 			}
 			$rrdata .= ":$temp";
