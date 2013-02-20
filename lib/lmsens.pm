@@ -144,8 +144,7 @@ sub lmsens_update {
 	if($config->{os} eq "Linux") {
 		if($lmsens->{list}) {
 			my @data;
-	  		#if(open(IN, "sensors |")) {
-	  		if(open(IN, "< sensors.txt")) {
+	  		if(open(IN, "sensors |")) {
 				@data = <IN>;
 				close(IN);
 			} else {
