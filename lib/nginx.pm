@@ -104,19 +104,22 @@ sub nginx_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $nginx = $config->{nginx};
 
-	my $reqs;
-	my $tot;
-	my $reads;
-	my $writes;
-	my $waits;
-	my $in;
-	my $out;
-	my $val;
+	my $reqs = 0;
+	my $tot = 0;
+	my $reads = 0;
+	my $writes = 0;
+	my $waits = 0;
+	my $in = 0;
+	my $out = 0;
 
 	my $url = "http://127.0.0.1:" . $nginx->{port} . "/nginx_status";
 	my $ua = LWP::UserAgent->new(timeout => 30);
 	my $response = $ua->request(HTTP::Request->new('GET', $url));
 	my $rrdata = "N";
+
+	if(!$response->is_success) {
+		logger("$myself: ERROR: Unable to connect to '$url'.");
+	}
 
 	foreach(split('\n', $response->content)) {
 		if(/^Active connections:\s+(\d+)\s*/) {
@@ -136,6 +139,7 @@ sub nginx_update {
 	}
 
 	if($config->{os} eq "Linux") {
+		my $val;
 		open(IN, "iptables -nxvL INPUT |");
 		while(<IN>) {
 			if(/ nginx_IN /) {
@@ -164,6 +168,7 @@ sub nginx_update {
 		close(IN);
 	}
 	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
+		my $val;
 		open(IN, "ipfw show $nginx->{rule} 2>/dev/null |");
 		while(<IN>) {
 			if(/ from any to me dst-port $nginx->{port}$/) {
