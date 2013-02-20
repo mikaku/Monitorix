@@ -163,7 +163,7 @@ sub lmsens_update {
 							$tmp = $data[$l];
 						}
 						my ($value, undef) = split(' ', $tmp);
-						if($value =~ m/^\+?(\d{1,3}\.*\d*)/) {
+						if($value =~ m/^\+?(\d{1,3}\.?\d*)/) {
 							$value = $1;
 						}
 						$mb[$n] = int($value);
@@ -180,7 +180,7 @@ sub lmsens_update {
 							$tmp = $data[$l];
 						}
 						my ($value, undef) = split(' ', $tmp);
-						if($value =~ m/^\+?(\d{1,3}\.*\d*)/) {
+						if($value =~ m/^\+?(\d{1,3}\.?\d*)/) {
 							$value = $1;
 						}
 						$cpu[$n] = int($value);
@@ -211,7 +211,7 @@ sub lmsens_update {
 							$tmp = $data[$l];
 						}
 						my ($value, undef) = split(' ', $tmp);
-						if($value =~ m/^\+?(\d{1,3}\.*\d*)/) {
+						if($value =~ m/^\+?(\d{1,3}\.?\d*)/) {
 							$value = $1;
 						}
 						$core[$n] = int($value);
