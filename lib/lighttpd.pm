@@ -127,6 +127,10 @@ sub lighttpd_update {
 		my $ua = LWP::UserAgent->new(timeout => 30);
 		my $response = $ua->request(HTTP::Request->new('GET', $url));
 
+		if(!$response->is_success) {
+			logger("$myself: ERROR: Unable to connect to '$url'.");
+		}
+
 		my $acc = 0;
 		my $kb = 0;
 		my $busy = 0;
