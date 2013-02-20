@@ -95,6 +95,7 @@ sub httpd_setup {
 }
 
 sub get_nvidia_data {
+	my $myself = (caller(0))[3];
 	my ($gpu) = @_;
 	my $total = 0;
 	my $used = 0;
@@ -106,9 +107,13 @@ sub get_nvidia_data {
 	my $check_temp = 0;
 	my $l;
 
-	open(IN, "nvidia-smi -q -i $gpu -d MEMORY,UTILIZATION,TEMPERATURE |");
-	my @data = <IN>;
-	close(IN);
+	my @data = ();
+	if(open(IN, "nvidia-smi -q -i $gpu -d MEMORY,UTILIZATION,TEMPERATURE |")) {
+		@data = <IN>;
+		close(IN);
+	} else {
+		logger("$myself: ERROR: 'nvidia-smi' command is not installed.");
+	}
 	for($l = 0; $l < scalar(@data); $l++) {
 		if($data[$l] =~ /Memory Usage/) {
 			$check_mem = 1;

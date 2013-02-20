@@ -240,9 +240,13 @@ sub lmsens_update {
 					(undef, undef, $gpu[$n]) = split(' ', get_nvidia_data($n));
 					if(!$gpu[$n]) {
 						# attempt to get data using the old driver version
-	  					open(IN, "nvidia-smi -g $n |");
-						my @data = <IN>;
-						close(IN);
+						my @data = ();
+	  					if(open(IN, "nvidia-smi -g $n |")) {
+							@data = <IN>;
+							close(IN);
+						} else {
+							logger("$myself: ERROR: 'nvidia-smi' command is not installed.");
+						}
 						for($l = 0; $l < scalar(@data); $l++) {
 							if($data[$l] =~ /Temperature/) {
 								my (undef, $tmp) = split(':', $data[$l]);
