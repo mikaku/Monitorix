@@ -3,15 +3,15 @@
 - Fixed to delimit the values in 'disk->list->[n]' by ", " (comma + space).
 - Fixed to detect if a device name defined in 'disk->list->[n]' does exist
   in the system.
-- Fixed a missing initialization of some data arrays in 'lmsens' that generated
+- Fixed a missing initialization of some data arrays in 'lmsens' which generated
   the message "ERROR: while updating /var/lib/monitorix/lmsens.rrd: /var/lib/monitorix/lmsens.rrd: expected 52 data source readings (got 10) from N" if the
   'sensors' command is missing.
-- Fixed in 'lmsens' to not use the returned value (error) when 'nvidia-smi'
-  command is not installed in the system.
+- Fixed in 'lmsens' to better handle the returned value (error) when the
+  'nvidia-smi' command is not installed in the system.
 - Fixed a bad temperature values extraction from the 'sensors' command in the
   'lmsens' graph.
 	(thanks to Cédric Girard for pointing this out)
-- Fixed in 'nginx' to avoid use of uninitialized values and show an error
+- Fixed in 'nginx' to avoid use of uninitialized values and do show an error
   message when Monitorix is unable to connect to the Nginx server.
 - Fixed in 'apache' to show an error message when Monitorix is unable to
   connect to the Apache server.
