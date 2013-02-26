@@ -418,7 +418,7 @@ $0 = sprintf("%s %s%s%s%s",
 	$options{d} ? " -d $options{d}" : "",
 	$options{v} ? " -v" : "");
 
-daemonize();
+#daemonize();
 logger("Starting Monitorix version " . VERSION . " (pid $$).");
 
 if($options{p}) {
@@ -496,13 +496,11 @@ foreach (split(',', $config{graph_name} . ", traffacct")) {
 	}
 }
 
-# XXX
-#use Data::Dumper;
-#print Dumper($config{func_update});
-# XXX
-
 if(!scalar($config{func_update})) {
 	logger("nothing to do, exiting.");
+	if(lc($config{httpd_builtin}->{enabled} eq "y")) {
+		kill(15, $config{httpd_pid});
+	}
 	exit(0);
 }
 
