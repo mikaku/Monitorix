@@ -1,5 +1,6 @@
 3.N.N  - NN-XXX-2013
 ====================
+- Added a complete statistical FTP graph.
 - Fixed to delimit the values in 'disk->list->[n]' by ", " (comma + space).
 - Fixed to detect if a device name defined in 'disk->list->[n]' does exist
   in the system.
@@ -21,6 +22,7 @@
   connect to the Icecast server.
 - Fixed in 'traffact' to show an error message when Monitorix is unable to
   connect to the HTTP server.
+- Fixed to kill the child if parent exits unexpectedly.
 
 
 3.0.0  - 18-Feb-2013
