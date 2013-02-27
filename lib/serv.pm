@@ -236,10 +236,10 @@ sub serv_update {
 		close(IN);
 	}
 
-	if(-r $config->{ftp_log}) {
-		$config->{ftp_log_date_format} = $config->{ftp_log_date_format} || "%b %e";
-		my $date = strftime($config->{ftp_log_date_format}, localtime);
-		open(IN, "$config->{ftp_log}");
+	if(-r $config->{secure_log}) {
+		$config->{secure_log_date_format} = $config->{secure_log_date_format} || "%b %e";
+		my $date = strftime($config->{secure_log_date_format}, localtime);
+		open(IN, "$config->{secure_log}");
 		while(<IN>) {
 			if(/$date/) {
 				# ProFTPD log
