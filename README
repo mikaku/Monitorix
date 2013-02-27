@@ -138,7 +138,6 @@ the configuration setup in 'monitorix.conf' file, and after some minutes, you
 should be able to see the results from your favorite browser pointing at:
 
 http://localhost:8080/monitorix/
-(don't forget to (re)start your webserver if you disabled the HTTPd built-in)
 
 
 AUTHORS
