@@ -1,6 +1,9 @@
 3.N.N  - NN-XXX-2013
 ====================
 - Added a complete statistical FTP graph.
+- The 'serv' graph now uses 'secure_log' log file to get FTP login statistics.
+  Alternatively it has been renamed the 'ftp_log_date_format' option to
+  'secure_log_date_format'.
 - Fixed to delimit the values in 'disk->list->[n]' by ", " (comma + space).
 - Fixed to detect if a device name defined in 'disk->list->[n]' does exist
   in the system.
