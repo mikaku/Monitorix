@@ -43,16 +43,19 @@ sub ftp_init {
 				"DS:ftp_mkd:GAUGE:120:0:U",
 				"DS:ftp_rmd:GAUGE:120:0:U",
 				"DS:ftp_dele:GAUGE:120:0:U",
+				"DS:ftp_mlsd:GAUGE:120:0:U",
+				"DS:ftp_val01:GAUGE:120:0:U",
+				"DS:ftp_val02:GAUGE:120:0:U",
 				"DS:ftp_logins:GAUGE:120:0:U",
 				"DS:ftp_good_logins:GAUGE:120:0:U",
 				"DS:ftp_bad_logins:GAUGE:120:0:U",
 				"DS:ftp_bytes_dn:GAUGE:120:0:U",
 				"DS:ftp_bytes_up:GAUGE:120:0:U",
-				"DS:ftp_val01:GAUGE:120:0:U",
-				"DS:ftp_val02:GAUGE:120:0:U",
 				"DS:ftp_val03:GAUGE:120:0:U",
 				"DS:ftp_val04:GAUGE:120:0:U",
 				"DS:ftp_val05:GAUGE:120:0:U",
+				"DS:ftp_val06:GAUGE:120:0:U",
+				"DS:ftp_val07:GAUGE:120:0:U",
 				"RRA:AVERAGE:0.5:1:1440",
 				"RRA:AVERAGE:0.5:30:336",
 				"RRA:AVERAGE:0.5:60:744",
@@ -103,6 +106,7 @@ sub ftp_update {
 	my $mkd = 0;
 	my $rmd = 0;
 	my $dele = 0;
+	my $mlsd = 0;
 	my $logins = 0;
 	my $good_logins = 0;
 	my $bad_logins = 0;
@@ -136,26 +140,35 @@ sub ftp_update {
 		my $date = strftime("%d/%b/%Y", localtime);
 		while(<IN>) {
 			if(lc($ftp->{server}) eq "proftpd") {
-				if(/^\S+ \S+ \S+ \[$date.*\] \"(\S+) .*\" (\d\d\d) (\d+|\-)$/) {
+				if(/^\S+ \S+ \S+ \[$date.*\] (\"\S+.*\") (\d\d\d) (\d+|\-)$/) {
 					my $cmd = $1;
 					my $code = $2;
 					my $bytes = $3;
+					$cmd =~ m/\"(\S+)(\"| )/;
+					$cmd = $1;
 					if($cmd eq "RETR") {
-						$retr++;
-						$bytes_down += int($bytes);
+						if($code =~ /^2../) {
+							$retr++;
+							$bytes_down += int($bytes);
+						}
 					}
-					if($cmd eq "STOR") {
-						$stor++;
-						$bytes_up += int($bytes);
+					if($cmd =~ /(STOR|STOU)/) {
+						if($code =~ /^2../) {
+							$stor++;
+							$bytes_up += int($bytes);
+						}
 					}
-					if($cmd eq "MKD") {
+					if($cmd =~ /(MKD|XMKD)/) {
 						$mkd++ if($code =~ /^2../);
 					}
-					if($cmd eq "RMD") {
+					if($cmd =~ /(RMD|XRMD)/) {
 						$rmd++ if($code =~ /^2../);
 					}
 					if($cmd eq "DELE") {
 						$dele++ if($code =~ /^2../);
+					}
+					if($cmd =~ /(MLSD|MLST)/) {
+						$mlsd++ if($code =~ /^2../);
 					}
 					if($cmd eq "PASS") {
 						$good_logins++ if($code =~ /^2../);
@@ -170,7 +183,7 @@ sub ftp_update {
 
 	$config->{ftp_hist} = $logsize;
 
-	$rrdata .= ":$retr:$stor:$mkd:$rmd:$dele:$logins:$good_logins:$bad_logins:$bytes_down:$bytes_up:0:0:0:0:0";
+	$rrdata .= ":$retr:$stor:$mkd:$rmd:$dele:$mlsd:0:0:$logins:$good_logins:$bad_logins:$bytes_down:$bytes_up:0:0:0:0:0";
 	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;
 	my $err = RRDs::error;
@@ -312,16 +325,22 @@ sub ftp_cgi {
 	push(@tmp, "GPRINT:rmd:AVERAGE:   Average\\: %3.0lf");
 	push(@tmp, "GPRINT:rmd:MIN:   Min\\: %3.0lf");
 	push(@tmp, "GPRINT:rmd:MAX:   Max\\: %3.0lf\\n");
-	push(@tmp, "LINE1:dele#448844:Files deleted (DELE)");
+	push(@tmp, "LINE1:dele#EE44EE:Files deleted (DELE)");
 	push(@tmp, "GPRINT:dele:LAST:    Current\\: %3.0lf");
 	push(@tmp, "GPRINT:dele:AVERAGE:   Average\\: %3.0lf");
 	push(@tmp, "GPRINT:dele:MIN:   Min\\: %3.0lf");
 	push(@tmp, "GPRINT:dele:MAX:   Max\\: %3.0lf\\n");
+	push(@tmp, "LINE1:mlsd#44EEEE:Dir listings (MLSD)");
+	push(@tmp, "GPRINT:mlsd:LAST:     Current\\: %3.0lf");
+	push(@tmp, "GPRINT:mlsd:AVERAGE:   Average\\: %3.0lf");
+	push(@tmp, "GPRINT:mlsd:MIN:   Min\\: %3.0lf");
+	push(@tmp, "GPRINT:mlsd:MAX:   Max\\: %3.0lf\\n");
 	push(@tmpz, "LINE1:retr#FFA500:Files downloaded (RETR)");
 	push(@tmpz, "LINE1:stor#EEEE44:Files uploaded (STOR)");
 	push(@tmpz, "LINE1:mkd#EE4444:Dirs created (MKD)");
 	push(@tmpz, "LINE1:rmd#44EE44:Dirs deleted (RMD)");
-	push(@tmpz, "LINE1:dele#448844:Files deleted (DELE)");
+	push(@tmpz, "LINE1:dele#EE44EE:Files deleted (DELE)");
+	push(@tmpz, "LINE1:mlsd#44EEEE:Dir listings (MLSD)");
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -344,6 +363,7 @@ sub ftp_cgi {
 		"DEF:mkd=$rrd:ftp_mkd:AVERAGE",
 		"DEF:rmd=$rrd:ftp_rmd:AVERAGE",
 		"DEF:dele=$rrd:ftp_dele:AVERAGE",
+		"DEF:mlsd=$rrd:ftp_mlsd:AVERAGE",
 		"COMMENT: \\n",
 		@tmp);
 	$err = RRDs::error;
@@ -366,6 +386,7 @@ sub ftp_cgi {
 			"DEF:mkd=$rrd:ftp_mkd:AVERAGE",
 			"DEF:rmd=$rrd:ftp_rmd:AVERAGE",
 			"DEF:dele=$rrd:ftp_dele:AVERAGE",
+			"DEF:mlsd=$rrd:ftp_mlsd:AVERAGE",
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
