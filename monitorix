@@ -456,11 +456,6 @@ if(open(OUT, "> " . $config{base_dir} . "/cgi/monitorix.conf.path")) {
 	logger("Unable to create the file '$config{base_dir}/cgi/monitorix.conf.path'.");
 }
 
-if(lc($config{httpd_builtin}->{enabled} eq "y")) {
-	httpd_setup(\%config, $options{d});
-	logger("HTTP built-in server pid is '$config{httpd_pid}'.") if (defined($config{httpd_pid}));
-}
-
 flush_accounting_rules(\%config, $options{d});
 
 logger("Initializing graphs.") unless !$options{d};
@@ -498,14 +493,17 @@ foreach (split(',', $config{graph_name} . ", traffacct")) {
 
 if(!scalar($config{func_update})) {
 	logger("nothing to do, exiting.");
-	if(lc($config{httpd_builtin}->{enabled} eq "y")) {
-		kill(15, $config{httpd_pid});
-	}
 	exit(0);
 }
 
 logger("Generating the 'index.html' file.") unless !$options{d};
 create_index();
+
+if(lc($config{httpd_builtin}->{enabled} eq "y")) {
+	httpd_setup(\%config, $options{d});
+	logger("HTTP built-in server pid is '$config{httpd_pid}'.") if (defined($config{httpd_pid}));
+}
+
 logger("Ok, done.") unless !$options{d};
 
 alarm(1);
