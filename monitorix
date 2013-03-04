@@ -502,7 +502,7 @@ create_index();
 
 if(lc($config{httpd_builtin}->{enabled} eq "y")) {
 	httpd_setup(\%config, $options{d});
-	logger("HTTP built-in server pid is '$config{httpd_pid}'.") if (defined($config{httpd_pid}));
+	logger("Built-in HTTP server pid is '$config{httpd_pid}'.") if (defined($config{httpd_pid}));
 }
 
 logger("Ok, done.") unless !$options{d};
