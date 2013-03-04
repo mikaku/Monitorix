@@ -402,7 +402,8 @@ $config{func_update} = ();
 my $release;
 ($config{os}, undef, $release) = uname();
 my ($major, $minor) = split('\.', $release);
-$config{kernel} = $major . "." . $minor;
+$minor =~ m/^(\d+)/;
+$config{kernel} = $major . "." . $1;
 if(!grep {$_ eq $config{os}} @suppsys) {
 	die "FATAL: your operating system ($config{os}) is not supported.";
 }
