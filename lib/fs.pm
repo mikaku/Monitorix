@@ -123,7 +123,7 @@ sub fs_init {
 		my @fsl = split(',', $fs->{list}->{$k});
 		my $d;
 		foreach my $f (@fsl) {
-			undef($d);
+			$d = "";
 			$f = trim($f);
 			$d = $fs->{devmap}->{$f} if $fs->{devmap}->{$f};
 			next unless !$d;
@@ -238,6 +238,11 @@ sub fs_init {
 					}
 				}
 			} elsif($config->{os} eq "FreeBSD" || $config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
+				if($f eq "swap") {
+					$d = `swapinfo | tail -1 | awk -F " " '{ print \$1 }'`;
+					chomp($d);
+				}
+
 				# remove the /dev/ prefix
 				if ($d =~ s/^.*dev\///) {
 					# not ZFS; get the device name, eg ada0; md0; ad10
