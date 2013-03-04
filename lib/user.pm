@@ -94,7 +94,7 @@ sub user_update {
 
 	open(IN, "who -q |");
 	while(<IN>) {
-		if(/^#\s+\S+=(\d+)/) {
+		if(/^#\s+users\s?=\s?(\d+)/) {
 			$sys = $1;
 			last;
 		}
