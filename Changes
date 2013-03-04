@@ -26,6 +26,12 @@
 - Fixed in 'traffact' to show an error message when Monitorix is unable to
   connect to the HTTP server.
 - Fixed to kill the child if parent exits unexpectedly.
+- Fixed messages of 'Use of uninitialized value ...' in 'system', 'kern', 'fs'
+  graphs on FreeBSD systems.
+- Fixed to extract correctly the minor number of kernel version on FreeBSD
+  systems.
+- Fixed a bug in 'user' graph that prevented counting correctly the number of
+  users currently logged in FreeBSD systems.
 
 
 3.0.0  - 18-Feb-2013
