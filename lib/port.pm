@@ -110,13 +110,13 @@ sub port_init {
 				my $conn = lc((split(',', $port->{desc}->{$pl[$n]}))[2]);
 				if($conn =~ /in/ || $conn =~ /in\/out/) {
 					system("iptables -N monitorix_IN_$n 2>/dev/null");
-					system("iptables -I INPUT -p $p --sport 1024:65535 --dport $pl[$n] -m state --state NEW,ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
-					system("iptables -I OUTPUT -p $p --sport $pl[$n] --dport 1024:65535 -m state --state ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
+					system("iptables -I INPUT -p $p --sport 1024:65535 --dport $pl[$n] -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
+					system("iptables -I OUTPUT -p $p --sport $pl[$n] --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
 				}
 				if($conn =~ /out/ || $conn =~ /in\/out/) {
 					system("iptables -N monitorix_OUT_$n 2>/dev/null");
-					system("iptables -I INPUT -p $p --sport $pl[$n] --dport 1024:65535 -m state --state ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
-					system("iptables -I OUTPUT -p $p --sport 1024:65535 --dport $pl[$n] -m state --state NEW,ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
+					system("iptables -I INPUT -p $p --sport $pl[$n] --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
+					system("iptables -I OUTPUT -p $p --sport 1024:65535 --dport $pl[$n] -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
 				}
 				if($conn !~ /in/ && $conn !~ /out/) {
 					logger("$myself: Invalid connection type '$conn'; must be 'in', 'out' or 'in/out'.");
