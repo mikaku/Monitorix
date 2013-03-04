@@ -186,8 +186,8 @@ sub system_update {
 				$nprun = $1;
 				$npslp = $2;
 			}
-			if(/^Free Memory Pages:\s+(\d+)K$/) {
-				$mfree = $1;
+			if(/^(Free Memory Pages:|Free Memory:)\s+(\d+)K$/) {
+				$mfree = $2;
 			}
 		}
 		close(IN);
