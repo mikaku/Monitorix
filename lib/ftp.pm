@@ -46,16 +46,18 @@ sub ftp_init {
 				"DS:ftp_mlsd:GAUGE:120:0:U",
 				"DS:ftp_val01:GAUGE:120:0:U",
 				"DS:ftp_val02:GAUGE:120:0:U",
+				"DS:ftp_val03:GAUGE:120:0:U",
 				"DS:ftp_logins:GAUGE:120:0:U",
 				"DS:ftp_good_logins:GAUGE:120:0:U",
 				"DS:ftp_bad_logins:GAUGE:120:0:U",
+				"DS:ftp_anon_logins:GAUGE:120:0:U",
 				"DS:ftp_bytes_dn:GAUGE:120:0:U",
 				"DS:ftp_bytes_up:GAUGE:120:0:U",
-				"DS:ftp_val03:GAUGE:120:0:U",
 				"DS:ftp_val04:GAUGE:120:0:U",
 				"DS:ftp_val05:GAUGE:120:0:U",
 				"DS:ftp_val06:GAUGE:120:0:U",
 				"DS:ftp_val07:GAUGE:120:0:U",
+				"DS:ftp_val08:GAUGE:120:0:U",
 				"RRA:AVERAGE:0.5:1:1440",
 				"RRA:AVERAGE:0.5:30:336",
 				"RRA:AVERAGE:0.5:60:744",
@@ -110,6 +112,7 @@ sub ftp_update {
 	my $logins = 0;
 	my $good_logins = 0;
 	my $bad_logins = 0;
+	my $anon_logins = 0;
 	my $bytes_down = 0;
 	my $bytes_up = 0;
 
@@ -137,15 +140,17 @@ sub ftp_update {
 		return;
 	}
 	if($config->{ftp_hist} > 0) {	# avoids initial spike
-		my $date = strftime("%d/%b/%Y", localtime);
 		while(<IN>) {
 			if(lc($ftp->{server}) eq "proftpd") {
-				if(/^\S+ \S+ \S+ \[$date.*\] (\"\S+.*\") (\d\d\d) (\d+|\-)$/) {
+				my $date = strftime("%d/%b/%Y", localtime);
+				if(/^\S+ \S+ \S+ \[$date.*\] \"(\S+.*)\" (\d\d\d) (\d+|\-)$/) {
 					my $cmd = $1;
+					my $user = "";
 					my $code = $2;
 					my $bytes = $3;
-					$cmd =~ m/\"(\S+)(\"| )/;
+					$cmd =~ m/(\S+)\s(\S*)/;
 					$cmd = $1;
+					$user = trim($2);
 					if($cmd eq "RETR") {
 						if($code =~ /^2../) {
 							$retr++;
@@ -170,6 +175,11 @@ sub ftp_update {
 					if($cmd =~ /(MLSD|MLST)/) {
 						$mlsd++ if($code =~ /^2../);
 					}
+					if($cmd eq "USER") {
+						if(grep {trim($_) eq $user} (split(',', $ftp->{anon_user}))) {
+							$anon_logins++ if($code =~ /^3../);
+						}
+					}
 					if($cmd eq "PASS") {
 						$good_logins++ if($code =~ /^2../);
 						$bad_logins++ if($code =~ /^5../);
@@ -183,7 +193,7 @@ sub ftp_update {
 
 	$config->{ftp_hist} = $logsize;
 
-	$rrdata .= ":$retr:$stor:$mkd:$rmd:$dele:$mlsd:0:0:$logins:$good_logins:$bad_logins:$bytes_down:$bytes_up:0:0:0:0:0";
+	$rrdata .= ":$retr:$stor:$mkd:$rmd:$dele:$mlsd:0:0:0:$logins:$good_logins:$bad_logins:$anon_logins:$bytes_down:$bytes_up:0:0:0:0:0";
 	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;
 	my $err = RRDs::error;
@@ -232,26 +242,28 @@ sub ftp_cgi {
 		$err = RRDs::error;
 		print("ERROR: while fetching $rrd: $err\n") if $err;
 		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
-		print("Time    Dnloads Uploads  Mkdirs  Rmdirs Deletes  Logins GLogins BLogins BytesDn BytesUp\n");
-		print("--------------------------------------------------------------------------------------- \n");
+		print("Time    Dnloads Uploads  Mkdirs  Rmdirs Deletes Listing  Logins GLogins BLogins ALogins BytesDn BytesUp\n");
+		print("------------------------------------------------------------------------------------------------------- \n");
 		my $line;
 		my @row;
 		my $time;
 		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
 			$line = @$data[$n];
-			my ($retr, $stor, $mkd, $rmd, $dele, $logins, $good_logins, $bad_logins, $bytes_down, $bytes_up) = @$line;
+			my ($retr, $stor, $mkd, $rmd, $dele, $mlsd, undef, undef, undef, $logins, $good_logins, $bad_logins, $anon_logins, $bytes_down, $bytes_up) = @$line;
 			@row = ($retr || 0,
 				$stor || 0,
 				$mkd || 0,
 				$rmd || 0,
 				$dele || 0,
+				$mlsd || 0,
 				$logins || 0,
 				$good_logins || 0,
 				$bad_logins || 0,
+				$anon_logins || 0,
 				$bytes_down || 0,
 				$bytes_up || 0);
 			$time = $time - (1 / $tf->{ts});
-			printf(" %2d$tf->{tc}    %7d %7d %7d %7d %7d %7d %7d %7d %7d %7d\n", $time, @row);
+			printf(" %2d$tf->{tc}    %7d %7d %7d %7d %7d %7d %7d %7d %7d %7d %7d %7d\n", $time, @row);
 		}
 		print("    </pre>\n");
 		if($title) {
@@ -419,15 +431,21 @@ sub ftp_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
-	push(@tmp, "LINE1:logins#EEEE44:Logins");
-	push(@tmp, "GPRINT:logins:LAST:                Current\\: %3.0lf\\n");
-	push(@tmp, "AREA:good_logins#44EEEE:Successful");
-	push(@tmp, "GPRINT:good_logins:LAST:            Current\\: %3.0lf\\n");
-	push(@tmp, "AREA:bad_logins#EE4444:Bad");
-	push(@tmp, "GPRINT:bad_logins:LAST:                   Current\\: %3.0lf\\n");
-	push(@tmpz, "LINE1:logins#EEEE44:Logins");
-	push(@tmpz, "AREA:good_logins#44EEEE:Successful");
-	push(@tmpz, "AREA:bad_logins#EE4444:Bad");
+	push(@tmp, "AREA:good_logins#44EEEE:Successful logins");
+	push(@tmp, "GPRINT:good_logins:LAST:     Current\\: %3.0lf\\n");
+	push(@tmp, "AREA:bad_logins#EE4444:Bad logins");
+	push(@tmp, "GPRINT:bad_logins:LAST:            Current\\: %3.0lf\\n");
+	push(@tmp, "AREA:anon_logins#EEEE44:Anonymous logins");
+	push(@tmp, "GPRINT:anon_logins:LAST:      Current\\: %3.0lf\\n");
+	push(@tmp, "LINE1:good_logins#44EEEE");
+	push(@tmp, "LINE1:bad_logins#EE4444");
+	push(@tmp, "LINE1:anon_logins#EEEE44");
+	push(@tmpz, "AREA:good_logins#44EEEE:Successful logins");
+	push(@tmpz, "AREA:bad_logins#EE4444:Bad logins");
+	push(@tmpz, "AREA:anon_logins#EEEE44:Anonymous logins");
+	push(@tmpz, "LINE2:good_logins#44EEEE");
+	push(@tmpz, "LINE2:bad_logins#EE4444");
+	push(@tmpz, "LINE2:anon_logins#EEEE44");
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -452,6 +470,7 @@ sub ftp_cgi {
 		"DEF:logins=$rrd:ftp_logins:AVERAGE",
 		"DEF:good_logins=$rrd:ftp_good_logins:AVERAGE",
 		"DEF:bad_logins=$rrd:ftp_bad_logins:AVERAGE",
+		"DEF:anon_logins=$rrd:ftp_anon_logins:AVERAGE",
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
@@ -472,6 +491,7 @@ sub ftp_cgi {
 			"DEF:logins=$rrd:ftp_logins:AVERAGE",
 			"DEF:good_logins=$rrd:ftp_good_logins:AVERAGE",
 			"DEF:bad_logins=$rrd:ftp_bad_logins:AVERAGE",
+			"DEF:anon_logins=$rrd:ftp_anon_logins:AVERAGE",
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
