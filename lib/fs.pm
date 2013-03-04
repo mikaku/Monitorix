@@ -922,9 +922,9 @@ sub fs_cgi {
 				my $color;
 				my $str2;
 
-				$str2 = $fs->{desc}->{$f[$n]} || $f[$n];
 				if($f[$n]) {
 					$f[$n] = trim($f[$n]);
+					$str2 = $fs->{desc}->{$f[$n]} || $f[$n];
 					$str = sprintf("%-17s", $str2, 0, 17);
 					if($f[$n] eq "/") {
 						$color = "#EE4444";
@@ -938,9 +938,9 @@ sub fs_cgi {
 					push(@tmp, "LINE2:tim" . $n . $color . ":$str");
 					push(@tmpz, "LINE2:tim" . $n . $color . ":$f[$n]\\g");
 				}
-				$str2 = $fs->{desc}->{$f[$n + 1]} || $f[$n + 1];
 				if($f[$n + 1]) {
 					$f[$n + 1] = trim($f[$n + 1]);
+					$str2 = $fs->{desc}->{$f[$n + 1]} || $f[$n + 1];
 					$str = sprintf("%-17s", $str2, 0, 17);
 					if($f[$n + 1] eq "/") {
 						$color = "#EE4444";
