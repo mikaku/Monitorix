@@ -106,7 +106,7 @@ sub kern_update {
 	my $steal;
 	my $guest;
 	my $cs = "U";
-	my $dentry;
+	my $dentry = 0;
 	my $file;
 	my $inode;
 	my $forks = "U";
