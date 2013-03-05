@@ -177,7 +177,7 @@ Default value: \fI/var/log/monitorix\fP
 .P
 .BI secure_log
 .RS
-This is the path to the system log (also known as \fIsecure\fP, \fIauth.log\fP, etc.) Monitorix uses this file to report SSH, POP3, FTP and Telnet successful logins.
+This is the path to the system log (also known as \fIauth.log\fP, etc.) Monitorix uses this file to report SSH, POP3, FTP and Telnet successful logins.
 .P
 Default value: \fI/var/log/secure\fP
 .RE
@@ -221,7 +221,7 @@ Default value: \fI/var/log/cups/page_log\fP
 .RS
 This is the path to the FTP server (ProFTPD or vsftpd) log. Monitorix uses this file to report FTP successful logins and other FTP-related information.
 .P
-Default value: \fI/var/log/vsftpd.log\fP
+Default value: \fI/var/log/proftpd/access.log\fP
 .RE
 .P
 .BI fail2ban_log
@@ -266,9 +266,9 @@ This is the Dovecot date format as it appears in the \fBimap_log\fP file.
 Default value: \fI%b %d\fP
 .RE
 .P
-.BI ftp_log_date_format
+.BI secure_log_date_format
 .RS
-This is the FTP server (ProFTPD or vsftpd) date format as it appears in the \fBftp_log\fP file.
+This is \fIsecure_log\fP date format.
 .P
 Default value: \fI%b %e\fP
 .RE
@@ -377,7 +377,7 @@ Default value: \fIy\fP
 .SS HP ProLiant System Health (hptemp.rrd)
 .BI list
 .RS
-This list will hold the defined temperature sensors for each graph. You must have installed the command line \fIhplog\fP that comes with HP ProLiant System Health Application and Command Line Utilities.
+This list will hold the defined temperature sensors for each graph. You must have installed the command \fIhplog\fP that comes with HP ProLiant System Health Application and Command Line Utilities.
 .P
 Each graph has a limited number of IDs:
 .P
@@ -544,7 +544,7 @@ Then you may want to configure that \fBlist\fP as:
 .P
 Note that you need to escape the plus and minus signs in the voltage labels.
 .P
-The last one, \fIgpu0\fP, is set here just in case you have an NVIDIA card and want to monitor its temperature. Currently only NVIDIA cards are supported so the value \fInvidia\fP is mandatory.
+The last one, \fIgpu0\fP, is set here just in case you have an NVIDIA card and want to monitor its temperature. Currently only NVIDIA cards are supported so the value \fInvidia\fP is mandatory. It requires the official NVIDIA drivers.
 .P
 This list has the following maximums allowed:
 .P
@@ -563,6 +563,8 @@ Up to 9 \fIgpu\fP keys
 .RE
 .RE
 .SS NVIDIA temperatures and usage (nvidia.rrd)
+This graph requires to have installed the official NVIDIA drivers.
+.P
 .BI max
 .RS
 This is the number of NVIDIA cards currently plugged in your system. 
@@ -859,7 +861,7 @@ It will receive the following three parameters:
 Default value: \fI/path/to/script.sh\fP
 .RE
 .SS Network port traffic (port.rrd)
-This graph requires the \fIiptables\fP command on Linux systems and the \fIipfw\fP command on FreeBSD and OpenBSD systems.
+This graph requires the \fIiptables\fP command on Linux systems and the \fIipfw\fP command on *BSD systems.
 .P
 .BI max
 .RS
@@ -870,7 +872,7 @@ Default value: \fI9\fP
 .P
 .BI rule
 .RS
-This is the rule number that Monitorix will use when using the \fIipfw\fP command to manage network port activity on FreeBSD and OpenBSD systems. Change it if you think it might conflict with any other rule number.
+This is the rule number that Monitorix will use when using the \fIipfw\fP command to manage network port activity on *BSD systems. Change it if you think it might conflict with any other rule number.
 .P
 Default value: \fI24000\fP
 .RE
@@ -906,6 +908,27 @@ Default value: \fI3\fP
 .RE
 .SS Users using the system (user.rrd)
 Only the limit and rigid values may be set here.
+.SS FTP statistics (ftp.rrd)
+This graph supports currently ProFTPD and vsftpd log file formats.
+.P
+.BI server
+.RS
+This option specifies the FTP server. The currently supported FTP servers are:
+.RS
+\fIProFTPD\fP
+.br
+\fIvsftpd\fP
+.RE
+.P
+Default value: \fIproftpd\fP
+.RE
+.P
+.BI anon_user
+.RS
+This option lists the different names (separated by comma) that can adopt the Anonymous user in the FTP server defined in \fBserver\fP.
+.P
+Default value: \fIanonymous, ftp\fP
+.RE
 .SS Apache statistics (apache.rrd)
 This graph requires that \fImod_status\fP be loaded and \fIExtendedStatus\fP option set to \fIOn\fP in order to collect full status information of the Apache web server.
 .P
@@ -922,7 +945,7 @@ Default value: \fIhttp://localhost:80/\fP
 .SS Nginx statistics (nginx.rrd)
 This graph may require adding some lines in the configuration file \fInginx.conf\fP. Please see the \fIREADME.nginx\fP file to determine the exact steps needed to configure Nginx to get status information.
 .P
-This graph requires the \fIiptables\fP command on Linux systems, and the \fIipfw\fP command on FreeBSD and OpenBSD systems.
+This graph requires the \fIiptables\fP command on Linux systems, and the \fIipfw\fP command on *BSD systems.
 .P
 .BI port
 .RS
@@ -933,7 +956,7 @@ Default value: \fI80\fP
 .P
 .BI rule
 .RS
-This is the rule number that Monitorix will use when using the \fIipfw\fP command to manage Nginx network activity on FreeBSD and OpenBSD systems. Change it if you think it might conflict with any other rule number.
+This is the rule number that Monitorix will use when using the \fIipfw\fP command to manage Nginx network activity on *BSD systems. Change it if you think it might conflict with any other rule number.
 .P
 Default value: \fI24100\fP
 .RE
@@ -1150,7 +1173,7 @@ Each graph has the following limit number of entries:
 \fBgraph_5\fP up to 4 entries
 .RE
 .SS BIND statistics (bind.rrd)
-This graph requires a BIND server with version 9.5 or higher, and in order to see all statistics provided by BIND you must configure the \fIstatistics-channels\fP like this:
+This graph requires a BIND server with version 9.5 or higher, and in order to see all statistics provided by BIND you must configure the \fIstatistics-channels\fP option like this:
 .P
 statistics-channels {
 .br
@@ -1336,7 +1359,7 @@ Only the limit and rigid values may be set here.
 .SS Monitoring the Internet traffic of LAN PCs, devices or whole networks
 If your server acts as the gateway for a group of PCs, devices or even whole networks in your local LAN, you may want to know how much Internet traffic each one is generating.
 .P
-This graph requires the \fIiptables\fP command on GNU/Linux systems, and the \fIipfw\fP command on FreeBSD and OpenBSD systems.
+This graph requires the \fIiptables\fP command on GNU/Linux systems, and the \fIipfw\fP command on *BSD systems.
 .P
 The following are the options you will need to configure to accomplish all of this.
 .P
@@ -1434,8 +1457,6 @@ Default value: \fInoreply@example.com\fP
 .SS Monitoring remote servers (Multihost)
 The \fIMultihost\fP feature allows you to monitor an unlimitted number of remote servers that already have Monitorix installed. 
 .P
-Monitorix assumes that every remote server has been configured with the same settings in the \fIbase_url\fP and \fIbase_cgi\fP options. Future versions may introduce the ability to have different configurations between local and remote servers.
-.P
 .BI enabled
 .RS
 This option enables the \fIMultihost\fP feature.
@@ -1470,7 +1491,7 @@ remotehost_list = server 1, server 2, server 3
 .P
 .BI remotehost_desc
 .RS
-This is a numbered list that describes each of the names defined in the \fBremotehost_list\fP option and the remote values of \fIbase_url\fR and \fIbase_cgi\fR options.
+This is a numbered list that describes each of the names defined in the \fBremotehost_list\fP option and the remote values of \fBbase_url\fR and \fBbase_cgi\fR options.
 .P
 An example would be:
 .P
@@ -1486,7 +1507,7 @@ An example would be:
 </remotehost_desc>
 .RE
 .P
-As you can see all three entries use URLs to designate the location of each remote server. This means that each server most also have been installed on a CGI capable web server like Apache.
+As you can see all these three entries use URLs to designate the location of each remote server. This means that each server most also have been enabled the built-in HTTP server, or have been installed a CGI capable web server like Apache.
 .RE
 .P
 .BI groups
