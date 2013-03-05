@@ -187,6 +187,40 @@ sub ftp_update {
 					}
 				}
 			}
+			if(lc($ftp->{server}) eq "vsftpd") {
+				my $date = strftime("%a %b %e", localtime);
+				if(/^$date /) {
+					if(/ OK DOWNLOAD: .*?, (\d+) bytes, /) {
+						$retr++;
+						$bytes_down += int($1);
+					}
+					if(/ OK UPLOAD: .*?, (\d+) bytes, /) {
+						$stor++;
+						$bytes_up += int($1);
+					}
+					if(/ OK MKDIR: /) {
+						$mkd++;
+					}
+					if(/ OK RMDIR: /) {
+						$rmd++;
+					}
+					if(/ OK DELETE: /) {
+						$dele++;
+					}
+					if(/ OK LOGIN: /) {
+						if(/ anon password /) {
+							$anon_logins++;
+							$logins++;
+						} else {
+							$good_logins++;
+							$logins++;
+						}
+					}
+					if(/ FAIL LOGIN: /) {
+						$bad_logins++;
+					}
+				}
+			}
 		}
 		close(IN);
 	}
