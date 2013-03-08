@@ -34,6 +34,8 @@
   systems.
 - Fixed a bug in 'user' graph that prevented counting correctly the number of
   users currently logged in FreeBSD systems.
+- Fixed a bug in how data was collected using 'ipfw' which affected the 'port'
+  graph that was showing more activity than real.
 
 
 3.0.0  - 18-Feb-2013
