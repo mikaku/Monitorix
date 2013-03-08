@@ -219,14 +219,20 @@ sub port_update {
 				if(/ from any to me dst-port $pl[$n]$/) {
 					my (undef, undef, $bytes) = split(' ', $_);
 					chomp($bytes);
-					$i_in[$n] = $bytes;
+					$i_in[$n] = $bytes - ($config->{port_hist_i_in}[$n] || 0);
+					$i_in[$n] = 0 unless $i_in[$n] != $bytes;
+					$config->{port_hist_i_in}[$n] = $bytes;
+					$i_in[$n] /= 60;
 				}
 				$o_out[$n] = 0 unless $o_out[$n];
 				$i_out[$n] = 0 unless $i_out[$n];
 				if(/ from me $pl[$n] to any$/) {
 					my (undef, undef, $bytes) = split(' ', $_);
 					chomp($bytes);
-					$i_out[$n] = $bytes;
+					$i_out[$n] = $bytes - ($config->{port_hist_i_out}[$n] || 0);
+					$i_out[$n] = 0 unless $i_out[$n] != $bytes;
+					$config->{port_hist_i_out}[$n] = $bytes;
+					$i_out[$n] /= 60;
 				}
 			}
 		}
