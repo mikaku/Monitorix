@@ -5,10 +5,11 @@
   Alternatively it has been renamed the 'ftp_log_date_format' option to
   'secure_log_date_format'.
 - Fixed in 'nginx' and 'port' graphs to properly use '-m conntrack --ctstate'
-  instead of '-m state --state' in all iptables rules.
+  instead of '-m state --state' in all iptables rules and avoid an annoying
+  iptables message about using a deprecated option.
 - Fixed to delimit the values in 'disk->list->[n]' by ", " (comma + space).
-- Fixed to detect if a device name defined in 'disk->list->[n]' does exist
-  in the system.
+- Fixed to detect if a device name defined in 'disk->list->[n]' does really
+  exist in the system.
 - Fixed a missing initialization of some data arrays in 'lmsens' which generated
   the message "ERROR: while updating /var/lib/monitorix/lmsens.rrd: /var/lib/monitorix/lmsens.rrd: expected 52 data source readings (got 10) from N" if the
   'sensors' command is missing.
@@ -17,7 +18,7 @@
 - Fixed a bad temperature values extraction from the 'sensors' command in the
   'lmsens' graph.
 	(thanks to Cédric Girard for pointing this out)
-- Fixed in 'nginx' to avoid use of uninitialized values and do show an error
+- Fixed in 'nginx' to avoid the use of uninitialized values and to show an error
   message when Monitorix is unable to connect to the Nginx server.
 - Fixed in 'apache' to show an error message when Monitorix is unable to
   connect to the Apache server.
@@ -27,15 +28,15 @@
   connect to the Icecast server.
 - Fixed in 'traffact' to show an error message when Monitorix is unable to
   connect to the HTTP server.
-- Fixed to kill the child if parent exits unexpectedly.
-- Fixed messages of 'Use of uninitialized value ...' in 'system', 'kern', 'fs'
-  graphs on FreeBSD systems.
+- Fixed to make sure to kill the child if parent exits unexpectedly.
+- Fixed messages of type 'Use of uninitialized value ...' in 'system', 'kern'
+  and 'fs' graphs on FreeBSD systems.
 - Fixed to extract correctly the minor number of kernel version on FreeBSD
   systems.
 - Fixed a bug in 'user' graph that prevented counting correctly the number of
   users currently logged in FreeBSD systems.
 - Fixed a bug in how data was collected using 'ipfw' which affected the 'port'
-  graph that was showing more activity than real.
+  graph which was showing more activity than real.
 
 
 3.0.0  - 18-Feb-2013
