@@ -47,8 +47,8 @@ $SIG{'CHLD'} = 'CHLD_handler';
 $SIG{'HUP' } = 'HUP_handler';
 $SIG{'ALRM'} = 'ALRM_handler';
 
-use constant VERSION	=> "3.0.0";
-use constant RELDATE	=> "18-Feb-2013";
+use constant VERSION	=> "3.1.0";
+use constant RELDATE	=> "15-Mar-2013";
 
 my @suppsys = ("Linux", "FreeBSD", "OpenBSD", "NetBSD");
 our %config;
@@ -419,7 +419,7 @@ $0 = sprintf("%s %s%s%s%s",
 	$options{d} ? " -d $options{d}" : "",
 	$options{v} ? " -v" : "");
 
-#daemonize();
+daemonize();
 logger("Starting Monitorix version " . VERSION . " (pid $$).");
 
 if($options{p}) {
