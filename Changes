@@ -2,18 +2,18 @@
 ====================
 - Added a complete statistical FTP graph.
 - The 'serv' graph now uses 'secure_log' log file to get FTP login statistics.
-  Alternatively it has been renamed the 'ftp_log_date_format' option to
+  Alternatively the 'ftp_log_date_format' option has been renamed to
   'secure_log_date_format'.
 - Fixed in 'nginx' and 'port' graphs to properly use '-m conntrack --ctstate'
   instead of '-m state --state' in all iptables rules and avoid an annoying
-  iptables message about using a deprecated option.
+  iptables message about using an obsolete option.
 - Fixed to delimit the values in 'disk->list->[n]' by ", " (comma + space).
 - Fixed to detect if a device name defined in 'disk->list->[n]' does really
   exist in the system.
 - Fixed a missing initialization of some data arrays in 'lmsens' which generated
-  the message "ERROR: while updating /var/lib/monitorix/lmsens.rrd: /var/lib/monitorix/lmsens.rrd: expected 52 data source readings (got 10) from N" if the
-  'sensors' command is missing.
-- Fixed in 'lmsens' to better handle the returned value (error) when the
+  the message "ERROR: while updating /var/lib/monitorix/lmsens.rrd: expected 52
+  data source readings (got 10) from N" if the 'sensors' command is missing.
+- Fixed in 'lmsens' to better handle the returned value (an error) when the
   'nvidia-smi' command is not installed in the system.
 - Fixed a bad temperature values extraction from the 'sensors' command in the
   'lmsens' graph.
@@ -28,14 +28,15 @@
   connect to the Icecast server.
 - Fixed in 'traffact' to show an error message when Monitorix is unable to
   connect to the HTTP server.
-- Fixed to make sure to kill the child if parent exits unexpectedly.
+- Fixed to make sure to kill the built-in HTTP server if Monitorix exits
+  unexpectedly.
 - Fixed messages of type 'Use of uninitialized value ...' in 'system', 'kern'
   and 'fs' graphs on FreeBSD systems.
 - Fixed to extract correctly the minor number of kernel version on FreeBSD
   systems.
 - Fixed a bug in 'user' graph that prevented counting correctly the number of
   users currently logged in FreeBSD systems.
-- Fixed a bug in how data was collected using 'ipfw' which affected the 'port'
+- Fixed a bug in how data was collected using 'ipfw' that affected the 'port'
   graph which was showing more activity than real.
 
 

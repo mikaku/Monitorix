@@ -432,8 +432,7 @@ if($options{p}) {
 
 # change to a safety directory
 unless(chdir("/tmp")) {
-	logger("can't chdir to /tmp: $!");
-	chdir("/lost+found") || die "Can't chdir to /lost+found: $!";
+	die "can't chdir to /tmp: $!";
 }
 
 if($options{d}) {

@@ -27,7 +27,7 @@ Requires: perl-HTTP-Server-Simple
 %description
 Monitorix is a free, open source, lightweight system monitoring tool designed
 to monitor as many services and system resources as possible. It has been
-created to be used under production UNIX/Linux servers, but due to its
+created to be used under production Linux/UNIX servers, but due to its
 simplicity and small size may also be used on embedded devices as well. 
 
 %prep
@@ -87,7 +87,7 @@ rm -rf %{buildroot}
 %config(noreplace) %{_localstatedir}/lib/monitorix/reports/*.html
 %doc %{_mandir}/man5/monitorix.conf.5.gz
 %doc %{_mandir}/man8/monitorix.8.gz
-%doc Changes COPYING README README.nginx README.FreeBSD README.OpenBSD README.NetBSD docs/monitorix-alert.sh docs/monitorix-apache.conf docs/monitorix-lighttpd.conf
+%doc Changes COPYING README README.nginx README.FreeBSD README.OpenBSD README.NetBSD docs/monitorix-alert.sh docs/monitorix-apache.conf docs/monitorix-lighttpd.conf docs/monitorix.service
 
 %changelog
 * Thu Sep 01 2005 Jordi Sanfeliu <jordi@fibranet.cat>
