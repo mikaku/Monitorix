@@ -60,15 +60,15 @@ sub httpd_setup {
 	my $port = $config->{httpd_builtin}->{port};
 
 	if(!defined($uid)) {
-		logger("ERROR: invalid user defined for the HTTPd built-in server.");
+		logger("ERROR: invalid user defined for the built-in HTTP server.");
 		return;
 	}
 	if(!defined($gid)) {
-		logger("ERROR: invalid group defined for the HTTPd built-in server.");
+		logger("ERROR: invalid group defined for the built-in HTTP server.");
 		return;
 	}
 	if(!defined($port)) {
-		logger("ERROR: invalid port defined for the HTTPd built-in server.");
+		logger("ERROR: invalid port defined for the built-in HTTP server.");
 		return;
 	}
 
