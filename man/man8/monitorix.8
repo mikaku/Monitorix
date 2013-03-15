@@ -7,7 +7,7 @@
 .SH NAME
 monitorix - a lightweight system monitoring tool
 .SH SYNOPSIS
-\fBmonitorix\fR \fB-c\fR configfile [\fB-p\fR pidfile] [\fB-d none\fR | graph[,graph] | \fBall\fR] [\fB-v\fR]
+\fBmonitorix\fR \fB-c\fR configfile [\fB-p\fR pidfile] [\fB-d\fR none | graph[,graph] | all] [\fB-v\fR]
 .SH DESCRIPTION
 This Perl daemon starts the main Monitorix process, which gathers statistics about the system it is running on and stores this information in a set of RRD files.
 .SH OPTIONS
@@ -25,7 +25,7 @@ FreeBSD:      \fI/usr/local/etc/monitorix.conf\fP
 \fB\-p\fR \fIpidfile\fR
 Stores the daemon's process ID into the specified file.
 .TP
-\fB\-d none\fR | graph[,graph] | \fBall\fR
+\fB\-d\fR none | graph[,graph] | all
 Logs more information about what \fBmonitorix\fP is doing internally. The keys reflect if the data collected must be displayed on each case. If \fBall\fP is defined, the data collected of all enabled graphs will be shown. If \fBnone\fP is defined no data collected will be shown. Finally it is also possible to define a comma-separated list of graph names from which show their data collected.
 .br
 For a reference of all graph names check the option \fBgraph_name\fP in the \fImonitorix.conf\fP configuration file.
@@ -43,7 +43,7 @@ The following set of the files are created on every startup:
 Stores the path of \fIconfigfile\fP.
 .TP 8
 \fB<base_dir>/cgi/monitorix.hplog\fP
-Stores the output of \fIhplog\fP.
+Stores the output of \fIhplog\fP command.
 .TP 8
 \fB<base_dir>/index.html\fP
 HTML main page.
