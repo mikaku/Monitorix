@@ -24,7 +24,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use POSIX qw(setuid setgid setsid);
-our @EXPORT = qw(logger trim max httpd_setup get_nvidia_data flush_accounting_rules);
+our @EXPORT = qw(logger trim max to_fahrenheit httpd_setup get_nvidia_data flush_accounting_rules);
 
 sub logger {
 	my ($msg) = @_;
@@ -49,6 +49,15 @@ sub max {
 		$max = $_ if $_ > $max;
 	}
 	return $max;
+}
+
+sub to_fahrenheit {
+	my ($config, $celsius) = @_;
+
+	if(lc($config->{temperatures_scale}) eq "f") {
+		return ($celsius * (9 / 5)) + 32;
+	}
+	return $celsius;
 }
 
 sub httpd_setup {
