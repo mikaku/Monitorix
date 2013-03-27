@@ -219,8 +219,10 @@ sub disk_cgi {
 	my $height;
 	my @PNG;
 	my @PNGz;
+	my $temp_scale = "Celsius";
 	my @tmp;
 	my @tmpz;
+	my @CDEF;
 	my $n;
 	my $n2;
 	my $e;
@@ -244,6 +246,9 @@ sub disk_cgi {
 
 	$title = !$silent ? $title : "";
 
+	if(lc($config->{temperatures_scale}) eq "f") {
+		$temp_scale = "Fahrenheit";
+	}
 
 	# text mode
 	#
@@ -294,7 +299,7 @@ sub disk_cgi {
 					$from = ($e * 8 * 3) + ($n2 * 3);
 					$to = $from + 3;
 					my ($temp, $realloc, $pending) = @$line[$from..$to];
-					@row = ($temp, $realloc, $pending);
+					@row = (to_fahrenheit($config, $temp), $realloc, $pending);
 					printf(" %4.0f %7.0f %7.0f ", @row);
 				}
 				$e++;
@@ -348,6 +353,7 @@ sub disk_cgi {
 			main::graph_header($title, 2);
 		}
 
+		undef(@CDEF);
 		undef(@tmp);
 		undef(@tmpz);
 		push(@tmp, "COMMENT: \\n");
@@ -355,12 +361,12 @@ sub disk_cgi {
 			if($d[$n]) {
 				my ($dstr) = (split /\s+/, trim($d[$n]));
 				$str = sprintf("%-20s", $dstr);
-				push(@tmp, "LINE2:hd" . $n . $LC[$n] . ":$str");
-				push(@tmpz, "LINE2:hd" . $n . $LC[$n] . ":$dstr");
-				push(@tmp, "GPRINT:hd" . $n . ":LAST:   Current\\: %2.0lf");
-				push(@tmp, "GPRINT:hd" . $n . ":AVERAGE:   Average\\: %2.0lf");
-				push(@tmp, "GPRINT:hd" . $n . ":MIN:   Min\\: %2.0lf");
-				push(@tmp, "GPRINT:hd" . $n . ":MAX:   Max\\: %2.0lf\\n");
+				push(@tmp, "LINE2:temp_" . $n . $LC[$n] . ":$str");
+				push(@tmpz, "LINE2:temp_" . $n . $LC[$n] . ":$dstr");
+				push(@tmp, "GPRINT:temp_" . $n . ":LAST:   Current\\: %2.0lf");
+				push(@tmp, "GPRINT:temp_" . $n . ":AVERAGE:   Average\\: %2.0lf");
+				push(@tmp, "GPRINT:temp_" . $n . ":MIN:   Min\\: %2.0lf");
+				push(@tmp, "GPRINT:temp_" . $n . ":MAX:   Max\\: %2.0lf\\n");
 			}
 		}
 		push(@tmp, "COMMENT: \\n");
@@ -371,6 +377,25 @@ sub disk_cgi {
 		if($title) {
 			print("    <tr>\n");
 			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+		}
+		if(lc($config->{temperatures_scale}) eq "f") {
+			push(@CDEF, "CDEF:temp_0=9,5,/,temp0,*,32,+");
+			push(@CDEF, "CDEF:temp_1=9,5,/,temp1,*,32,+");
+			push(@CDEF, "CDEF:temp_2=9,5,/,temp2,*,32,+");
+			push(@CDEF, "CDEF:temp_3=9,5,/,temp3,*,32,+");
+			push(@CDEF, "CDEF:temp_4=9,5,/,temp4,*,32,+");
+			push(@CDEF, "CDEF:temp_5=9,5,/,temp5,*,32,+");
+			push(@CDEF, "CDEF:temp_6=9,5,/,temp6,*,32,+");
+			push(@CDEF, "CDEF:temp_7=9,5,/,temp7,*,32,+");
+		} else {
+			push(@CDEF, "CDEF:temp_0=temp0");
+			push(@CDEF, "CDEF:temp_1=temp1");
+			push(@CDEF, "CDEF:temp_2=temp2");
+			push(@CDEF, "CDEF:temp_3=temp3");
+			push(@CDEF, "CDEF:temp_4=temp4");
+			push(@CDEF, "CDEF:temp_5=temp5");
+			push(@CDEF, "CDEF:temp_6=temp6");
+			push(@CDEF, "CDEF:temp_7=temp7");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
@@ -385,20 +410,21 @@ sub disk_cgi {
 			"--title=$config->{graphs}->{_disk1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Celsius",
+			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
 			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
-			"DEF:hd0=$rrd:disk" . $e ."_hd0_temp:AVERAGE",
-			"DEF:hd1=$rrd:disk" . $e ."_hd1_temp:AVERAGE",
-			"DEF:hd2=$rrd:disk" . $e ."_hd2_temp:AVERAGE",
-			"DEF:hd3=$rrd:disk" . $e ."_hd3_temp:AVERAGE",
-			"DEF:hd4=$rrd:disk" . $e ."_hd4_temp:AVERAGE",
-			"DEF:hd5=$rrd:disk" . $e ."_hd5_temp:AVERAGE",
-			"DEF:hd6=$rrd:disk" . $e ."_hd6_temp:AVERAGE",
-			"DEF:hd7=$rrd:disk" . $e ."_hd7_temp:AVERAGE",
+			"DEF:temp0=$rrd:disk" . $e ."_hd0_temp:AVERAGE",
+			"DEF:temp1=$rrd:disk" . $e ."_hd1_temp:AVERAGE",
+			"DEF:temp2=$rrd:disk" . $e ."_hd2_temp:AVERAGE",
+			"DEF:temp3=$rrd:disk" . $e ."_hd3_temp:AVERAGE",
+			"DEF:temp4=$rrd:disk" . $e ."_hd4_temp:AVERAGE",
+			"DEF:temp5=$rrd:disk" . $e ."_hd5_temp:AVERAGE",
+			"DEF:temp6=$rrd:disk" . $e ."_hd6_temp:AVERAGE",
+			"DEF:temp7=$rrd:disk" . $e ."_hd7_temp:AVERAGE",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3]: $err\n") if $err;
@@ -408,20 +434,21 @@ sub disk_cgi {
 				"--title=$config->{graphs}->{_disk1}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=Celsius",
+				"--vertical-label=$temp_scale",
 				"--width=$width",
 				"--height=$height",
 				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
-				"DEF:hd0=$rrd:disk" . $e ."_hd0_temp:AVERAGE",
-				"DEF:hd1=$rrd:disk" . $e ."_hd1_temp:AVERAGE",
-				"DEF:hd2=$rrd:disk" . $e ."_hd2_temp:AVERAGE",
-				"DEF:hd3=$rrd:disk" . $e ."_hd3_temp:AVERAGE",
-				"DEF:hd4=$rrd:disk" . $e ."_hd4_temp:AVERAGE",
-				"DEF:hd5=$rrd:disk" . $e ."_hd5_temp:AVERAGE",
-				"DEF:hd6=$rrd:disk" . $e ."_hd6_temp:AVERAGE",
-				"DEF:hd7=$rrd:disk" . $e ."_hd7_temp:AVERAGE",
+				"DEF:temp0=$rrd:disk" . $e ."_hd0_temp:AVERAGE",
+				"DEF:temp1=$rrd:disk" . $e ."_hd1_temp:AVERAGE",
+				"DEF:temp2=$rrd:disk" . $e ."_hd2_temp:AVERAGE",
+				"DEF:temp3=$rrd:disk" . $e ."_hd3_temp:AVERAGE",
+				"DEF:temp4=$rrd:disk" . $e ."_hd4_temp:AVERAGE",
+				"DEF:temp5=$rrd:disk" . $e ."_hd5_temp:AVERAGE",
+				"DEF:temp6=$rrd:disk" . $e ."_hd6_temp:AVERAGE",
+				"DEF:temp7=$rrd:disk" . $e ."_hd7_temp:AVERAGE",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3]: $err\n") if $err;
