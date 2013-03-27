@@ -51,7 +51,7 @@ sub max {
 	return $max;
 }
 
-sub to_fahrenheit {
+sub celsius_to {
 	my ($config, $celsius) = @_;
 
 	$celsius = $celsius || 0;
