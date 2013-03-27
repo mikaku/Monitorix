@@ -306,7 +306,6 @@ sub lmsens_cgi {
 	my $height;
 	my @tmp;
 	my @tmpz;
-	my $vlabel;
 	my $n;
 	my $n2;
 	my $str;
