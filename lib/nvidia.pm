@@ -205,8 +205,10 @@ sub nvidia_cgi {
 	my $u = "";
 	my $width;
 	my $height;
+	my $temp_scale = "Celsius";
 	my @tmp;
 	my @tmpz;
+	my @CDEF,
 	my $n;
 	my $err;
 	my @LC = (
@@ -227,7 +229,11 @@ sub nvidia_cgi {
 
 	$title = !$silent ? $title : "";
 
-	
+	if(lc($config->{temperatures_scale}) eq "f") {
+		$temp_scale = "Fahrenheit";
+	}
+
+
 	# text mode
 	#
 	if(lc($config->{iface_mode}) eq "text") {
@@ -268,9 +274,9 @@ sub nvidia_cgi {
 			undef($line1);
 			undef(@row);
 			for($n2 = 0; $n2 < $nvidia->{max}; $n2++) {
-				push(@row, @$line[$n2]);
-				push(@row, @$line[$n2 + 9]);
-				push(@row, @$line[$n2 + 18]);
+				push(@row, celsius_to($config, @$line[$n2]));
+				push(@row, celsius_to($config, @$line[$n2 + 9]));
+				push(@row, celsius_to($config, @$line[$n2 + 18]));
 				$line1 .= "   %3d %3d%% %3d%%";
 			}
 			print(sprintf($line1, @row));
@@ -320,12 +326,12 @@ sub nvidia_cgi {
 
 	for($n = 0; $n < 9; $n++) {
 		if($n < $nvidia->{max}) {
-			push(@tmp, "LINE2:temp" . $n . $LC[$n] . ":Card $n");
-			push(@tmpz, "LINE2:temp" . $n . $LC[$n] . ":Card $n");
-			push(@tmp, "GPRINT:temp" . $n . ":LAST:             Current\\: %2.0lf");
-			push(@tmp, "GPRINT:temp" . $n . ":AVERAGE:   Average\\: %2.0lf");
-			push(@tmp, "GPRINT:temp" . $n . ":MIN:   Min\\: %2.0lf");
-			push(@tmp, "GPRINT:temp" . $n . ":MAX:   Max\\: %2.0lf\\n");
+			push(@tmp, "LINE2:temp_" . $n . $LC[$n] . ":Card $n");
+			push(@tmpz, "LINE2:temp_" . $n . $LC[$n] . ":Card $n");
+			push(@tmp, "GPRINT:temp_" . $n . ":LAST:             Current\\: %2.0lf");
+			push(@tmp, "GPRINT:temp_" . $n . ":AVERAGE:   Average\\: %2.0lf");
+			push(@tmp, "GPRINT:temp_" . $n . ":MIN:   Min\\: %2.0lf");
+			push(@tmp, "GPRINT:temp_" . $n . ":MAX:   Max\\: %2.0lf\\n");
 		} else {
 			push(@tmp, "COMMENT: \\n");
 		}
@@ -334,6 +340,27 @@ sub nvidia_cgi {
 	if($title) {
 		print("    <tr>\n");
 		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+	}
+	if(lc($config->{temperatures_scale}) eq "f") {
+		push(@CDEF, "CDEF:temp_0=9,5,/,temp0,*,32,+");
+		push(@CDEF, "CDEF:temp_1=9,5,/,temp1,*,32,+");
+		push(@CDEF, "CDEF:temp_2=9,5,/,temp2,*,32,+");
+		push(@CDEF, "CDEF:temp_3=9,5,/,temp3,*,32,+");
+		push(@CDEF, "CDEF:temp_4=9,5,/,temp4,*,32,+");
+		push(@CDEF, "CDEF:temp_5=9,5,/,temp5,*,32,+");
+		push(@CDEF, "CDEF:temp_6=9,5,/,temp6,*,32,+");
+		push(@CDEF, "CDEF:temp_7=9,5,/,temp7,*,32,+");
+		push(@CDEF, "CDEF:temp_8=9,5,/,temp8,*,32,+");
+	} else {
+		push(@CDEF, "CDEF:temp_0=temp0");
+		push(@CDEF, "CDEF:temp_1=temp1");
+		push(@CDEF, "CDEF:temp_2=temp2");
+		push(@CDEF, "CDEF:temp_3=temp3");
+		push(@CDEF, "CDEF:temp_4=temp4");
+		push(@CDEF, "CDEF:temp_5=temp5");
+		push(@CDEF, "CDEF:temp_6=temp6");
+		push(@CDEF, "CDEF:temp_7=temp7");
+		push(@CDEF, "CDEF:temp_8=temp8");
 	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
@@ -346,7 +373,7 @@ sub nvidia_cgi {
 		"--title=$config->{graphs}->{_nvidia1}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
-		"--vertical-label=Celsius",
+		"--vertical-label=$temp_scale",
 		"--width=$width",
 		"--height=$height",
 		"--lower-limit=0",
@@ -361,6 +388,7 @@ sub nvidia_cgi {
 		"DEF:temp6=$rrd:nvidia_temp6:AVERAGE",
 		"DEF:temp7=$rrd:nvidia_temp7:AVERAGE",
 		"DEF:temp8=$rrd:nvidia_temp8:AVERAGE",
+		@CDEF,
 		@tmp,
 		"COMMENT: \\n",
 		"COMMENT: \\n");
@@ -372,7 +400,7 @@ sub nvidia_cgi {
 			"--title=$config->{graphs}->{_nvidia1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Celsius",
+			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
 			"--lower-limit=0",
@@ -387,6 +415,7 @@ sub nvidia_cgi {
 			"DEF:temp6=$rrd:nvidia_temp6:AVERAGE",
 			"DEF:temp7=$rrd:nvidia_temp7:AVERAGE",
 			"DEF:temp8=$rrd:nvidia_temp8:AVERAGE",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
