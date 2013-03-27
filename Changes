@@ -1,3 +1,10 @@
+3.N.N  - NN-XXX-2013
+====================
+- Added a new option called 'temperatures_scale' to be able to toggle between
+  values in Celsius or in Fahrenheit.
+	(suggested by Bryan Guidroz, bryanguidroz AT hotmail.com)
+
+
 3.1.0  - 15-Mar-2013
 ====================
 - Added a complete statistical FTP graph.
