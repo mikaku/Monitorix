@@ -250,6 +250,7 @@ sub disk_cgi {
 		$temp_scale = "Fahrenheit";
 	}
 
+
 	# text mode
 	#
 	if(lc($config->{iface_mode}) eq "text") {
