@@ -183,8 +183,10 @@ sub hptemp_cgi {
 	my $u = "";
 	my $width;
 	my $height;
+	my $temp_scale = "Celsius";
 	my @tmp;
 	my @tmpz;
+	my @CDEF;
 	my $n;
 	my $id;
 	my $str;
@@ -205,6 +207,10 @@ sub hptemp_cgi {
 	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
 
 	$title = !$silent ? $title : "";
+
+	if(lc($config->{temperatures_scale}) eq "f") {
+		$temp_scale = "Fahrenheit";
+	}
 
 	open(IN, "monitorix.hplog");
 	my @hplog = <IN>;
@@ -260,17 +266,17 @@ sub hptemp_cgi {
 			undef(@row);
 			for($n2 = 0; $n2 < scalar(my @hp = split(',', $hptemp->{graph_0})); $n2++) {
 				my $temp = @$line[$n2];
-				push(@row, $temp);
+				push(@row, celsius_to($config, $temp));
 				$line1 .= " %8.0f ";
 			}
 			for($n2 = 0; $n2 < scalar(my @hp = split(',', $hptemp->{graph_1})); $n2++) {
 				my $temp = @$line[8 + $n2];
-				push(@row, $temp);
+				push(@row, celsius_to($config, $temp));
 				$line1 .= " %8.0f ";
 			}
 			for($n2 = 0; $n2 < scalar(my @hp = split(',', $hptemp->{graph_2})); $n2++) {
 				my $temp = @$line[8 + 3 + $n2];
-				push(@row, $temp);
+				push(@row, celsius_to($config, $temp));
 				$line1 .= " %8.0f ";
 			}
 			print(sprintf($line1, @row));
@@ -320,6 +326,7 @@ sub hptemp_cgi {
 	}
 
 	if(scalar(my @hptemp0 = split(',', ($hptemp->{graph_0} || "")))) {
+		undef(@CDEF);
 		undef(@tmp);
 		undef(@tmpz);
 		for($n = 0; $n < 8; $n++) {
@@ -329,19 +336,38 @@ sub hptemp_cgi {
 					if(/^$id  /) {
 						$str = substr($_, 17, 8);
 						$str = sprintf("%-20s", $str);
-						push(@tmp, "LINE2:temp" . $n . $LC[$n] . ":$str");
-						push(@tmp, "GPRINT:temp" . $n . ":LAST:Current\\: %2.0lf");
-						push(@tmp, "GPRINT:temp" . $n . ":AVERAGE:   Average\\: %2.0lf");
-						push(@tmp, "GPRINT:temp" . $n . ":MIN:   Min\\: %2.0lf");
-						push(@tmp, "GPRINT:temp" . $n . ":MAX:   Max\\: %2.0lf\\n");
+						push(@tmp, "LINE2:temp_" . $n . $LC[$n] . ":$str");
+						push(@tmp, "GPRINT:temp_" . $n . ":LAST:Current\\: %2.0lf");
+						push(@tmp, "GPRINT:temp_" . $n . ":AVERAGE:   Average\\: %2.0lf");
+						push(@tmp, "GPRINT:temp_" . $n . ":MIN:   Min\\: %2.0lf");
+						push(@tmp, "GPRINT:temp_" . $n . ":MAX:   Max\\: %2.0lf\\n");
 						$str =~ s/\s+$//;
-						push(@tmpz, "LINE2:temp" . $n . $LC[$n] . ":$str");
+						push(@tmpz, "LINE2:temp_" . $n . $LC[$n] . ":$str");
 						last;
 					}
 				}
 			} else {
 				push(@tmp, "COMMENT: \\n");
 			}
+		}
+		if(lc($config->{temperatures_scale}) eq "f") {
+			push(@CDEF, "CDEF:temp_0=9,5,/,temp0,*,32,+");
+			push(@CDEF, "CDEF:temp_1=9,5,/,temp1,*,32,+");
+			push(@CDEF, "CDEF:temp_2=9,5,/,temp2,*,32,+");
+			push(@CDEF, "CDEF:temp_3=9,5,/,temp3,*,32,+");
+			push(@CDEF, "CDEF:temp_4=9,5,/,temp4,*,32,+");
+			push(@CDEF, "CDEF:temp_5=9,5,/,temp5,*,32,+");
+			push(@CDEF, "CDEF:temp_6=9,5,/,temp6,*,32,+");
+			push(@CDEF, "CDEF:temp_7=9,5,/,temp7,*,32,+");
+		} else {
+			push(@CDEF, "CDEF:temp_0=temp0");
+			push(@CDEF, "CDEF:temp_1=temp1");
+			push(@CDEF, "CDEF:temp_2=temp2");
+			push(@CDEF, "CDEF:temp_3=temp3");
+			push(@CDEF, "CDEF:temp_4=temp4");
+			push(@CDEF, "CDEF:temp_5=temp5");
+			push(@CDEF, "CDEF:temp_6=temp6");
+			push(@CDEF, "CDEF:temp_7=temp7");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
@@ -353,7 +379,7 @@ sub hptemp_cgi {
 			"--title=$config->{graphs}->{_hptemp1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Celsius",
+			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
 			"--lower-limit=0",
@@ -367,6 +393,7 @@ sub hptemp_cgi {
 			"DEF:temp5=$rrd:hptemp1_6:AVERAGE",
 			"DEF:temp6=$rrd:hptemp1_7:AVERAGE",
 			"DEF:temp7=$rrd:hptemp1_8:AVERAGE",
+			@CDEF,
 			@tmp,
 			"COMMENT: \\n");
 		$err = RRDs::error;
@@ -377,7 +404,7 @@ sub hptemp_cgi {
 				"--title=$config->{graphs}->{_hptemp1}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=Celsius",
+				"--vertical-label=$temp_scale",
 				"--width=$width",
 				"--height=$height",
 				"--lower-limit=0",
@@ -391,6 +418,7 @@ sub hptemp_cgi {
 				"DEF:temp5=$rrd:hptemp1_6:AVERAGE",
 				"DEF:temp6=$rrd:hptemp1_7:AVERAGE",
 				"DEF:temp7=$rrd:hptemp1_8:AVERAGE",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
@@ -414,6 +442,7 @@ sub hptemp_cgi {
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
 	if(scalar(my @hptemp1 = split(',', ($hptemp->{graph_1} || "")))) {
+		undef(@CDEF);
 		undef(@tmp);
 		undef(@tmpz);
 		for($n = 0; $n < 6; $n++) {
@@ -423,21 +452,36 @@ sub hptemp_cgi {
 					if(/^$id  /) {
 						$str = substr($_, 17, 8);
 						$str = sprintf("%-8s", $str);
-						push(@tmp, "LINE2:temp" . $n . $LC[$n] . ":$str");
-						push(@tmp, "GPRINT:temp" . $n . ":LAST:\\: %2.0lf");
+						push(@tmp, "LINE2:temp_" . $n . $LC[$n] . ":$str");
+						push(@tmp, "GPRINT:temp_" . $n . ":LAST:\\: %2.0lf");
 						if(!(($n + 1) % 2)) {
 							push(@tmp, "COMMENT: \\n");
 						} else {
 							push(@tmp, "COMMENT:    ");
 						}
 						$str =~ s/\s+$//;
-						push(@tmpz, "LINE2:temp" . $n . $LC[$n] . ":$str");
+						push(@tmpz, "LINE2:temp_" . $n . $LC[$n] . ":$str");
 						last;
 					}
 				}
 			} else {
 				push(@tmp, "COMMENT: \\n") unless ($n + 1) % 2;
 			}
+		}
+		if(lc($config->{temperatures_scale}) eq "f") {
+			push(@CDEF, "CDEF:temp_0=9,5,/,temp0,*,32,+");
+			push(@CDEF, "CDEF:temp_1=9,5,/,temp1,*,32,+");
+			push(@CDEF, "CDEF:temp_2=9,5,/,temp2,*,32,+");
+			push(@CDEF, "CDEF:temp_3=9,5,/,temp3,*,32,+");
+			push(@CDEF, "CDEF:temp_4=9,5,/,temp4,*,32,+");
+			push(@CDEF, "CDEF:temp_5=9,5,/,temp5,*,32,+");
+		} else {
+			push(@CDEF, "CDEF:temp_0=temp0");
+			push(@CDEF, "CDEF:temp_1=temp1");
+			push(@CDEF, "CDEF:temp_2=temp2");
+			push(@CDEF, "CDEF:temp_3=temp3");
+			push(@CDEF, "CDEF:temp_4=temp4");
+			push(@CDEF, "CDEF:temp_5=temp5");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
@@ -449,7 +493,7 @@ sub hptemp_cgi {
 			"--title=$config->{graphs}->{_hptemp2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Celsius",
+			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
 			"--lower-limit=0",
@@ -462,6 +506,7 @@ sub hptemp_cgi {
 			"DEF:temp3=$rrd:hptemp2_4:AVERAGE",
 			"DEF:temp4=$rrd:hptemp2_5:AVERAGE",
 			"DEF:temp5=$rrd:hptemp2_6:AVERAGE",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
@@ -471,7 +516,7 @@ sub hptemp_cgi {
 				"--title=$config->{graphs}->{_hptemp2}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=Celsius",
+				"--vertical-label=$temp_scale",
 				"--width=$width",
 				"--height=$height",
 				"--lower-limit=0",
@@ -484,6 +529,7 @@ sub hptemp_cgi {
 				"DEF:temp3=$rrd:hptemp2_4:AVERAGE",
 				"DEF:temp4=$rrd:hptemp2_5:AVERAGE",
 				"DEF:temp5=$rrd:hptemp2_6:AVERAGE",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
@@ -503,6 +549,7 @@ sub hptemp_cgi {
 	}
 
 	if(scalar(my @hptemp2 = split(',', ($hptemp->{graph_2} || "")))) {
+		undef(@CDEF);
 		undef(@tmp);
 		undef(@tmpz);
 		for($n = 0; $n < 6; $n++) {
@@ -512,21 +559,36 @@ sub hptemp_cgi {
 					if(/^$id  /) {
 						$str = substr($_, 17, 8);
 						$str = sprintf("%-8s", $str);
-						push(@tmp, "LINE2:temp" . $n . $LC[$n] . ":$str");
-						push(@tmp, "GPRINT:temp" . $n . ":LAST:\\: %2.0lf");
+						push(@tmp, "LINE2:temp_" . $n . $LC[$n] . ":$str");
+						push(@tmp, "GPRINT:temp_" . $n . ":LAST:\\: %2.0lf");
 						if(!(($n + 1) % 2)) {
 							push(@tmp, "COMMENT: \\n");
 						} else {
 							push(@tmp, "COMMENT:    ");
 						}
 						$str =~ s/\s+$//;
-						push(@tmpz, "LINE2:temp" . $n . $LC[$n] . ":$str");
+						push(@tmpz, "LINE2:temp_" . $n . $LC[$n] . ":$str");
 						last;
 					}
 				}
 			} else {
 				push(@tmp, "COMMENT: \\n") unless ($n + 1) % 2;
 			}
+		}
+		if(lc($config->{temperatures_scale}) eq "f") {
+			push(@CDEF, "CDEF:temp_0=9,5,/,temp0,*,32,+");
+			push(@CDEF, "CDEF:temp_1=9,5,/,temp1,*,32,+");
+			push(@CDEF, "CDEF:temp_2=9,5,/,temp2,*,32,+");
+			push(@CDEF, "CDEF:temp_3=9,5,/,temp3,*,32,+");
+			push(@CDEF, "CDEF:temp_4=9,5,/,temp4,*,32,+");
+			push(@CDEF, "CDEF:temp_5=9,5,/,temp5,*,32,+");
+		} else {
+			push(@CDEF, "CDEF:temp_0=temp0");
+			push(@CDEF, "CDEF:temp_1=temp1");
+			push(@CDEF, "CDEF:temp_2=temp2");
+			push(@CDEF, "CDEF:temp_3=temp3");
+			push(@CDEF, "CDEF:temp_4=temp4");
+			push(@CDEF, "CDEF:temp_5=temp5");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
@@ -538,7 +600,7 @@ sub hptemp_cgi {
 			"--title=$config->{graphs}->{_hptemp3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Celsius",
+			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
 			"--lower-limit=0",
@@ -551,6 +613,7 @@ sub hptemp_cgi {
 			"DEF:temp3=$rrd:hptemp3_4:AVERAGE",
 			"DEF:temp4=$rrd:hptemp3_5:AVERAGE",
 			"DEF:temp5=$rrd:hptemp3_6:AVERAGE",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
@@ -560,7 +623,7 @@ sub hptemp_cgi {
 				"--title=$config->{graphs}->{_hptemp3}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=Celsius",
+				"--vertical-label=$temp_scale",
 				"--width=$width",
 				"--height=$height",
 				"--lower-limit=0",
@@ -573,6 +636,7 @@ sub hptemp_cgi {
 				"DEF:temp3=$rrd:hptemp3_4:AVERAGE",
 				"DEF:temp4=$rrd:hptemp3_5:AVERAGE",
 				"DEF:temp5=$rrd:hptemp3_6:AVERAGE",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;

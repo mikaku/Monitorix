@@ -426,7 +426,7 @@ sub lmsens_cgi {
 			for($n = 0; $n < 2; $n++) {
 				$str = "mb" . $n;
 				if($lmsens->{list}->{$str}) {
-					push(@row, to_fahrenheit($config, $mb[$n]));
+					push(@row, celsius_to($config, $mb[$n]));
 					$line1 .= "  ";
 					$line1 .= "%15.1f";
 				}
@@ -434,7 +434,7 @@ sub lmsens_cgi {
 			for($n = 0; $n < 4; $n++) {
 				$str = "cpu" . $n;
 				if($lmsens->{list}->{$str}) {
-					push(@row, to_fahrenheit($config, $cpu[$n]));
+					push(@row, celsius_to($config, $cpu[$n]));
 					$line1 .= "  ";
 					$line1 .= "%15.1f";
 				}
@@ -450,7 +450,7 @@ sub lmsens_cgi {
 			for($n = 0; $n < 16; $n++) {
 				$str = "core" . $n;
 				if($lmsens->{list}->{$str}) {
-					push(@row, to_fahrenheit($config, $core[$n]));
+					push(@row, celsius_to($config, $core[$n]));
 					$line1 .= "  ";
 					$line1 .= "%15.1f";
 				}
@@ -466,7 +466,7 @@ sub lmsens_cgi {
 			for($n = 0; $n < 9; $n++) {
 				$str = "gpu" . $n;
 				if($lmsens->{list}->{$str}) {
-					push(@row, to_fahrenheit($config, $gpu[$n]));
+					push(@row, celsius_to($config, $gpu[$n]));
 					$line1 .= "  ";
 					$line1 .= "%15.1f";
 				}

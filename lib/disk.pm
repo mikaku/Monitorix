@@ -299,7 +299,7 @@ sub disk_cgi {
 					$from = ($e * 8 * 3) + ($n2 * 3);
 					$to = $from + 3;
 					my ($temp, $realloc, $pending) = @$line[$from..$to];
-					@row = (to_fahrenheit($config, $temp), $realloc, $pending);
+					@row = (celsius_to($config, $temp), $realloc, $pending);
 					printf(" %4.0f %7.0f %7.0f ", @row);
 				}
 				$e++;
