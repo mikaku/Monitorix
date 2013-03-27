@@ -54,6 +54,7 @@ sub max {
 sub to_fahrenheit {
 	my ($config, $celsius) = @_;
 
+	$celsius = $celsius || 0;
 	if(lc($config->{temperatures_scale}) eq "f") {
 		return ($celsius * (9 / 5)) + 32;
 	}
