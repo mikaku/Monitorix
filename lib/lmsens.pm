@@ -304,8 +304,10 @@ sub lmsens_cgi {
 	my $u = "";
 	my $width;
 	my $height;
+	my $temp_scale = "Celsius";
 	my @tmp;
 	my @tmpz;
+	my @CDEF;
 	my $n;
 	my $n2;
 	my $str;
@@ -335,6 +337,9 @@ sub lmsens_cgi {
 
 	$title = !$silent ? $title : "";
 
+	if(lc($config->{temperatures_scale}) eq "f") {
+		$temp_scale = "Fahrenheit";
+	}
 
 	# text mode
 	#
@@ -421,7 +426,7 @@ sub lmsens_cgi {
 			for($n = 0; $n < 2; $n++) {
 				$str = "mb" . $n;
 				if($lmsens->{list}->{$str}) {
-					push(@row, $mb[$n]);
+					push(@row, to_fahrenheit($config, $mb[$n]));
 					$line1 .= "  ";
 					$line1 .= "%15.1f";
 				}
@@ -429,7 +434,7 @@ sub lmsens_cgi {
 			for($n = 0; $n < 4; $n++) {
 				$str = "cpu" . $n;
 				if($lmsens->{list}->{$str}) {
-					push(@row, $cpu[$n]);
+					push(@row, to_fahrenheit($config, $cpu[$n]));
 					$line1 .= "  ";
 					$line1 .= "%15.1f";
 				}
@@ -445,7 +450,7 @@ sub lmsens_cgi {
 			for($n = 0; $n < 16; $n++) {
 				$str = "core" . $n;
 				if($lmsens->{list}->{$str}) {
-					push(@row, $core[$n]);
+					push(@row, to_fahrenheit($config, $core[$n]));
 					$line1 .= "  ";
 					$line1 .= "%15.1f";
 				}
@@ -461,7 +466,7 @@ sub lmsens_cgi {
 			for($n = 0; $n < 9; $n++) {
 				$str = "gpu" . $n;
 				if($lmsens->{list}->{$str}) {
-					push(@row, $gpu[$n]);
+					push(@row, to_fahrenheit($config, $gpu[$n]));
 					$line1 .= "  ";
 					$line1 .= "%15.1f";
 				}
@@ -519,11 +524,11 @@ sub lmsens_cgi {
 	}
 	for($n = 0; $n < 4; $n++) {
 		for($n2 = $n; $n2 < 16; $n2 += 4) {
-			$str = "core" . $n2;
+			$str = "core_" . $n2;
 			if($lmsens->{list}->{$str}) {
 				$str = sprintf("Core %2d", $n2);
-				push(@tmp, "LINE2:core$n2" . $LC[$n2] . ":$str\\g");
-				push(@tmp, "GPRINT:core$n2:LAST:\\:%3.0lf      ");
+				push(@tmp, "LINE2:core_$n2" . $LC[$n2] . ":$str\\g");
+				push(@tmp, "GPRINT:core_$n2:LAST:\\:%3.0lf      ");
 			}
 		}
 		push(@tmp, "COMMENT: \\n") unless !@tmp;
@@ -532,20 +537,55 @@ sub lmsens_cgi {
 		$str = "core" . $n;
 		if($lmsens->{list}->{$str}) {
 			$str = sprintf("Core %d", $n);
-			push(@tmpz, "LINE2:core$n" . $LC[$n] . ":$str");
+			push(@tmpz, "LINE2:core_$n" . $LC[$n] . ":$str");
 		}
 	}
 	# if no COREs are defined then create a blank graph
 	if(!@tmp) {
-		push(@tmp, "GPRINT:core0:LAST:%0.0lf");
+		push(@tmp, "GPRINT:core_0:LAST:%0.0lf");
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
-		push(@tmpz, "GPRINT:core0:LAST:%0.0lf");
+		push(@tmpz, "GPRINT:core_0:LAST:%0.0lf");
 	}
 	if($title) {
 		print("    <tr>\n");
 		print("    <td valign='bottom' bgcolor='$colors->{title_bg_color}'>\n");
+	}
+	if(lc($config->{temperatures_scale}) eq "f") {
+		push(@CDEF, "CDEF:core_0=9,5,/,core0,*,32,+");
+		push(@CDEF, "CDEF:core_1=9,5,/,core1,*,32,+");
+		push(@CDEF, "CDEF:core_2=9,5,/,core2,*,32,+");
+		push(@CDEF, "CDEF:core_3=9,5,/,core3,*,32,+");
+		push(@CDEF, "CDEF:core_4=9,5,/,core4,*,32,+");
+		push(@CDEF, "CDEF:core_5=9,5,/,core5,*,32,+");
+		push(@CDEF, "CDEF:core_6=9,5,/,core6,*,32,+");
+		push(@CDEF, "CDEF:core_7=9,5,/,core7,*,32,+");
+		push(@CDEF, "CDEF:core_8=9,5,/,core8,*,32,+");
+		push(@CDEF, "CDEF:core_9=9,5,/,core9,*,32,+");
+		push(@CDEF, "CDEF:core_10=9,5,/,core10,*,32,+");
+		push(@CDEF, "CDEF:core_11=9,5,/,core11,*,32,+");
+		push(@CDEF, "CDEF:core_12=9,5,/,core12,*,32,+");
+		push(@CDEF, "CDEF:core_13=9,5,/,core13,*,32,+");
+		push(@CDEF, "CDEF:core_14=9,5,/,core14,*,32,+");
+		push(@CDEF, "CDEF:core_15=9,5,/,core15,*,32,+");
+	} else {
+		push(@CDEF, "CDEF:core_0=core0");
+		push(@CDEF, "CDEF:core_1=core1");
+		push(@CDEF, "CDEF:core_2=core2");
+		push(@CDEF, "CDEF:core_3=core3");
+		push(@CDEF, "CDEF:core_4=core4");
+		push(@CDEF, "CDEF:core_5=core5");
+		push(@CDEF, "CDEF:core_6=core6");
+		push(@CDEF, "CDEF:core_7=core7");
+		push(@CDEF, "CDEF:core_8=core8");
+		push(@CDEF, "CDEF:core_9=core9");
+		push(@CDEF, "CDEF:core_10=core10");
+		push(@CDEF, "CDEF:core_11=core11");
+		push(@CDEF, "CDEF:core_12=core12");
+		push(@CDEF, "CDEF:core_13=core13");
+		push(@CDEF, "CDEF:core_14=core14");
+		push(@CDEF, "CDEF:core_15=core15");
 	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
@@ -558,7 +598,7 @@ sub lmsens_cgi {
 		"--title=$config->{graphs}->{_lmsens1}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
-		"--vertical-label=Celsius",
+		"--vertical-label=$temp_scale",
 		"--width=$width",
 		"--height=$height",
 		"--lower-limit=0",
@@ -580,6 +620,7 @@ sub lmsens_cgi {
 		"DEF:core13=$rrd:lmsens_core13:AVERAGE",
 		"DEF:core14=$rrd:lmsens_core14:AVERAGE",
 		"DEF:core15=$rrd:lmsens_core15:AVERAGE",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG1: $err\n") if $err;
@@ -589,7 +630,7 @@ sub lmsens_cgi {
 			"--title=$config->{graphs}->{_lmsens1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Celsius",
+			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
 			"--lower-limit=0",
@@ -611,6 +652,7 @@ sub lmsens_cgi {
 			"DEF:core13=$rrd:lmsens_core13:AVERAGE",
 			"DEF:core14=$rrd:lmsens_core14:AVERAGE",
 			"DEF:core15=$rrd:lmsens_core15:AVERAGE",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
@@ -772,22 +814,38 @@ sub lmsens_cgi {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
+	undef(@CDEF);
 	undef(@tmp);
 	undef(@tmpz);
-	push(@tmp, ("LINE2:mb0#FFA500:MB 0\\g", "GPRINT:mb0:LAST:\\:%3.0lf   "));
-	push(@tmp, ("LINE2:cpu0#4444EE:CPU 0\\g", "GPRINT:cpu0:LAST:\\:%3.0lf   ")) unless !$lmsens->{list}->{'cpu0'};
-	push(@tmp, ("LINE2:cpu2#EE44EE:CPU 2\\g", "GPRINT:cpu2:LAST:\\:%3.0lf\\g")) unless !$lmsens->{list}->{'cpu2'};
+	push(@tmp, ("LINE2:mb_0#FFA500:MB 0\\g", "GPRINT:mb_0:LAST:\\:%3.0lf   "));
+	push(@tmp, ("LINE2:cpu_0#4444EE:CPU 0\\g", "GPRINT:cpu_0:LAST:\\:%3.0lf   ")) unless !$lmsens->{list}->{'cpu0'};
+	push(@tmp, ("LINE2:cpu_2#EE44EE:CPU 2\\g", "GPRINT:cpu_2:LAST:\\:%3.0lf\\g")) unless !$lmsens->{list}->{'cpu2'};
 	push(@tmp, "COMMENT: \\n");
-	push(@tmp, ("LINE2:mb1#44EEEE:MB 1\\g", "GPRINT:mb1:LAST:\\:%3.0lf   ")) unless !$lmsens->{list}->{'mb1'};
-	push(@tmp, ("LINE2:cpu1#EEEE44:CPU 1\\g", "GPRINT:cpu1:LAST:\\:%3.0lf   ")) unless !$lmsens->{list}->{'cpu1'};
-	push(@tmp, ("LINE2:cpu3#44EE44:CPU 3\\g", "GPRINT:cpu3:LAST:\\:%3.0lf\\g")) unless !$lmsens->{list}->{'cpu3'};
+	push(@tmp, ("LINE2:mb_1#44EEEE:MB 1\\g", "GPRINT:mb_1:LAST:\\:%3.0lf   ")) unless !$lmsens->{list}->{'mb1'};
+	push(@tmp, ("LINE2:cpu_1#EEEE44:CPU 1\\g", "GPRINT:cpu_1:LAST:\\:%3.0lf   ")) unless !$lmsens->{list}->{'cpu1'};
+	push(@tmp, ("LINE2:cpu_3#44EE44:CPU 3\\g", "GPRINT:cpu_3:LAST:\\:%3.0lf\\g")) unless !$lmsens->{list}->{'cpu3'};
 	push(@tmp, "COMMENT: \\n");
-	push(@tmpz, "LINE2:mb0#FFA500:MB 0");
-	push(@tmpz, "LINE2:mb1#44EEEE:MB 1") unless !$lmsens->{list}->{'mb1'};
-	push(@tmpz, "LINE2:cpu0#4444EE:CPU 0") unless !$lmsens->{list}->{'cpu0'};
-	push(@tmpz, "LINE2:cpu1#EEEE44:CPU 1") unless !$lmsens->{list}->{'cpu1'};
-	push(@tmpz, "LINE2:cpu2#EE44EE:CPU 2") unless !$lmsens->{list}->{'cpu2'};
-	push(@tmpz, "LINE2:cpu3#44EE44:CPU 3") unless !$lmsens->{list}->{'cpu3'};
+	push(@tmpz, "LINE2:mb_0#FFA500:MB 0");
+	push(@tmpz, "LINE2:mb_1#44EEEE:MB 1") unless !$lmsens->{list}->{'mb1'};
+	push(@tmpz, "LINE2:cpu_0#4444EE:CPU 0") unless !$lmsens->{list}->{'cpu0'};
+	push(@tmpz, "LINE2:cpu_1#EEEE44:CPU 1") unless !$lmsens->{list}->{'cpu1'};
+	push(@tmpz, "LINE2:cpu_2#EE44EE:CPU 2") unless !$lmsens->{list}->{'cpu2'};
+	push(@tmpz, "LINE2:cpu_3#44EE44:CPU 3") unless !$lmsens->{list}->{'cpu3'};
+	if(lc($config->{temperatures_scale}) eq "f") {
+		push(@CDEF, "CDEF:mb_0=9,5,/,mb0,*,32,+");
+		push(@CDEF, "CDEF:mb_1=9,5,/,mb1,*,32,+");
+		push(@CDEF, "CDEF:cpu_0=9,5,/,cpu0,*,32,+");
+		push(@CDEF, "CDEF:cpu_1=9,5,/,cpu1,*,32,+");
+		push(@CDEF, "CDEF:cpu_2=9,5,/,cpu2,*,32,+");
+		push(@CDEF, "CDEF:cpu_3=9,5,/,cpu3,*,32,+");
+	} else {
+		push(@CDEF, "CDEF:mb_0=mb0");
+		push(@CDEF, "CDEF:mb_1=mb1");
+		push(@CDEF, "CDEF:cpu_0=cpu0");
+		push(@CDEF, "CDEF:cpu_1=cpu1");
+		push(@CDEF, "CDEF:cpu_2=cpu2");
+		push(@CDEF, "CDEF:cpu_3=cpu3");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -800,7 +858,7 @@ sub lmsens_cgi {
 		"--title=$config->{graphs}->{_lmsens3}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
-		"--vertical-label=Celsius",
+		"--vertical-label=$temp_scale",
 		"--width=$width",
 		"--height=$height",
 		"--lower-limit=0",
@@ -813,6 +871,7 @@ sub lmsens_cgi {
 		"DEF:cpu1=$rrd:lmsens_cpu1:AVERAGE",
 		"DEF:cpu2=$rrd:lmsens_cpu2:AVERAGE",
 		"DEF:cpu3=$rrd:lmsens_cpu3:AVERAGE",
+		@CDEF,
 		"COMMENT: \\n",
 		@tmp);
 	$err = RRDs::error;
@@ -823,7 +882,7 @@ sub lmsens_cgi {
 			"--title=$config->{graphs}->{_lmsens3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Celsius",
+			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
 			"--lower-limit=0",
@@ -836,6 +895,7 @@ sub lmsens_cgi {
 			"DEF:cpu1=$rrd:lmsens_cpu1:AVERAGE",
 			"DEF:cpu2=$rrd:lmsens_cpu2:AVERAGE",
 			"DEF:cpu3=$rrd:lmsens_cpu3:AVERAGE",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
@@ -947,30 +1007,52 @@ sub lmsens_cgi {
 		}
 	}
 
+	undef(@CDEF);
 	undef(@tmp);
 	undef(@tmpz);
-	push(@tmp, "LINE2:gpu0#FFA500:GPU 0\\g");
-	push(@tmp, "GPRINT:gpu0:LAST:\\:%3.0lf  ");
-	push(@tmp, ("LINE2:gpu3#4444EE:GPU 3\\g", "GPRINT:gpu3:LAST:\\:%3.0lf  ")) unless !$lmsens->{list}->{'gpu3'};
-	push(@tmp, ("LINE2:gpu6#EE44EE:GPU 6\\g", "GPRINT:gpu6:LAST:\\:%3.0lf\\g")) unless !$lmsens->{list}->{'gpu6'};
+	push(@tmp, "LINE2:gpu_0#FFA500:GPU 0\\g");
+	push(@tmp, "GPRINT:gpu_0:LAST:\\:%3.0lf  ");
+	push(@tmp, ("LINE2:gpu_3#4444EE:GPU 3\\g", "GPRINT:gpu_3:LAST:\\:%3.0lf  ")) unless !$lmsens->{list}->{'gpu3'};
+	push(@tmp, ("LINE2:gpu_6#EE44EE:GPU 6\\g", "GPRINT:gpu_6:LAST:\\:%3.0lf\\g")) unless !$lmsens->{list}->{'gpu6'};
 	push(@tmp, "COMMENT: \\n");
-	push(@tmp, ("LINE2:gpu1#44EEEE:GPU 1\\g", "GPRINT:gpu1:LAST:\\:%3.0lf  ")) unless !$lmsens->{list}->{'gpu1'};
-	push(@tmp, ("LINE2:gpu4#448844:GPU 4\\g", "GPRINT:gpu4:LAST:\\:%3.0lf  ")) unless !$lmsens->{list}->{'gpu4'};
-	push(@tmp, ("LINE2:gpu7#EEEE44:GPU 7\\g", "GPRINT:gpu7:LAST:\\:%3.0lf\\g")) unless !$lmsens->{list}->{'gpu7'};
+	push(@tmp, ("LINE2:gpu_1#44EEEE:GPU 1\\g", "GPRINT:gpu_1:LAST:\\:%3.0lf  ")) unless !$lmsens->{list}->{'gpu1'};
+	push(@tmp, ("LINE2:gpu_4#448844:GPU 4\\g", "GPRINT:gpu_4:LAST:\\:%3.0lf  ")) unless !$lmsens->{list}->{'gpu4'};
+	push(@tmp, ("LINE2:gpu_7#EEEE44:GPU 7\\g", "GPRINT:gpu_7:LAST:\\:%3.0lf\\g")) unless !$lmsens->{list}->{'gpu7'};
 	push(@tmp, "COMMENT: \\n");
-	push(@tmp, ("LINE2:gpu2#44EE44:GPU 2\\g", "GPRINT:gpu2:LAST:\\:%3.0lf  ")) unless !$lmsens->{list}->{'gpu2'};
-	push(@tmp, ("LINE2:gpu5#EE4444:GPU 5\\g", "GPRINT:gpu5:LAST:\\:%3.0lf  ")) unless !$lmsens->{list}->{'gpu5'};
-	push(@tmp, ("LINE2:gpu8#963C74:GPU 8\\g", "GPRINT:gpu8:LAST:\\:%3.0lf\\g")) unless !$lmsens->{list}->{'gpu8'};
+	push(@tmp, ("LINE2:gpu_2#44EE44:GPU 2\\g", "GPRINT:gpu_2:LAST:\\:%3.0lf  ")) unless !$lmsens->{list}->{'gpu2'};
+	push(@tmp, ("LINE2:gpu_5#EE4444:GPU 5\\g", "GPRINT:gpu_5:LAST:\\:%3.0lf  ")) unless !$lmsens->{list}->{'gpu5'};
+	push(@tmp, ("LINE2:gpu_8#963C74:GPU 8\\g", "GPRINT:gpu_8:LAST:\\:%3.0lf\\g")) unless !$lmsens->{list}->{'gpu8'};
 	push(@tmp, "COMMENT: \\n");
-	push(@tmpz, "LINE2:gpu0#FFA500:GPU 0\\g");
-	push(@tmpz, "LINE2:gpu1#44EEEE:GPU 1\\g") unless !$lmsens->{list}->{'gpu1'};
-	push(@tmpz, "LINE2:gpu2#44EE44:GPU 2\\g") unless !$lmsens->{list}->{'gpu2'};
-	push(@tmpz, "LINE2:gpu3#4444EE:GPU 3\\g") unless !$lmsens->{list}->{'gpu3'};
-	push(@tmpz, "LINE2:gpu4#448844:GPU 4\\g") unless !$lmsens->{list}->{'gpu4'};
-	push(@tmpz, "LINE2:gpu5#EE4444:GPU 5\\g") unless !$lmsens->{list}->{'gpu5'};
-	push(@tmpz, "LINE2:gpu6#EE44EE:GPU 6\\g") unless !$lmsens->{list}->{'gpu6'};
-	push(@tmpz, "LINE2:gpu7#EEEE44:GPU 7\\g") unless !$lmsens->{list}->{'gpu7'};
-	push(@tmpz, "LINE2:gpu8#963C74:GPU 8\\g") unless !$lmsens->{list}->{'gpu8'};
+	push(@tmpz, "LINE2:gpu_0#FFA500:GPU 0\\g");
+	push(@tmpz, "LINE2:gpu_1#44EEEE:GPU 1\\g") unless !$lmsens->{list}->{'gpu1'};
+	push(@tmpz, "LINE2:gpu_2#44EE44:GPU 2\\g") unless !$lmsens->{list}->{'gpu2'};
+	push(@tmpz, "LINE2:gpu_3#4444EE:GPU 3\\g") unless !$lmsens->{list}->{'gpu3'};
+	push(@tmpz, "LINE2:gpu_4#448844:GPU 4\\g") unless !$lmsens->{list}->{'gpu4'};
+	push(@tmpz, "LINE2:gpu_5#EE4444:GPU 5\\g") unless !$lmsens->{list}->{'gpu5'};
+	push(@tmpz, "LINE2:gpu_6#EE44EE:GPU 6\\g") unless !$lmsens->{list}->{'gpu6'};
+	push(@tmpz, "LINE2:gpu_7#EEEE44:GPU 7\\g") unless !$lmsens->{list}->{'gpu7'};
+	push(@tmpz, "LINE2:gpu_8#963C74:GPU 8\\g") unless !$lmsens->{list}->{'gpu8'};
+	if(lc($config->{temperatures_scale}) eq "f") {
+		push(@CDEF, "CDEF:gpu_0=9,5,/,gpu0,*,32,+");
+		push(@CDEF, "CDEF:gpu_1=9,5,/,gpu1,*,32,+");
+		push(@CDEF, "CDEF:gpu_2=9,5,/,gpu2,*,32,+");
+		push(@CDEF, "CDEF:gpu_3=9,5,/,gpu3,*,32,+");
+		push(@CDEF, "CDEF:gpu_4=9,5,/,gpu4,*,32,+");
+		push(@CDEF, "CDEF:gpu_5=9,5,/,gpu5,*,32,+");
+		push(@CDEF, "CDEF:gpu_6=9,5,/,gpu6,*,32,+");
+		push(@CDEF, "CDEF:gpu_7=9,5,/,gpu7,*,32,+");
+		push(@CDEF, "CDEF:gpu_8=9,5,/,gpu8,*,32,+");
+	} else {
+		push(@CDEF, "CDEF:gpu_0=gpu0");
+		push(@CDEF, "CDEF:gpu_1=gpu1");
+		push(@CDEF, "CDEF:gpu_2=gpu2");
+		push(@CDEF, "CDEF:gpu_3=gpu3");
+		push(@CDEF, "CDEF:gpu_4=gpu4");
+		push(@CDEF, "CDEF:gpu_5=gpu5");
+		push(@CDEF, "CDEF:gpu_6=gpu6");
+		push(@CDEF, "CDEF:gpu_7=gpu7");
+		push(@CDEF, "CDEF:gpu_8=gpu8");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -984,7 +1066,7 @@ sub lmsens_cgi {
 		",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
-		"--vertical-label=Celsius",
+		"--vertical-label=$temp_scale",
 		"--width=$width",
 		"--height=$height",
 		"--lower-limit=0",
@@ -1000,6 +1082,7 @@ sub lmsens_cgi {
 		"DEF:gpu6=$rrd:lmsens_gpu6:AVERAGE",
 		"DEF:gpu7=$rrd:lmsens_gpu7:AVERAGE",
 		"DEF:gpu8=$rrd:lmsens_gpu8:AVERAGE",
+		@CDEF,
 		"COMMENT: \\n",
 		@tmp);
 	$err = RRDs::error;
@@ -1010,7 +1093,7 @@ sub lmsens_cgi {
 			"--title=$config->{graphs}->{_lmsens5}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Celsius",
+			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
 			"--lower-limit=0",
@@ -1026,6 +1109,7 @@ sub lmsens_cgi {
 			"DEF:gpu6=$rrd:lmsens_gpu6:AVERAGE",
 			"DEF:gpu7=$rrd:lmsens_gpu7:AVERAGE",
 			"DEF:gpu8=$rrd:lmsens_gpu8:AVERAGE",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG5z: $err\n") if $err;
