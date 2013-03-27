@@ -55,7 +55,7 @@ sub celsius_to {
 	my ($config, $celsius) = @_;
 
 	$celsius = $celsius || 0;
-	if(lc($config->{temperatures_scale}) eq "f") {
+	if(lc($config->{temperature_scale}) eq "f") {
 		return ($celsius * (9 / 5)) + 32;
 	}
 	return $celsius;

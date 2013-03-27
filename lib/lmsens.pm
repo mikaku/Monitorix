@@ -337,7 +337,7 @@ sub lmsens_cgi {
 
 	$title = !$silent ? $title : "";
 
-	if(lc($config->{temperatures_scale}) eq "f") {
+	if(lc($config->{temperature_scale}) eq "f") {
 		$temp_scale = "Fahrenheit";
 	}
 
@@ -553,7 +553,7 @@ sub lmsens_cgi {
 		print("    <tr>\n");
 		print("    <td valign='bottom' bgcolor='$colors->{title_bg_color}'>\n");
 	}
-	if(lc($config->{temperatures_scale}) eq "f") {
+	if(lc($config->{temperature_scale}) eq "f") {
 		push(@CDEF, "CDEF:core_0=9,5,/,core0,*,32,+");
 		push(@CDEF, "CDEF:core_1=9,5,/,core1,*,32,+");
 		push(@CDEF, "CDEF:core_2=9,5,/,core2,*,32,+");
@@ -832,7 +832,7 @@ sub lmsens_cgi {
 	push(@tmpz, "LINE2:cpu_1#EEEE44:CPU 1") unless !$lmsens->{list}->{'cpu1'};
 	push(@tmpz, "LINE2:cpu_2#EE44EE:CPU 2") unless !$lmsens->{list}->{'cpu2'};
 	push(@tmpz, "LINE2:cpu_3#44EE44:CPU 3") unless !$lmsens->{list}->{'cpu3'};
-	if(lc($config->{temperatures_scale}) eq "f") {
+	if(lc($config->{temperature_scale}) eq "f") {
 		push(@CDEF, "CDEF:mb_0=9,5,/,mb0,*,32,+");
 		push(@CDEF, "CDEF:mb_1=9,5,/,mb1,*,32,+");
 		push(@CDEF, "CDEF:cpu_0=9,5,/,cpu0,*,32,+");
@@ -1033,7 +1033,7 @@ sub lmsens_cgi {
 	push(@tmpz, "LINE2:gpu_6#EE44EE:GPU 6\\g") unless !$lmsens->{list}->{'gpu6'};
 	push(@tmpz, "LINE2:gpu_7#EEEE44:GPU 7\\g") unless !$lmsens->{list}->{'gpu7'};
 	push(@tmpz, "LINE2:gpu_8#963C74:GPU 8\\g") unless !$lmsens->{list}->{'gpu8'};
-	if(lc($config->{temperatures_scale}) eq "f") {
+	if(lc($config->{temperature_scale}) eq "f") {
 		push(@CDEF, "CDEF:gpu_0=9,5,/,gpu0,*,32,+");
 		push(@CDEF, "CDEF:gpu_1=9,5,/,gpu1,*,32,+");
 		push(@CDEF, "CDEF:gpu_2=9,5,/,gpu2,*,32,+");

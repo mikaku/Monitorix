@@ -1,6 +1,6 @@
 3.N.N  - NN-XXX-2013
 ====================
-- Added a new option called 'temperatures_scale' to be able to toggle between
+- Added a new option called 'temperature_scale' to be able to toggle between
   values in Celsius or in Fahrenheit.
 	(suggested by Bryan Guidroz, bryanguidroz AT hotmail.com)
 

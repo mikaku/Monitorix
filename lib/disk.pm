@@ -246,7 +246,7 @@ sub disk_cgi {
 
 	$title = !$silent ? $title : "";
 
-	if(lc($config->{temperatures_scale}) eq "f") {
+	if(lc($config->{temperature_scale}) eq "f") {
 		$temp_scale = "Fahrenheit";
 	}
 
@@ -379,7 +379,7 @@ sub disk_cgi {
 			print("    <tr>\n");
 			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 		}
-		if(lc($config->{temperatures_scale}) eq "f") {
+		if(lc($config->{temperature_scale}) eq "f") {
 			push(@CDEF, "CDEF:temp_0=9,5,/,temp0,*,32,+");
 			push(@CDEF, "CDEF:temp_1=9,5,/,temp1,*,32,+");
 			push(@CDEF, "CDEF:temp_2=9,5,/,temp2,*,32,+");
