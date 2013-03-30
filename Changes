@@ -1,5 +1,7 @@
 3.N.N  - NN-XXX-2013
 ====================
+- Improved a bit the MySQL documentation in the monitorix.conf(5) man page.
+	(thanks to Luca Ferrario, luca AT ferrario.net)
 - Added a new option called 'temperature_scale' to be able to toggle between
   values in Celsius or in Fahrenheit.
 	(suggested by Bryan Guidroz, bryanguidroz AT hotmail.com)
