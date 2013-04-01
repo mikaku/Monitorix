@@ -5,6 +5,8 @@
 - Added a new option called 'temperature_scale' to be able to toggle between
   values in Celsius or in Fahrenheit.
 	(suggested by Bryan Guidroz, bryanguidroz AT hotmail.com)
+- Added Simplified Chinese language support in the monthly reports.
+	(thanks to Christopher Meng, rpm AT cicku.me)
 
 
 3.1.0  - 15-Mar-2013
