@@ -8,6 +8,7 @@
 - Added Simplified Chinese language support in the monthly reports.
 	(thanks to Christopher Meng, rpm AT cicku.me)
 - Fixed a typo in an iptables rule in the Nginx graph.
+	(thanks to Faustin Lammler, faustin AT dejadejoder.com)
 
 
 3.1.0  - 15-Mar-2013
