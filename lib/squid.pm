@@ -418,6 +418,9 @@ sub squid_cgi {
 	my @tmpz;
 	my $i;
 	my @DEF;
+	my @CDEF;
+	my $T = "B";
+	my $vlabel = "bytes/s";
 	my $n;
 	my $str;
 	my $err;
@@ -451,6 +454,11 @@ sub squid_cgi {
 	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
 
 	$title = !$silent ? $title : "";
+
+	if(lc($config->{netstats_in_bps}) eq "y") {
+		$T = "b";
+		$vlabel = "bits/s";
+	}
 
 
 	# text mode
@@ -545,14 +553,14 @@ sub squid_cgi {
 			}
 			@$line[28] = @$line[28] || 0;
 			push(@row, (@$line[28] * 100) / (@$line[27] || 1));
-			$line1 .= "%7d %7d %3.1f ";
+			$line1 .= "%7d %7d %4.1f ";
 			$line1 .= " ";
 			foreach(@$line[43..44]) {
 				push(@row, $_ || 0);
 			}
 			@$line[44] = @$line[44] || 0;
 			push(@row, (@$line[44] * 100) / (@$line[43] || 1));
-			$line1 .= "%8d %8d %3.1f ";
+			$line1 .= "%8d %8d %4.1f ";
 			$line1 .= " ";
 			foreach(@$line[32..34]) {
 				push(@row, $_ || 0);
