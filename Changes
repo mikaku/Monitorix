@@ -1,4 +1,4 @@
-3.N.N  - NN-XXX-2013
+3.N.N  - NN-May-2013
 ====================
 - Improved a bit the MySQL documentation in the monitorix.conf(5) man page.
 	(thanks to Luca Ferrario, luca AT ferrario.net)
@@ -9,6 +9,7 @@
 	(thanks to Christopher Meng, rpm AT cicku.me)
 - Fixed a typo in an iptables rule in the Nginx graph.
 	(thanks to Faustin Lammler, faustin AT dejadejoder.com)
+- Fixed the Squid graph in order to honor the 'netstat_in_bps' option.
 
 
 3.1.0  - 15-Mar-2013
