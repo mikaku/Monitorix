@@ -10,6 +10,7 @@
 - Fixed a typo in an iptables rule in the Nginx graph.
 	(thanks to Faustin Lammler, faustin AT dejadejoder.com)
 - Fixed the Squid graph in order to honor the 'netstat_in_bps' option.
+	(thanks to Ignacio Freyre, nachofw AT adinet.com.uy)
 
 
 3.1.0  - 15-Mar-2013
