@@ -1,4 +1,3 @@
-#!/usr/bin/env perl
 #
 # Monitorix - A lightweight system monitoring tool.
 #
