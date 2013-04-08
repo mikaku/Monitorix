@@ -573,12 +573,20 @@ sub squid_cgi {
 			$line1 .= "%4d %4d %4d %4d ";
 			$line1 .= " ";
 			foreach(@$line[47..48]) {
-				push(@row, $_ || 0);
+				my $value = $_ || 0;
+				if(lc($config->{netstats_in_bps}) eq "y") {
+					$value *= 8;
+				}
+				push(@row, $value);
 			}
 			$line1 .= " %6d %6d ";
 			$line1 .= " ";
 			foreach(@$line[50..51]) {
-				push(@row, $_ || 0);
+				my $value = $_ || 0;
+				if(lc($config->{netstats_in_bps}) eq "y") {
+					$value *= 8;
+				}
+				push(@row, $value);
 			}
 			$line1 .= " %6d %6d ";
 			$time = $time - (1 / $tf->{ts});
@@ -1306,18 +1314,26 @@ sub squid_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
-	push(@tmp, "AREA:in#44EE44:Input");
-	push(@tmp, "AREA:out#4444EE:Output");
-	push(@tmp, "AREA:out#4444EE:");
-	push(@tmp, "AREA:in#44EE44:");
-	push(@tmp, "LINE1:out#0000EE");
-	push(@tmp, "LINE1:in#00EE00");
-	push(@tmpz, "AREA:in#44EE44:Input");
-	push(@tmpz, "AREA:out#4444EE:Output");
-	push(@tmpz, "AREA:out#4444EE:");
-	push(@tmpz, "AREA:in#44EE44:");
-	push(@tmpz, "LINE1:out#0000EE");
-	push(@tmpz, "LINE1:in#00EE00");
+	undef(@CDEF);
+	push(@tmp, "AREA:B_in#44EE44:Input");
+	push(@tmp, "AREA:B_out#4444EE:Output");
+	push(@tmp, "AREA:B_out#4444EE:");
+	push(@tmp, "AREA:B_in#44EE44:");
+	push(@tmp, "LINE1:B_out#0000EE");
+	push(@tmp, "LINE1:B_in#00EE00");
+	push(@tmpz, "AREA:B_in#44EE44:Input");
+	push(@tmpz, "AREA:B_out#4444EE:Output");
+	push(@tmpz, "AREA:B_out#4444EE:");
+	push(@tmpz, "AREA:B_in#44EE44:");
+	push(@tmpz, "LINE1:B_out#0000EE");
+	push(@tmpz, "LINE1:B_in#00EE00");
+	if(lc($config->{netstats_in_bps}) eq "y") {
+		push(@CDEF, "CDEF:B_in=in,8,*");
+		push(@CDEF, "CDEF:B_out=out,8,*");
+	} else {
+		push(@CDEF, "CDEF:B_in=in");
+		push(@CDEF, "CDEF:B_out=out");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1331,7 +1347,7 @@ sub squid_cgi {
 		"--title=$config->{graphs}->{_squid8}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
-		"--vertical-label=bytes/s",
+		"--vertical-label=$vlabel",
 		"--width=$width",
 		"--height=$height",
 		@riglim,
@@ -1341,6 +1357,7 @@ sub squid_cgi {
 		@{$colors->{graph_colors}},
 		"DEF:in=$rrd:squid_tc_1:AVERAGE",
 		"DEF:out=$rrd:squid_tc_2:AVERAGE",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG8: $err\n") if $err;
@@ -1350,7 +1367,7 @@ sub squid_cgi {
 			"--title=$config->{graphs}->{_squid8}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=bytes/s",
+			"--vertical-label=$vlabel",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
@@ -1360,6 +1377,7 @@ sub squid_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:in=$rrd:squid_tc_1:AVERAGE",
 			"DEF:out=$rrd:squid_tc_2:AVERAGE",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG8z: $err\n") if $err;
@@ -1388,18 +1406,26 @@ sub squid_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
-	push(@tmp, "AREA:in#44EE44:Input");
-	push(@tmp, "AREA:out#4444EE:Output");
-	push(@tmp, "AREA:out#4444EE:");
-	push(@tmp, "AREA:in#44EE44:");
-	push(@tmp, "LINE1:out#0000EE");
-	push(@tmp, "LINE1:in#00EE00");
-	push(@tmpz, "AREA:in#44EE44:Input");
-	push(@tmpz, "AREA:out#4444EE:Output");
-	push(@tmpz, "AREA:out#4444EE:");
-	push(@tmpz, "AREA:in#44EE44:");
-	push(@tmpz, "LINE1:out#0000EE");
-	push(@tmpz, "LINE1:in#00EE00");
+	undef(@CDEF);
+	push(@tmp, "AREA:B_in#44EE44:Input");
+	push(@tmp, "AREA:B_out#4444EE:Output");
+	push(@tmp, "AREA:B_out#4444EE:");
+	push(@tmp, "AREA:B_in#44EE44:");
+	push(@tmp, "LINE1:B_out#0000EE");
+	push(@tmp, "LINE1:B_in#00EE00");
+	push(@tmpz, "AREA:B_in#44EE44:Input");
+	push(@tmpz, "AREA:B_out#4444EE:Output");
+	push(@tmpz, "AREA:B_out#4444EE:");
+	push(@tmpz, "AREA:B_in#44EE44:");
+	push(@tmpz, "LINE1:B_out#0000EE");
+	push(@tmpz, "LINE1:B_in#00EE00");
+	if(lc($config->{netstats_in_bps}) eq "y") {
+		push(@CDEF, "CDEF:B_in=in,8,*");
+		push(@CDEF, "CDEF:B_out=out,8,*");
+	} else {
+		push(@CDEF, "CDEF:B_in=in");
+		push(@CDEF, "CDEF:B_out=out");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1413,7 +1439,7 @@ sub squid_cgi {
 		"--title=$config->{graphs}->{_squid9}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
-		"--vertical-label=bytes/s",
+		"--vertical-label=$vlabel",
 		"--width=$width",
 		"--height=$height",
 		@riglim,
@@ -1423,6 +1449,7 @@ sub squid_cgi {
 		@{$colors->{graph_colors}},
 		"DEF:in=$rrd:squid_ts_1:AVERAGE",
 		"DEF:out=$rrd:squid_ts_2:AVERAGE",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG9: $err\n") if $err;
@@ -1432,7 +1459,7 @@ sub squid_cgi {
 			"--title=$config->{graphs}->{_squid9}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=bytes/s",
+			"--vertical-label=$vlabel",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
@@ -1442,6 +1469,7 @@ sub squid_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:in=$rrd:squid_ts_1:AVERAGE",
 			"DEF:out=$rrd:squid_ts_2:AVERAGE",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG9z: $err\n") if $err;
