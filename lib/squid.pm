@@ -141,35 +141,35 @@ sub squid_update {
 	my $g_result;
 	my $g_status;
 
-	my $rq_client_http_req;
-	my $rq_client_http_hit;
-	my $rq_server_http_req;
-	my $rq_server_ftp_req;
-	my $rq_server_other_req;
-	my $rq_aborted_req;
-	my $rq_swap_files_cleaned;
-	my $rq_unlink_requests;
+	my $rq_client_http_req = 0;
+	my $rq_client_http_hit = 0;
+	my $rq_server_http_req = 0;
+	my $rq_server_ftp_req = 0;
+	my $rq_server_other_req = 0;
+	my $rq_aborted_req = 0;
+	my $rq_swap_files_cleaned = 0;
+	my $rq_unlink_requests = 0;
 
-	my $tc_client_http_in;
-	my $tc_client_http_out;
-	my $ts_server_all_in;
-	my $ts_server_all_out;
+	my $tc_client_http_in = 0;
+	my $tc_client_http_out = 0;
+	my $ts_server_all_in = 0;
+	my $ts_server_all_out = 0;
 
-	my $m_alloc;
-	my $m_inuse;
+	my $m_alloc = 0;
+	my $m_inuse = 0;
 
-	my $ic_requests;
-	my $ic_hits;
-	my $ic_misses;
+	my $ic_requests = 0;
+	my $ic_hits = 0;
+	my $ic_misses = 0;
 
-	my $io_http;
-	my $io_ftp;
-	my $io_gopher;
-	my $io_wais;
+	my $io_http = 0;
+	my $io_ftp = 0;
+	my $io_gopher = 0;
+	my $io_wais = 0;
 
-	my $s_entries;
-	my $s_maximum;
-	my $s_current;
+	my $s_entries = 0;
+	my $s_maximum = 0;
+	my $s_current = 0;
 
 	my $n;
 	my $rrdata = "N";
@@ -347,25 +347,25 @@ sub squid_update {
 	close(IN);
 	$all = join('', @data);
 	$all =~ s/\n/ /g;
-	($value) = ($all =~ m/ HTTP I\/O number of reads.*?(\d+)/g);
+	($value) = ($all =~ m/ HTTP I\/O number of reads.*?(\d+)/g) || 0;
 	chomp($value);
 	$io_http = $value - ($config->{squid_hist}->{'io_http'} || 0);
 	$io_http = 0 unless $io_http != $value;
 	$io_http /= 60;
 	$config->{squid_hist}->{'io_http'} = $value;
-	($value) = ($all =~ m/ FTP I\/O number of reads.*?(\d+)/g);
+	($value) = ($all =~ m/ FTP I\/O number of reads.*?(\d+)/g) || 0;
 	chomp($value);
 	$io_ftp = $value - ($config->{squid_hist}->{'io_ftp'} || 0);
 	$io_ftp = 0 unless $io_ftp != $value;
 	$io_ftp /= 60;
 	$config->{squid_hist}->{'io_ftp'} = $value;
-	($value) = ($all =~ m/ Gopher I\/O number of reads.*?(\d+)/g);
+	($value) = ($all =~ m/ Gopher I\/O number of reads.*?(\d+)/g) || 0;
 	chomp($value);
 	$io_gopher = $value - ($config->{squid_hist}->{'io_gopher'} || 0);
 	$io_gopher = 0 unless $io_gopher != $value;
 	$io_gopher /= 60;
 	$config->{squid_hist}->{'io_gopher'} = $value;
-	($value) = ($all =~ m/ WAIS I\/O number of reads.*?(\d+)/g);
+	($value) = ($all =~ m/ WAIS I\/O number of reads.*?(\d+)/g) || 0;
 	$value = 0 unless defined($value);
 	chomp($value);
 	$io_wais = $value - ($config->{squid_hist}->{'io_wais'} || 0);
