@@ -551,22 +551,22 @@ Then you may want to configure that \fBlist\fP as:
 .P
 Note that you need to escape the plus and minus signs in the voltage labels.
 .P
-The last one, \fIgpu0\fP, is set here just in case you have an NVIDIA card and want to monitor its temperature. Currently only NVIDIA cards are supported so the value \fInvidia\fP is mandatory. It requires the official NVIDIA drivers.
+The last one, \fIgpu0\fP, is set here just in case you have a supported graphics card and want to monitor its temperature. Currently only NVIDIA and ATI graphic cards are supported; with the values \fInvidia\fP and \fIati\fP respectively. It requires the official NVIDIA or ATI drivers.
 .P
 This list has the following maximums allowed:
 .P
 .RS
-Up to 16 \fIcore\fP keys
+Up to 16 \fIcore\fP keys (from core0 to core15)
 .br
-Up to 2 \fImb\fP keys
+Up to 2 \fImb\fP keys (mb0 and mb1)
 .br
-Up to 4 \fIcpu\fP keys
+Up to 4 \fIcpu\fP keys (from cpu0 to cpu3)
 .br
-Up to 9 \fIfan\fP keys
+Up to 9 \fIfan\fP keys (from fan0 to fan8)
 .br
-Up to 12 \fIvolt\fP keys
+Up to 12 \fIvolt\fP keys (from volt0 to volt11)
 .br
-Up to 9 \fIgpu\fP keys
+Up to 9 \fIgpu\fP keys (from gpu0 to gpu8)
 .RE
 .RE
 .SS NVIDIA temperatures and usage (nvidia.rrd)

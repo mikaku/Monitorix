@@ -264,6 +264,9 @@ sub lmsens_update {
 						}
 					}
 				}
+				if($lmsens->{list}->{$str} eq "ati") {
+					$gpu[$n] = get_ati_data($n);
+				}
 			}
 		}
 		for($n = 0; $n < scalar(@mb); $n++) {

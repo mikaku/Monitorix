@@ -24,7 +24,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use POSIX qw(setuid setgid setsid);
-our @EXPORT = qw(logger trim max celsius_to httpd_setup get_nvidia_data flush_accounting_rules);
+our @EXPORT = qw(logger trim max celsius_to httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
 
 sub logger {
 	my ($msg) = @_;
@@ -223,6 +223,26 @@ sub get_nvidia_data {
 		$mem = $used = $total = 0;
 	}
 	return join(" ", $mem, $cpu, $temp);
+}
+
+sub get_ati_data {
+	my $myself = (caller(0))[3];
+	my ($gpu) = @_;
+	my $temp = 0;
+
+	my @data = ();
+	if(open(IN, "./aticonfig --odgt --adapter=$gpu |")) {
+		@data = <IN>;
+		close(IN);
+	} else {
+		logger("$myself: ERROR: 'aticonfig' command is not installed.");
+	}
+	foreach(@data) {
+		if(/Sensor \d: Temperature - (\d+\.\d+) C/) {
+			$temp = $1;
+		}
+	}
+	return $temp || 0;
 }
 
 # flushes out all Monitorix iptables/ipfw rules
