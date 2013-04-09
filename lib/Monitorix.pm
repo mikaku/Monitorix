@@ -231,7 +231,7 @@ sub get_ati_data {
 	my $temp = 0;
 
 	my @data = ();
-	if(open(IN, "./aticonfig --odgt --adapter=$gpu |")) {
+	if(open(IN, "aticonfig --odgt --adapter=$gpu |")) {
 		@data = <IN>;
 		close(IN);
 	} else {
