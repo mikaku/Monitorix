@@ -3,6 +3,8 @@
 - Improved a bit the MySQL documentation in the monitorix.conf(5) man page.
 	(thanks to Luca Ferrario, luca AT ferrario.net)
 - Added a new option called 'temperature_scale' to be able to toggle between
+- Added support for the ATI graph cards through the 'gpu' keys in the 'lmsens'
+  graph. As in the NVIDIA case it requires the ATI official drivers.
   values in Celsius or in Fahrenheit.
 	(suggested by Bryan Guidroz, bryanguidroz AT hotmail.com)
 - Added Simplified Chinese language support in the monthly reports.
