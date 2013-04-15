@@ -140,13 +140,13 @@ sub kern_update {
 				next;
 			}
 			if(/^ctxt (\d+)$/) {
-				# avoid initial spike
+				# avoid initial peak
 				$cs = int($1) unless !$config->{kern_hist}->{cs};
 				$config->{kern_hist}->{cs} = int($1) unless $config->{kern_hist}->{cs};
 				next;
 			}
 			if(/^processes (\d+)$/) {
-				# avoid initial spike
+				# avoid initial peak
 				$forks = int($1) unless !$config->{kern_hist}->{forks};
 				$config->{kern_hist}->{forks} = int($1) unless $config->{kern_hist}->{forks};
 				$vforks = 0;

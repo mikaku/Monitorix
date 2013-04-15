@@ -188,7 +188,7 @@ sub squid_update {
 		logger("Couldn't seek to $seek_pos ($config->{squid_log}): $!");
 		return;
 	}
-	if(defined($config->{squid_hist}->{'seek_pos'})) {	# avoid initial spike
+	if(defined($config->{squid_hist}->{'seek_pos'})) {	# avoid initial peak
 		while(<IN>) {
 			(undef, undef, undef, $value) = split(' ', $_);
 			($g_result, $g_status) = split('/', $value);

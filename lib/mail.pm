@@ -390,12 +390,12 @@ sub mail_update {
 	$mta[6] /= 60;
 	$mta_h[6] = int($rejtd);
 
-	# avoid initial spike
+	# avoid initial peak
 	$mta[7] = int($spam) unless !$mta_h[7];
 	$mta_h[7] = int($spam) unless $mta_h[7];
 	$mta[7] /= 60;
 
-	# avoid initial spike
+	# avoid initial peak
 	$mta[8] = int($virus) unless !$mta_h[8];
 	$mta_h[8] = int($virus) unless $mta_h[8];
 	$mta[8] /= 60;

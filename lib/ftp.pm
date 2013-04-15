@@ -139,7 +139,7 @@ sub ftp_update {
 		logger("Couldn't seek to $seek_pos in '$config->{ftp_log}': $!");
 		return;
 	}
-	if($config->{ftp_hist} > 0) {	# avoids initial spike
+	if($config->{ftp_hist} > 0) {	# avoids initial peak
 		while(<IN>) {
 			if(lc($ftp->{server}) eq "proftpd") {
 				my $date = strftime("%d/%b/%Y", localtime);

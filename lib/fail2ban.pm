@@ -141,7 +141,7 @@ sub fail2ban_update {
 		logger("Couldn't seek to $seek_pos in '$config->{fail2ban_log}': $!");
 		return;
 	}
-	if($config->{fail2ban_hist} > 0) {	# avoids initial spike
+	if($config->{fail2ban_hist} > 0) {	# avoids initial peak
 		my $date = strftime("%Y-%m-%d", localtime);
 		while(<IN>) {
 			if(/^$date/) {
