@@ -5,14 +5,14 @@
 - Added a new option called 'temperature_scale' to be able to toggle between
   values in Celsius or in Fahrenheit.
 	(suggested by Bryan Guidroz, bryanguidroz AT hotmail.com)
-- Added Simplified Chinese language support in the monthly reports.
+- Added support for Simplified Chinese language in the monthly reports.
 	(thanks to Christopher Meng, rpm AT cicku.me)
 - Added support for the ATI graph cards through the 'gpu' keys in the 'lmsens'
-  graph. As in the NVIDIA case it requires the ATI official drivers.
+  graph. As in the NVIDIA case, it requires the ATI official drivers.
 - Fixed a typo in an iptables rule in the Nginx graph.
 	(thanks to Faustin Lammler, faustin AT dejadejoder.com)
 - Fixed the Squid graph in order to honor the 'netstat_in_bps' option.
-	(thanks to Ignacio Freyre, nachofw AT adinet.com.uy)
+	(suggested to Ignacio Freyre, nachofw AT adinet.com.uy)
 
 
 3.1.0  - 15-Mar-2013
