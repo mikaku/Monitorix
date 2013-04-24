@@ -24,7 +24,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use POSIX qw(setuid setgid setsid);
-our @EXPORT = qw(logger trim max celsius_to httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
+our @EXPORT = qw(logger trim min max celsius_to httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
 
 sub logger {
 	my ($msg) = @_;
@@ -41,6 +41,14 @@ sub trim {
 		$str =~ s/\s+$//;
 		return $str;
 	}
+}
+
+sub min {
+	my ($min, @args) = @_;
+	foreach(@args) {
+		$min = $_ if $_ < $min;
+	}
+	return $min;
 }
 
 sub max {
