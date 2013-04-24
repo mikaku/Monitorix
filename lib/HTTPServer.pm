@@ -55,7 +55,7 @@ sub http_header {
 	print "Connection: close\r\n";
 
 	if($mimetype =~ m/(html|cgi)/) {
-		print "Content-Type: text/html; charset=ISO-8859-1\r\n";
+		print "Content-Type: text/html; charset=UTF-8\r\n";
 	} else {
 		print "Content-Type: image/$mimetype;\r\n";
 	}
