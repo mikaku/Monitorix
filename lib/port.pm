@@ -381,7 +381,7 @@ sub port_cgi {
 		$u = "";
 	}
 
-	my $max = max($port->{max}, scalar(my @pl = split(',', $port->{list})));
+	my $max = min($port->{max}, scalar(my @pl = split(',', $port->{list})));
 	for($n = 0; $n < $max; $n++) {
 		$pl[$n] = trim($pl[$n]);
 		my $pc = trim((split(',', $port->{desc}->{$pl[$n]}))[2]);
@@ -400,6 +400,7 @@ sub port_cgi {
 	$n = $n3 = 0;
 	$n2 = 1;
 	while($n < $max) {
+		next unless $pl[$n];
 		if($title) {
 			if($n == 0) {
 				main::graph_header($title, $port->{graphs_per_row});
