@@ -9,10 +9,15 @@
 	(thanks to Christopher Meng, rpm AT cicku.me)
 - Added support for the ATI graph cards through the 'gpu' keys in the 'lmsens'
   graph. As in the NVIDIA case, it requires the ATI official drivers.
+- Changed the default charset in the built-in HTTP server to UTF-8.
+	(thanks to Akong, ak6783 AT gmail.com for pointing this out)
 - Fixed a typo in an iptables rule in the Nginx graph.
 	(thanks to Faustin Lammler, faustin AT dejadejoder.com)
 - Fixed the Squid graph in order to honor the 'netstat_in_bps' option.
 	(suggested to Ignacio Freyre, nachofw AT adinet.com.uy)
+- Fixed in 'port' graph to show the minimum number of graphs between the value
+  of 'max' and the number of ports really defined. This fixes the error messages
+  of uninitialized values in lines 410 and 411.
 
 
 3.1.0  - 15-Mar-2013
