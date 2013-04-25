@@ -11,6 +11,7 @@
   graph. As in the NVIDIA case, it requires the ATI official drivers.
 - Changed the default charset in the built-in HTTP server to UTF-8.
 	(thanks to Akong, ak6783 AT gmail.com for pointing this out)
+- Added verbosity to the 'undefined configuration' of MySQL graph.
 - Fixed a typo in an iptables rule in the Nginx graph.
 	(thanks to Faustin Lammler, faustin AT dejadejoder.com)
 - Fixed the Squid graph in order to honor the 'netstat_in_bps' option.
