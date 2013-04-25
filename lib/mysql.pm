@@ -174,7 +174,7 @@ sub mysql_update {
 		my $dbh;
 		if(lc($mysql->{conn_type}) eq "host") {
 			unless ($host && $port && $user && $pass) {
-				logger("$myself: ERROR: undefined configuration.");
+				logger("$myself: ERROR: undefined configuration in 'host' connection.");
 				next;
 			}
 			$dbh = DBI->connect(
@@ -186,7 +186,7 @@ sub mysql_update {
 		}
 		if(lc($mysql->{conn_type}) eq "socket") {
 			unless ($sock) {
-				logger("$myself: ERROR: undefined configuration.");
+				logger("$myself: ERROR: undefined configuration in 'socket' connection");
 				next;
 			}
 			$dbh = DBI->connect(
