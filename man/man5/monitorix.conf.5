@@ -1371,7 +1371,7 @@ Default value: \fIr\fP
 .RE
 .SS Devices interrupt activity (int.rrd)
 Only the limit and rigid values may be set here.
-.SS Monitoring the Internet traffic of LAN PCs, devices or whole networks
+.SS Monitoring the Internet traffic of your LAN (traffacct.rrd)
 If your server acts as the gateway for a group of PCs, devices or even whole networks in your local LAN, you may want to know how much Internet traffic each one is generating.
 .P
 This graph requires the \fIiptables\fP command on GNU/Linux systems, and the \fIipfw\fP command on *BSD systems.
@@ -1387,7 +1387,7 @@ Default value: \fIn\fP
 .P
 .BI max
 .RS
-This is the number of LAN devices you want to monitor. There is no limit, but keep in mind that every time this number changes, Monitorix will resize its current \fItraffacct.rrd\fP file, removing all historical data.
+This is the number of LAN devices you want to monitor. There is no limit, but keep in mind that every time this number changes, Monitorix will resize the \fItraffacct.rrd\fP file, removing all historical data.
 .P
 Default value: \fI10\fP
 .RE
@@ -1432,7 +1432,7 @@ An example would be:
 </desc
 .RE
 .RE
-.SS Monthly reports (... continued)
+.SS Monthly reports of Internet traffic (traffacct.rrd)
 .BI enabled
 .RS
 If this option is set to \fIy\fP, Monitorix will send a report of all the monthly Internet activity of the defined devices in \fBlist\fP to the specified email address on the first day of each month.
