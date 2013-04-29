@@ -467,16 +467,17 @@ sub mail_update {
 		}
 	}
 	if(lc($mail->{alerts}->{mqueued_enabled}) eq "y") {
-		if(!$mail->{alerts}->{mqueued_threshold} || $queued < $mail->{alerts}->{mqueued_threshold}) {
+		my $val = $mta[10];
+		if(!$mail->{alerts}->{mqueued_threshold} || $val < $mail->{alerts}->{mqueued_threshold}) {
 			$config->{mail_hist_alert2} = 0;
 		} else {
 			if(!$config->{mail_hist_alert2}) {
 				$config->{mail_hist_alert2} = time;
 			}
-			if($config->{mail_hist_alert2} > 0 && (time - $config->{mail_hist_alert2}) > $mail->{alerts}->{mqueued_timeintvl}) {
+			if($config->{mail_hist_alert2} > 0 && (time - $config->{mail_hist_alert2}) >= $mail->{alerts}->{mqueued_timeintvl}) {
 				if(-x $mail->{alerts}->{mqueued_script}) {
 					logger("$myself: ALERT: executing script '$mail->{alerts}->{mqueued_script}'.");
-					system($mail->{alerts}->{mqueued_script} . " " .$mail->{alerts}->{mqueued_timeintvl} . " " . $mail->{alerts}->{mqueued_threshold} . " " . $queued);
+					system($mail->{alerts}->{mqueued_script} . " " .$mail->{alerts}->{mqueued_timeintvl} . " " . $mail->{alerts}->{mqueued_threshold} . " " . $val);
 				} else {
 					logger("$myself: ERROR: script '$mail->{alerts}->{mqueued_script}' doesn't exist or don't has execution permissions.");
 				}
