@@ -19,6 +19,8 @@
 - Fixed in 'port' graph to show the minimum number of graphs between the value
   of 'max' and the number of ports really defined. This fixes the error messages
   of uninitialized values in lines 410 and 411.
+- Fixed to honour the support of RAID controller parameters in the disk device
+  names defined in the disk graph.
 
 
 3.1.0  - 15-Mar-2013

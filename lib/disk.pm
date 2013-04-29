@@ -41,6 +41,7 @@ sub disk_init {
 				my $d = trim($dsk[$n]);
 				$d =~ s/^\"//;
 				$d =~ s/\"$//;
+				$d =~ s/^(.+?) .*$/$1/;
 	  			next if -e $d;
 				logger("ERROR: $myself: invalid or inexistent device name '$d'.");
 				return;
@@ -360,7 +361,8 @@ sub disk_cgi {
 		push(@tmp, "COMMENT: \\n");
 		for($n = 0; $n < 8; $n++) {
 			if($d[$n]) {
-				my ($dstr) = (split /\s+/, trim($d[$n]));
+				my $dstr = trim($d[$n]);
+				$dstr =~ s/^(.+?) .*$/$1/;
 				$str = sprintf("%-20s", $dstr);
 				push(@tmp, "LINE2:temp_" . $n . $LC[$n] . ":$str");
 				push(@tmpz, "LINE2:temp_" . $n . $LC[$n] . ":$dstr");
@@ -476,14 +478,18 @@ sub disk_cgi {
 		undef(@tmpz);
 		for($n = 0; $n < 8; $n += 2) {
 			if($d[$n]) {
-				$str = sprintf("%-17s", substr($d[$n], 0, 17));
+				my $dstr = trim($d[$n]);
+				$dstr =~ s/^(.+?) .*$/$1/;
+				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:rsc" . $n . $LC[$n] . ":$str");
-				push(@tmpz, "LINE2:rsc" . $n . $LC[$n] . ":$d[$n]\\g");
+				push(@tmpz, "LINE2:rsc" . $n . $LC[$n] . ":$dstr\\g");
 			}
 			if($d[$n + 1]) {
-				$str = sprintf("%-17s", substr($d[$n + 1], 0, 17));
+				my $dstr = trim($d[$n + 1]);
+				$dstr =~ s/^(.+?) .*$/$1/;
+				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:rsc" . ($n + 1) . $LC[$n + 1] . ":$str\\n");
-				push(@tmpz, "LINE2:rsc" . ($n + 1) . $LC[$n + 1] . ":$d[$n + 1]\\g");
+				push(@tmpz, "LINE2:rsc" . ($n + 1) . $LC[$n + 1] . ":$dstr\\g");
 			}
 		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
@@ -560,14 +566,18 @@ sub disk_cgi {
 		undef(@tmpz);
 		for($n = 0; $n < 8; $n += 2) {
 			if($d[$n]) {
-				$str = sprintf("%-17s", substr($d[$n], 0, 17));
+				my $dstr = trim($d[$n]);
+				$dstr =~ s/^(.+?) .*$/$1/;
+				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:cps" . $n . $LC[$n] . ":$str");
-				push(@tmpz, "LINE2:cps" . $n . $LC[$n] . ":$d[$n]\\g");
+				push(@tmpz, "LINE2:cps" . $n . $LC[$n] . ":$dstr\\g");
 			}
 			if($d[$n + 1]) {
-				$str = sprintf("%-17s", substr($d[$n + 1], 0, 17));
+				my $dstr = trim($d[$n + 1]);
+				$dstr =~ s/^(.+?) .*$/$1/;
+				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:cps" . ($n + 1) . $LC[$n + 1] . ":$str\\n");
-				push(@tmpz, "LINE2:cps" . ($n + 1) . $LC[$n + 1] . ":$d[$n + 1]\\g");
+				push(@tmpz, "LINE2:cps" . ($n + 1) . $LC[$n + 1] . ":$dstr\\g");
 			}
 		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
