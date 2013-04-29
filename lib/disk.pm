@@ -362,6 +362,8 @@ sub disk_cgi {
 		for($n = 0; $n < 8; $n++) {
 			if($d[$n]) {
 				my $dstr = trim($d[$n]);
+				$dstr =~ s/^\"//;
+				$dstr =~ s/\"$//;
 				$dstr =~ s/^(.+?) .*$/$1/;
 				$str = sprintf("%-20s", $dstr);
 				push(@tmp, "LINE2:temp_" . $n . $LC[$n] . ":$str");
@@ -479,6 +481,8 @@ sub disk_cgi {
 		for($n = 0; $n < 8; $n += 2) {
 			if($d[$n]) {
 				my $dstr = trim($d[$n]);
+				$dstr =~ s/^\"//;
+				$dstr =~ s/\"$//;
 				$dstr =~ s/^(.+?) .*$/$1/;
 				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:rsc" . $n . $LC[$n] . ":$str");
@@ -486,6 +490,8 @@ sub disk_cgi {
 			}
 			if($d[$n + 1]) {
 				my $dstr = trim($d[$n + 1]);
+				$dstr =~ s/^\"//;
+				$dstr =~ s/\"$//;
 				$dstr =~ s/^(.+?) .*$/$1/;
 				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:rsc" . ($n + 1) . $LC[$n + 1] . ":$str\\n");
@@ -567,6 +573,8 @@ sub disk_cgi {
 		for($n = 0; $n < 8; $n += 2) {
 			if($d[$n]) {
 				my $dstr = trim($d[$n]);
+				$dstr =~ s/^\"//;
+				$dstr =~ s/\"$//;
 				$dstr =~ s/^(.+?) .*$/$1/;
 				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:cps" . $n . $LC[$n] . ":$str");
@@ -574,6 +582,8 @@ sub disk_cgi {
 			}
 			if($d[$n + 1]) {
 				my $dstr = trim($d[$n + 1]);
+				$dstr =~ s/^\"//;
+				$dstr =~ s/\"$//;
 				$dstr =~ s/^(.+?) .*$/$1/;
 				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:cps" . ($n + 1) . $LC[$n + 1] . ":$str\\n");

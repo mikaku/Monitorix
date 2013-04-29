@@ -21,6 +21,7 @@
   of uninitialized values in lines 410 and 411.
 - Fixed to honour the support of RAID controller parameters in the disk device
   names defined in the disk graph.
+- Small fixes in the alerting system of 'fs', 'system' and 'mail' graphs.
 
 
 3.1.0  - 15-Mar-2013
