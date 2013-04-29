@@ -381,7 +381,7 @@ sub fs_update {
 						if(!$config->{fs_hist_alert1}) {
 							$config->{fs_hist_alert1} = time;
 						}
-						if($config->{fs_hist_alert1} > 0 && (time - $config->{fs_hist_alert1}) > $fs->{alerts}->{rootfs_timeintvl}) {
+						if($config->{fs_hist_alert1} > 0 && (time - $config->{fs_hist_alert1}) >= $fs->{alerts}->{rootfs_timeintvl}) {
 							if(-x $fs->{alerts}->{rootfs_script}) {
 								logger("$myself: ALERT: executing script '$fs->{alerts}->{rootfs_script}'.");
 								system($fs->{alerts}->{rootfs_script} . " " . $fs->{alerts}->{rootfs_timeintvl} . " " . $fs->{alerts}->{rootfs_threshold} . " " . $use);
