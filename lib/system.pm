@@ -285,7 +285,7 @@ sub system_update {
 			if(!$config->{system_hist_alert1}) {
 				$config->{system_hist_alert1} = time;
 			}
-			if($config->{system_hist_alert1} > 0 && (time - $config->{system_hist_alert1}) > $system->{alerts}->{loadavg_timeintvl}) {
+			if($config->{system_hist_alert1} > 0 && (time - $config->{system_hist_alert1}) >= $system->{alerts}->{loadavg_timeintvl}) {
 				if(-x $system->{alerts}->{loadavg_script}) {
 					logger("$myself: ALERT: executing script '$system->{alerts}->{loadavg_script}'.");
 					system($system->{alerts}->{loadavg_script} . " " .$system->{alerts}->{loadavg_timeintvl} . " " . $system->{alerts}->{loadavg_threshold} . " " . $load15);
