@@ -1,5 +1,7 @@
-3.N.N  - NN-May-2013
+3.2.0  - NN-May-2013
 ====================
+- Added a complete Raspberry Pi sensors graph.
+	(thanks to graysky, graysky AT archlinux.us)
 - Improved a bit the MySQL documentation in the monitorix.conf(5) man page.
 	(thanks to Luca Ferrario, luca AT ferrario.net)
 - Added a new option called 'temperature_scale' to be able to toggle between
