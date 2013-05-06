@@ -3,7 +3,7 @@
 .\"
 .\" This is the man page for the monitorix.conf configuration file.
 .\"
-.TH monitorix.conf 5 "Mar 2013" 3.1.0 "Monitorix configuration file"
+.TH monitorix.conf 5 "May 2013" 3.2.0 "Monitorix configuration file"
 .SH NAME
 monitorix.conf \- Configuration file for Monitorix.
 .SH DESCRIPTION
@@ -87,6 +87,13 @@ Default value: \fIn\fP
 .BI temperature_scale
 .RS
 This option toggles between values in Celsius or in Fahrenheit in those graphs that represent temperatures.
+.P
+The possible values are:
+.RS
+\fIc\fP  for Celsius
+.br
+\fIf\fP  for Fahrenheit
+.RE
 .P
 Default value: \fIc\fP
 .RE
@@ -1368,6 +1375,32 @@ The maximum number of mountpoints allowed for each URL is 9.
 This changes the layout of the listeners graph, the possible values are \fIr\fP for a real graph, or \fIs\fP for a stacked graph (every line or area is stacked on top of the previous element).
 .P
 Default value: \fIr\fP
+.RE
+.SS Raspberry Pi sensor statistics (raspberrypi.rrd)
+This graph requires to have installed the command \fIvcgencmd\fP that should come with the Raspberry Pi firmware.
+.P
+For more information please refer to http://elinux.org/RPI_vcgencmd_usage.
+.P
+.BI clocks
+.RS
+This is the list of clock types that will be represented in the first graph.
+.P
+An example would be:
+.P
+clocks = arm, core, h264, isp, v3d, uart, emmc, pixel, hdmi
+.P
+The maximum number of clocks allowed is 9.
+.RE
+.P
+.BI volts
+.RS
+This is the list of voltage types that will be represented in the third graph.
+.P
+An example would be:
+.P
+volts = core, sdram_c, sdram_i, sdram_p
+.P
+The maximum number of clocks allowed is 6.
 .RE
 .SS Devices interrupt activity (int.rrd)
 Only the limit and rigid values may be set here.
