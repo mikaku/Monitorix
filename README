@@ -134,8 +134,8 @@ or with:
 # /etc/init.d/monitorix start
 
 At this point, Monitorix will start gathering the system information based on
-the configuration setup in 'monitorix.conf' file, and after some minutes, you
-should be able to see the results from your favorite browser pointing at:
+the configuration setup in 'monitorix.conf', and after some minutes, you should
+be able to see the results from your favorite browser pointing at:
 
 http://localhost:8080/monitorix/
 
