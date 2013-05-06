@@ -422,6 +422,15 @@ sub raspberrypi_cgi {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
+	undef(@riglim);
+	if(trim($rigid[1]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[0]));
+	} else {
+		if(trim($rigid[1]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[0]));
+			push(@riglim, "--rigid");
+		}
+	}
 	undef(@CDEF);
 	undef(@tmp);
 	undef(@tmpz);
@@ -450,6 +459,7 @@ sub raspberrypi_cgi {
 		"--vertical-label=$temp_scale",
 		"--width=$width",
 		"--height=$height",
+		@riglim,
 		"--lower-limit=0",
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -468,6 +478,7 @@ sub raspberrypi_cgi {
 			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
+			@riglim,
 			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -491,6 +502,15 @@ sub raspberrypi_cgi {
 		}
 	}
 
+	undef(@riglim);
+	if(trim($rigid[2]) eq 1) {
+		push(@riglim, "--upper-limit=" . trim($limit[0]));
+	} else {
+		if(trim($rigid[2]) eq 2) {
+			push(@riglim, "--upper-limit=" . trim($limit[0]));
+			push(@riglim, "--rigid");
+		}
+	}
 	undef(@CDEF);
 	undef(@tmp);
 	undef(@tmpz);
@@ -522,9 +542,7 @@ sub raspberrypi_cgi {
 		"--vertical-label=Volts",
 		"--width=$width",
 		"--height=$height",
-		"--upper-limit=100",
-		"--lower-limit=0",
-		"--rigid",
+		@riglim,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
@@ -544,9 +562,7 @@ sub raspberrypi_cgi {
 			"--vertical-label=Volts",
 			"--width=$width",
 			"--height=$height",
-			"--upper-limit=100",
-			"--lower-limit=0",
-			"--rigid",
+			@riglim,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
