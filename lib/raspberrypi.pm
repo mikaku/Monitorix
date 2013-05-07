@@ -106,8 +106,8 @@ sub raspberrypi_update {
 	$n = 0;
 	foreach my $c (split(',', ($raspberrypi->{clocks} || ""))) {
 		$c = trim($c);
-		if(!open(IN, "vcgencmd measure_clock $c |")) {
-			logger("$myself: unable to execute 'vcgencmd measure_clock $c'. $!");
+		if(!open(IN, "$raspberrypi->{cmd} measure_clock $c |")) {
+			logger("$myself: unable to execute '$raspberrypi->{cmd} measure_clock $c'. $!");
 			next;
 		}
 		while(<IN>) {
@@ -119,8 +119,8 @@ sub raspberrypi_update {
 		$n++;
 	}
 
-	if(!open(IN, "vcgencmd measure_temp |")) {
-		logger("$myself: unable to execute 'vcgencmd measure_temp'. $!");
+	if(!open(IN, "$raspberrypi->{cmd} measure_temp |")) {
+		logger("$myself: unable to execute '$raspberrypi->{cmd} measure_temp'. $!");
 	} else {
 		while(<IN>) {
 			if(/^temp=(\d+\.\d+)/) {
@@ -135,8 +135,8 @@ sub raspberrypi_update {
 	$n = 0;
 	foreach my $v (split(',', ($raspberrypi->{volts} || ""))) {
 		$v = trim($v);
-		if(!open(IN, "vcgencmd measure_volts $v |")) {
-			logger("$myself: unable to execute 'vcgencmd measure_volts $v'. $!");
+		if(!open(IN, "$raspberrypi->{cmd} measure_volts $v |")) {
+			logger("$myself: unable to execute '$raspberrypi->{cmd} measure_volts $v'. $!");
 			next;
 		}
 		while(<IN>) {
