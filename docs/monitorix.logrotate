@@ -1,4 +1,4 @@
-/var/log/monitorix {
+/var/log/monitorix /var/log/monitorix-httpd {
 	nocompress
 	missingok
 	postrotate

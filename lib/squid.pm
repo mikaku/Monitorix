@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -710,13 +710,13 @@ sub squid_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /squid1/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "'>\n");
 		}
 	}
 
@@ -792,13 +792,13 @@ sub squid_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /squid2/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "'>\n");
 		}
 	}
 
@@ -922,20 +922,20 @@ sub squid_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /squid3/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "'>\n");
 		}
 	}
+
 	if($title) {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-
 	undef(@riglim);
 	if(trim($rigid[3]) eq 1) {
 		push(@riglim, "--upper-limit=" . trim($limit[3]));
@@ -1011,13 +1011,13 @@ sub squid_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /squid4/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG4z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG4z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG4 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4 . "'>\n");
 		}
 	}
 
@@ -1096,13 +1096,13 @@ sub squid_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /squid5/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG5z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG5z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG5 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5 . "'>\n");
 		}
 	}
 
@@ -1183,13 +1183,13 @@ sub squid_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /squid6/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG6z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG6 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG6z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG6 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG6z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG6 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG6z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG6 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG6 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG6 . "'>\n");
 		}
 	}
 
@@ -1277,13 +1277,13 @@ sub squid_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /squid7/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG7z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG7 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG7z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG7 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG7z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG7 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG7z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG7 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG7 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG7 . "'>\n");
 		}
 	}
 
@@ -1359,13 +1359,13 @@ sub squid_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /squid8/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG8z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG8 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG8z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG8 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG8z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG8 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG8z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG8 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG8 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG8 . "'>\n");
 		}
 	}
 
@@ -1441,13 +1441,13 @@ sub squid_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /squid9/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG9z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG9 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG9z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG9 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG9z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG9 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG9z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG9 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG9 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG9 . "'>\n");
 		}
 	}
 

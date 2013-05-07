@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,6 +32,21 @@ sub disk_init {
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $disk = $config->{disk};
+
+	foreach my $k (sort keys %{$disk->{list}}) {
+		# values delimitted by ", " (comma + space)
+		my @dsk = split(', ', $disk->{list}->{$k});
+		for(my $n = 0; $n < 8; $n++) {
+			if($dsk[$n]) {
+				my $d = trim($dsk[$n]);
+				$d =~ s/^\"//;
+				$d =~ s/\"$//;
+	  			next if -e $d;
+				logger("ERROR: $myself: invalid or inexistent device name '$d'.");
+				return;
+			}
+		}
+	}
 
 	my $info;
 	my @ds;
@@ -134,13 +149,16 @@ sub disk_update {
 	my $rrdata = "N";
 
 	foreach my $k (sort keys %{$disk->{list}}) {
-		my @dsk = split(',', $disk->{list}->{$k});
+		# values delimitted by ", " (comma + space)
+		my @dsk = split(', ', $disk->{list}->{$k});
 		for($n = 0; $n < 8; $n++) {
 			$temp = 0;
 			$smart1 = 0;
 			$smart2 = 0;
 			if($dsk[$n]) {
 				my $d = trim($dsk[$n]);
+				$d =~ s/^\"//;
+				$d =~ s/\"$//;
 	  			open(IN, "smartctl -A $d |");
 				while(<IN>) {
 					if(/^  5/ && /Reallocated_Sector_Ct/) {
@@ -165,7 +183,14 @@ sub disk_update {
 					}
 				}
 				close(IN);
-				$temp = `hddtemp -wqn $d` unless $temp;
+				if(!$temp) {
+	  				if(open(IN, "hddtemp -wqn $d |")) {
+						$temp = <IN>;
+						close(IN);
+					} else {
+						logger("$myself: 'smartctl' failed to get data from '$d' and 'hddtemp' seems doesn't exist.");
+					}
+				}
 				chomp($temp);
 			}
 			$rrdata .= ":$temp";
@@ -239,7 +264,8 @@ sub disk_cgi {
 		my $line3;
 		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
 		foreach my $k (sort keys %{$disk->{list}}) {
-			my @d = split(',', $disk->{list}->{$k});
+			# values delimitted by ", " (comma + space)
+			my @d = split(', ', $disk->{list}->{$k});
 			for($n = 0; $n < scalar(@d); $n++) {
 				$str = sprintf(" DISK %d               ", $n + 1);
 				$line1 .= $str;
@@ -262,7 +288,8 @@ sub disk_cgi {
 			printf(" %2d$tf->{tc} ", $time);
 			$e = 0;
 			foreach my $k (sort keys %{$disk->{list}}) {
-				my @d = split(',', $disk->{list}->{$k});
+				# values delimitted by ", " (comma + space)
+				my @d = split(', ', $disk->{list}->{$k});
 				for($n2 = 0; $n2 < scalar(@d); $n2++) {
 					$from = ($e * 8 * 3) + ($n2 * 3);
 					$to = $from + 3;
@@ -311,7 +338,8 @@ sub disk_cgi {
 
 	$e = 0;
 	foreach my $k (sort keys %{$disk->{list}}) {
-		my @d = split(',', $disk->{list}->{$k});
+		# values delimitted by ", " (comma + space)
+		my @d = split(', ', $disk->{list}->{$k});
 
 		if($e) {
 			print("   <br>\n");
@@ -402,20 +430,20 @@ sub disk_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /disk$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3] . "'>\n");
 			}
 		}
+
 		if($title) {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-
 		undef(@tmp);
 		undef(@tmpz);
 		for($n = 0; $n < 8; $n += 2) {
@@ -490,13 +518,13 @@ sub disk_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /disk$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "'>\n");
 			}
 		}
 
@@ -574,13 +602,13 @@ sub disk_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /disk$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "'>\n");
 			}
 		}
 

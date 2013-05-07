@@ -6,13 +6,13 @@ option.
 
 Make sure that the default ipfw(8) rule numbers defined in the monitorix.conf
 file doesn't conflict with any other rule number in your firewall:
-	- $PORT_RULE = "24000";
-	- $NGINX_RULE = "24100";
+	- In <port> configuration section: rule = 24000
+	- In <nginx> configuration section: rule = 24100
 
 This is the list of things that still need attention:
-   - [PCLAN]  - PC LAN Internet activity is not supported yet. Help needed!
-   - [SERV]   - Some services may not work.
-   - [HPTEMP] - HP Temperatures may not work because of the lack of HP software.
-   - [NFSS]   - NFS server is not supported yet.
-   - [NFSC]   - NFS client is not supported yet.
+   [TRAFFACCT]	- Network activity is not supported yet. Help is needed!
+   [SERV]	- Some services may not work.
+   [HPTEMP]	- Temperatures may not work because of the lack of HP support.
+   [NFSS]	- NFS server is not supported yet.
+   [NFSC]	- NFS client is not supported yet.
 

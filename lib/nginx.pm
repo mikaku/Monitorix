@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -83,10 +83,9 @@ sub nginx_init {
 	}
 
 	if($config->{os} eq "Linux") {
-		system("iptables -N nginx_IN 2>/dev/null");
-		system("iptables -I INPUT -p tcp --dport $nginx->{port} -j nginx_IN -c 0 0");
-		system("iptables -N nginx_OUT 2>/dev/null");
-		system("iptables -I OUTPUT -p tcp --sport $nginx->{port} -j nginx_OUT -c 0 0");
+		system("iptables -N monitorix_nginx_IN 2>/dev/null");
+		system("iptables -I INPUT -p tcp --sport 1024:65535 --dport $nginx->{port} -m conntack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_nginx_IN -c 0 0");
+		system("iptables -I OUTPUT -p tcp --sport $nginx->{port} --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_nginx_IN -c 0 0");
 	}
 	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 		system("ipfw delete $nginx->{rule} 2>/dev/null");
@@ -105,19 +104,22 @@ sub nginx_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $nginx = $config->{nginx};
 
-	my $reqs;
-	my $tot;
-	my $reads;
-	my $writes;
-	my $waits;
-	my $in;
-	my $out;
-	my $val;
+	my $reqs = 0;
+	my $tot = 0;
+	my $reads = 0;
+	my $writes = 0;
+	my $waits = 0;
+	my $in = 0;
+	my $out = 0;
 
 	my $url = "http://127.0.0.1:" . $nginx->{port} . "/nginx_status";
 	my $ua = LWP::UserAgent->new(timeout => 30);
 	my $response = $ua->request(HTTP::Request->new('GET', $url));
 	my $rrdata = "N";
+
+	if(!$response->is_success) {
+		logger("$myself: ERROR: Unable to connect to '$url'.");
+	}
 
 	foreach(split('\n', $response->content)) {
 		if(/^Active connections:\s+(\d+)\s*/) {
@@ -137,6 +139,7 @@ sub nginx_update {
 	}
 
 	if($config->{os} eq "Linux") {
+		my $val;
 		open(IN, "iptables -nxvL INPUT |");
 		while(<IN>) {
 			if(/ nginx_IN /) {
@@ -152,7 +155,7 @@ sub nginx_update {
 		close(IN);
 		open(IN, "iptables -nxvL OUTPUT |");
 		while(<IN>) {
-			if(/ nginx_OUT /) {
+			if(/ nginx_IN /) {
 				(undef, $val) = split(' ', $_);
 				chomp($val);
 				$out = $val - ($config->{nginx_hist}->{'out'} || 0);
@@ -165,6 +168,7 @@ sub nginx_update {
 		close(IN);
 	}
 	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
+		my $val;
 		open(IN, "ipfw show $nginx->{rule} 2>/dev/null |");
 		while(<IN>) {
 			if(/ from any to me dst-port $nginx->{port}$/) {
@@ -398,20 +402,20 @@ sub nginx_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /nginx1/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "'>\n");
 		}
 	}
+
 	if($title) {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-
 	undef(@riglim);
 	if(trim($rigid[1]) eq 1) {
 		push(@riglim, "--upper-limit=" . trim($limit[1]));
@@ -475,13 +479,13 @@ sub nginx_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /nginx2/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "'>\n");
 		}
 	}
 
@@ -604,13 +608,13 @@ sub nginx_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /nginx3/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "'>\n");
 		}
 	}
 

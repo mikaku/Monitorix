@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,8 @@ package Monitorix;
 use strict;
 use warnings;
 use Exporter 'import';
-our @EXPORT = qw(logger trim get_nvidia_data flush_accounting_rules);
+use POSIX qw(setuid setgid setsid);
+our @EXPORT = qw(logger trim max httpd_setup get_nvidia_data flush_accounting_rules);
 
 sub logger {
 	my ($msg) = @_;
@@ -42,7 +43,59 @@ sub trim {
 	}
 }
 
+sub max {
+	my ($max, @args) = @_;
+	foreach(@args) {
+		$max = $_ if $_ > $max;
+	}
+	return $max;
+}
+
+sub httpd_setup {
+	my ($config, $debug) = @_;
+	my $pid;
+
+	my (undef, undef, $uid) = getpwnam($config->{httpd_builtin}->{user});
+	my (undef, undef, $gid) = getgrnam($config->{httpd_builtin}->{group});
+	my $port = $config->{httpd_builtin}->{port};
+
+	if(!defined($uid)) {
+		logger("ERROR: invalid user defined for the built-in HTTP server.");
+		return;
+	}
+	if(!defined($gid)) {
+		logger("ERROR: invalid group defined for the built-in HTTP server.");
+		return;
+	}
+	if(!defined($port)) {
+		logger("ERROR: invalid port defined for the built-in HTTP server.");
+		return;
+	}
+
+	if($pid = fork()) {
+		$config->{httpd_pid} = $pid;
+		return;	# parent returns
+	}
+
+	# create the HTTPd logfile
+	open(OUT, ">> " . $config->{httpd_builtin}->{log_file});
+	close(OUT);
+	chown($uid, $gid, $config->{httpd_builtin}->{log_file});
+
+	setgid($gid);
+	setuid($uid);
+	setsid();
+	$SIG{$_} = 'DEFAULT' for keys %SIG;		# reset all sighandlers
+	$0 = "monitorix-httpd listening on $port";	# change process' name
+	chdir($config->{base_dir});
+
+	my $server = HTTPServer->new($port);
+	$server->run();
+	exit(0);
+}
+
 sub get_nvidia_data {
+	my $myself = (caller(0))[3];
 	my ($gpu) = @_;
 	my $total = 0;
 	my $used = 0;
@@ -54,9 +107,13 @@ sub get_nvidia_data {
 	my $check_temp = 0;
 	my $l;
 
-	open(IN, "nvidia-smi -q -i $gpu -d MEMORY,UTILIZATION,TEMPERATURE |");
-	my @data = <IN>;
-	close(IN);
+	my @data = ();
+	if(open(IN, "nvidia-smi -q -i $gpu -d MEMORY,UTILIZATION,TEMPERATURE |")) {
+		@data = <IN>;
+		close(IN);
+	} else {
+		logger("$myself: ERROR: 'nvidia-smi' command is not installed.");
+	}
 	for($l = 0; $l < scalar(@data); $l++) {
 		if($data[$l] =~ /Memory Usage/) {
 			$check_mem = 1;
@@ -166,32 +223,49 @@ sub flush_accounting_rules {
 		my $num = 0;
 
 		logger("Flushing out iptables rules.") if $debug;
-		if(open(IN, "iptables -nxvL INPUT --line-numbers |")) {
-			my @rules;
+		{
 			my @names;
-			while(<IN>) {
-				my ($rule, undef, undef, $name) = split(' ', $_);
-				if($name =~ /monitorix_IN/ || /monitorix_nginx_IN/) {
-					push(@rules, $rule);
-					push(@names, $name);
+			if(open(IN, "iptables -nxvL INPUT --line-numbers |")) {
+				my @rules;
+				while(<IN>) {
+					my ($rule, undef, undef, $name) = split(' ', $_);
+					if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
+						push(@rules, $rule);
+						push(@names, $name);
+					}
+				}
+				close(IN);
+				@rules = reverse(@rules);
+				foreach(@rules) {
+					system("iptables -D INPUT $_");
+					$num++;
 				}
 			}
-			close(IN);
-			@rules = reverse(@rules);
-			foreach(@rules) {
-				system("iptables -D INPUT $_");
-				$num++;
+			if(open(IN, "iptables -nxvL OUTPUT --line-numbers |")) {
+				my @rules;
+				while(<IN>) {
+					my ($rule, undef, undef, $name) = split(' ', $_);
+					if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
+						push(@rules, $rule);
+					}
+				}
+				close(IN);
+				@rules = reverse(@rules);
+				foreach(@rules) {
+					system("iptables -D OUTPUT $_");
+					$num++;
+				}
 			}
 			foreach(@names) {
 				system("iptables -X $_");
 			}
 		}
-		if(open(IN, "iptables -nxvL OUTPUT --line-numbers |")) {
+		if(open(IN, "iptables -nxvL FORWARD --line-numbers |")) {
 			my @rules;
 			my @names;
 			while(<IN>) {
 				my ($rule, undef, undef, $name) = split(' ', $_);
-				if($name =~ /monitorix_OUT/ || /monitorix_nginx_OUT/) {
+				if($name =~ /monitorix_daily_/ || /monitorix_total_/) {
 					push(@rules, $rule);
 					push(@names, $name);
 				}
@@ -199,10 +273,11 @@ sub flush_accounting_rules {
 			close(IN);
 			@rules = reverse(@rules);
 			foreach(@rules) {
-				system("iptables -D OUTPUT $_");
+				system("iptables -D FORWARD $_");
 				$num++;
 			}
 			foreach(@names) {
+				system("iptables -F $_");
 				system("iptables -X $_");
 			}
 		}

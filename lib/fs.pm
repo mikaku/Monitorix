@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@ use strict;
 use warnings;
 use Monitorix;
 use RRDs;
+use Cwd 'abs_path';
+use File::Basename;
 use Exporter 'import';
 our @EXPORT = qw(fs_init fs_update fs_cgi);
 
@@ -121,7 +123,7 @@ sub fs_init {
 		my @fsl = split(',', $fs->{list}->{$k});
 		my $d;
 		foreach my $f (@fsl) {
-			undef($d);
+			$d = "";
 			$f = trim($f);
 			$d = $fs->{devmap}->{$f} if $fs->{devmap}->{$f};
 			next unless !$d;
@@ -162,6 +164,10 @@ sub fs_init {
 
 				# get the major and minor of $d
 				my $rdev = (stat($d))[6];
+				if(!$rdev) {
+					logger("$myself: Unable to detect the device name of '$d'. I/O stats for this filesystem won't be shown in graph.");
+					next;
+				}
 				my $minor = $rdev % 256;
 				my $major = int($rdev / 256);
 
@@ -232,6 +238,11 @@ sub fs_init {
 					}
 				}
 			} elsif($config->{os} eq "FreeBSD" || $config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
+				if($f eq "swap") {
+					$d = `swapinfo | tail -1 | awk -F " " '{ print \$1 }'`;
+					chomp($d);
+				}
+
 				# remove the /dev/ prefix
 				if ($d =~ s/^.*dev\///) {
 					# not ZFS; get the device name, eg ada0; md0; ad10
@@ -246,7 +257,15 @@ sub fs_init {
 		}
 	}
 
+	# check dependencies
+	if(lc($fs->{alerts}->{rootfs_enabled}) eq "y") {
+		if(! -x $fs->{alerts}->{rootfs_script}) {
+			logger("$myself: ERROR: script '$fs->{alerts}->{rootfs_script}' doesn't exist or don't has execution permissions.");
+		}
+	}
+
 	$config->{fs_hist} = ();
+	$config->{fs_hist_alert1} = 0;
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
 }
@@ -355,18 +374,21 @@ sub fs_update {
 				$use = ($used * 100) / ($used + $free);
 
 				# FS alert
-				if($f eq "/" && lc($config->{enable_alerts}) eq "y") {
-					if(!$config->{alert_rootfs_threshold} || $use < $config->{alert_rootfs_threshold}) {
-						$config->{fs_hist}->{rootalert} = 0;
+				if($f eq "/" && lc($fs->{alerts}->{rootfs_enabled}) eq "y") {
+					if(!$fs->{alerts}->{rootfs_threshold} || $use < $fs->{alerts}->{rootfs_threshold}) {
+						$config->{fs_hist_alert1} = 0;
 					} else {
-						if(!$config->{fs_hist}->{rootalert}) {
-							$config->{fs_hist}->{rootalert} = time;
+						if(!$config->{fs_hist_alert1}) {
+							$config->{fs_hist_alert1} = time;
 						}
-						if($config->{fs_hist}->{rootalert} > 0 && (time - $config->{fs_hist}->{rootalert}) > $config->{alert_rootfs_timeintvl}) {
-							if(-x $config->{alert_rootfs_script}) {
-								system($config->{alert_rootfs_script} . " " . $config->{alert_rootfs_timeintvl} . " " . $config->{alert_rootfs_threshold} . " " . $use);
+						if($config->{fs_hist_alert1} > 0 && (time - $config->{fs_hist_alert1}) > $fs->{alerts}->{rootfs_timeintvl}) {
+							if(-x $fs->{alerts}->{rootfs_script}) {
+								logger("$myself: ALERT: executing script '$fs->{alerts}->{rootfs_script}'.");
+								system($fs->{alerts}->{rootfs_script} . " " . $fs->{alerts}->{rootfs_timeintvl} . " " . $fs->{alerts}->{rootfs_threshold} . " " . $use);
+							} else {
+								logger("$myself: ERROR: script '$fs->{alerts}->{rootfs_script}' doesn't exist or don't has execution permissions.");
 							}
-							$config->{fs_hist}->{rootalert} = time;
+							$config->{fs_hist_alert1} = time;
 						}
 					}
 				}
@@ -522,7 +544,8 @@ sub fs_cgi {
 		foreach my $k (sort keys %{$fs->{list}}) {
 			my @f = split(',', $fs->{list}->{$k});
 			for($n = 0; $n < scalar(@f); $n++) {
-				$str = sprintf("%23s", $fs->{desc}->{$f[$n]} || trim($f[$n]));
+				$f[$n] = trim($f[$n]);
+				$str = sprintf("%23s", $fs->{desc}->{$f[$n]} || $f[$n]);
 				$line1 .= $str;
 				$str = sprintf("   Use     I/O    Time ");
 				$line2 .= $str;
@@ -614,19 +637,20 @@ sub fs_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		push(@tmp, "COMMENT: \\n");
-		for($n = 0; $n < 8; $n++) {
+		for($n2 = 0, $n = 0; $n < 8; $n++) {
 			if($f[$n]) {
+				$f[$n] = trim($f[$n]);
 				my $color;
 
-				$str = $fs->{desc}->{$f[$n]} || trim($f[$n]);
-				if(trim($f[$n]) eq "/") {
+				$str = $fs->{desc}->{$f[$n]} || $f[$n];
+				if($f[$n] eq "/") {
 					$color = "#EE4444";
-				} elsif($str eq "swap") {
+				} elsif($f[$n] eq "swap") {
 					$color = "#CCCCCC";
-				} elsif($str eq "/boot") {
+				} elsif($f[$n] eq "/boot") {
 					$color = "#666666";
 				} else {
-					$color = $LC[$n];
+					$color = $LC[$n2++];
 				}
 				push(@tmpz, "LINE2:fs" . $n . $color . ":$str");
 				$str = sprintf("%-23s", $str);
@@ -705,20 +729,20 @@ sub fs_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /fs$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3] . "'>\n");
 			}
 		}
+
 		if($title) {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-
 		undef(@riglim);
 		if(trim($rigid[1]) eq 1) {
 			push(@riglim, "--upper-limit=" . trim($limit[1]));
@@ -730,33 +754,35 @@ sub fs_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
-		for($n = 0; $n < 8; $n += 2) {
+		for($n2 = 0, $n = 0; $n < 8; $n += 2) {
 			my $color;
 			if($f[$n]) {
-				$str = $fs->{desc}->{$f[$n]} || trim($f[$n]);
-				if(trim($f[$n]) eq "/") {
+				$f[$n] = trim($f[$n]);
+				$str = $fs->{desc}->{$f[$n]} || $f[$n];
+				if($f[$n] eq "/") {
 					$color = "#EE4444";
-				} elsif($str eq "swap") {
+				} elsif($f[$n] eq "swap") {
 					$color = "#CCCCCC";
-				} elsif($str eq "/boot") {
+				} elsif($f[$n] eq "/boot") {
 					$color = "#666666";
 				} else {
-					$color = $LC[$n];
+					$color = $LC[$n2++];
 				}
 				push(@tmpz, "LINE2:ioa" . $n . $color . ":$str\\g");
 				$str = sprintf("%-17s", substr($str, 0, 17));
 				push(@tmp, "LINE2:ioa" . $n . $color . ":$str");
 			}
 			if($f[$n + 1]) {
-				$str = $fs->{desc}->{$f[$n + 1]} || trim($f[$n + 1]);
-				if(trim($f[$n + 1]) eq "/") {
+				$f[$n + 1] = trim($f[$n + 1]);
+				$str = $fs->{desc}->{$f[$n + 1]} || $f[$n + 1];
+				if($f[$n + 1] eq "/") {
 					$color = "#EE4444";
-				} elsif($str eq "swap") {
+				} elsif($f[$n + 1] eq "swap") {
 					$color = "#CCCCCC";
-				} elsif($str eq "/boot") {
+				} elsif($f[$n + 1] eq "/boot") {
 					$color = "#666666";
 				} else {
-					$color = $LC[$n + 1];
+					$color = $LC[$n2++];
 				}
 				push(@tmpz, "LINE2:ioa" . ($n + 1) . $color . ":$str\\g");
 				$str = sprintf("%-17s", substr($str, 0, 17));
@@ -825,13 +851,13 @@ sub fs_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /fs$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "'>\n");
 			}
 		}
 
@@ -854,33 +880,35 @@ sub fs_cgi {
 	   			$graph_title = "Disk sectors activity  ($tf->{nwhen}$tf->{twhen})";
 				$vlabel = "Sectors/s";
 			}
-			for($n = 0; $n < 8; $n += 2) {
+			for($n2 = 0, $n = 0; $n < 8; $n += 2) {
 				my $color;
 				if($f[$n]) {
-					$str = $fs->{desc}->{$f[$n]} || trim($f[$n]);
-					if(trim($f[$n]) eq "/") {
+					$f[$n] = trim($f[$n]);
+					$str = $fs->{desc}->{$f[$n]} || $f[$n];
+					if($f[$n] eq "/") {
 						$color = "#EE4444";
-					} elsif($str eq "swap") {
+					} elsif($f[$n] eq "swap") {
 						$color = "#CCCCCC";
-					} elsif($str eq "/boot") {
+					} elsif($f[$n] eq "/boot") {
 						$color = "#666666";
 					} else {
-						$color = $LC[$n];
+						$color = $LC[$n2++];
 					}
 					push(@tmpz, "LINE2:tim" . $n . $color . ":$str\\g");
 					$str = sprintf("%-17s", substr($str, 0, 17));
 					push(@tmp, "LINE2:tim" . $n . $color . ":$str");
 				}
 				if($f[$n + 1]) {
-					$str = $fs->{desc}->{$f[$n + 1]} || trim($f[$n + 1]);
-					if(trim($f[$n + 1]) eq "/") {
+					$f[$n + 1] = trim($f[$n + 1]);
+					$str = $fs->{desc}->{$f[$n + 1]} || $f[$n + 1];
+					if($f[$n + 1] eq "/") {
 						$color = "#EE4444";
-					} elsif($str eq "swap") {
+					} elsif($f[$n + 1] eq "swap") {
 						$color = "#CCCCCC";
-					} elsif($str eq "/boot") {
+					} elsif($f[$n + 1] eq "/boot") {
 						$color = "#666666";
 					} else {
-						$color = $LC[$n + 1];
+						$color = $LC[$n2++];
 					}
 					push(@tmpz, "LINE2:tim" . ($n + 1) . $color . ":$str\\g");
 					$str = sprintf("%-17s", substr($str, 0, 17));
@@ -890,36 +918,38 @@ sub fs_cgi {
 		} elsif(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 	   		$graph_title = "Disk data activity  ($tf->{nwhen}$tf->{twhen})";
 			$vlabel = "KB/s";
-			for($n = 0; $n < 8; $n += 2) {
+			for($n2 = 0, $n = 0; $n < 8; $n += 2) {
 				my $color;
 				my $str2;
 
-				$str2 = $fs->{desc}->{$f[$n]} || trim($f[$n]);
 				if($f[$n]) {
+					$f[$n] = trim($f[$n]);
+					$str2 = $fs->{desc}->{$f[$n]} || $f[$n];
 					$str = sprintf("%-17s", $str2, 0, 17);
-					if(trim($f[$n]) eq "/") {
+					if($f[$n] eq "/") {
 						$color = "#EE4444";
-					} elsif($str eq "swap") {
+					} elsif($f[$n] eq "swap") {
 						$color = "#CCCCCC";
-					} elsif($str eq "/boot") {
+					} elsif($f[$n] eq "/boot") {
 						$color = "#666666";
 					} else {
-						$color = $LC[$n];
+						$color = $LC[$n2++];
 					}
 					push(@tmp, "LINE2:tim" . $n . $color . ":$str");
 					push(@tmpz, "LINE2:tim" . $n . $color . ":$f[$n]\\g");
 				}
-				$str2 = $fs->{desc}->{$f[$n + 1]} || trim($f[$n + 1]);
 				if($f[$n + 1]) {
+					$f[$n + 1] = trim($f[$n + 1]);
+					$str2 = $fs->{desc}->{$f[$n + 1]} || $f[$n + 1];
 					$str = sprintf("%-17s", $str2, 0, 17);
-					if(trim($f[$n + 1]) eq "/") {
+					if($f[$n + 1] eq "/") {
 						$color = "#EE4444";
-					} elsif($str eq "swap") {
+					} elsif($f[$n + 1] eq "swap") {
 						$color = "#CCCCCC";
-					} elsif($str eq "/boot") {
+					} elsif($f[$n + 1] eq "/boot") {
 						$color = "#666666";
 					} else {
-						$color = $LC[$n + 1];
+						$color = $LC[$n2++];
 					}
 					push(@tmp, "LINE2:tim" . ($n + 1) . $color . ":$str\\n");
 					push(@tmpz, "LINE2:tim" . ($n + 1) . $color . ":$f[$n + 1]\\g");
@@ -988,13 +1018,13 @@ sub fs_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /fs$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "'>\n");
 			}
 		}
 

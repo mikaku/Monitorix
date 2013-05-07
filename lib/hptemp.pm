@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ sub hptemp_init {
 	# save the output of 'hplog -t' since only 'root' is able to run it
 	my @data = <IN>;
 	close(IN);
-	open(OUT, "> $config->{base_dir}/cgi-bin/monitorix.hplog");
+	open(OUT, "> $config->{base_dir}/cgi/monitorix.hplog");
 	print(OUT @data);
 	close(OUT);
 
@@ -127,7 +127,7 @@ sub hptemp_update {
 	close(IN);
 	my $str;
 	for($l = 0; $l < scalar(@data); $l++) {
-		foreach my $t (split(',', $hptemp->{list}->{0})) {
+		foreach my $t (split(',', ($hptemp->{graph_0} || ""))) {
 			$str = sprintf("%2d", trim($t));
 			if($data[$l] =~ m/^$str  /) {
 				my $temp = trim(substr($data[$l], 47, 3));
@@ -135,7 +135,7 @@ sub hptemp_update {
 				push(@hptemp1, map {$_ eq "---" ? 0 : $_} ($temp));
 			}
 		}
-		foreach my $t (split(',', $hptemp->{list}->{1})) {
+		foreach my $t (split(',', ($hptemp->{graph_1} || ""))) {
 			$str = sprintf("%2d", trim($t));
 			if($data[$l] =~ m/^$str  /) {
 				my $temp = trim(substr($data[$l], 47, 3));
@@ -143,7 +143,7 @@ sub hptemp_update {
 				push(@hptemp2, map {$_ eq "---" ? 0 : $_} ($temp));
 			}
 		}
-		foreach my $t (split(',', $hptemp->{list}->{2})) {
+		foreach my $t (split(',', ($hptemp->{graph_2} || ""))) {
 			$str = sprintf("%2d", trim($t));
 			if($data[$l] =~ m/^$str  /) {
 				my $temp = trim(substr($data[$l], 47, 3));
@@ -233,7 +233,7 @@ sub hptemp_cgi {
 		my $line1;
 		my $line2;
 		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
-		foreach my $t (split(',', $hptemp->{list}->{0}), split(',', $hptemp->{list}->{1}), split(',', $hptemp->{list}->{2})) {
+		foreach my $t (split(',', $hptemp->{graph_0}), split(',', $hptemp->{graph_1}), split(',', $hptemp->{graph_2})) {
 			$id = sprintf("%2d", trim($t));
 			for($n = 0; $n < scalar(@hplog); $n++) {
 				$_ = $hplog[$n];
@@ -258,17 +258,17 @@ sub hptemp_cgi {
 			printf(" %2d$tf->{tc} ", $time);
 			undef($line1);
 			undef(@row);
-			for($n2 = 0; $n2 < scalar(my @hp = split(',', $hptemp->{list}->{0})); $n2++) {
+			for($n2 = 0; $n2 < scalar(my @hp = split(',', $hptemp->{graph_0})); $n2++) {
 				my $temp = @$line[$n2];
 				push(@row, $temp);
 				$line1 .= " %8.0f ";
 			}
-			for($n2 = 0; $n2 < scalar(my @hp = split(',', $hptemp->{list}->{1})); $n2++) {
+			for($n2 = 0; $n2 < scalar(my @hp = split(',', $hptemp->{graph_1})); $n2++) {
 				my $temp = @$line[8 + $n2];
 				push(@row, $temp);
 				$line1 .= " %8.0f ";
 			}
-			for($n2 = 0; $n2 < scalar(my @hp = split(',', $hptemp->{list}->{2})); $n2++) {
+			for($n2 = 0; $n2 < scalar(my @hp = split(',', $hptemp->{graph_2})); $n2++) {
 				my $temp = @$line[8 + 3 + $n2];
 				push(@row, $temp);
 				$line1 .= " %8.0f ";
@@ -319,7 +319,7 @@ sub hptemp_cgi {
 		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 	}
 
-	if(scalar(my @hptemp0 = split(',', $hptemp->{list}->{0}))) {
+	if(scalar(my @hptemp0 = split(',', ($hptemp->{graph_0} || "")))) {
 		undef(@tmp);
 		undef(@tmpz);
 		for($n = 0; $n < 8; $n++) {
@@ -398,13 +398,13 @@ sub hptemp_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /hptemp1/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "'>\n");
 			}
 		}
 	}
@@ -413,8 +413,7 @@ sub hptemp_cgi {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-
-	if(scalar(my @hptemp1 = split(',', $hptemp->{list}->{1}))) {
+	if(scalar(my @hptemp1 = split(',', ($hptemp->{graph_1} || "")))) {
 		undef(@tmp);
 		undef(@tmpz);
 		for($n = 0; $n < 6; $n++) {
@@ -492,18 +491,18 @@ sub hptemp_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /hptemp2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "'>\n");
 			}
 		}
 	}
 
-	if(scalar(my @hptemp2 = split(',', $hptemp->{list}->{2}))) {
+	if(scalar(my @hptemp2 = split(',', ($hptemp->{graph_2} || "")))) {
 		undef(@tmp);
 		undef(@tmpz);
 		for($n = 0; $n < 6; $n++) {
@@ -581,13 +580,13 @@ sub hptemp_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /hptemp3/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "'>\n");
 			}
 		}
 	}

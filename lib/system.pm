@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ sub system_init {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $system = $config->{system};
 
 	if(!(-e $rrd)) {
 		logger("Creating '$rrd' file.");
@@ -90,13 +91,13 @@ sub system_init {
 	}
 
 	# check dependencies
-	if(lc($config->{enable_alerts}) eq "y") {
-		if(! -x $config->{alert_loadavg_script}) {
-			logger("$myself: ERROR: script '$config->{alert_loadavg_script}' doesn't exist or don't has execution permissions.");
+	if(lc($system->{alerts}->{loadavg_enabled}) eq "y") {
+		if(! -x $system->{alerts}->{loadavg_script}) {
+			logger("$myself: ERROR: script '$system->{alerts}->{loadavg_script}' doesn't exist or don't has execution permissions.");
 		}
 	}
 
-	$config->{system_hist} = 0;
+	$config->{system_hist_alert1} = 0;
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
 }
@@ -105,6 +106,7 @@ sub system_update {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $system = $config->{system};
 
 	my $load1;
 	my $load5;
@@ -184,8 +186,8 @@ sub system_update {
 				$nprun = $1;
 				$npslp = $2;
 			}
-			if(/^Free Memory Pages:\s+(\d+)K$/) {
-				$mfree = $1;
+			if(/^(Free Memory Pages:|Free Memory:)\s+(\d+)K$/) {
+				$mfree = $2;
 			}
 		}
 		close(IN);
@@ -276,18 +278,21 @@ sub system_update {
 	);
 
 	# SYSTEM alert
-	if(lc($config->{enable_alerts}) eq "y") {
-		if(!$config->{alert_loadavg_threshold} || $load15 < $config->{alert_loadavg_threshold}) {
-			$config->{system_hist} = 0;
+	if(lc($system->{alerts}->{loadavg_enabled}) eq "y") {
+		if(!$system->{alerts}->{loadavg_threshold} || $load15 < $system->{alerts}->{loadavg_threshold}) {
+			$config->{system_hist_alert1} = 0;
 		} else {
-			if(!$config->{system_hist}) {
-				$config->{system_hist} = time;
+			if(!$config->{system_hist_alert1}) {
+				$config->{system_hist_alert1} = time;
 			}
-			if($config->{system_hist} > 0 && (time - $config->{system_hist}) > $config->{alert_loadavg_timeintvl}) {
-				if(-x $config->{alert_loadavg_script}) {
-					system($config->{alert_loadavg_script} . " " .$config->{alert_loadavg_timeintvl} . " " . $config->{alert_loadavg_threshold} . " " . $load15);
+			if($config->{system_hist_alert1} > 0 && (time - $config->{system_hist_alert1}) > $system->{alerts}->{loadavg_timeintvl}) {
+				if(-x $system->{alerts}->{loadavg_script}) {
+					logger("$myself: ALERT: executing script '$system->{alerts}->{loadavg_script}'.");
+					system($system->{alerts}->{loadavg_script} . " " .$system->{alerts}->{loadavg_timeintvl} . " " . $system->{alerts}->{loadavg_threshold} . " " . $load15);
+				} else {
+					logger("$myself: ERROR: script '$system->{alerts}->{loadavg_script}' doesn't exist or don't has execution permissions.");
 				}
-				$config->{system_hist} = time;
+				$config->{system_hist_alert1} = time;
 			}
 		}
 	}
@@ -502,20 +507,20 @@ sub system_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /system1/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "'>\n");
 		}
 	}
+
 	if($title) {
 		print("    </td>\n");
 		print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-
 	undef(@riglim);
 	if(trim($rigid[1]) eq 1) {
 		push(@riglim, "--upper-limit=" . trim($limit[1]));
@@ -582,13 +587,13 @@ sub system_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /system2/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "'>\n");
 		}
 	}
 
@@ -688,13 +693,13 @@ sub system_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /system3/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "'>\n");
 		}
 	}
 

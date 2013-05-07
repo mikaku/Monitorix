@@ -1,18 +1,18 @@
 .\" Monitorix manpage.
-.\" Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+.\" Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 .\"
 .\" This is the man page for the monitorix collector daemon.
 .\"
-.TH monitorix 8 "Sep 2012" 2.6.0 "Monitorix collector daemon"
+.TH monitorix 8 "Mar 2013" 3.1.0 "Monitorix collector daemon"
 .SH NAME
-monitorix
+monitorix - a lightweight system monitoring tool
 .SH SYNOPSIS
-\fBmonitorix\fR \fB-c configfile\fR [\fB-p pidfile\fR] [\fB-d none | graph[,graph] | all\fR] [\fB-v\fR]
+\fBmonitorix\fR \fB-c\fR configfile [\fB-p\fR pidfile] [\fB-d\fR none | graph[,graph] | all] [\fB-v\fR]
 .SH DESCRIPTION
 This Perl daemon starts the main Monitorix process, which gathers statistics about the system it is running on and stores this information in a set of RRD files.
 .SH OPTIONS
 .TP
-\fB\-c configfile\fR
+\fB\-c\fR \fIconfigfile\fR
 The default location of the configuration file varies depending on the operating system:
 .P
 .RS
@@ -22,36 +22,36 @@ FreeBSD:      \fI/usr/local/etc/monitorix.conf\fP
 .P
 .RE
 .TP
-\fB\-p pidfile\fR
+\fB\-p\fR \fIpidfile\fR
 Stores the daemon's process ID into the specified file.
 .TP
-\fB\-d none | graph[,graph] | all\fR
+\fB\-d\fR none | graph[,graph] | all
 Logs more information about what \fBmonitorix\fP is doing internally. The keys reflect if the data collected must be displayed on each case. If \fBall\fP is defined, the data collected of all enabled graphs will be shown. If \fBnone\fP is defined no data collected will be shown. Finally it is also possible to define a comma-separated list of graph names from which show their data collected.
 .br
-For a reference of all graph names check the option \fB@GRAPH_NAME\fP in the \fImonitorix.conf\fP configuration file.
+For a reference of all graph names check the option \fBgraph_name\fP in the \fImonitorix.conf\fP configuration file.
 .TP
 \fB\-v\fR
 Displays version information.
 .SH SIGNALS
 On receipt of a SIGHUP, \fBmonitorix\fP will close and reopen its log file. This is useful in scripts which rotate and age log files.
 .P
-Note that the configuration file is not re-read. I plan to change this in future versions.
+Note that the configuration file is not re-read.
 .SH FILES
-The following is the set of the special files created on every startup:
-.TP 41
-\fB$BASE_DIR/cgi-bin/monitorix.conf.path\fP
-stores the path of \fIconfigfile\fP.
-.TP 41
-\fB$BASE_DIR/cgi-bin/monitorix.hplog\fP
-stores the output of \fIhplog\fP.
-.TP 41
-\fB$BASE_DIR/index.html\fP
+The following set of the files are created on every startup:
+.TP 8
+\fB<base_dir>/cgi/monitorix.conf.path\fP
+Stores the path of \fIconfigfile\fP.
+.TP 8
+\fB<base_dir>/cgi/monitorix.hplog\fP
+Stores the output of \fIhplog\fP command.
+.TP 8
+\fB<base_dir>/index.html\fP
 HTML main page.
 .SH AUTHOR
 Monitorix is written by Jordi Sanfeliu <jordi@fibranet.cat>
 .SH COPYRIGHT
-Copyright \(co 2005-2012 Jordi Sanfeliu
+Copyright \(co 2005-2013 Jordi Sanfeliu
 .br
-Licensed under the GNU General Public License v2 (GPL).
+Licensed under the GNU General Public License version 2 (GPLv2).
 .SH "SEE ALSO"
 .BR monitorix.conf (5)

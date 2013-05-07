@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -133,7 +133,7 @@ sub serv_update {
 
 	# This graph is refreshed only every 5 minutes
 	my (undef, $min) = localtime(time);
-	return if($min % 5);
+#	return if($min % 5);
 
 	if(-r $config->{secure_log}) {
 		$date = strftime("%b %e", localtime);
@@ -146,10 +146,6 @@ sub serv_update {
 				if($config->{os} eq "Linux") {
 					if(/START: pop3/) {
 						$pop3++;
-					}
-					if(/START: ftp/ ||
-					  (/ proftpd\[/ && /Login successful./)) {
-						$ftp++;
 					}
 					if(/START: telnet/) {
 						$telnet++;
@@ -166,8 +162,8 @@ sub serv_update {
 	}
 
 	if(-r $config->{imap_log}) {
-		$config->{imap_date_log_format} = $config->{imap_date_log_format} || "%b %d";
-		my $date_dovecot = strftime($config->{imap_date_log_format}, localtime);
+		$config->{imap_log_date_format} = $config->{imap_log_date_format} || "%b %d";
+		my $date_dovecot = strftime($config->{imap_log_date_format}, localtime);
 		my $date_uw = strftime("%b %e %T", localtime);
 		open(IN, "$config->{imap_log}");
 		while(<IN>) {
@@ -235,6 +231,27 @@ sub serv_update {
 		while(<IN>) {
 			if(/\[$date:/) {
 				$cups++;
+			}
+		}
+		close(IN);
+	}
+
+	if(-r $config->{secure_log}) {
+		$config->{secure_log_date_format} = $config->{secure_log_date_format} || "%b %e";
+		my $date = strftime($config->{secure_log_date_format}, localtime);
+		open(IN, "$config->{secure_log}");
+		while(<IN>) {
+			if(/$date/) {
+				# ProFTPD log
+				if(/START: ftp/ || (/ proftpd\[/ && /Login successful./) || /\"PASS .*\" 230/) {
+					$ftp++;
+					next;
+				}
+				# vsftpd log
+				if(/OK LOGIN:/) {
+					$ftp++;
+					next;
+				}
 			}
 		}
 		close(IN);
@@ -735,20 +752,20 @@ sub serv_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /serv1/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "'>\n");
 		}
 	}
+
 	if($title) {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-
 	undef(@riglim);
 	if(trim($rigid[1]) eq 1) {
 		push(@riglim, "--upper-limit=" . trim($limit[1]));
@@ -838,13 +855,13 @@ sub serv_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /serv2/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "'>\n");
 		}
 	}
 
@@ -954,13 +971,13 @@ sub serv_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /serv3/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "'>\n");
 		}
 	}
 

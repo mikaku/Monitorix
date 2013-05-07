@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -130,12 +130,12 @@ sub lmsens_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $lmsens = $config->{lmsens};
 
-	my @mb;
-	my @cpu;
-	my @fan;
-	my @core;
-	my @volt;
-	my @gpu;
+	my @mb = (0) x 2;
+	my @cpu = (0) x 4;
+	my @fan = (0) x 9;
+	my @core = (0) x 16;
+	my @volt = (0) x 12;
+	my @gpu = (0) x 9;
 
 	my $l;
 	my $n;
@@ -143,9 +143,13 @@ sub lmsens_update {
 
 	if($config->{os} eq "Linux") {
 		if($lmsens->{list}) {
-	  		open(IN, "sensors |");
-			my @data = <IN>;
-			close(IN);
+			my @data;
+	  		if(open(IN, "sensors |")) {
+				@data = <IN>;
+				close(IN);
+			} else {
+				logger("$myself: WARNING: unable to execute 'sensors' command.");
+			}
 			my $str;
 			for($l = 0; $l < scalar(@data); $l++) {
 				for($n = 0; $n < 2; $n++) {
@@ -159,6 +163,9 @@ sub lmsens_update {
 							$tmp = $data[$l];
 						}
 						my ($value, undef) = split(' ', $tmp);
+						if($value =~ m/^\+?(\d{1,3}\.?\d*)/) {
+							$value = $1;
+						}
 						$mb[$n] = int($value);
 					}
 				}
@@ -173,6 +180,9 @@ sub lmsens_update {
 							$tmp = $data[$l];
 						}
 						my ($value, undef) = split(' ', $tmp);
+						if($value =~ m/^\+?(\d{1,3}\.?\d*)/) {
+							$value = $1;
+						}
 						$cpu[$n] = int($value);
 					}
 				}
@@ -201,6 +211,9 @@ sub lmsens_update {
 							$tmp = $data[$l];
 						}
 						my ($value, undef) = split(' ', $tmp);
+						if($value =~ m/^\+?(\d{1,3}\.?\d*)/) {
+							$value = $1;
+						}
 						$core[$n] = int($value);
 					}
 				}
@@ -227,9 +240,13 @@ sub lmsens_update {
 					(undef, undef, $gpu[$n]) = split(' ', get_nvidia_data($n));
 					if(!$gpu[$n]) {
 						# attempt to get data using the old driver version
-	  					open(IN, "nvidia-smi -g $n |");
-						my @data = <IN>;
-						close(IN);
+						my @data = ();
+	  					if(open(IN, "nvidia-smi -g $n |")) {
+							@data = <IN>;
+							close(IN);
+						} else {
+							logger("$myself: ERROR: 'nvidia-smi' command is not installed.");
+						}
 						for($l = 0; $l < scalar(@data); $l++) {
 							if($data[$l] =~ /Temperature/) {
 								my (undef, $tmp) = split(':', $data[$l]);
@@ -602,13 +619,13 @@ sub lmsens_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /lmsens1/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "'>\n");
 		}
 	}
 
@@ -742,20 +759,20 @@ sub lmsens_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /lmsens2/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "'>\n");
 		}
 	}
+
 	if($title) {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-
 	undef(@tmp);
 	undef(@tmpz);
 	push(@tmp, ("LINE2:mb0#FFA500:MB 0\\g", "GPRINT:mb0:LAST:\\:%3.0lf   "));
@@ -827,13 +844,13 @@ sub lmsens_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /lmsens3/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "'>\n");
 		}
 	}
 
@@ -921,13 +938,13 @@ sub lmsens_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /lmsens4/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG4z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG4z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG4 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4 . "'>\n");
 		}
 	}
 
@@ -1017,13 +1034,13 @@ sub lmsens_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /lmsens5/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG5z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG5z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG5 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5 . "'>\n");
 		}
 	}
 

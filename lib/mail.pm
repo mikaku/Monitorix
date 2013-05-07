@@ -2,7 +2,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ sub mail_init {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $mail = $config->{mail};
 
 	if(!(-e $rrd)) {
 		logger("Creating '$rrd' file.");
@@ -96,7 +97,20 @@ sub mail_init {
 		}
 	}
 
+	# check dependencies
+	if(lc($mail->{alerts}->{delvd_enabled}) eq "y") {
+		if(! -x $mail->{alerts}->{delvd_script}) {
+			logger("$myself: ERROR: script '$mail->{alerts}->{delvd_script}' doesn't exist or don't has execution permissions.");
+		}
+	}
+	if(lc($mail->{alerts}->{mqueued_enabled}) eq "y") {
+		if(! -x $mail->{alerts}->{mqueued_script}) {
+			logger("$myself: ERROR: script '$mail->{alerts}->{mqueued_script}' doesn't exist or don't has execution permissions.");
+		}
+	}
+
 	$config->{mail_hist} = 0;
+	$config->{mail_hist_alert1} = 0;
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
 }
@@ -418,8 +432,8 @@ sub mail_update {
 	$gen[2] = 0;
 	$gen[3] = 0;
 	$gen[4] = 0;
-	$gen[5] = int($gl_records) || 0;
-	$gen[6] = 0;
+	$gen[5] = 0;
+	$gen[6] = int($gl_records) || 0;
 	$gen[7] = int($gl_greylisted) || 0;
 	$gen[8] = int($gl_whitelisted) || 0;
 	$gen[9] = 0;
@@ -430,6 +444,44 @@ sub mail_update {
 	}
 	for($n = 0; $n < 10; $n++) {
 		$rrdata .= ":" . $gen[$n];
+	}
+
+	# MAIL alert
+	if(lc($mail->{alerts}->{delvd_enabled}) eq "y") {
+		if(!$mail->{alerts}->{delvd_threshold} || $delvd < $mail->{alerts}->{delvd_threshold}) {
+			$config->{mail_hist_alert1} = 0;
+		} else {
+			if(!$config->{mail_hist_alert1}) {
+				$config->{mail_hist_alert1} = time;
+			}
+			if($config->{mail_hist_alert1} > 0 && (time - $config->{mail_hist_alert1}) > $mail->{alerts}->{delvd_timeintvl}) {
+				if(-x $mail->{alerts}->{delvd_script}) {
+					logger("$myself: ALERT: executing script '$mail->{alerts}->{delvd_script}'.");
+					system($mail->{alerts}->{delvd_script} . " " .$mail->{alerts}->{delvd_timeintvl} . " " . $mail->{alerts}->{delvd_threshold} . " " . $delvd);
+				} else {
+					logger("$myself: ERROR: script '$mail->{alerts}->{delvd_script}' doesn't exist or don't has execution permissions.");
+				}
+				$config->{mail_hist_alert1} = time;
+			}
+		}
+	}
+	if(lc($mail->{alerts}->{mqueued_enabled}) eq "y") {
+		if(!$mail->{alerts}->{mqueued_threshold} || $queued < $mail->{alerts}->{mqueued_threshold}) {
+			$config->{mail_hist_alert1} = 0;
+		} else {
+			if(!$config->{mail_hist_alert1}) {
+				$config->{mail_hist_alert1} = time;
+			}
+			if($config->{mail_hist_alert1} > 0 && (time - $config->{mail_hist_alert1}) > $mail->{alerts}->{mqueued_timeintvl}) {
+				if(-x $mail->{alerts}->{mqueued_script}) {
+					logger("$myself: ALERT: executing script '$mail->{alerts}->{mqueued_script}'.");
+					system($mail->{alerts}->{mqueued_script} . " " .$mail->{alerts}->{mqueued_timeintvl} . " " . $mail->{alerts}->{mqueued_threshold} . " " . $queued);
+				} else {
+					logger("$myself: ERROR: script '$mail->{alerts}->{mqueued_script}' doesn't exist or don't has execution permissions.");
+				}
+				$config->{mail_hist_alert1} = time;
+			}
+		}
 	}
 
 	RRDs::update($rrd, $rrdata);
@@ -769,13 +821,13 @@ sub mail_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /mail1/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG1 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "'>\n");
 		}
 	}
 
@@ -869,20 +921,20 @@ sub mail_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /mail2/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG2 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "'>\n");
 		}
 	}
+
 	if($title) {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-
 	undef(@riglim);
 	if(trim($rigid[2]) eq 1) {
 		push(@riglim, "--upper-limit=" . trim($limit[2]));
@@ -949,13 +1001,13 @@ sub mail_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /mail3/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG3 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "'>\n");
 		}
 	}
 
@@ -1026,13 +1078,13 @@ sub mail_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /mail4/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG4z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG4z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG4 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4 . "'>\n");
 		}
 	}
 
@@ -1117,13 +1169,13 @@ sub mail_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /mail5/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNG5z . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNG5z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG5 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5 . "'>\n");
 		}
 	}
 

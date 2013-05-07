@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -85,9 +85,9 @@ sub mysql_init {
 			push(@tmp, "DS:mysql" . $n . "_acon:GAUGE:120:0:U");
 			push(@tmp, "DS:mysql" . $n . "_brecv:GAUGE:120:0:U");
 			push(@tmp, "DS:mysql" . $n . "_bsent:GAUGE:120:0:U");
-			push(@tmp, "DS:mysql" . $n . "_val01:GAUGE:120:0:U");
-			push(@tmp, "DS:mysql" . $n . "_val02:GAUGE:120:0:U");
-			push(@tmp, "DS:mysql" . $n . "_val03:GAUGE:120:0:U");
+			push(@tmp, "DS:mysql" . $n . "_qchr:GAUGE:120:0:100");
+			push(@tmp, "DS:mysql" . $n . "_cstmtex:GAUGE:120:0:U");
+			push(@tmp, "DS:mysql" . $n . "_tttd:GAUGE:120:0:100");
 			push(@tmp, "DS:mysql" . $n . "_val04:GAUGE:120:0:U");
 			push(@tmp, "DS:mysql" . $n . "_val05:GAUGE:120:0:U");
 			push(@tmp, "DS:mysql" . $n . "_val06:GAUGE:120:0:U");
@@ -136,6 +136,17 @@ sub mysql_init {
 		}
 	}
 
+	# Since 3.0.0 the new values are used (Query_cache_hit_rate, Com_stmt_execute)
+	for($n = 0; $n < scalar(my @ml = split(',', $mysql->{list})); $n++) {
+		RRDs::tune($rrd,
+			"--data-source-rename=mysql" . $n . "_val01:mysql" . $n . "_qchr",
+			"--data-source-rename=mysql" . $n . "_val02:mysql" . $n . "_cstmtex",
+			"--data-source-rename=mysql" . $n . "_val03:mysql" . $n . "_tttd",
+			"--maximum=mysql" . $n . "_qchr:100",
+			"--maximum=mysql" . $n . "_tttd:100",
+		);
+	}
+
 	$config->{mysql_hist} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
@@ -180,11 +191,13 @@ sub mysql_update {
 			}
 			$dbh = DBI->connect(
 				"DBI:mysql:mysql_socket=$sock",
+				$user,
+				$pass,
 				{ PrintError => $print_error, }
 			) or logger("$myself: Cannot connect to MySQL '$sock'.") and next;
 		}
 
-		# SHOW STATUS
+		# SHOW GLOBAL STATUS
 		my $aborted_clients = 0;
 		my $aborted_connects = 0;
 		my $connections = 0;
@@ -202,7 +215,23 @@ sub mysql_update {
 		my $slow_queries = 0;
 		my $table_locks_waited = 0;
 		my $threads_created = 0;
-		my $sql = "show status";
+		my $created_tmp_disk_tables = 0;
+		my $created_tmp_tables = 0;
+
+		my $bytes_received = 0;
+		my $bytes_sent = 0;
+		my $com_commit = 0;
+		my $com_delete = 0;
+		my $com_insert = 0;
+		my $com_insert_s = 0;
+		my $com_replace = 0;
+		my $com_replace_s = 0;
+		my $com_rollback = 0;
+		my $Com_select = 0;
+		my $com_select = 0;
+		my $com_update = 0;
+		my $com_stmtex = 0;
+		my $sql = "show global status";
 		my $sth = $dbh->prepare($sql);
 		$sth->execute;
 		while(my ($name, $value) = $sth->fetchrow_array) {
@@ -247,7 +276,7 @@ sub mysql_update {
 				$str = $n . "opened_tables";
 				$opened_tables = $value - ($config->{mysql_hist}->{$str} || 0);
 				$opened_tables = 0 unless $opened_tables != $value;
-				$opened_tables /= 60;
+#				$opened_tables /= 60;
 				$config->{mysql_hist}->{$str} = $value;
 			}
 			if($name eq "Qcache_free_memory") {
@@ -277,31 +306,19 @@ sub mysql_update {
 				$str = $n . "table_locks_waited";
 				$table_locks_waited = $value - ($config->{mysql_hist}->{$str} || 0);
 				$table_locks_waited = 0 unless $table_locks_waited != $value;
-				$table_locks_waited /= 60;
+#				$table_locks_waited /= 60;
 				$config->{mysql_hist}->{$str} = $value;
 			}
 			if($name eq "Threads_created") {
 				$threads_created = int($value);
 			}
-		}
-		$sth->finish;
+			if($name eq "Created_tmp_disk_tables") {
+				$created_tmp_disk_tables = int($value);
+			}
+			if($name eq "Created_tmp_tables") {
+				$created_tmp_tables = int($value);
+			}
 
-		# SHOW GLOBAL STATUS
-		my $bytes_received = 0;
-		my $bytes_sent = 0;
-		my $com_commit = 0;
-		my $com_delete = 0;
-		my $com_insert = 0;
-		my $com_insert_s = 0;
-		my $com_replace = 0;
-		my $com_replace_s = 0;
-		my $com_rollback = 0;
-		my $com_select = 0;
-		my $com_update = 0;
-		$sql = "show global status";
-		$sth = $dbh->prepare($sql);
-		$sth->execute;
-		while(my ($name, $value) = $sth->fetchrow_array) {
 			if($name eq "Bytes_received") {
 				$str = $n . "bytes_received";
 				$bytes_received = $value - ($config->{mysql_hist}->{$str} || 0);
@@ -367,6 +384,8 @@ sub mysql_update {
 			}
 			if($name eq "Com_select") {
 				$str = $n . "com_select";
+				$Com_select = $value;
+				$value += $qcache_hits;
 				$com_select = $value - ($config->{mysql_hist}->{$str} || 0);
 				$com_select = 0 unless $com_select != $value;
 				$com_select /= 60;
@@ -377,6 +396,13 @@ sub mysql_update {
 				$com_update = $value - ($config->{mysql_hist}->{$str} || 0);
 				$com_update = 0 unless $com_update != $value;
 				$com_update /= 60;
+				$config->{mysql_hist}->{$str} = $value;
+			}
+			if($name eq "Com_stmt_execute") {
+				$str = $n . "com_stmtex";
+				$com_stmtex = $value - ($config->{mysql_hist}->{$str} || 0);
+				$com_stmtex = 0 unless $com_stmtex != $value;
+				$com_stmtex /= 60;
 				$config->{mysql_hist}->{$str} = $value;
 			}
 		}
@@ -404,6 +430,8 @@ sub mysql_update {
 		my $connections_usage = 0;
 		my $key_buffer_usage = 0;
 		my $innodb_buffer_pool_usage = 0;
+		my $qcache_hit_rate = 0;
+		my $temp_tables_to_disk = 0;
 
 		$tcache_hit_rate = (1 - ($threads_created / $connections_real)) * 100
 			unless !$connections_real;
@@ -417,12 +445,18 @@ sub mysql_update {
 			unless !$innodb_buffer_pool_pages_total;
 
 		$connections_usage = $connections_usage > 100 ? 100 : $connections_usage;
+		if($qcache_hits + $Com_select == 0) {
+			$qcache_hit_rate = 0;
+		} else {
+			$qcache_hit_rate = $qcache_hits / ($qcache_hits + $Com_select) * 100;
+		}
+		$temp_tables_to_disk = $created_tmp_disk_tables / ($created_tmp_disk_tables + $created_tmp_tables) * 100;
 
-		$rrdata .= ":$queries:$slow_queries:$tcache_hit_rate:$qcache_usage:$opened_tables:$connections_usage:$connections:$table_locks_waited:$key_buffer_usage:$innodb_buffer_pool_usage:$com_select:$com_commit:$com_delete:$com_insert:$com_insert_s:$com_update:$com_replace:$com_replace_s:$com_rollback:$aborted_clients:$aborted_connects:$bytes_received:$bytes_sent:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0";
+		$rrdata .= ":$queries:$slow_queries:$tcache_hit_rate:$qcache_usage:$opened_tables:$connections_usage:$connections:$table_locks_waited:$key_buffer_usage:$innodb_buffer_pool_usage:$com_select:$com_commit:$com_delete:$com_insert:$com_insert_s:$com_update:$com_replace:$com_replace_s:$com_rollback:$aborted_clients:$aborted_connects:$bytes_received:$bytes_sent:$qcache_hit_rate:$com_stmtex:$temp_tables_to_disk:0:0:0:0:0:0:0:0:0:0:0:0";
 	}
 
 	RRDs::update($rrd, $rrdata);
-	logger("$myself: Ok") if $debug;
+	logger("$myself: $rrdata") if $debug;
 	my $err = RRDs::error;
 	logger("ERROR: while updating $rrd: $err") if $err;
 }
@@ -488,8 +522,8 @@ sub mysql_cgi {
 		print("    ");
 		for($n = 0; $n < scalar(my @ml = split(',', $mysql->{list})); $n++) {
 			$line1 = "                                                                                                                                                                                                                          ";
-			$line2 .= "   Select  Commit  Delete  Insert  Insert_S  Update  Replace  Replace_S  Rollback  TCacheHit  QCache_U  Conns_U  KeyBuf_U  InnoDB_U  OpenedTbl  TLocks_W  Queries  SlowQrs  Conns  AbrtCli  AbrtConn  BytesRecv  BytesSent";
-			$line3 .= "--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";
+			$line2 .= "   Select  Commit  Delete  Insert  Insert_S  Update  Replace  Replace_S  Rollback  TCacheHit  QCache_U  Conns_U  KeyBuf_U  InnoDB_U  OpenedTbl  TLocks_W  Queries  SlowQrs  Conns  AbrtCli  AbrtConn  BytesRecv  BytesSent QCacheHitR StmtExec TmpTbToDsk";
+			$line3 .= "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";
 			if($line1) {
 				my $i = length($line1);
 				if(lc($mysql->{conn_type}) eq "host") {
@@ -518,7 +552,7 @@ sub mysql_cgi {
 				$from = $n2 * 38;
 				$to = $from + 38;
 				push(@row, @$line[$from..$to]);
-				printf("   %6d  %6d  %6d  %6d  %8d  %6d  %7d   %8d  %8d        %2d%%       %2d%%      %2d%%       %2d%%       %2d%%     %6d    %6d   %6d   %6d %6d   %6d    %6d  %9d  %9d", @row);
+				printf("   %6d  %6d  %6d  %6d  %8d  %6d  %7d   %8d  %8d        %2d%%       %2d%%      %2d%%       %2d%%       %2d%%     %6d    %6d   %6d   %6d %6d   %6d    %6d  %9d  %9d        %2d%%   %6d        %2d%%", @row);
 			}
 			print("\n");
 		}
@@ -633,6 +667,11 @@ sub mysql_cgi {
 		push(@tmp, "GPRINT:com_rollback:AVERAGE:    Avg\\: %6.1lf");
 		push(@tmp, "GPRINT:com_rollback:MIN:    Min\\: %6.1lf");
 		push(@tmp, "GPRINT:com_rollback:MAX:    Max\\: %6.1lf\\n");
+		push(@tmp, "LINE1:com_stmtex#888888:Prep.Stmt.Exec");
+		push(@tmp, "GPRINT:com_stmtex:LAST: Cur\\: %6.1lf");
+		push(@tmp, "GPRINT:com_stmtex:AVERAGE:    Avg\\: %6.1lf");
+		push(@tmp, "GPRINT:com_stmtex:MIN:    Min\\: %6.1lf");
+		push(@tmp, "GPRINT:com_stmtex:MAX:    Max\\: %6.1lf\\n");
 		push(@tmpz, "LINE2:com_select#FFA500:Select");
 		push(@tmpz, "LINE2:com_commit#EEEE44:Commit");
 		push(@tmpz, "LINE2:com_delete#EE4444:Delete");
@@ -642,6 +681,7 @@ sub mysql_cgi {
 		push(@tmpz, "LINE2:com_replace#44EEEE:Replace");
 		push(@tmpz, "LINE2:com_replace_s#4444EE:Replace Sel");
 		push(@tmpz, "LINE2:com_rollback#444444:Rollback");
+		push(@tmpz, "LINE2:com_stmtex#888888:Prep.Stmt.Exec");
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -670,6 +710,7 @@ sub mysql_cgi {
 			"DEF:com_replace=$rrd:mysql" . $e . "_crep:AVERAGE",
 			"DEF:com_replace_s=$rrd:mysql" . $e . "_creps:AVERAGE",
 			"DEF:com_rollback=$rrd:mysql" . $e . "_crol:AVERAGE",
+			"DEF:com_stmtex=$rrd:mysql" . $e . "_cstmtex:AVERAGE",
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6]: $err\n") if $err;
@@ -695,6 +736,7 @@ sub mysql_cgi {
 				"DEF:com_replace=$rrd:mysql" . $e . "_crep:AVERAGE",
 				"DEF:com_replace_s=$rrd:mysql" . $e . "_creps:AVERAGE",
 				"DEF:com_rollback=$rrd:mysql" . $e . "_crol:AVERAGE",
+				"DEF:com_stmtex=$rrd:mysql" . $e . "_cstmtex:AVERAGE",
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 6]: $err\n") if $err;
@@ -703,13 +745,13 @@ sub mysql_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /mysql$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 6] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 6] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6] . "'>\n");
 			}
 		}
 
@@ -729,6 +771,11 @@ sub mysql_cgi {
 		push(@tmp, "GPRINT:tcache_hit_r:AVERAGE:  Avg\\: %4.1lf%%");
 		push(@tmp, "GPRINT:tcache_hit_r:MIN:  Min\\: %4.1lf%%");
 		push(@tmp, "GPRINT:tcache_hit_r:MAX:  Max\\: %4.1lf%%\\n");
+		push(@tmp, "LINE1:qcache_hitr#4444EE:Query Cache Hit Rate");
+		push(@tmp, "GPRINT:qcache_hitr:LAST:   Cur\\: %4.1lf%%");
+		push(@tmp, "GPRINT:qcache_hitr:AVERAGE:  Avg\\: %4.1lf%%");
+		push(@tmp, "GPRINT:qcache_hitr:MIN:  Min\\: %4.1lf%%");
+		push(@tmp, "GPRINT:qcache_hitr:MAX:  Max\\: %4.1lf%%\\n");
 		push(@tmp, "LINE1:qcache_usage#44EEEE:Query Cache Usage");
 		push(@tmp, "GPRINT:qcache_usage:LAST:      Cur\\: %4.1lf%%");
 		push(@tmp, "GPRINT:qcache_usage:AVERAGE:  Avg\\: %4.1lf%%");
@@ -749,11 +796,18 @@ sub mysql_cgi {
 		push(@tmp, "GPRINT:innodb_buf_u:AVERAGE:  Avg\\: %4.1lf%%");
 		push(@tmp, "GPRINT:innodb_buf_u:MIN:  Min\\: %4.1lf%%");
 		push(@tmp, "GPRINT:innodb_buf_u:MAX:  Max\\: %4.1lf%%\\n");
+		push(@tmp, "LINE1:tmptbltodsk#888888:Temp. Tables to Disk");
+		push(@tmp, "GPRINT:tmptbltodsk:LAST:   Cur\\: %4.1lf%%");
+		push(@tmp, "GPRINT:tmptbltodsk:AVERAGE:  Avg\\: %4.1lf%%");
+		push(@tmp, "GPRINT:tmptbltodsk:MIN:  Min\\: %4.1lf%%");
+		push(@tmp, "GPRINT:tmptbltodsk:MAX:  Max\\: %4.1lf%%\\n");
 		push(@tmpz, "LINE2:tcache_hit_r#FFA500:Thread Cache Hit Rate");
+		push(@tmpz, "LINE2:qcache_hitr#4444EE:Query Cache Hit Rate");
 		push(@tmpz, "LINE2:qcache_usage#44EEEE:Query Cache Usage");
 		push(@tmpz, "LINE2:conns_u#44EE44:Connections Usage");
 		push(@tmpz, "LINE2:key_buf_u#EE4444:Key Buffer Usage");
 		push(@tmpz, "LINE2:innodb_buf_u#EE44EE:Innodb Buffer P. Usage");
+		push(@tmpz, "LINE2:tmptbltodsk#888888:Temp. Tables to Disk");
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -774,10 +828,12 @@ sub mysql_cgi {
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:tcache_hit_r=$rrd:mysql" . $e . "_tchr:AVERAGE",
+			"DEF:qcache_hitr=$rrd:mysql" . $e . "_qchr:AVERAGE",
 			"DEF:qcache_usage=$rrd:mysql" . $e . "_qcu:AVERAGE",
 			"DEF:conns_u=$rrd:mysql" . $e . "_conns_u:AVERAGE",
 			"DEF:key_buf_u=$rrd:mysql" . $e . "_kbu:AVERAGE",
 			"DEF:innodb_buf_u=$rrd:mysql" . $e . "_innbu:AVERAGE",
+			"DEF:tmptbltodsk=$rrd:mysql" . $e . "_tttd:AVERAGE",
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 1]: $err\n") if $err;
@@ -795,10 +851,12 @@ sub mysql_cgi {
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:tcache_hit_r=$rrd:mysql" . $e . "_tchr:AVERAGE",
+				"DEF:qcache_hitr=$rrd:mysql" . $e . "_qchr:AVERAGE",
 				"DEF:qcache_usage=$rrd:mysql" . $e . "_qcu:AVERAGE",
 				"DEF:conns_u=$rrd:mysql" . $e . "_conns_u:AVERAGE",
 				"DEF:key_buf_u=$rrd:mysql" . $e . "_kbu:AVERAGE",
 				"DEF:innodb_buf_u=$rrd:mysql" . $e . "_innbu:AVERAGE",
+				"DEF:tmptbltodsk=$rrd:mysql" . $e . "_tttd:AVERAGE",
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 6 + 1]: $err\n") if $err;
@@ -807,20 +865,20 @@ sub mysql_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /mysql$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 6 + 1] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6 + 1] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 1] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 6 + 1] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6 + 1] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 1] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 1] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6 + 1] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 1] . "'>\n");
 			}
 		}
+
 		if($title) {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-
 		undef(@riglim);
 		if(trim($rigid[2]) eq 1) {
 			push(@riglim, "--upper-limit=" . trim($limit[2]));
@@ -836,6 +894,7 @@ sub mysql_cgi {
 		push(@tmp, "GPRINT:opened_tbl:LAST:        Current\\: %7.1lf\\n");
 		push(@tmp, "AREA:tlocks_w#4444EE:Table Locks Waited");
 		push(@tmp, "GPRINT:tlocks_w:LAST:   Current\\: %7.1lf\\n");
+		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "LINE1:opened_tbl#00EEEE");
 		push(@tmp, "LINE1:tlocks_w#0000EE");
 		push(@tmpz, "AREA:opened_tbl#44EEEE:Opened Tables");
@@ -855,7 +914,7 @@ sub mysql_cgi {
 			"--title=$config->{graphs}->{_mysql3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Open & Locks/s",
+			"--vertical-label=Open & Locks/min",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
@@ -874,7 +933,7 @@ sub mysql_cgi {
 				"--title=$config->{graphs}->{_mysql3}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=Open & Locks/s",
+				"--vertical-label=Open & Locks/min",
 				"--width=$width",
 				"--height=$height",
 				@riglim,
@@ -892,13 +951,13 @@ sub mysql_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /mysql$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 6 + 2] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6 + 2] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 2] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 6 + 2] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6 + 2] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 2] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 2] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6 + 2] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 2] . "'>\n");
 			}
 		}
 
@@ -919,6 +978,7 @@ sub mysql_cgi {
 		push(@tmp, "GPRINT:sqrs:LAST:         Current\\: %7.1lf\\n");
 		push(@tmp, "LINE1:qrs#00EEEE");
 		push(@tmp, "LINE1:sqrs#0000EE");
+		push(@tmp, "COMMENT: \\n");
 		push(@tmpz, "AREA:qrs#44EEEE:Queries");
 		push(@tmpz, "AREA:sqrs#4444EE:Slow Queries");
 		push(@tmpz, "LINE1:qrs#00EEEE");
@@ -973,13 +1033,13 @@ sub mysql_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /mysql$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 6 + 3] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6 + 3] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 3] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 6 + 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6 + 3] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 3] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6 + 3] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 3] . "'>\n");
 			}
 		}
 
@@ -1003,6 +1063,7 @@ sub mysql_cgi {
 		push(@tmp, "LINE1:conns#00EEEE");
 		push(@tmp, "LINE1:acli#EEEE00");
 		push(@tmp, "LINE1:acon#EE0000");
+		push(@tmp, "COMMENT: \\n");
 		push(@tmpz, "AREA:conns#44EEEE:Connections");
 		push(@tmpz, "AREA:acli#EEEE44:Aborted Clients");
 		push(@tmpz, "AREA:acon#EE4444:Aborted Connects");
@@ -1061,13 +1122,13 @@ sub mysql_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /mysql$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 6 + 4] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6 + 4] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 4] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 4] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 6 + 4] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6 + 4] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 4] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 4] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6 + 4] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 4] . "'>\n");
 			}
 		}
 
@@ -1154,13 +1215,13 @@ sub mysql_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /mysql$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 6 + 5] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6 + 5] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 5] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 5] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 6 + 5] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6 + 5] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 5] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 5] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 6 + 5] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 5] . "'>\n");
 			}
 		}
 

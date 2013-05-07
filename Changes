@@ -1,5 +1,111 @@
-N.N.N  - NN-XXX-NNNN
+3.1.0  - 15-Mar-2013
 ====================
+- Added a complete statistical FTP graph.
+- The 'serv' graph now uses 'secure_log' log file to get FTP login statistics.
+  Alternatively the 'ftp_log_date_format' option has been renamed to
+  'secure_log_date_format'.
+- Fixed in 'nginx' and 'port' graphs to properly use '-m conntrack --ctstate'
+  instead of '-m state --state' in all iptables rules and avoid an annoying
+  iptables message about using an obsolete option.
+- Fixed to delimit the values in 'disk->list->[n]' by ", " (comma + space).
+- Fixed to detect if a device name defined in 'disk->list->[n]' does really
+  exist in the system.
+- Fixed a missing initialization of some data arrays in 'lmsens' which generated
+  the message "ERROR: while updating /var/lib/monitorix/lmsens.rrd: expected 52
+  data source readings (got 10) from N" if the 'sensors' command is missing.
+- Fixed in 'lmsens' to better handle the returned value (an error) when the
+  'nvidia-smi' command is not installed in the system.
+- Fixed a bad temperature values extraction from the 'sensors' command in the
+  'lmsens' graph.
+	(thanks to Cédric Girard for pointing this out)
+- Fixed in 'nginx' to avoid the use of uninitialized values and to show an error
+  message when Monitorix is unable to connect to the Nginx server.
+- Fixed in 'apache' to show an error message when Monitorix is unable to
+  connect to the Apache server.
+- Fixed in 'lighttpd' to show an error message when Monitorix is unable to
+  connect to the Lighttpd server.
+- Fixed in 'icecast' to show an error message when Monitorix is unable to
+  connect to the Icecast server.
+- Fixed in 'traffact' to show an error message when Monitorix is unable to
+  connect to the HTTP server.
+- Fixed to make sure to kill the built-in HTTP server if Monitorix exits
+  unexpectedly.
+- Fixed messages of type 'Use of uninitialized value ...' in 'system', 'kern'
+  and 'fs' graphs on FreeBSD systems.
+- Fixed to extract correctly the minor number of kernel version on FreeBSD
+  systems.
+- Fixed a bug in 'user' graph that prevented counting correctly the number of
+  users currently logged in FreeBSD systems.
+- Fixed a bug in how data was collected using 'ipfw' that affected the 'port'
+  graph which was showing more activity than real.
+
+
+3.0.0  - 18-Feb-2013
+====================
+- Added an HTTP built-in server.
+- Changed the path 'cgi-bin' to 'cgi'.
+- Fixed color sequence in the 'fs' graph. 
+- Fixed a division by zero in 'mysql' graph.
+- Fixed excessive bottom padding in 'fs' graph.
+- Fixed to use always the same colors for '/', 'swap' and '/boot' values in 'fs'
+  graph.
+- Fixed a bad naming in the title of 'traffacct' graph.
+- Fixed all URLs of the .png files.
+
+
+3.0.0B2- 01-Feb-2013
+====================
+- Lot of improvements in the MySQL graph, which includes adding a new value
+  called 'Query_Cache_Hit_Rate", the number of select querys also includes
+  the value of Qcache_hits, new query type called Com_stmt_execute and the new
+  value Temp_tables_to_disk.
+	(thanks to Luca Ferrario, luca AT ferrario.net)
+- Added a systemd service file template.
+	(thanks to graysky, graysky AT archlinux.us)
+- Alerts have been reimplemented and they are now configured independently for
+  each graph.
+- Added two new alerts in the 'mail' graph: one to control the number of
+  delivered messages per minute and the other for the number of messages in the
+  mail queue.
+- Added the ability to also support outgoing connections in the 'port' graph.
+- Fixed a pair of typos in the section explaining 'hptemp' in the man page
+  monitorix.conf.5.
+- Fixed from using unitialized variables in 'fs'.
+- Fixed a bad assigning in 'mail' that prevented from seeing the greylisting
+  values in the graph.
+- Fixed a bug in CGI the prevented honoring the 'hostname' configuration option.
+	(thanks to graysky, graysky AT archlinux.us)
+- Fixed in 'mysql' to use "show global status' in all operations instead of
+  "show status" since the latter only refers to the current thread.
+	(thanks to Luca Ferrario, luca AT ferrario.net)
+- Fixed to add Qcache_hits value to Com_select in order to get the real value
+  (assuming that query caching is on).
+	(thanks to Luca Ferrario, luca AT ferrario.net)
+
+
+3.0.0B1- 11-Jan-2013
+====================
+- Complete rewrite.
+- Added a new option in 'port' to define the number of graphs per row.
+- Added two new options 'ftp_log' and 'ftp_log_date_format' to be able to
+  read FTP connections from its own log file.
+	(suggested by Luca Ferrario, luca AT ferrario.net)
+- Fixed a missing description in the first entry of each network interface in
+  the options list.
+- Fixed a missing argument on each *_init() function preventing show an "Ok"
+  message when debugging is enabled.
+- Fixed some bugs in Groups.
+- Fixed a typo in the percentage variable in FS alert.
+- Fixed variables naming in 'mail' graph when using Postfix MTA that prevented
+  to see the values bounced, discarded and forwarded.
+- Fixed a number of small bugs.
+- Fixed a bad naming of the bitrate variables when creating the Bitrate graph
+  of the Icecast Streaming Media Server.
+- Fixed to include the username and password when connecting to MySQL using a
+  socket.
+	(thanks to Luca Ferrario, luca AT ferrario.net)
+
+Changes introduced to 2.6.0 version:
 - Introduced some modifications to the device name detection for FreeBSD.
 	(thanks to Chris Rees, utisoft AT gmail.com)
 - Improved support of Linux NFSv4 spliting the operation names in two different

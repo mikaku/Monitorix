@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-package apache;
+package lighttpd;
 
 use strict;
 use warnings;
@@ -26,20 +26,20 @@ use Monitorix;
 use RRDs;
 use LWP::UserAgent;
 use Exporter 'import';
-our @EXPORT = qw(apache_init apache_update apache_cgi);
+our @EXPORT = qw(lighttpd_init lighttpd_update lighttpd_cgi);
 
-sub apache_init {
+sub lighttpd_init {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
-	my $apache = $config->{apache};
+	my $lighttpd = $config->{lighttpd};
 
 	my $info;
 	my @ds;
 	my @tmp;
 	my $n;
 
-	if(!scalar(my @al = split(',', $apache->{list}))) {
+	if(!scalar(my @ll = split(',', $lighttpd->{list}))) {
 		logger("$myself: ERROR: missing or not defined 'list' option.");
 		return 0;
 	}
@@ -53,20 +53,24 @@ sub apache_init {
 				}
 			}
 		}
-		if(scalar(@ds) / 5 != scalar(my @al = split(',', $apache->{list}))) {
-			logger("Detected size mismatch between 'list' option (" . scalar(my @al = split(',', $apache->{list})) . ") and $rrd (" . scalar(@ds) / 5 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
+		if(scalar(@ds) / 9 != scalar(my @ll = split(',', $lighttpd->{list}))) {
+			logger("Detected size mismatch between 'list' option (" . scalar(my @ll = split(',', $lighttpd->{list})) . ") and $rrd (" . scalar(@ds) / 9 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 	}
 
 	if(!(-e $rrd)) {
 		logger("Creating '$rrd' file.");
-		for($n = 0; $n < scalar(my @al = split(',', $apache->{list})); $n++) {
-			push(@tmp, "DS:apache" . $n . "_acc:GAUGE:120:0:U");
-			push(@tmp, "DS:apache" . $n . "_kb:GAUGE:120:0:U");
-			push(@tmp, "DS:apache" . $n . "_cpu:GAUGE:120:0:U");
-			push(@tmp, "DS:apache" . $n . "_busy:GAUGE:120:0:U");
-			push(@tmp, "DS:apache" . $n . "_idle:GAUGE:120:0:U");
+		for($n = 0; $n < scalar(my @ll = split(',', $lighttpd->{list})); $n++) {
+			push(@tmp, "DS:lighttpd" . $n . "_acc:GAUGE:120:0:U");
+			push(@tmp, "DS:lighttpd" . $n . "_kb:GAUGE:120:0:U");
+			push(@tmp, "DS:lighttpd" . $n . "_busy:GAUGE:120:0:U");
+			push(@tmp, "DS:lighttpd" . $n . "_idle:GAUGE:120:0:U");
+			push(@tmp, "DS:lighttpd" . $n . "_val01:GAUGE:120:0:U");
+			push(@tmp, "DS:lighttpd" . $n . "_val02:GAUGE:120:0:U");
+			push(@tmp, "DS:lighttpd" . $n . "_val03:GAUGE:120:0:U");
+			push(@tmp, "DS:lighttpd" . $n . "_val04:GAUGE:120:0:U");
+			push(@tmp, "DS:lighttpd" . $n . "_val05:GAUGE:120:0:U");
 		}
 		eval {
 			RRDs::create($rrd,
@@ -103,62 +107,61 @@ sub apache_init {
 		}
 	}
 
-	$config->{apache_hist} = ();
+	$config->{lighttpd_hist} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
 }
 
-sub apache_update {
+sub lighttpd_update {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
-	my $apache = $config->{apache};
+	my $lighttpd = $config->{lighttpd};
 
 	my $str;
 	my $rrdata = "N";
 
 	my $n = 0;
-	foreach(my @al = split(',', $apache->{list})) {
+	foreach(my @ll = split(',', $lighttpd->{list})) {
 		my $url = trim($_) . "/server-status?auto";
 		my $ua = LWP::UserAgent->new(timeout => 30);
 		my $response = $ua->request(HTTP::Request->new('GET', $url));
 
+		if(!$response->is_success) {
+			logger("$myself: ERROR: Unable to connect to '$url'.");
+		}
+
 		my $acc = 0;
 		my $kb = 0;
-		my $cpu = 0;
 		my $busy = 0;
 		my $idle = 0;
 
 		foreach(split('\n', $response->content)) {
 			if(/^Total Accesses:\s+(\d+)$/) {
 				$str = $n . "acc";
-				$acc = $1 - ($config->{apache_hist}->{$str} || 0);
+				$acc = $1 - ($config->{lighttpd_hist}->{$str} || 0);
 				$acc = 0 unless $acc != $1;
 				$acc /= 60;
-				$config->{apache_hist}->{$str} = $1;
+				$config->{lighttpd_hist}->{$str} = $1;
 				next;
 			}
 			if(/^Total kBytes:\s+(\d+)$/) {
 				$str = $n . "kb";
-				$kb = $1 - ($config->{apache_hist}->{$str} || 0);
+				$kb = $1 - ($config->{lighttpd_hist}->{$str} || 0);
 				$kb = 0 unless $kb != $1;
-				$config->{apache_hist}->{$str} = $1;
+				$config->{lighttpd_hist}->{$str} = $1;
 				next;
 			}
-			if(/^CPULoad:\s+(\d*\.\d+)$/) {
-				$cpu = abs($1) || 0;
+			if(/^BusyServers:\s+(\d+)/) {
+				$busy = int($1);
 				next;
 			}
-			if(/^BusyWorkers:\s+(\d+)/ || /^BusyServers:\s+(\d+)/) {
-				$busy = int($1) || 0;
-				next;
-			}
-			if(/^IdleWorkers:\s+(\d+)/ || /^IdleServers:\s+(\d+)/) {
-				$idle = int($1) || 0;
+			if(/^IdleServers:\s+(\d+)/) {
+				$idle = int($1);
 				last;
 			}
 		}
-		$rrdata .= ":$acc:$kb:$cpu:$busy:$idle";
+		$rrdata .= ":$acc:$kb:$busy:$idle:0:0:0:0:0";
 		$n++;
 	}
 
@@ -168,12 +171,12 @@ sub apache_update {
 	logger("ERROR: while updating $rrd: $err") if $err;
 }
 
-sub apache_cgi {
+sub lighttpd_cgi {
 	my ($package, $config, $cgi) = @_;
 
-	my $apache = $config->{apache};
-	my @rigid = split(',', $apache->{rigid});
-	my @limit = split(',', $apache->{limit});
+	my $lighttpd = $config->{lighttpd};
+	my @rigid = split(',', $lighttpd->{rigid});
+	my @limit = split(',', $lighttpd->{limit});
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -187,6 +190,8 @@ sub apache_cgi {
 	my @PNGz;
 	my @tmp;
 	my @tmpz;
+	my @CDEF;
+	my $vlabel = "bytes/s";
 	my $e;
 	my $e2;
 	my $n;
@@ -199,6 +204,10 @@ sub apache_cgi {
 	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
 
 	$title = !$silent ? $title : "";
+
+	if(lc($config->{netstats_in_bps}) eq "y") {
+		$vlabel = "bits/s";
+	}
 
 
 	# text mode
@@ -220,13 +229,13 @@ sub apache_cgi {
 		my $line3;
 		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
 		print("    ");
-		for($n = 0; $n < scalar(my @al = split(',', $apache->{list})); $n++) {
-			$line1 = "                                          ";
-			$line2 .= "   Acceses     kbytes      CPU  Busy  Idle";
-			$line3 .= "------------------------------------------";
+		for($n = 0; $n < scalar(my @ll = split(',', $lighttpd->{list})); $n++) {
+			$line1 = "                                    ";
+			$line2 .= "   Acceses    k$vlabel    Busy  Idle";
+			$line3 .= "------------------------------------";
 			if($line1) {
 				my $i = length($line1);
-				printf(sprintf("%${i}s", sprintf("%s", trim($al[$n]))));
+				printf(sprintf("%${i}s", sprintf("%s", trim($ll[$n]))));
 			}
 		}
 		print("\n");
@@ -242,12 +251,12 @@ sub apache_cgi {
 			$line = @$data[$n];
 			$time = $time - (1 / $tf->{ts});
 			printf(" %2d$tf->{tc}", $time);
-			for($n2 = 0; $n2 < scalar(my @al = split(',', $apache->{list})); $n2++) {
+			for($n2 = 0; $n2 < scalar(my @ll = split(',', $lighttpd->{list})); $n2++) {
 				undef(@row);
-				$from = $n2 * 5;
-				$to = $from + 5;
+				$from = $n2 * 9;
+				$to = $from + 9;
 				push(@row, @$line[$from..$to]);
-				printf("   %7d  %9d    %4.2f%%   %3d   %3d", @row);
+				printf("   %7d  %9d      %3d   %3d", @row);
 			}
 			print("\n");
 		}
@@ -273,7 +282,7 @@ sub apache_cgi {
 		$u = "";
 	}
 
-	for($n = 0; $n < scalar(my @al = split(',', $apache->{list})); $n++) {
+	for($n = 0; $n < scalar(my @ll = split(',', $lighttpd->{list})); $n++) {
 		for($n2 = 1; $n2 <= 3; $n2++) {
 			$str = $u . $package . $n . $n2 . "." . $tf->{when} . ".png";
 			push(@PNG, $str);
@@ -287,7 +296,7 @@ sub apache_cgi {
 	}
 
 	$e = 0;
-	foreach my $url (my @al = split(',', $apache->{list})) {
+	foreach my $url (my @ll = split(',', $lighttpd->{list})) {
 		if($e) {
 			print("  <br>\n");
 		}
@@ -309,24 +318,24 @@ sub apache_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
-		push(@tmp, "AREA:apache" . $e . "_idle#4444EE:Idle");
-		push(@tmp, "GPRINT:apache" . $e . "_idle:LAST:            Current\\: %3.0lf");
-		push(@tmp, "GPRINT:apache" . $e . "_idle:AVERAGE:   Average\\: %3.0lf");
-		push(@tmp, "GPRINT:apache" . $e . "_idle:MIN:   Min\\: %3.0lf");
-		push(@tmp, "GPRINT:apache" . $e . "_idle:MAX:   Max\\: %3.0lf\\n");
-		push(@tmp, "AREA:apache" . $e . "_busy#44EEEE:Busy");
-		push(@tmp, "GPRINT:apache" . $e . "_busy:LAST:            Current\\: %3.0lf");
-		push(@tmp, "GPRINT:apache" . $e . "_busy:AVERAGE:   Average\\: %3.0lf");
-		push(@tmp, "GPRINT:apache" . $e . "_busy:MIN:   Min\\: %3.0lf");
-		push(@tmp, "GPRINT:apache" . $e . "_busy:MAX:   Max\\: %3.0lf\\n");
-		push(@tmp, "LINE1:apache" . $e . "_idle#0000EE");
-		push(@tmp, "LINE1:apache" . $e . "_busy#00EEEE");
-		push(@tmp, "LINE1:apache" . $e . "_tot#EE0000");
-		push(@tmpz, "AREA:apache" . $e . "_idle#4444EE:Idle");
-		push(@tmpz, "AREA:apache" . $e . "_busy#44EEEE:Busy");
-		push(@tmpz, "LINE2:apache" . $e . "_idle#0000EE");
-		push(@tmpz, "LINE2:apache" . $e . "_busy#00EEEE");
-		push(@tmpz, "LINE2:apache" . $e . "_tot#EE0000");
+		push(@tmp, "AREA:lighttpd" . $e . "_idle#4444EE:Idle");
+		push(@tmp, "GPRINT:lighttpd" . $e . "_idle:LAST:            Current\\: %3.0lf");
+		push(@tmp, "GPRINT:lighttpd" . $e . "_idle:AVERAGE:   Average\\: %3.0lf");
+		push(@tmp, "GPRINT:lighttpd" . $e . "_idle:MIN:   Min\\: %3.0lf");
+		push(@tmp, "GPRINT:lighttpd" . $e . "_idle:MAX:   Max\\: %3.0lf\\n");
+		push(@tmp, "AREA:lighttpd" . $e . "_busy#44EEEE:Busy");
+		push(@tmp, "GPRINT:lighttpd" . $e . "_busy:LAST:            Current\\: %3.0lf");
+		push(@tmp, "GPRINT:lighttpd" . $e . "_busy:AVERAGE:   Average\\: %3.0lf");
+		push(@tmp, "GPRINT:lighttpd" . $e . "_busy:MIN:   Min\\: %3.0lf");
+		push(@tmp, "GPRINT:lighttpd" . $e . "_busy:MAX:   Max\\: %3.0lf\\n");
+		push(@tmp, "LINE1:lighttpd" . $e . "_idle#0000EE");
+		push(@tmp, "LINE1:lighttpd" . $e . "_busy#00EEEE");
+		push(@tmp, "LINE1:lighttpd" . $e . "_tot#EE0000");
+		push(@tmpz, "AREA:lighttpd" . $e . "_idle#4444EE:Idle");
+		push(@tmpz, "AREA:lighttpd" . $e . "_busy#44EEEE:Busy");
+		push(@tmpz, "LINE2:lighttpd" . $e . "_idle#0000EE");
+		push(@tmpz, "LINE2:lighttpd" . $e . "_busy#00EEEE");
+		push(@tmpz, "LINE2:lighttpd" . $e . "_tot#EE0000");
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -334,7 +343,7 @@ sub apache_cgi {
 			@tmp = @tmpz;
 		}
 		RRDs::graph("$PNG_DIR" . "$PNG[$e * 3]",
-			"--title=$config->{graphs}->{_apache1}  ($tf->{nwhen}$tf->{twhen})",
+			"--title=$config->{graphs}->{_lighttpd1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
 			"--vertical-label=Workers",
@@ -344,9 +353,9 @@ sub apache_cgi {
 			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
-			"DEF:apache" . $e . "_busy=$rrd:apache" . $e . "_busy:AVERAGE",
-			"DEF:apache" . $e . "_idle=$rrd:apache" . $e . "_idle:AVERAGE",
-			"CDEF:apache" . $e . "_tot=apache" . $e . "_busy,apache" . $e . "_idle,+",
+			"DEF:lighttpd" . $e . "_busy=$rrd:lighttpd" . $e . "_busy:AVERAGE",
+			"DEF:lighttpd" . $e . "_idle=$rrd:lighttpd" . $e . "_idle:AVERAGE",
+			"CDEF:lighttpd" . $e . "_tot=lighttpd" . $e . "_busy,lighttpd" . $e . "_idle,+",
 			"COMMENT: \\n",
 			@tmp,
 			"COMMENT: \\n",
@@ -356,7 +365,7 @@ sub apache_cgi {
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
 			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 3]",
-				"--title=$config->{graphs}->{_apache1}  ($tf->{nwhen}$tf->{twhen})",
+				"--title=$config->{graphs}->{_lighttpd1}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
 				"--vertical-label=Workers",
@@ -366,31 +375,31 @@ sub apache_cgi {
 				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
-				"DEF:apache" . $e . "_busy=$rrd:apache" . $e . "_busy:AVERAGE",
-				"DEF:apache" . $e . "_idle=$rrd:apache" . $e . "_idle:AVERAGE",
-				"CDEF:apache" . $e . "_tot=apache" . $e . "_busy,apache" . $e . "_idle,+",
+				"DEF:lighttpd" . $e . "_busy=$rrd:lighttpd" . $e . "_busy:AVERAGE",
+				"DEF:lighttpd" . $e . "_idle=$rrd:lighttpd" . $e . "_idle:AVERAGE",
+				"CDEF:lighttpd" . $e . "_tot=lighttpd" . $e . "_busy,lighttpd" . $e . "_idle,+",
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3]: $err\n") if $err;
 		}
 		$e2 = $e + 1;
-		if($title || ($silent =~ /imagetag/ && $graph =~ /apache$e2/)) {
+		if($title || ($silent =~ /imagetag/ && $graph =~ /lighttpd$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3] . "'>\n");
 			}
 		}
+
 		if($title) {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-
 		undef(@riglim);
 		if(trim($rigid[1]) eq 1) {
 			push(@riglim, "--upper-limit=" . trim($limit[1]));
@@ -402,11 +411,17 @@ sub apache_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
-		push(@tmp, "AREA:apache" . $e . "_cpu#44AAEE:CPU");
-		push(@tmp, "GPRINT:apache" . $e . "_cpu:LAST:                  Current\\: %5.2lf%%\\n");
-		push(@tmp, "LINE1:apache" . $e . "_cpu#00EEEE");
-		push(@tmpz, "AREA:apache" . $e . "_cpu#44AAEE:CPU");
-		push(@tmpz, "LINE1:apache" . $e . "_cpu#00EEEE");
+		undef(@CDEF);
+		push(@tmp, "AREA:Bytes#44AAEE:KBytes");
+		push(@tmp, "GPRINT:lighttpd" . $e . "_kb:LAST:               Current\\: %6.1lf\\n");
+		push(@tmp, "LINE1:lighttpd" . $e . "_kb#00EEEE");
+		push(@tmpz, "AREA:Bytes#44AAEE:Bytes");
+		push(@tmpz, "LINE1:lighttpd" . $e . "_kb#00EEEE");
+		if(lc($config->{netstats_in_bps}) eq "y") {
+			push(@CDEF, "CDEF:Bytes=lighttpd" . $e . "_kb,8,*,1024,*");
+		} else {
+			push(@CDEF, "CDEF:Bytes=lighttpd" . $e . "_kb,1024,*");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -417,10 +432,10 @@ sub apache_cgi {
 			push(@tmp, "COMMENT: \\n");
 		}
 		RRDs::graph("$PNG_DIR" . "$PNG[$e * 3 + 1]",
-			"--title=$config->{graphs}->{_apache2}  ($tf->{nwhen}$tf->{twhen})",
+			"--title=$config->{graphs}->{_lighttpd2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Percent (%)",
+			"--vertical-label=$vlabel",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
@@ -428,17 +443,18 @@ sub apache_cgi {
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
-			"DEF:apache" . $e . "_cpu=$rrd:apache" . $e . "_cpu:AVERAGE",
+			"DEF:lighttpd" . $e . "_kb=$rrd:lighttpd" . $e . "_kb:AVERAGE",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 1]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
 			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 3 + 1]",
-				"--title=$config->{graphs}->{_apache2}  ($tf->{nwhen}$tf->{twhen})",
+				"--title=$config->{graphs}->{_lighttpd2}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=Percent",
+				"--vertical-label=$vlabel",
 				"--width=$width",
 				"--height=$height",
 				@riglim,
@@ -446,22 +462,23 @@ sub apache_cgi {
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
-				"DEF:apache" . $e . "_cpu=$rrd:apache" . $e . "_cpu:AVERAGE",
+				"DEF:lighttpd" . $e . "_kb=$rrd:lighttpd" . $e . "_kb:AVERAGE",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 1]: $err\n") if $err;
 		}
 		$e2 = $e + 2;
-		if($title || ($silent =~ /imagetag/ && $graph =~ /apache$e2/)) {
+		if($title || ($silent =~ /imagetag/ && $graph =~ /lighttpd$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "'>\n");
 			}
 		}
 
@@ -476,11 +493,11 @@ sub apache_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
-		push(@tmp, "AREA:apache" . $e . "_acc#44EE44:Accesses");
-		push(@tmp, "GPRINT:apache" . $e . "_acc:LAST:             Current\\: %5.2lf\\n");
-		push(@tmp, "LINE1:apache" . $e . "_acc#00EE00");
-		push(@tmpz, "AREA:apache" . $e . "_acc#44EE44:Accesses");
-		push(@tmpz, "LINE1:apache" . $e . "_acc#00EE00");
+		push(@tmp, "AREA:lighttpd" . $e . "_acc#44EE44:Accesses");
+		push(@tmp, "GPRINT:lighttpd" . $e . "_acc:LAST:             Current\\: %5.2lf\\n");
+		push(@tmp, "LINE1:lighttpd" . $e . "_acc#00EE00");
+		push(@tmpz, "AREA:lighttpd" . $e . "_acc#44EE44:Accesses");
+		push(@tmpz, "LINE1:lighttpd" . $e . "_acc#00EE00");
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -491,7 +508,7 @@ sub apache_cgi {
 			push(@tmp, "COMMENT: \\n");
 		}
 		RRDs::graph("$PNG_DIR" . "$PNG[$e * 3 + 2]",
-			"--title=$config->{graphs}->{_apache3}  ($tf->{nwhen}$tf->{twhen})",
+			"--title=$config->{graphs}->{_lighttpd3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
 			"--vertical-label=Accesses/s",
@@ -502,14 +519,14 @@ sub apache_cgi {
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
-			"DEF:apache" . $e . "_acc=$rrd:apache" . $e . "_acc:AVERAGE",
+			"DEF:lighttpd" . $e . "_acc=$rrd:lighttpd" . $e . "_acc:AVERAGE",
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 2]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
 			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 3 + 2]",
-				"--title=$config->{graphs}->{_apache3}  ($tf->{nwhen}$tf->{twhen})",
+				"--title=$config->{graphs}->{_lighttpd3}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
 				"--vertical-label=Accesses/s",
@@ -520,22 +537,22 @@ sub apache_cgi {
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
-				"DEF:apache" . $e . "_acc=$rrd:apache" . $e . "_acc:AVERAGE",
+				"DEF:lighttpd" . $e . "_acc=$rrd:lighttpd" . $e . "_acc:AVERAGE",
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 2]: $err\n") if $err;
 		}
 		$e2 = $e + 3;
-		if($title || ($silent =~ /imagetag/ && $graph =~ /apache$e2/)) {
+		if($title || ($silent =~ /imagetag/ && $graph =~ /lighttpd$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "'>\n");
 			}
 		}
 
@@ -547,7 +564,7 @@ sub apache_cgi {
 			print "      <td bgcolor='$colors->{title_bg_color}' colspan='2'>\n";
 			print "       <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
 			print "       <font size='-1'>\n";
-			print "        <b style='{color: " . $colors->{title_fg_color} . "}'>&nbsp;&nbsp;$url<b>\n";
+			print "        <b style='{color: " . $colors->{title_fg_color} . "}'>&nbsp;&nbsp;" . trim($url) . "<b>\n";
 			print "       </font></font>\n";
 			print "      </td>\n";
 			print("    </tr>\n");

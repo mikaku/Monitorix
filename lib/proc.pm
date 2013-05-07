@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2012 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -182,15 +182,15 @@ sub proc_update {
 			@deltas = (
 
 				# $p[0] and $l[0] are the 'cpu' word
-				$p[1] - $l[1],	# user
-				$p[2] - $l[2],	# nice
-				$p[3] - $l[3],	# sys
-				$p[4] - $l[4],	# idle
-				$p[5] - $l[5],	# iow
-				$p[6] - $l[6],	# irq
-				$p[7] - $l[7],	# sirq
-				$p[8] - $l[8],	# steal
-				$p[9] - $l[9],	# guest
+				($p[1] || 0) - ($l[1] || 0),	# user
+				($p[2] || 0) - ($l[2] || 0),	# nice
+				($p[3] || 0) - ($l[3] || 0),	# sys
+				($p[4] || 0) - ($l[4] || 0),	# idle
+				($p[5] || 0) - ($l[5] || 0),	# iow
+				($p[6] || 0) - ($l[6] || 0),	# irq
+				($p[7] || 0) - ($l[7] || 0),	# sirq
+				($p[8] || 0) - ($l[8] || 0),	# steal
+				($p[9] || 0) - ($l[9] || 0),	# guest
 			);
 			$total = $deltas[0] + $deltas[1] + $deltas[2] + $deltas[3] + $deltas[4] + $deltas[5] + $deltas[6] + $deltas[7] + $deltas[8];
 
@@ -355,11 +355,11 @@ sub proc_cgi {
 	while($n < $ncpu) {
 		if($title) {
 			if($n == 0) {
-				main::graph_header($title, $proc->{per_row});
+				main::graph_header($title, $proc->{graphs_per_row});
 			}
 			print("    <tr>\n");
 		}
-		for($n2 = 0; $n2 < $proc->{per_row}; $n2++) {
+		for($n2 = 0; $n2 < $proc->{graphs_per_row}; $n2++) {
 			last unless $n < $ncpu;
 			if($title) {
 				print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
@@ -630,13 +630,13 @@ sub proc_cgi {
 			if($title || ($silent =~ /imagetag/ && $graph =~ /proc$n/)) {
 				if(lc($config->{enable_zoom}) eq "y") {
 					if(lc($config->{disable_javascript_void}) eq "y") {
-						print("      <a href=\"" . $config->{url} . $config->{imgs_dir} . $PNGz[$n] . "\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$n] . "' border='0'></a>\n");
+						print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$n] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$n] . "' border='0'></a>\n");
 					}
 					else {
-						print("      <a href=\"javascript:void(window.open('" . $config->{url} . $config->{imgs_dir} . $PNGz[$n] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$n] . "' border='0'></a>\n");
+						print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$n] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$n] . "' border='0'></a>\n");
 					}
 				} else {
-					print("      <img src='" . $config->{url} . $config->{imgs_dir} . $PNG[$n] . "'>\n");
+					print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$n] . "'>\n");
 				}
 			}
 			if($title) {
