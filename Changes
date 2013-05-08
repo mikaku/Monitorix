@@ -1,6 +1,6 @@
 3.2.0  - NN-May-2013
 ====================
-- Added a complete Raspberry Pi sensors graph.
+- Added a complete Raspberry Pi sensors graph. [#10, #13]
 	(thanks to graysky, graysky AT archlinux.us)
 - Improved a bit the MySQL documentation in the monitorix.conf(5) man page.
 	(thanks to Luca Ferrario, luca AT ferrario.net)
@@ -10,7 +10,7 @@
 - Added support for Simplified Chinese language in the monthly reports.
 	(thanks to Christopher Meng, rpm AT cicku.me)
 - Added support for the ATI graph cards through the 'gpu' keys in the 'lmsens'
-  graph. As in the NVIDIA case, it requires the ATI official drivers.
+  graph. As in the NVIDIA case, it requires the ATI official drivers. [#8]
 - Changed the default charset in the built-in HTTP server to UTF-8.
 	(thanks to Akong, ak6783 AT gmail.com for pointing this out)
 - Added verbosity to the 'undefined configuration' of MySQL graph.
@@ -22,8 +22,10 @@
   of 'max' and the number of ports really defined. This fixes the error messages
   of uninitialized values in lines 410 and 411.
 - Fixed to honour the support of RAID controller parameters in the disk device
-  names defined in the disk graph.
+  names defined in the disk graph. [#12]
 - Small fixes in the alerting system of 'fs', 'system' and 'mail' graphs.
+- Fixed a bug in 'traffacct' graph that prevented accounting traffic if the
+  <desc> option was empty. Also, Socket module has been added.
 
 
 3.1.0  - 15-Mar-2013
