@@ -23,8 +23,16 @@ package HTTPServer;
 use strict;
 use warnings;
 use POSIX qw(strftime);
+use Authen::Simple::Passwd;
 use HTTP::Server::Simple::CGI;
-use base qw(HTTP::Server::Simple::CGI);
+use HTTP::Server::Simple::Authen;
+use base qw( HTTP::Server::Simple::Authen HTTP::Server::Simple::CGI );
+
+
+
+sub authen_handler {
+    Authen::Simple::Passwd->new(passwd => $main::config{base_dir}.'/htpasswd');
+}
 
 sub logger {
 	my ($url, $type) = @_;
@@ -65,6 +73,10 @@ sub http_header {
 
 sub handle_request {
 	my ($self, $cgi) = @_;
+	
+	my $user = $self->authenticate();
+    	return unless defined $user;
+	
 	my $base_url = $main::config{base_url};
 	my $base_cgi = $main::config{base_cgi};
 	my $port = $main::config{httpd_builtin}->{port};
