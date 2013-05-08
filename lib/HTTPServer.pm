@@ -74,9 +74,11 @@ sub http_header {
 sub handle_request {
 	my ($self, $cgi) = @_;
 	
-	my $user = $self->authenticate();
+	if(lc($main::config{httpd_builtin}->{auth} eq "y")) {
+		my $user = $self->authenticate();
     	return unless defined $user;
-	
+	}
+
 	my $base_url = $main::config{base_url};
 	my $base_cgi = $main::config{base_cgi};
 	my $port = $main::config{httpd_builtin}->{port};
