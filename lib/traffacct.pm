@@ -26,6 +26,7 @@ use Monitorix;
 use RRDs;
 use MIME::Lite;
 use LWP::UserAgent;
+use Socket;
 use Exporter 'import';
 our @EXPORT = qw(traffacct_init traffacct_update traffacct_cgi traffacct_getcounters traffacct_sendreports);
 
@@ -111,7 +112,10 @@ sub traffacct_init {
 		for($n = 0; $n < $traffacct->{max}; $n++) {
 			my $name = trim($tal[$n]);
 			if($name) {
-				my $ip = trim((split(',', $traffacct->{desc}->{$n}))[0]);
+				my $ip;
+				if($traffacct->{desc}->{$n}) {
+					$ip = trim((split(',', $traffacct->{desc}->{$n}))[0]);
+				}
 				if(!$ip) {
 					if(!gethostbyname($name)) {
 						logger("WARNING: Unable to resolve '" . $name . "'. Check your DNS.");
@@ -162,7 +166,10 @@ sub traffacct_update {
 	for($n = 0; $n < $traffacct->{max}; $n++) {
 		my $name = trim($tal[$n]);
 		if($name) {
-			my $ip = trim((split(',', $traffacct->{desc}->{$n}))[0]);
+			my $ip;
+			if($traffacct->{desc}->{$n}) {
+				$ip = trim((split(',', $traffacct->{desc}->{$n}))[0]);
+			}
 			if(!$ip) {
 				if(!gethostbyname($name)) {
 					logger("WARNING: Unable to resolve '" . $name . "'. Check your DNS.");
@@ -221,7 +228,10 @@ sub traffacct_getcounters {
 	for($n = 0; $n < $traffacct->{max}; $n++) {
 		my $name = trim($tal[$n]);
 		if($name) {
-			my $ip = trim((split(',', $traffacct->{desc}->{$n}))[0]);
+			my $ip;
+			if($traffacct->{desc}->{$n}) {
+				$ip = trim((split(',', $traffacct->{desc}->{$n}))[0]);
+			}
 			if(!$ip) {
 				if(!gethostbyname($name)) {
 					logger("WARNING: Unable to resolve '" . $name . "'. Check your DNS.");
