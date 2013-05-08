@@ -3,12 +3,6 @@ Monitorix
 Monitorix is a free, open source, lightweight system monitoring tool designed to monitor as many services and system
 resources as possible.
 
-TODO
----------
-- twitter-bootstrap design
-- migrate to javascriptRRD
-- make TheWorld better
-
 Community
 ---------
 - [Website](http://www.monitorix.org)
@@ -23,5 +17,4 @@ Monitorix is free software licensed under the terms of the GNU General Public Li
 Credits
 -------
 Monitorix was created by [Jordi Sanfeliu](http://www.fibranet.cat).
-You can contact with creater at [jordi@fibranet.cat](mailto:jordi@fibranet.cat).
-Monitorix was forked by [Dmitry Degtyarev](mailto:degtyarev.dm@gmil.com).
+You can contact me at [jordi@fibranet.cat](mailto:jordi@fibranet.cat).
