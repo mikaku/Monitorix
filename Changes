@@ -26,6 +26,8 @@
 - Small fixes in the alerting system of 'fs', 'system' and 'mail' graphs.
 - Fixed a bug in 'traffacct' graph that prevented accounting traffic if the
   <desc> option was empty. Also, Socket module has been added.
+- Fixed to get the correct graph of the right group number in the 'fs' graph
+  when using 'silent=imagetag' option. [#16]
 
 
 3.1.0  - 15-Mar-2013
