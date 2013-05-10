@@ -138,12 +138,12 @@ sub net_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $net = $config->{net};
 
-	my @net_bytes_in;
-	my @net_bytes_out;
-	my @net_packs_in;
-	my @net_packs_out;
-	my @net_error_in;
-	my @net_error_out;
+	my @net_bytes_in = (0) x 10;
+	my @net_bytes_out = (0) x 10;
+	my @net_packs_in = (0) x 10;
+	my @net_packs_out = (0) x 10;
+	my @net_error_in = (0) x 10;
+	my @net_error_out = (0) x 10;
 
 	my $n;
 	my $rrdata = "N";
