@@ -614,7 +614,7 @@ sub fs_cgi {
 		}
 	}
 
-	$e = 0;
+	$e = $e2 = 0;
 	foreach my $k (sort keys %{$fs->{list}}) {
 		my @f = split(',', $fs->{list}->{$k});
 
@@ -725,7 +725,7 @@ sub fs_cgi {
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3]: $err\n") if $err;
 		}
-		$e2 = $e + 1;
+		$e2 = $e . "1";
 		if($title || ($silent =~ /imagetag/ && $graph =~ /fs$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
@@ -847,7 +847,7 @@ sub fs_cgi {
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 1]: $err\n") if $err;
 		}
-		$e2 = $e + 2;
+		$e2 = $e . "2";
 		if($title || ($silent =~ /imagetag/ && $graph =~ /fs$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
@@ -1014,7 +1014,7 @@ sub fs_cgi {
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 2]: $err\n") if $err;
 		}
-		$e2 = $e + 3;
+		$e2 = $e . "3";
 		if($title || ($silent =~ /imagetag/ && $graph =~ /fs$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {

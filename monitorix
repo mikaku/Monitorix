@@ -47,8 +47,8 @@ $SIG{'CHLD'} = 'CHLD_handler';
 $SIG{'HUP' } = 'HUP_handler';
 $SIG{'ALRM'} = 'ALRM_handler';
 
-use constant VERSION	=> "3.1.93";
-use constant RELDATE	=> "09-May-2013";
+use constant VERSION	=> "3.1.94";
+use constant RELDATE	=> "10-May-2013";
 
 my @suppsys = ("Linux", "FreeBSD", "OpenBSD", "NetBSD");
 our %config;
@@ -283,6 +283,19 @@ EOF
 				for($n = 0; $n < $config{proc}->{max}; $n++) {
 					$gname = "_" . $g;
 					print(OUT "              <option value='" . $gname . $n . "'>" . $config{graphs}->{$gname} . " " . $n . "</option>\n");
+				}
+				next;
+			}
+			if($g eq "fs") {
+				$n = 0;
+				foreach my $k (sort keys %{$config{graphs}}) {
+					if($k =~ m/$g/) {
+						$gname = "_" . $g . ++$n;
+						my $gname2 = "_" . $g . "0" . $n;
+						if($config{graphs}->{$gname}) {
+							print(OUT "              <option value='" . $gname2 ."'>" . $config{graphs}->{$gname} . "</option>\n");
+						}
+					}
 				}
 				next;
 			}
