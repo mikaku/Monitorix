@@ -602,7 +602,7 @@ sub fs_cgi {
 	}
 
 	for($n = 0; $n < keys(%{$fs->{list}}); $n++) {
-		for($n2 = 1; $n2 <= 8; $n2++) {
+		for($n2 = 1; $n2 <= 3; $n2++) {
 			$str = $u . $package . $n . $n2 . "." . $tf->{when} . ".png";
 			push(@PNG, $str);
 			unlink("$PNG_DIR" . $str);
