@@ -528,7 +528,7 @@ sub lmsens_cgi {
 	}
 	for($n = 0; $n < 4; $n++) {
 		for($n2 = $n; $n2 < 16; $n2 += 4) {
-			$str = "core_" . $n2;
+			$str = "core" . $n2;
 			if($lmsens->{list}->{$str}) {
 				$str = sprintf("Core %2d", $n2);
 				push(@tmp, "LINE2:core_$n2" . $LC[$n2] . ":$str\\g");
