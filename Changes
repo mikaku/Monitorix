@@ -1,3 +1,9 @@
+3.N.N  - NN.XXX-2013
+====================
+- Fixed a bug that prevented seeing the Core temperatures in the 'lmsens' graph.
+	(thanks to Bryan Guidroz, bryanguidroz AT hotmail.com for pointing this out)
+
+
 3.2.0  - 13-May-2013
 ====================
 - Added a complete Raspberry Pi sensors graph. [#10, #13]
