@@ -2,6 +2,8 @@
 ====================
 - Changed the source from where the memory usage is collected in the 'squid'
   graph. Now the values shown are more real and accurate.
+- Added user/password authentication option in the built-in HTTP server. [#14]
+- Added the script 'htpasswd.pl' to be able to encrypt passwords. [#14]
 - Fixed a bug that prevented seeing the Core temperatures in the 'lmsens' graph.
 	(thanks to Bryan Guidroz, bryanguidroz AT hotmail.com for pointing this out)
 
