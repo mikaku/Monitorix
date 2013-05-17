@@ -207,7 +207,7 @@ Default value: \fIMonitorix: Restricted access\fP
 .P
 .BI htpasswd
 .RS
-This option sets the path to the password file that was created with the help of the \fIhtpasswd.pl\fP script. That script encrypts and validates passwords using the system's crypt() routine.
+This option sets the path to the password file that was created with the help of the \fIhtpasswd.pl\fP script. That script encrypts and validates passwords using the system's crypt() routine. If your Monitorix package doesn't come with that script, you may use the similar \fIhtpasswd\fP(1) program provided with the Apache web server.
 .P
 The format of the password file consist of one or more lines with a username and password separated by a colon.
 .P
@@ -498,9 +498,9 @@ ID     TYPE        LOCATION      STATUS    CURRENT  THRESHOLD
 .SS LM-Sensors and GPU temperatures (lmsens.rrd)
 .BI list
 .RS
-In this list you may specify the sensors you want to monitor with the same names as they appear in your \fIsensors\fP command.
+In this list you may specify the sensors you want to monitor with the same names as they appear in your \fIsensors\fP(1) command.
 .P
-For example, imagine a \fIsensors\fP output like this:
+For example, imagine a \fIsensors\fP(1) output like this:
 .P
 # sensors
 .br
@@ -636,9 +636,9 @@ This is a list of groups of disk device names that you want to monitor. Each gro
 .P
 WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIdisk.rrd\fP file accordingly, removing all historical data.
 .P
-To collect the disk drive temperatures and health the commands \fIsmartmontools\fP or \fIhddtemp\fP are required.
+To collect the disk drive temperatures and health the \fIsmartmontools\fP or the \fIhddtemp\fP command are required.
 .P
-It is recommended that you first check if either \fIsmartctl\fP or \fIhddtemp\fP are able to collect data from the disk drive(s) that you plan to monitor. You may test this with the following command:
+It is recommended that you first check if either \fIsmartctl\fP(8) or \fIhddtemp\fP are able to collect data from the disk drive(s) that you plan to monitor. You may test this with the following command:
 .P
 .RS
 # hddtemp /dev/sdb
@@ -667,7 +667,7 @@ This is a list of groups of mounted filesystems that you want to monitor. Each g
 .P
 WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIfs.rrd\fP file accordingly, removing all historical data.
 .P
-Take special care to use the same name as appears in the output of the \fIdf\fP command (the \fIswap\fP device is a special case). An example would be:
+Take special care to use the same name as appears in the output of the \fIdf\fP(1) command (the \fIswap\fP device is a special case). An example would be:
 .P
 .RS
 <list>
@@ -915,7 +915,7 @@ It will receive the following three parameters:
 Default value: \fI/path/to/script.sh\fP
 .RE
 .SS Network port traffic (port.rrd)
-This graph requires the \fIiptables\fP command on Linux systems and the \fIipfw\fP command on *BSD systems.
+This graph requires the \fIiptables\fP(8) command on Linux systems and the \fIipfw\fP command on *BSD systems.
 .P
 .BI max
 .RS
@@ -1005,7 +1005,7 @@ Default value: \fIhttp://localhost:80/\fP
 .SS Nginx statistics (nginx.rrd)
 This graph may require adding some lines in the configuration file \fInginx.conf\fP. Please see the \fIREADME.nginx\fP file to determine the exact steps needed to configure Nginx to get status information.
 .P
-This graph requires the \fIiptables\fP command on Linux systems, and the \fIipfw\fP command on *BSD systems.
+This graph requires the \fIiptables\fP(8) command on Linux systems, and the \fIipfw\fP command on *BSD systems.
 .P
 .BI port
 .RS
@@ -1188,7 +1188,7 @@ Default value: \fI3\fP
 .br
 .BI graph_2
 .RS
-These three lists hold the defined NFS server activity statistics to be shown in each graph. Put every statistic name exactly as they appear in the output of the \fInfsstat\fP command.
+These three lists hold the defined NFS server activity statistics to be shown in each graph. Put every statistic name exactly as they appear in the output of the \fInfsstat\fP(8) command.
 .P
 Each graph has a limit number of 10 entries.
 .RE
@@ -1220,7 +1220,7 @@ Default value: \fI3\fP
 .br
 .BI graph_5
 .RS
-These five lists hold the defined NFS client activity statistics to be shown in each graph. Put every statistic name exactly as they appear in the output of the \fInfsstat\fP command.
+These five lists hold the defined NFS client activity statistics to be shown in each graph. Put every statistic name exactly as they appear in the output of the \fInfsstat\fP(8) command.
 .P
 Each graph has the following limit number of entries:
 .P
@@ -1454,7 +1454,7 @@ Only the limit and rigid values may be set here.
 .SS Monitoring the Internet traffic of your LAN (traffacct.rrd)
 If your server acts as the gateway for a group of PCs, devices or even whole networks in your local LAN, you may want to know how much Internet traffic each one is generating.
 .P
-This graph requires the \fIiptables\fP command on GNU/Linux systems, and the \fIipfw\fP command on *BSD systems.
+This graph requires the \fIiptables\fP(8) command on GNU/Linux systems, and the \fIipfw\fP command on *BSD systems.
 .P
 The following are the options you will need to configure to accomplish all of this.
 .P
