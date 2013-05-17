@@ -4,8 +4,10 @@
   graph. Now the values shown are more real and accurate.
 - Added user/password authentication option in the built-in HTTP server. [#14]
 - Added the script 'htpasswd.pl' to be able to encrypt passwords. [#14]
+- Added the ability to specify an optional host address for the built-in HTTP
+  server to bind to. [#19]
 - Fixed a bug that prevented seeing the Core temperatures in the 'lmsens' graph.
-	(thanks to Bryan Guidroz, bryanguidroz AT hotmail.com for pointing this out)
+	(thanks to Bryan Guidroz, bryanguidroz AT hotmail.com)
 
 
 3.2.0  - 13-May-2013

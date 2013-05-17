@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use POSIX qw(setuid setgid setsid);
+use Socket;
 our @EXPORT = qw(logger trim min max celsius_to httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
 
 sub logger {
@@ -76,6 +77,7 @@ sub httpd_setup {
 
 	my (undef, undef, $uid) = getpwnam($config->{httpd_builtin}->{user});
 	my (undef, undef, $gid) = getgrnam($config->{httpd_builtin}->{group});
+	my $host = $config->{httpd_builtin}->{host};
 	my $port = $config->{httpd_builtin}->{port};
 
 	if(!defined($uid)) {
@@ -115,7 +117,9 @@ sub httpd_setup {
 		}
 	}
 
-	my $server = HTTPServer->new($port);
+	my $server = HTTPServer->new();
+	$server->host($host);
+	$server->port($port);
 	$server->run();
 	exit(0);
 }

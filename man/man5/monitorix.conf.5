@@ -32,7 +32,7 @@ Default value: \fIPlace a Title Here\fP
 .RS
 The name of the host.
 .P
-Default value: none
+Default value: 
 .RE
 .P
 .BI theme_color
@@ -157,6 +157,13 @@ Default value: \fI/monitorix-cgi\fP
 This enables or disables the HTTP server that Monitorix has built-in. This is specially useful for system administrators that don't want to install a web server (Apache, Lighttpd, Nginx, etc.) to see the Monitorix graphs.
 .P
 Default value: \fIy\fP
+.RE
+.P
+.BI host
+.RS
+This option takes an optional host address for this server to bind to. If none is specified (default) it will bind to all interfaces.
+.P
+Default value: 
 .RE
 .P
 .BI port
