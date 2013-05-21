@@ -8,6 +8,7 @@
   server to bind to. [#19]
 - Fixed a bug that prevented seeing the Core temperatures in the 'lmsens' graph.
 	(thanks to Bryan Guidroz, bryanguidroz AT hotmail.com)
+- Fixed a typo in the monitorix.conf(5) man page.
 
 
 3.2.0  - 13-May-2013
