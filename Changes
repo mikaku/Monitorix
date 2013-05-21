@@ -6,6 +6,8 @@
 - Added the script 'htpasswd.pl' to be able to encrypt passwords. [#14]
 - Added the ability to specify an optional host address for the built-in HTTP
   server to bind to. [#19]
+- Updated the 'monitorix.service' file. [#20]
+	(thanks to Christopher Meng, rpm AT cicku.me)
 - Fixed a bug that prevented seeing the Core temperatures in the 'lmsens' graph.
 	(thanks to Bryan Guidroz, bryanguidroz AT hotmail.com)
 - Fixed a typo in the monitorix.conf(5) man page.
