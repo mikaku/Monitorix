@@ -22,10 +22,12 @@ package HTTPServer;
 
 use strict;
 use warnings;
+use Monitorix qw(trim);
 use POSIX qw(strftime);
 use HTTP::Server::Simple::CGI;
 use base qw(HTTP::Server::Simple::CGI);
 use MIME::Base64 qw(decode_base64);
+use Socket;
 
 sub logger {
 	my ($url, $type) = @_;
@@ -37,6 +39,8 @@ sub logger {
 			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] File does not exist: $url\n";
 		} elsif($type eq "NOAUTH") {
 			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] Authentication error: $url\n";
+		} elsif($type eq "NOTALLOWED") {
+			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] Access not allowed: $url\n";
 		} else {
 			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] $url\n";
 		}
@@ -67,6 +71,31 @@ sub check_passwd {
 	return 1;
 }
 
+sub ip_validity {
+	my ($myip, $hosts) = @_;
+	my $valid = 0;
+
+	foreach my $address (split(',', $hosts)) {
+		my $myip_bin = inet_aton($myip);
+
+		$address = "0.0.0.0/0" if $address eq "all";
+		my ($ip, $netmask) = split('/', trim($address) . "/");
+		my $ip_bin = inet_aton($ip);
+
+		$netmask = "255.255.255.255" if $netmask eq "";
+		$netmask = unpack("%32b*", inet_aton($netmask)) if length($netmask) > 2;
+		my $netmask_bin = ~pack("N", (2**(32-$netmask))-1);
+
+		my $first_valid = unpack("N", $ip_bin & $netmask_bin) + ($netmask eq "32" ? 0 : 1);
+		my $last_valid = unpack("N", $ip_bin | ~$netmask_bin) - ($netmask eq "32" ? 0 : 1);
+
+		$myip_bin = unpack("N", $myip_bin);
+		if($myip_bin >= $first_valid && $myip_bin <= $last_valid) {
+			$valid++;
+		}
+	}
+	return $valid;
+}
 
 sub http_header {
 	my ($code, $mimetype) = @_;
@@ -110,7 +139,10 @@ sub handle_request {
 	my ($self, $cgi) = @_;
 	my $base_url = $main::config{base_url};
 	my $base_cgi = $main::config{base_cgi};
-	my $port = $main::config{httpd_builtin}->{port};
+	my $host = $main::config{httpd_builtin}->{host} || "localhost";
+	my $port = $main::config{httpd_builtin}->{port} || "8080";
+	my $hosts_deny = $main::config{httpd_builtin}->{hosts_deny} || "";
+	my $hosts_allow = $main::config{httpd_builtin}->{hosts_allow} || "";
 	my $auth = lc($main::config{httpd_builtin}->{auth}->{enabled});
 	my $mimetype;
 	my $target;
@@ -121,6 +153,26 @@ sub handle_request {
 
 	my $url = $cgi->path_info();
 	$0 = "monitorix-httpd";	# change process' name
+
+	# check if the IP address is allowed to connect
+	my $denied;
+	my $allowed = ip_validity($ENV{REMOTE_ADDR}, $hosts_allow);
+	$denied = ip_validity($ENV{REMOTE_ADDR}, $hosts_deny) if !$allowed;
+	if(!$allowed && $denied) {
+		http_header("403", "html");
+		print "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n";
+		print "<html><head>\r\n";
+		print "<title>403 Forbidden</title>\r\n";
+		print "</head><body>\r\n";
+		print "<h1>Forbidden</h1>\r\n";
+		print "<p>You don't have permission to access $url\r\n";
+		print "on this server.</p>\r\n";
+		print "<hr>\r\n";
+		print "<address>Monitorix HTTP Server listening at $host Port $port</address>\r\n";
+		print "</body></html>\r\n";
+		logger($url, "NOTALLOWED");
+		exit(0);
+	}
 
 	# sanitizes the $target
 	$target = $url;
@@ -187,7 +239,7 @@ sub handle_request {
 		print "<h1>Not Found</h1>\r\n";
 		print "The requested URL $url was not found on this server.<p>\r\n";
 		print "<hr>\r\n";
-		print "<address>Monitorix HTTP Server listening on $port</address>\r\n";
+		print "<address>Monitorix HTTP Server listening at $host Port $port</address>\r\n";
 		print "</body></html>\r\n";
 		logger($url, "NOTEXIST");
 	}
