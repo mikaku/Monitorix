@@ -188,6 +188,28 @@ This is the path to the HTTP server log file.
 .P
 Default value: \fI/var/log/monitorix-httpd\fP
 .RE
+.P
+.BI hosts_deny
+.RS
+This is a comma delimited set of IP addresses which are not permitted to access Monitorix graphs. There is the special keyword called \fBall\fP that can be used to deny all IP addresses.
+.P
+The access control uses the same approach as in the TCP-Wrappers; the search stops at the first match:
+.P
+	- Access will be granted when an IP address matches an entry in the \fBhosts_allow\fP list.
+.br
+	- Otherwise, access will be denied when an IP address matches an entry in the \fBhosts_deny\fP list.
+.br
+	- Otherwise, access will be granted.
+.P
+Default value: 
+.RE
+.P
+.BI hosts_allow
+.RS
+This is the opposite of \fBhosts_deny\fP option. IP addresses listed here are permitted to access Monitorix graphs. There is also the special keyword called \fBall\fP that can be used to allow access to all IP addresses.
+.P
+Default value: 
+.RE
 .SS Built-in HTTP server with access authentication
 .BI enabled
 .RS
