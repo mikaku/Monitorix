@@ -1,11 +1,11 @@
 3.N.N  - NN.XXX-2013
 ====================
 - Changed the source from where the memory usage is collected in the 'squid'
-  graph. Now the values shown are more real and accurate.
+  graph. Now the shown values are more real and accurate.
 - Added user/password authentication option in the built-in HTTP server. [#14]
 - Added the script 'htpasswd.pl' to be able to encrypt passwords. [#14]
-- Added the options 'hosts_allow' and 'hosts_deny' to restrict access to the
-  built-in HTTP server. [#14]
+- Added the options 'hosts_allow' and 'hosts_deny' to restrict access by IP
+  address to the built-in HTTP server. [#14]
 - Added the ability to specify an optional host address for the built-in HTTP
   server to bind to. [#19]
 - Updated the 'monitorix.service' file. [#20]
