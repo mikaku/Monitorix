@@ -37,7 +37,7 @@ sub logger {
 			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] \"$ENV{REQUEST_METHOD} $url - $ENV{HTTP_USER_AGENT}\"\n";
 		} elsif($type eq "NOTEXIST") {
 			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] File does not exist: $url\n";
-		} elsif($type eq "NOAUTH") {
+		} elsif($type eq "AUTHERR") {
 			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] Authentication error: $url\n";
 		} elsif($type eq "NOTALLOWED") {
 			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] Access not allowed: $url\n";
@@ -221,7 +221,7 @@ sub handle_request {
 				print "browser doesn't understand how to supply\r\n";
 				print "the credentials required.</p>\r\n";
 				print "</body></html>\r\n";
-				logger($url, "NOAUTH");
+				logger($url, "AUTHERR");
 				exit(0);
 			}
 		}
