@@ -1,8 +1,8 @@
 3.N.N  - NN.XXX-2013
 ====================
-- Changed the source from where the memory usage is collected in the 'squid'
+- Changed the source from where is collected the memory usage in the 'squid'
   graph. Now the shown values are more real and accurate.
-- Added user/password authentication option in the built-in HTTP server. [#14]
+- Added user/password authentication options in the built-in HTTP server. [#14]
 - Added the script 'htpasswd.pl' to be able to encrypt passwords. [#14]
 - Added the options 'hosts_allow' and 'hosts_deny' to restrict access by IP
   address to the built-in HTTP server. [#14]
