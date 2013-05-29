@@ -680,6 +680,15 @@ If you see good results as above, you can add it to the group 0 like this:
 .P
 The maximum number of disk device names allowed per group is 8.
 .RE
+.P
+.BI accept_invalid_disk
+.RS
+During the init stage this graph verifies that every defined device name does exist in the system. If not, then the graph disables itself.
+.P
+This option changes this behavior and permits to continue working even if the device names defined doesn't exist. Keep in mind that you will continue seeing error messages in the logfile.
+.P
+Default value: \fIn\fP
+.RE
 .SS Filesystem usage and I/O activity (fs.rrd)
 This graph is able to monitor an unlimited number of filesystems.
 .P

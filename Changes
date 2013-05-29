@@ -8,6 +8,10 @@
   address to the built-in HTTP server. [#14]
 - Added the ability to specify an optional host address for the built-in HTTP
   server to bind to. [#19]
+- Added a new option in the 'disk' graph called 'accept_invalid_disk' that
+  permits continue working even if some of the device names defined are invalid
+  or non-existent. This is specially useful to monitor external disks that
+  aren't permanently connected to the system.
 - Updated the 'monitorix.service' file. [#20]
 	(thanks to Christopher Meng, rpm AT cicku.me)
 - Fixed a bug that prevented seeing the Core temperatures in the 'lmsens' graph.

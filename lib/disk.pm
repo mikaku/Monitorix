@@ -43,8 +43,11 @@ sub disk_init {
 				$d =~ s/\"$//;
 				$d =~ s/^(.+?) .*$/$1/;
 	  			next if -e $d;
-				logger("ERROR: $myself: invalid or inexistent device name '$d'.");
-				return;
+				logger("$myself: ERROR: invalid or inexistent device name '$d'.");
+				if(lc($disk->{accept_invalid_disk}) ne "y") {
+					logger("$myself: 'accept_invalid_disk' option is not set.");
+					return;
+				}
 			}
 		}
 	}
