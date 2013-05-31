@@ -3,8 +3,8 @@
 
 Summary: Monitorix is a system monitoring tool
 Name: monitorix
-Version: 3.2.0
-Release: 1%{?dist}
+Version: 3.2.1
+Release: 0%{?dist}
 License: GPL
 Group: Applications/System
 URL: http://www.monitorix.org
