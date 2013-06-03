@@ -1,4 +1,4 @@
-3.2.1  - NN-Jun-2013
+3.2.1  - 03-Jun-2013
 ====================
 - Changed the source from where is collected the memory usage in the 'squid'
   graph. Now the shown values are more real and accurate.
