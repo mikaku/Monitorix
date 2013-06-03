@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use POSIX qw(setuid setgid setsid);
+use Socket;
 our @EXPORT = qw(logger trim min max celsius_to httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
 
 sub logger {
@@ -70,23 +71,25 @@ sub celsius_to {
 }
 
 sub httpd_setup {
+	my $myself = (caller(0))[3];
 	my ($config, $debug) = @_;
 	my $pid;
 
 	my (undef, undef, $uid) = getpwnam($config->{httpd_builtin}->{user});
 	my (undef, undef, $gid) = getgrnam($config->{httpd_builtin}->{group});
+	my $host = $config->{httpd_builtin}->{host};
 	my $port = $config->{httpd_builtin}->{port};
 
 	if(!defined($uid)) {
-		logger("ERROR: invalid user defined for the built-in HTTP server.");
+		logger("$myself: ERROR: invalid user defined.");
 		return;
 	}
 	if(!defined($gid)) {
-		logger("ERROR: invalid group defined for the built-in HTTP server.");
+		logger("$myself: ERROR: invalid group defined.");
 		return;
 	}
 	if(!defined($port)) {
-		logger("ERROR: invalid port defined for the built-in HTTP server.");
+		logger("$myself: ERROR: invalid port defined.");
 		return;
 	}
 
@@ -107,7 +110,16 @@ sub httpd_setup {
 	$0 = "monitorix-httpd listening on $port";	# change process' name
 	chdir($config->{base_dir});
 
-	my $server = HTTPServer->new($port);
+	# check if 'htpasswd' file does exists and it's accessible
+	if(lc($config->{httpd_builtin}->{auth}->{enabled} eq "y")) {
+		if(! -r ($config->{httpd_builtin}->{auth}->{htpasswd} || "")) {
+			logger("$myself: '$config->{httpd_builtin}->{auth}->{htpasswd}' $!");
+		}
+	}
+
+	my $server = HTTPServer->new();
+	$server->host($host);
+	$server->port($port);
 	$server->run();
 	exit(0);
 }

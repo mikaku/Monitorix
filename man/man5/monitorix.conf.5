@@ -3,7 +3,7 @@
 .\"
 .\" This is the man page for the monitorix.conf configuration file.
 .\"
-.TH monitorix.conf 5 "May 2013" 3.2.0 "Monitorix configuration file"
+.TH monitorix.conf 5 "Jun 2013" 3.2.1 "Monitorix configuration file"
 .SH NAME
 monitorix.conf \- Configuration file for Monitorix.
 .SH DESCRIPTION
@@ -23,7 +23,7 @@ If an option has multiple values their must be separated by comma.
 .P
 .BI title
 .RS
-A description of the server; where it is located, the Company name, etc.
+A free description of the server; where it is located, the Company name, etc.
 .P
 Default value: \fIPlace a Title Here\fP
 .RE
@@ -32,7 +32,7 @@ Default value: \fIPlace a Title Here\fP
 .RS
 The name of the host.
 .P
-Default value: none
+Default value: 
 .RE
 .P
 .BI theme_color
@@ -159,6 +159,13 @@ This enables or disables the HTTP server that Monitorix has built-in. This is sp
 Default value: \fIy\fP
 .RE
 .P
+.BI host
+.RS
+This option takes an optional host address for this server to bind to. If none is specified (default) it will bind to all interfaces.
+.P
+Default value: 
+.RE
+.P
 .BI port
 .RS
 This is the network port from where the HTTP server will listen on.
@@ -180,6 +187,61 @@ Default value for group: \fInobody\fP
 This is the path to the HTTP server log file.
 .P
 Default value: \fI/var/log/monitorix-httpd\fP
+.RE
+.P
+.BI hosts_deny
+.RS
+This is a comma delimited set of IP addresses which are not permitted to access Monitorix graphs. There is the special keyword called \fIall\fP that can be used to deny all IP addresses.
+.P
+The access control uses the same approach as in the TCP-Wrappers; the search stops at the first match:
+.P
+	- Access will be granted when an IP address matches an entry in the \fBhosts_allow\fP list.
+.br
+	- Otherwise, access will be denied when an IP address matches an entry in the \fBhosts_deny\fP list.
+.br
+	- Otherwise, access will be granted.
+.P
+Default value: 
+.RE
+.P
+.BI hosts_allow
+.RS
+This is the opposite of \fBhosts_deny\fP option. IP addresses listed here are permitted to access Monitorix graphs. There is also the special keyword called \fIall\fP that can be used to allow access to all IP addresses.
+.P
+Default value: 
+.RE
+.SS Built-in HTTP server with access authentication
+.BI enabled
+.RS
+This enables or disables the authentication mechanism to control access to pages and other resources. The only allowed mechanism is Basic and uses the 401 status code and the WWW-Authenticate response header.
+.P
+For more information about the Basic access authentication mechanism and its security implications, please refer to http://en.wikipedia.org/wiki/Basic_access_authentication.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI msg
+.RS
+This option sets the \fIRealm\fP to be used in the authentication. That message should appear in the client dialog box to help user to identify the secure area.
+.P
+Default value: \fIMonitorix: Restricted access\fP
+.RE
+.P
+.BI htpasswd
+.RS
+This option sets the path to the password file that was created with the help of the \fIhtpasswd.pl\fP script. That script encrypts and validates passwords using the system's crypt() routine. If your Monitorix package doesn't come with that script, you may use the similar \fIhtpasswd\fP(1) program provided with the Apache web server.
+.P
+The format of the password file consist of one or more lines with a username and password separated by a colon.
+.P
+The following is an example of a password file:
+.P
+paul:oGkEsQK6RYIII
+.br
+peter:HF1r7qRL4Kg6E
+.P
+Since the script uses the crypt() algorithm, only the first 8 characters of the password are used to form the password. If the supplied password is longer, the extra characters will be silently discarded.
+.P
+Default value: \fI/var/lib/monitorix/htpasswd\fP
 .RE
 .SS Log files pathnames
 .BI log_file
@@ -403,7 +465,7 @@ Each graph has a limited number of IDs:
 .P
 The following is a configuration example of selected IDs:
 .P
-# hplog -t
+# hplog \-t
 .br
 ID     TYPE        LOCATION      STATUS    CURRENT  THRESHOLD 
 .br
@@ -458,9 +520,9 @@ ID     TYPE        LOCATION      STATUS    CURRENT  THRESHOLD
 .SS LM-Sensors and GPU temperatures (lmsens.rrd)
 .BI list
 .RS
-In this list you may specify the sensors you want to monitor with the same names as they appear in your \fIsensors\fP command.
+In this list you may specify the sensors you want to monitor with the same names as they appear in your \fIsensors\fP(1) command.
 .P
-For example, imagine a \fIsensors\fP output like this:
+For example, imagine a \fIsensors\fP(1) output like this:
 .P
 # sensors
 .br
@@ -596,9 +658,9 @@ This is a list of groups of disk device names that you want to monitor. Each gro
 .P
 WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIdisk.rrd\fP file accordingly, removing all historical data.
 .P
-To collect the disk drive temperatures and health the commands \fIsmartmontools\fP or \fIhddtemp\fP are required.
+To collect the disk drive temperatures and health the \fIsmartmontools\fP or the \fIhddtemp\fP command are required.
 .P
-It is recommended that you first check if either \fIsmartctl\fP or \fIhddtemp\fP are able to collect data from the disk drive(s) that you plan to monitor. You may test this with the following command:
+It is recommended that you first check if either \fIsmartctl\fP(8) or \fIhddtemp\fP are able to collect data from the disk drive(s) that you plan to monitor. You may test this with the following command:
 .P
 .RS
 # hddtemp /dev/sdb
@@ -618,6 +680,15 @@ If you see good results as above, you can add it to the group 0 like this:
 .P
 The maximum number of disk device names allowed per group is 8.
 .RE
+.P
+.BI accept_invalid_disk
+.RS
+During the init stage this graph verifies that every defined device name does exist in the system. If not, then the graph disables itself.
+.P
+This option changes this behavior and permits to continue working even if the device names defined doesn't exist. Keep in mind that you will continue seeing error messages in the logfile.
+.P
+Default value: \fIn\fP
+.RE
 .SS Filesystem usage and I/O activity (fs.rrd)
 This graph is able to monitor an unlimited number of filesystems.
 .P
@@ -627,7 +698,7 @@ This is a list of groups of mounted filesystems that you want to monitor. Each g
 .P
 WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIfs.rrd\fP file accordingly, removing all historical data.
 .P
-Take special care to use the same name as appears in the output of the \fIdf\fP command (the \fIswap\fP device is a special case). An example would be:
+Take special care to use the same name as appears in the output of the \fIdf\fP(1) command (the \fIswap\fP device is a special case). An example would be:
 .P
 .RS
 <list>
@@ -875,7 +946,7 @@ It will receive the following three parameters:
 Default value: \fI/path/to/script.sh\fP
 .RE
 .SS Network port traffic (port.rrd)
-This graph requires the \fIiptables\fP command on Linux systems and the \fIipfw\fP command on *BSD systems.
+This graph requires the \fIiptables\fP(8) command on Linux systems and the \fIipfw\fP command on *BSD systems.
 .P
 .BI max
 .RS
@@ -965,7 +1036,7 @@ Default value: \fIhttp://localhost:80/\fP
 .SS Nginx statistics (nginx.rrd)
 This graph may require adding some lines in the configuration file \fInginx.conf\fP. Please see the \fIREADME.nginx\fP file to determine the exact steps needed to configure Nginx to get status information.
 .P
-This graph requires the \fIiptables\fP command on Linux systems, and the \fIipfw\fP command on *BSD systems.
+This graph requires the \fIiptables\fP(8) command on Linux systems, and the \fIipfw\fP command on *BSD systems.
 .P
 .BI port
 .RS
@@ -1111,7 +1182,7 @@ Lower is better ... but 0% is not reachable and you should not try to reach it, 
 .RS
 This command displays statistics about the Squid HTTP proxy process and is the main command used to collect all data.
 .P
-Default value: \fIsquidclient -h 127.0.0.1\fP
+Default value: \fIsquidclient \-h 127.0.0.1\fP
 .P
 .RE
 .BI graph_0
@@ -1148,7 +1219,7 @@ Default value: \fI3\fP
 .br
 .BI graph_2
 .RS
-These three lists hold the defined NFS server activity statistics to be shown in each graph. Put every statistic name exactly as they appear in the output of the \fInfsstat\fP command.
+These three lists hold the defined NFS server activity statistics to be shown in each graph. Put every statistic name exactly as they appear in the output of the \fInfsstat\fP(8) command.
 .P
 Each graph has a limit number of 10 entries.
 .RE
@@ -1180,7 +1251,7 @@ Default value: \fI3\fP
 .br
 .BI graph_5
 .RS
-These five lists hold the defined NFS client activity statistics to be shown in each graph. Put every statistic name exactly as they appear in the output of the \fInfsstat\fP command.
+These five lists hold the defined NFS client activity statistics to be shown in each graph. Put every statistic name exactly as they appear in the output of the \fInfsstat\fP(8) command.
 .P
 Each graph has the following limit number of entries:
 .P
@@ -1414,7 +1485,7 @@ Only the limit and rigid values may be set here.
 .SS Monitoring the Internet traffic of your LAN (traffacct.rrd)
 If your server acts as the gateway for a group of PCs, devices or even whole networks in your local LAN, you may want to know how much Internet traffic each one is generating.
 .P
-This graph requires the \fIiptables\fP command on GNU/Linux systems, and the \fIipfw\fP command on *BSD systems.
+This graph requires the \fIiptables\fP(8) command on GNU/Linux systems, and the \fIipfw\fP command on *BSD systems.
 .P
 The following are the options you will need to configure to accomplish all of this.
 .P
@@ -1491,7 +1562,7 @@ Default value: \fIen\fP
 .P
 .BI default_mail
 .RS
-This is the default email address used to send the monthly reports. This option is only used if the second paramater in \fBdesc\fP list is empty.
+This is the default email address used to send the monthly reports. This option is only used if the second parameter in \fBdesc\fP list is empty.
 .P
 Default value: \fIroot@localhost\fP
 .RE

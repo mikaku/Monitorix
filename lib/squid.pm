@@ -303,13 +303,25 @@ sub squid_update {
 	close(IN);
 	$rrdata .= ":$rq_client_http_req:$rq_client_http_hit:$rq_server_http_req:$rq_server_ftp_req:$rq_server_other_req:$rq_aborted_req:$rq_swap_files_cleaned:$rq_unlink_requests:0";
 
-	open(IN, "$squid->{cmd} mgr:mem |");
+	open(IN, "$squid->{cmd} mgr:info |");
+	my $memory_section = 0;
 	while(<IN>) {
-		if(/^Total      /) {
-			(undef, undef, $m_alloc, undef, undef, undef, undef, $m_inuse) = split(' ', $_);
-			chomp($m_alloc);
-			chomp($m_inuse);
-			last;
+		if(/^Memory usage for squid via mallinfo/) {
+			$memory_section = 1;
+			next;
+		}
+		if($memory_section) {
+			if(/^\tTotal in use:\s+(\d+) KB/) {
+				$m_inuse = $1;
+				chomp($m_inuse);
+				next;
+			}
+			if(/^\tTotal size:\s+(\d+) KB/) {
+				$m_alloc = $1;
+				chomp($m_alloc);
+				$memory_section = 0;
+				last;
+			}
 		}
 	}
 	close(IN);

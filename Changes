@@ -1,3 +1,24 @@
+3.2.1  - 03-Jun-2013
+====================
+- Changed the source from where is collected the memory usage in the 'squid'
+  graph. Now the shown values are more real and accurate.
+- Added user/password authentication options in the built-in HTTP server. [#14]
+- Added the script 'htpasswd.pl' to be able to encrypt passwords. [#14]
+- Added the options 'hosts_allow' and 'hosts_deny' to restrict access by IP
+  address to the built-in HTTP server. [#14]
+- Added the ability to specify an optional host address for the built-in HTTP
+  server to bind to. [#19]
+- Added a new option in the 'disk' graph called 'accept_invalid_disk' that
+  permits continue working even if some of the device names defined are invalid
+  or non-existent. This is specially useful to monitor external disks that
+  aren't permanently connected to the system.
+- Updated the 'monitorix.service' file. [#20]
+	(thanks to Christopher Meng, rpm AT cicku.me)
+- Fixed a bug that prevented seeing the Core temperatures in the 'lmsens' graph.
+	(thanks to Bryan Guidroz, bryanguidroz AT hotmail.com)
+- Fixed a typo and escaped a pair of hyphens in the monitorix.conf(5) man page.
+
+
 3.2.0  - 13-May-2013
 ====================
 - Added a complete Raspberry Pi sensors graph. [#10, #13]
