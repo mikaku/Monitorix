@@ -1,3 +1,8 @@
+3.N.N  - NN-XXX-2013
+====================
+- Fixed a bug that prevented from seeing stats in the 'nfss' graph.
+
+
 3.2.1  - 03-Jun-2013
 ====================
 - Changed the source from where is collected the memory usage in the 'squid'
@@ -14,7 +19,8 @@
   aren't permanently connected to the system.
 - Updated the 'monitorix.service' file. [#20]
 	(thanks to Christopher Meng, rpm AT cicku.me)
-- Fixed a bug that prevented seeing the Core temperatures in the 'lmsens' graph.
+- Fixed a bug that prevented from seeing the Core temperatures in the 'lmsens'
+  graph.
 	(thanks to Bryan Guidroz, bryanguidroz AT hotmail.com)
 - Fixed a typo and escaped a pair of hyphens in the monitorix.conf(5) man page.
 

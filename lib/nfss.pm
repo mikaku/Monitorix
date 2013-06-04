@@ -200,7 +200,7 @@ sub nfss_update {
 				if(/^rpc\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$/) {
 					@rpc = ($1, $2, $3, $4, $5);
 				}
-				my $version = "";
+				my $version = $nfss->{version};
 				$version = "4ops" if $nfss->{version} eq "4";
 				if(/^proc$version /) {
 					my @tmp = split(' ', $_);
