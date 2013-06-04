@@ -1,5 +1,8 @@
 3.N.N  - NN-XXX-2013
 ====================
+- Reimplemented the main loop with the sighandler alarm inside in order to be
+  able to control timeouts in the 'disk' graph. This should avoid a complete
+  freeze if the network goes down when monitoring NFS filesystems.
 - Fixed a bug that prevented from seeing stats in the 'nfss' graph.
 
 

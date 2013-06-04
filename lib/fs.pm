@@ -129,9 +129,14 @@ sub fs_init {
 			next unless !$d;
 
 			if($f ne "swap") {
+				my $pid;
 				eval {
-					alarm $config->{timeout};
-					open(IN, "df -P $f |");
+					local $SIG{'ALRM'} = sub {
+						kill 9, $pid;
+						logger("$myself: Timeout! Process with PID $pid was hung after $config->{timeout} secs. Killed.");
+					};
+					alarm($config->{timeout});
+					$pid = open(IN, "df -P $f |");
 					while(<IN>) {
 						if(/ $f$/) {
 							($d) = split(' ', $_);
@@ -139,7 +144,7 @@ sub fs_init {
 						}
 					}
 					close(IN);
-					alarm 0;
+					alarm(0);
 					chomp($d);
 				};
 			}
@@ -357,9 +362,15 @@ sub fs_update {
 				# prevents a division by 0 if swap device is not used
 				$use = ($used * 100) / ($used + $free) unless $used + $free == 0;
 			} elsif($f) {
+				my $pid;
 				eval {
-					alarm $config->{timeout};
-					open(IN, "df -P $f |");
+					local $SIG{'ALRM'} = sub {
+						kill 9, $pid;
+						logger("$myself: Timeout! Process with PID $pid was hung after $config->{timeout} secs. Killed.");
+						@tmp = (0, 0, 0, 0);
+					};
+					alarm($config->{timeout});
+					$pid = open(IN, "df -P $f |");
 					while(<IN>) {
 						if(/ $f$/) {
 							@tmp = split(' ', $_);
@@ -367,11 +378,12 @@ sub fs_update {
 						}
 					}
 					close(IN);
-					alarm 0;
+					alarm(0);
 				};
 				(undef, undef, $used, $free) = @tmp;
 				chomp($used, $free);
-				$use = ($used * 100) / ($used + $free);
+				# prevents a division by 0 if device is not responding
+				$use = ($used * 100) / ($used + $free) unless $used + $free == 0;
 
 				# FS alert
 				if($f eq "/" && lc($fs->{alerts}->{rootfs_enabled}) eq "y") {
