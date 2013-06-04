@@ -2,7 +2,7 @@
 ====================
 - Reimplemented the main loop with the sighandler alarm inside in order to be
   able to control timeouts in the 'disk' graph. This should avoid a complete
-  freeze if the network goes down when monitoring NFS filesystems.
+  freeze if the network goes down when monitoring NFS filesystems. [#10]
 - Fixed a bug that prevented from seeing stats in the 'nfss' graph.
 
 
