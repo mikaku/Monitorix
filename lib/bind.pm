@@ -608,7 +608,6 @@ sub bind_cgi {
 	}
 
 	for($n = 0; $n < scalar(my @bl = split(',', $bind->{list})); $n++) {
-		my $l = trim($bl[$n]);
 		for($n2 = 1; $n2 <= 7; $n2++) {
 			$str = $u . $package . $n . $n2 . "." . $tf->{when} . ".png";
 			push(@PNG, $str);
