@@ -45,7 +45,6 @@ $SIG{'STOP'} = 'INT_handler';
 $SIG{'TERM'} = 'INT_handler';
 $SIG{'CHLD'} = 'CHLD_handler';
 $SIG{'HUP' } = 'HUP_handler';
-$SIG{'ALRM'} = 'ALRM_handler';
 
 use constant VERSION	=> "3.2.1";
 use constant RELDATE	=> "03-Jun-2013";
@@ -90,56 +89,6 @@ sub HUP_handler {
 	open(OUT, "> " . $config{httpd_builtin}->{log_file});
 	close(OUT);
 	chown($uid, $gid, $config{httpd_builtin}->{log_file});
-}
-
-sub ALRM_handler {
-	my $myself = (caller(0))[3];
-	my ($sec, $min, $hour, $mday) = localtime(time);
-
-	# call all enabled graphs on every minute
-	if($sec == 0) {
-		foreach my $f (@{$config{func_update}}) {
-			my $update = $f . "_update";
-			my $d = $f;
-			logger("$myself: calling $update()") unless !$options{d};
-
-			undef($d) if(!grep {trim($_) eq $d} (@{$config{debug}}));
-			if(defined($options{d}) && $options{d} eq "all") {
-				$d = $f;
-			}
-
-			{
-				no strict "refs";
-				eval { &$update($f, \%config, $d); };
-				if($@) {
-					logger("$myself: $update(): $@");
-				}
-			}
-		}
-		if(lc($config{traffacct}->{enabled}) eq "y" && lc($config{traffacct}->{reports}->{enabled}) eq "y") {
-			my $d = "traffacct";
-			undef($d) if(!grep {trim($_) eq $d} (@{$config{debug}}));
-
-			# at 00:00h
-			if($min == 0 && $hour == 0) {
-
-				# collect traffic accounting every day
-				eval { traffacct::traffacct_getcounters(\%config, $d); };
-				if($@) {
-					logger("$myself: traffacct::traffacct_getcounters(): $@");
-				}
-
-				# send reports every first day of a month
-				if($mday == 1) {
-					eval { traffacct::traffacct_sendreports(\%config, $d); };
-					if($@) {
-						logger("$myself: traffacct::traffacct_sendreports(): $@");
-					}
-				}
-			}
-		}
-	}
-	alarm(1);
 }
 
 sub daemonize {
@@ -519,7 +468,54 @@ if(lc($config{httpd_builtin}->{enabled} eq "y")) {
 
 logger("Ok, done.") unless !$options{d};
 
-alarm(1);
 while(1) {
-        pause();
+	local $SIG{'ALRM'} = sub { alarm(1); };
+	alarm(1);
+	pause();
+
+	my ($sec, $min, $hour, $mday) = localtime(time);
+
+	# call to all enabled graphs on every minute
+	if($sec == 0) {
+		foreach my $f (@{$config{func_update}}) {
+			my $update = $f . "_update";
+			my $d = $f;
+			logger("Calling $update()") unless !$options{d};
+
+			undef($d) if(!grep {trim($_) eq $d} (@{$config{debug}}));
+			if(defined($options{d}) && $options{d} eq "all") {
+				$d = $f;
+			}
+
+			{
+				no strict "refs";
+				eval { &$update($f, \%config, $d); };
+				if($@) {
+					logger("$update(): $@");
+				}
+			}
+		}
+		if(lc($config{traffacct}->{enabled}) eq "y" && lc($config{traffacct}->{reports}->{enabled}) eq "y") {
+			my $d = "traffacct";
+			undef($d) if(!grep {trim($_) eq $d} (@{$config{debug}}));
+
+			# at 00:00h
+			if($min == 0 && $hour == 0) {
+
+				# collect traffic accounting every day
+				eval { traffacct::traffacct_getcounters(\%config, $d); };
+				if($@) {
+					logger("traffacct::traffacct_getcounters(): $@");
+				}
+
+				# send reports every first day of a month
+				if($mday == 1) {
+					eval { traffacct::traffacct_sendreports(\%config, $d); };
+					if($@) {
+						logger("traffacct::traffacct_sendreports(): $@");
+					}
+				}
+			}
+		}
+	}
 }
