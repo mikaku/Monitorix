@@ -472,7 +472,7 @@ sub icecast_cgi {
 		$n = 0;
 		foreach my $i (split(',', $icecast->{desc}->{$url})) {
 			$i = trim($i);
-			$str = sprintf("%-15s", $i);
+			$str = sprintf("%-15s", substr($i, 0, 15));
 			push(@tmp, "LINE1:ice" . $e . "_mp$n" . $LC[$n] . ":$str");
 			push(@tmpz, "LINE2:ice" . $e . "_mp$n" . $LC[$n] . ":$i");
 			push(@tmp, "GPRINT:ice" . $e . "_mp$n" . ":LAST: Cur\\:%3.0lf");
