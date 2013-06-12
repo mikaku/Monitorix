@@ -142,7 +142,7 @@ sub nginx_update {
 		my $val;
 		open(IN, "iptables -nxvL INPUT |");
 		while(<IN>) {
-			if(/ nginx_IN /) {
+			if(/ monitorix_nginx_IN /) {
 				(undef, $val) = split(' ', $_);
 				chomp($val);
 				$in = $val - ($config->{nginx_hist}->{'in'} || 0);
@@ -155,7 +155,7 @@ sub nginx_update {
 		close(IN);
 		open(IN, "iptables -nxvL OUTPUT |");
 		while(<IN>) {
-			if(/ nginx_IN /) {
+			if(/ monitorix_nginx_IN /) {
 				(undef, $val) = split(' ', $_);
 				chomp($val);
 				$out = $val - ($config->{nginx_hist}->{'out'} || 0);
