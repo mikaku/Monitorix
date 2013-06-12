@@ -582,7 +582,6 @@ sub port_cgi {
 			} else {
 				if($title) {
 					print("    </tr>\n");
-					print("    <tr>\n");
 				}
 				$n2 = 1;
 			}
