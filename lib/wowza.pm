@@ -622,6 +622,7 @@ sub wowza_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		$n = 0;
 		foreach my $w (split(',', $wowza->{desc}->{$url})) {
 			$w = trim($w);
