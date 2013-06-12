@@ -1,9 +1,13 @@
 3.N.N  - NN-XXX-2013
 ====================
-- Reimplemented the main loop with the sighandler alarm inside in order to be
-  able to control timeouts in the 'disk' graph. This should avoid a complete
-  freeze if the network goes down when monitoring NFS filesystems. [#10]
+- Reimplemented the alarm signal handler and placing it inside the main loop in
+  order to be able to take control of timeouts in the 'disk' graph (and others).
+  This should avoid a complete freeze if the network goes down when monitoring
+  NFS filesystems. [#10]
 - Fixed a bug that prevented from seeing stats in the 'nfss' graph.
+- Fixed in 'nginx' graph the name of the iptables rules which prevented working
+  the network traffic graph. [#22]
+- Little code cleaning.
 
 
 3.2.1  - 03-Jun-2013
