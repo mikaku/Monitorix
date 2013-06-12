@@ -735,15 +735,7 @@ sub get_uptime {
 		$uptime = time - int($uptime);
 	}
 
-	my $d = int($uptime / (60 * 60 * 24));
-	my $h = int($uptime / (60 * 60)) % 24;
-	my $m = int($uptime / 60) % 60;
-
-	my $d_string = $d ? sprintf("%d days,", $d) : "";
-	my $h_string = $h ? sprintf("%d", $h) : "";
-	my $m_string = $h ? sprintf("%sh %dm", $h, $m) : sprintf("%d min", $m);
-
-	return "$d_string $m_string";
+	return uptime2str($uptime);
 }
 
 1;

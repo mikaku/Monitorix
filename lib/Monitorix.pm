@@ -25,7 +25,7 @@ use warnings;
 use Exporter 'import';
 use POSIX qw(setuid setgid setsid);
 use Socket;
-our @EXPORT = qw(logger trim min max celsius_to httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
+our @EXPORT = qw(logger trim min max celsius_to uptime2str httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
 
 sub logger {
 	my ($msg) = @_;
@@ -68,6 +68,21 @@ sub celsius_to {
 		return ($celsius * (9 / 5)) + 32;
 	}
 	return $celsius;
+}
+
+sub uptime2str {
+	my $uptime = shift;
+	my $str;
+
+	my $d = int($uptime / (60 * 60 * 24));
+	my $h = int($uptime / (60 * 60)) % 24;
+	my $m = int($uptime / 60) % 60;
+
+	my $d_string = $d ? sprintf("%d days,", $d) : "";
+	my $h_string = $h ? sprintf("%d", $h) : "";
+	my $m_string = $h ? sprintf("%sh %dm", $h, $m) : sprintf("%d min", $m);
+
+	return "$d_string $m_string";
 }
 
 sub httpd_setup {
