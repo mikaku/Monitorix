@@ -71,7 +71,7 @@ sub celsius_to {
 }
 
 sub uptime2str {
-	my $uptime = shift;
+	my $uptime = shift || 0;
 	my $str;
 
 	my $d = int($uptime / (60 * 60 * 24));
