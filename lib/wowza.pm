@@ -286,12 +286,12 @@ sub wowza_update {
 					$rrdata .= ":" . $entry->{MessagesInBytesRate};
 					$rrdata .= ":" . $entry->{MessagesOutBytesRate};
 					my $instance = $entry->{ApplicationInstance}->{Stream};
-					$rrdata .= ":" . $instance->{SessionsRTSP};
-					$rrdata .= ":" . $instance->{SessionsSmooth};
-					$rrdata .= ":" . $instance->{SessionsCupertino};
-					$rrdata .= ":" . $instance->{SessionsFlash};
-					$rrdata .= ":" . $instance->{SessionsSanJose};
-					$rrdata .= ":" . $instance->{SessionsTotal};
+					$rrdata .= ":" . ($instance->{SessionsRTSP} || 0);
+					$rrdata .= ":" . ($instance->{SessionsSmooth} || 0);
+					$rrdata .= ":" . ($instance->{SessionsCupertino} || 0);
+					$rrdata .= ":" . ($instance->{SessionsFlash} || 0);
+					$rrdata .= ":" . ($instance->{SessionsSanJose} || 0);
+					$rrdata .= ":" . ($instance->{SessionsTotal} || 0);
 					$rrdata .= ":" . "0:0";
 					$e2++;
 					last;
