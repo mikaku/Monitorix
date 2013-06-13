@@ -345,6 +345,8 @@ sub wowza_cgi {
 	my @tmp;
 	my @tmpz;
 	my @CDEF;
+	my $T = "B";
+	my $vlabel = "bytes/s";
 	my $e;
 	my $e2;
 	my $n;
@@ -379,6 +381,11 @@ sub wowza_cgi {
 	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
 
 	$title = !$silent ? $title : "";
+
+	if(lc($config->{netstats_in_bps}) eq "y") {
+		$T = "b";
+		$vlabel = "bits/s";
+	}
 
 
 	# text mode
@@ -614,13 +621,20 @@ sub wowza_cgi {
 		foreach my $w (split(',', $wowza->{desc}->{$url})) {
 			$w = trim($w);
 			$str = sprintf("%-25s", substr($w, 0, 25));
-			push(@tmp, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$str");
-			push(@tmpz, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$w");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST: Cur\\:%3.0lf");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":AVERAGE:  Avg\\:%3.0lf");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":MIN:  Min\\:%3.0lf");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":MAX:  Max\\:%3.0lf\\n");
-			push(@CDEF, "CDEF:wms" . $e . "_a$n=wms" . $e . "_a$n" . "i,wms" . $e . "_a$n" . "o,+");
+			push(@tmp, "LINE2:B_wms" . $e . "_a$n" . $LC[$n] . ":$str");
+			push(@tmpz, "LINE2:B_wms" . $e . "_a$n" . $LC[$n] . ":$w");
+			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":LAST: Cur\\:%3.0lfK$T/s");
+			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":AVERAGE:  Avg\\:%3.0lfK$T/s");
+			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":MIN:  Min\\:%3.0lfK$T/s");
+			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":MAX:  Max\\:%3.0lfK$T/s\\n");
+			if(lc($config->{netstats_in_bps}) eq "y") {
+				push(@CDEF, "CDEF:wms" . $e . "_a$n=wms" . $e . "_a$n" . "i,wms" . $e . "_a$n" . "o,+");
+				push(@CDEF, "CDEF:B_wms" . $e . "_a$n=wms" . $e . "_a$n,8,*");
+			} else {
+				push(@CDEF, "CDEF:wms" . $e . "_a$n=wms" . $e . "_a$n" . "i,wms" . $e . "_a$n" . "o,+");
+				push(@CDEF, "CDEF:B_wms" . $e . "_a$n=wms" . $e . "_a$n");
+			}
+			push(@CDEF, "CDEF:K_wms" . $e . "_a$n=B_wms" . $e . "_a$n,1024,/");
 			$n++;
 		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
@@ -628,7 +642,7 @@ sub wowza_cgi {
 			"--title=$config->{graphs}->{_wowza2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=bytes/s",
+			"--vertical-label=$vlabel",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
@@ -661,7 +675,7 @@ sub wowza_cgi {
 				"--title=$config->{graphs}->{_wowza2}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=bytes/s",
+				"--vertical-label=$vlabel",
 				"--width=$width",
 				"--height=$height",
 				@riglim,
