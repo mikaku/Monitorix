@@ -350,7 +350,6 @@ sub wowza_cgi {
 	my $n;
 	my $n2;
 	my $str;
-	my $stack;
 	my $err;
 	my @AC = (
 		"#FFA500",
@@ -522,23 +521,13 @@ sub wowza_cgi {
 		foreach my $w (split(',', $wowza->{desc}->{$url})) {
 			$w = trim($w);
 			$str = sprintf("%-25s", substr($w, 0, 25));
-			$stack = "";
-			if(lc($wowza->{graph_mode}) eq "s") {
-				$stack = ":STACK";
-			}
-			push(@tmp, "AREA:wms" . $e . "_a$n" . $AC[$n] . ":$str" . $stack);
-			push(@tmpz, "AREA:wms" . $e . "_a$n" . $AC[$n] . ":$w" . $stack);
+			push(@tmp, "AREA:wms" . $e . "_a$n" . $AC[$n] . ":$str:STACK");
+			push(@tmpz, "AREA:wms" . $e . "_a$n" . $AC[$n] . ":$w:STACK");
 			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST: Current\\:%4.0lf");
 			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":AVERAGE: Average\\:%4.0lf");
 			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":MIN: Min\\:%4.0lf");
 			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":MAX: Max\\:%4.0lf\\n");
 			$n++;
-		}
-		if(lc($wowza->{graph_mode}) ne "s") {
-			foreach my $w (split(',', $wowza->{desc}->{$url})) {
-				push(@tmp, "LINE1:wms" . $e . "_a$n" . $LC[$n]);
-				push(@tmpz, "LINE2:wms" . $e . "_a$n" . $LC[$n]);
-			}
 		}
 
 		if($title) {
@@ -591,9 +580,7 @@ sub wowza_cgi {
 				"DEF:wms" . $e . "_a5=$rrd:wms" . $e . "_a5_conncur:AVERAGE",
 				"DEF:wms" . $e . "_a6=$rrd:wms" . $e . "_a6_conncur:AVERAGE",
 				"DEF:wms" . $e . "_a7=$rrd:wms" . $e . "_a7_conncur:AVERAGE",
-				@tmpz,
-				"COMMENT: \\n",
-				$uptimeline);
+				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 5]: $err\n") if $err;
 		}
@@ -735,9 +722,9 @@ sub wowza_cgi {
 		$n = 0;
 		foreach my $w (split(',', $wowza->{desc}->{$url})) {
 			$w = trim($w);
-			$str = sprintf("%-10s", substr($w, 0, 10));
+			$str = sprintf("%-9s", substr($w, 0, 9));
 			push(@tmp, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$str");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST:\\:%3.2lf");
+			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST:\\:%4.1lf");
 			if(!(($n + 1) % 2)) {
 				push(@tmp, "COMMENT: \\n");
 			} else {
@@ -824,9 +811,9 @@ sub wowza_cgi {
 		$n = 0;
 		foreach my $w (split(',', $wowza->{desc}->{$url})) {
 			$w = trim($w);
-			$str = sprintf("%-10s", substr($w, 0, 10));
+			$str = sprintf("%-9s", substr($w, 0, 9));
 			push(@tmp, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$str");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST:\\:%3.0lf");
+			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST:\\:%4.1lf");
 			if(!(($n + 1) % 2)) {
 				push(@tmp, "COMMENT: \\n");
 			} else {
