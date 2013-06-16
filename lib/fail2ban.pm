@@ -147,8 +147,8 @@ sub fail2ban_update {
 			if(/^$date/) {
 				my $e = 0;
 				while($e < scalar(my @fl = split(',', $fail2ban->{list}))) {
+					my $e2 = 0;
 					foreach my $i (split(',', $fail2ban->{desc}->{$e})) {
-						my $e2 = 0;
 						($str = trim($i)) =~ s/\[/\\[/;
 						$str =~ s/\]/\\]/;
 						$jails[$e][$e2] = 0 unless defined $jails[$e][$e2];
