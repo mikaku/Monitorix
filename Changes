@@ -1,12 +1,14 @@
 3.N.N  - NN-XXX-2013
 ====================
-- Reimplemented the alarm signal handler and placing it inside the main loop in
+- Reimplemented the alarm signal handler placing it inside the main loop in
   order to be able to take control of timeouts in the 'disk' graph (and others).
   This should avoid a complete freeze if the network goes down when monitoring
   NFS filesystems. [#10]
 - Fixed a bug that prevented from seeing stats in the 'nfss' graph.
 - Fixed in 'nginx' graph the name of the iptables rules which prevented working
   the network traffic graph. [#22]
+- Fixed a bug that prevented a correctly data collection in the 'fail2ban'
+  graph. [#23]
 - Little code cleaning.
 
 
