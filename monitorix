@@ -114,29 +114,36 @@ sub create_index {
 
 	my $n;
 	my $gname;
-	my $theme = $config{theme};
 	my $bgcolor;
 	my $table_back_color;
 	my $title_back_color;
 	my $title_fore_color;
 
+	# keep backwards compatibility for v3.2.1 and less
+	if(ref($config{theme}) ne "HASH") {
+		logger("$myself: WARNING: the <theme> option is not valid. Please consider upgrading your configuration file. Defaulting to white theme.");
+		delete($config{theme});
+		$config{theme}->{white}->{main_bg} = "FFFFFF";
+		$config{theme}->{white}->{main_fg} = "000000";
+		$config{theme}->{white}->{title_bg} = "777777";
+		$config{theme}->{white}->{title_fg} = "CCCC00";
+		$config{theme}->{white}->{graph_bg} = "CCCCCC";
+		$config{theme_color} = "white";
+	}
+
+	my $theme = $config{theme_color};
+	if($config{theme}->{$theme}) {
+		$bgcolor = $config{theme}->{$theme}->{main_bg};
+		$table_back_color = $config{theme}->{$theme}->{graph_bg};
+		$title_back_color = $config{theme}->{$theme}->{title_bg};
+		$title_fore_color = $config{theme}->{$theme}->{title_fg};
+	} else {
+		logger("$myself: ERROR: invalid value in 'theme_color' option");
+	}
+
 	# force to only one trailing slash
 	(my $base_url = $config{base_url}) =~ s/\/*$/\//;
 	(my $base_cgi = $config{base_cgi}) =~ s/\/*$/\//;
-
-	if($theme eq "black") {
-		$bgcolor = $config{$theme}->{main_bg};
-		$table_back_color = $config{$theme}->{graph_bg};
-		$title_back_color = $config{$theme}->{title_bg};
-		$title_fore_color = $config{$theme}->{title_fg};
-	} elsif(!$theme || $theme eq "white") {
-		$bgcolor = "#ffffff";
-		$table_back_color = "#CCCCCC";
-		$title_back_color = "#777777";
-		$title_fore_color = "#CCCC00";
-	} else {
-		logger("$myself: ERROR: invalid value in 'theme' option") unless !$options{d};
-	}
 
 	if(!open(OUT, "> $config{base_dir}/index.html")) {
 		die "unable to create '${config{base_dir}}index.html': $!";

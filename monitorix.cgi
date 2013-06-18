@@ -234,39 +234,46 @@ if($mode ne "localhost") {
 	($mode, $val)  = split(/\./, $mode);
 }
 
+
 if(lc($config{httpd_builtin}->{enabled} ne "y")) {
 	print("Content-Type: text/html\n");
 	print("\n");
 }
 
-# default white theme colors
+
 $colors{graph_colors} = ();
 $colors{warning_color} = "--color=CANVAS#880000";
-$colors{bg_color} = "#FFFFFF";
-$colors{fg_color} = "#000000";
-$colors{title_bg_color} = "#777777";
-$colors{title_fg_color} = "#CCCC00";
-$colors{graph_bg_color} = "#CCCCCC";
 
-if($color) {
-	if($color eq "black") {
-		push(@{$colors{graph_colors}}, "--color=CANVAS#" . $config{$color}->{canvas});
-		push(@{$colors{graph_colors}}, "--color=BACK#" . $config{$color}->{back});
-		push(@{$colors{graph_colors}}, "--color=FONT#" . $config{$color}->{font});
-		push(@{$colors{graph_colors}}, "--color=MGRID#" . $config{$color}->{mgrid});
-		push(@{$colors{graph_colors}}, "--color=GRID#" . $config{$color}->{grid});
-		push(@{$colors{graph_colors}}, "--color=FRAME#" . $config{$color}->{frame});
-		push(@{$colors{graph_colors}}, "--color=ARROW#" . $config{$color}->{arrow});
-		push(@{$colors{graph_colors}}, "--color=SHADEA#" . $config{$color}->{shadea});
-		push(@{$colors{graph_colors}}, "--color=SHADEB#" . $config{$color}->{shadeb});
-		push(@{$colors{graph_colors}}, "--color=AXIS#" . $config{$color}->{axis}) if defined($config{$color}->{axis});
-		$colors{bg_color} = $config{$color}->{main_bg};
-		$colors{fg_color} = $config{$color}->{main_fg};
-		$colors{title_bg_color} = $config{$color}->{title_bg};
-		$colors{title_fg_color} = $config{$color}->{title_fg};
-		$colors{graph_bg_color} = $config{$color}->{graph_bg};
-	}
+if(!$config{theme}->{$color}) {
+	$color = "white";
+
+	# keep backwards compatibility for v3.2.1 and less
+	$config{theme}->{$color}->{main_bg} = "FFFFFF";
+	$config{theme}->{$color}->{main_fg} = "000000";
+	$config{theme}->{$color}->{title_bg} = "777777";
+	$config{theme}->{$color}->{title_fg} = "CCCC00";
+	$config{theme}->{$color}->{graph_bg} = "CCCCCC";
 }
+
+if($color eq "black") {
+	push(@{$colors{graph_colors}}, "--color=CANVAS#" . $config{theme}->{$color}->{canvas});
+	push(@{$colors{graph_colors}}, "--color=BACK#" . $config{theme}->{$color}->{back});
+	push(@{$colors{graph_colors}}, "--color=FONT#" . $config{theme}->{$color}->{font});
+	push(@{$colors{graph_colors}}, "--color=MGRID#" . $config{theme}->{$color}->{mgrid});
+	push(@{$colors{graph_colors}}, "--color=GRID#" . $config{theme}->{$color}->{grid});
+	push(@{$colors{graph_colors}}, "--color=FRAME#" . $config{theme}->{$color}->{frame});
+	push(@{$colors{graph_colors}}, "--color=ARROW#" . $config{theme}->{$color}->{arrow});
+	push(@{$colors{graph_colors}}, "--color=SHADEA#" . $config{theme}->{$color}->{shadea});
+	push(@{$colors{graph_colors}}, "--color=SHADEB#" . $config{theme}->{$color}->{shadeb});
+	push(@{$colors{graph_colors}}, "--color=AXIS#" . $config{theme}->{$color}->{axis})
+		if defined($config{theme}->{$color}->{axis});
+}
+$colors{bg_color} = $config{theme}->{$color}->{main_bg};
+$colors{fg_color} = $config{theme}->{$color}->{main_fg};
+$colors{title_bg_color} = $config{theme}->{$color}->{title_bg};
+$colors{title_fg_color} = $config{theme}->{$color}->{title_fg};
+$colors{graph_bg_color} = $config{theme}->{$color}->{graph_bg};
+
 
 ($tf{twhen}) = ($when =~ m/(hour|day|week|month|year)$/);
 ($tf{nwhen} = $when) =~ s/$tf{twhen}// unless !$tf{twhen};
