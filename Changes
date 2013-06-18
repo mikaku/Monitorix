@@ -4,6 +4,7 @@
   order to be able to take control of timeouts in the 'disk' graph (and others).
   This should avoid a complete freeze if the network goes down when monitoring
   NFS filesystems. [#10]
+- Reimplemented the 'theme' option.
 - Fixed a bug that prevented from seeing stats in the 'nfss' graph.
 - Fixed in 'nginx' graph the name of the iptables rules which prevented working
   the network traffic graph. [#22]
