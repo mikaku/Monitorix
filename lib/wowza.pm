@@ -264,20 +264,20 @@ sub wowza_update {
 
 		# application stats
 		#
-		# '$app' may be a HASH or an ARRAY depending if it has only one
-		# duplicate or if it has more than one, respectively. We need
-		# to convert it to an array in all cases.
-		my $app = $data->{VHost}->{Application};
-		my @array;
-		if(ref($app) eq "HASH") {
-			$array[0] = $app;
+		# '$data->{VHost}->{Application}' may be a HASH or an ARRAY
+		# depending if it has only one duplicate or if it has more than
+		# one, respectively. We need to convert it to an array in all
+		# cases.
+		my @app;
+		if(ref($data->{VHost}->{Application}) eq "HASH") {
+			$app[0] = $data->{VHost}->{Application};
 		} else {
-			@array = @$app;
+			@app = @{$data->{VHost}->{Application}};
 		}
 
 		my $e2 = 0;
 		foreach my $an (split(',', $wowza->{desc}->{$wls})) {
-			foreach my $entry (@array) {
+			foreach my $entry (@app) {
 				my $conntacc = 0;
 				my $conntrej = 0;
 				if($entry->{Name} eq trim($an)) {
@@ -298,7 +298,12 @@ sub wowza_update {
 					$rrdata .= ":" . $conntrej;
 					$rrdata .= ":" . $entry->{MessagesInBytesRate};
 					$rrdata .= ":" . $entry->{MessagesOutBytesRate};
-					my $instance = $entry->{ApplicationInstance}->{Stream};
+					my $instance;
+					if(ref($entry->{ApplicationInstance}->{Stream}) eq "ARRAY") {
+						$instance = $entry->{ApplicationInstance}->{Stream}[0];
+					} else {
+						$instance = $entry->{ApplicationInstance}->{Stream};
+					}
 					$rrdata .= ":" . ($instance->{SessionsRTSP} || 0);
 					$rrdata .= ":" . ($instance->{SessionsSmooth} || 0);
 					$rrdata .= ":" . ($instance->{SessionsCupertino} || 0);
