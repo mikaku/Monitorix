@@ -325,12 +325,12 @@ sub apache_cgi {
 		push(@tmp, "GPRINT:apache" . $e . "_busy:MAX:   Max\\: %3.0lf\\n");
 		push(@tmp, "LINE1:apache" . $e . "_idle#0000EE");
 		push(@tmp, "LINE1:apache" . $e . "_busy#00EEEE");
-		push(@tmp, "LINE1:apache" . $e . "_tot#EE0000");
+		push(@tmp, "LINE1:apache" . $e . "_tot#EE0000:Total");
 		push(@tmpz, "AREA:apache" . $e . "_idle#4444EE:Idle");
 		push(@tmpz, "AREA:apache" . $e . "_busy#44EEEE:Busy");
 		push(@tmpz, "LINE2:apache" . $e . "_idle#0000EE");
 		push(@tmpz, "LINE2:apache" . $e . "_busy#00EEEE");
-		push(@tmpz, "LINE2:apache" . $e . "_tot#EE0000");
+		push(@tmpz, "LINE2:apache" . $e . "_tot#EE0000:Total");
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
