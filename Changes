@@ -1,5 +1,6 @@
 3.N.N  - NN-XXX-2013
 ====================
+- Added a complete statistical Wowza Media Server graph.
 - Reimplemented the alarm signal handler placing it inside the main loop in
   order to be able to control the timeouts in the 'disk' graph (and others).
   This should avoid a complete freeze if the network goes down when monitoring
