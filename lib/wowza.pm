@@ -280,6 +280,8 @@ sub wowza_update {
 			foreach my $entry (@app) {
 				my $conntacc = 0;
 				my $conntrej = 0;
+				my $msginbytes = 0;
+				my $msgoutbytes = 0;
 				if($entry->{Name} eq trim($an)) {
 					$conntacc = $entry->{ConnectionsTotalAccepted} - ($config->{wowza_hist}->{'conntacc'} || 0);
 					$conntacc = 0 unless $conntacc != $entry->{ConnectionsTotalAccepted};
@@ -291,13 +293,23 @@ sub wowza_update {
 					$conntrej /= 60;
 					$config->{wowza_hist}->{'conntrej'} = $entry->{ConnectionsTotalRejected};
 
+					$msginbytes = $entry->{MessagesInBytesRate} - ($config->{wowza_hist}->{'msginbytes'} || 0);
+					$msginbytes = 0 unless $msginbytes != $entry->{MessagesInBytesRate};
+					$msginbytes /= 60;
+					$config->{wowza_hist}->{'msginbytes'} = $entry->{MessagesInBytesRate};
+
+					$msgoutbytes = $entry->{MessagesOutBytesRate} - ($config->{wowza_hist}->{'msgoutbytes'} || 0);
+					$msgoutbytes = 0 unless $msgoutbytes != $entry->{MessagesOutBytesRate};
+					$msgoutbytes /= 60;
+					$config->{wowza_hist}->{'msgoutbytes'} = $entry->{MessagesOutBytesRate};
+
 					$rrdata .= ":" . $entry->{TimeRunning};
 					$rrdata .= ":" . $entry->{ConnectionsTotal};
 					$rrdata .= ":" . $entry->{ConnectionsCurrent};
 					$rrdata .= ":" . $conntacc;
 					$rrdata .= ":" . $conntrej;
-					$rrdata .= ":" . $entry->{MessagesInBytesRate};
-					$rrdata .= ":" . $entry->{MessagesOutBytesRate};
+					$rrdata .= ":" . $msginbytes;
+					$rrdata .= ":" . $msgoutbytes;
 					my $instance;
 					if(ref($entry->{ApplicationInstance}->{Stream}) eq "ARRAY") {
 						$instance = $entry->{ApplicationInstance}->{Stream}[0];
@@ -535,10 +547,10 @@ sub wowza_cgi {
 			$str = sprintf("%-25s", substr($w, 0, 25));
 			push(@tmp, "AREA:wms" . $e . "_a$n" . $AC[$n] . ":$str:STACK");
 			push(@tmpz, "AREA:wms" . $e . "_a$n" . $AC[$n] . ":$w:STACK");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST: Current\\:%4.0lf");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":AVERAGE: Average\\:%4.0lf");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":MIN: Min\\:%4.0lf");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":MAX: Max\\:%4.0lf\\n");
+			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST: Current\\:%3.0lf");
+			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":AVERAGE:  Average\\:%3.0lf");
+			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":MIN:  Min\\:%3.0lf");
+			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":MAX:  Max\\:%3.0lf\\n");
 			$n++;
 		}
 
@@ -629,9 +641,9 @@ sub wowza_cgi {
 			push(@tmp, "LINE2:B_wms" . $e . "_a$n" . $LC[$n] . ":$str");
 			push(@tmpz, "LINE2:B_wms" . $e . "_a$n" . $LC[$n] . ":$w");
 			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":LAST: Cur\\:%3.0lfK$T/s");
-			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":AVERAGE:  Avg\\:%3.0lfK$T/s");
-			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":MIN:  Min\\:%3.0lfK$T/s");
-			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":MAX:  Max\\:%3.0lfK$T/s\\n");
+			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":AVERAGE: Avg\\:%3.0lfK$T/s");
+			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":MIN: Min\\:%3.0lfK$T/s");
+			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":MAX: Max\\:%3.0lfK$T/s\\n");
 			if(lc($config->{netstats_in_bps}) eq "y") {
 				push(@CDEF, "CDEF:wms" . $e . "_a$n=wms" . $e . "_a$n" . "i,wms" . $e . "_a$n" . "o,+");
 				push(@CDEF, "CDEF:B_wms" . $e . "_a$n=wms" . $e . "_a$n,8,*");
@@ -741,14 +753,9 @@ sub wowza_cgi {
 		$n = 0;
 		foreach my $w (split(',', $wowza->{desc}->{$url})) {
 			$w = trim($w);
-			$str = sprintf("%-9s", substr($w, 0, 9));
+			$str = sprintf("%-20s", substr($w, 0, 20));
 			push(@tmp, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$str");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST:\\:%4.1lf");
-			if(!(($n + 1) % 2)) {
-				push(@tmp, "COMMENT: \\n");
-			} else {
-				push(@tmp, "COMMENT: ");
-			}
+			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST: Current\\:%5.1lf\\n");
 			push(@tmpz, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$w");
 			$n++;
 		}
@@ -757,7 +764,7 @@ sub wowza_cgi {
 			"--title=$config->{graphs}->{_wowza3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=connections/s",
+			"--vertical-label=Connections/s",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
@@ -782,7 +789,7 @@ sub wowza_cgi {
 				"--title=$config->{graphs}->{_wowza3}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=connections/s",
+				"--vertical-label=Connections/s",
 				"--width=$width",
 				"--height=$height",
 				@riglim,
@@ -830,14 +837,9 @@ sub wowza_cgi {
 		$n = 0;
 		foreach my $w (split(',', $wowza->{desc}->{$url})) {
 			$w = trim($w);
-			$str = sprintf("%-9s", substr($w, 0, 9));
+			$str = sprintf("%-20s", substr($w, 0, 20));
 			push(@tmp, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$str");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST:\\:%4.1lf");
-			if(!(($n + 1) % 2)) {
-				push(@tmp, "COMMENT: \\n");
-			} else {
-				push(@tmp, "COMMENT: ");
-			}
+			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST: Current\\:%5.1lf\\n");
 			push(@tmpz, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$w");
 			$n++;
 		}
@@ -846,7 +848,7 @@ sub wowza_cgi {
 			"--title=$config->{graphs}->{_wowza4}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=connections/s",
+			"--vertical-label=Connections/s",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
@@ -871,7 +873,7 @@ sub wowza_cgi {
 				"--title=$config->{graphs}->{_wowza4}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=connections/s",
+				"--vertical-label=Connections/s",
 				"--width=$width",
 				"--height=$height",
 				@riglim,
@@ -905,9 +907,89 @@ sub wowza_cgi {
 			}
 		}
 
-
-
-
+		undef(@riglim);
+		if(trim($rigid[4]) eq 1) {
+			push(@riglim, "--upper-limit=" . trim($limit[4]));
+		} else {
+			if(trim($rigid[4]) eq 2) {
+				push(@riglim, "--upper-limit=" . trim($limit[4]));
+				push(@riglim, "--rigid");
+			}
+		}
+		undef(@tmp);
+		undef(@tmpz);
+		$n = 0;
+		foreach my $w (split(',', $wowza->{desc}->{$url})) {
+			$w = trim($w);
+			$str = sprintf("%-20s", substr($w, 0, 20));
+			push(@tmp, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$str");
+			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST: Current\\:%3.0lf\\n");
+			push(@tmpz, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$w");
+			$n++;
+		}
+		($width, $height) = split('x', $config->{graph_size}->{small});
+		RRDs::graph("$PNG_DIR" . $PNG[$e * 5 + 4],
+			"--title=$config->{graphs}->{_wowza5}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Sessions",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			"--lower-limit=0",
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:wms" . $e . "_a0=$rrd:wms" . $e . "_a0_sestot:AVERAGE",
+			"DEF:wms" . $e . "_a1=$rrd:wms" . $e . "_a1_sestot:AVERAGE",
+			"DEF:wms" . $e . "_a2=$rrd:wms" . $e . "_a2_sestot:AVERAGE",
+			"DEF:wms" . $e . "_a3=$rrd:wms" . $e . "_a3_sestot:AVERAGE",
+			"DEF:wms" . $e . "_a4=$rrd:wms" . $e . "_a4_sestot:AVERAGE",
+			"DEF:wms" . $e . "_a5=$rrd:wms" . $e . "_a5_sestot:AVERAGE",
+			"DEF:wms" . $e . "_a6=$rrd:wms" . $e . "_a6_sestot:AVERAGE",
+			"DEF:wms" . $e . "_a7=$rrd:wms" . $e . "_a7_sestot:AVERAGE",
+			@tmp);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . $PNG[$e * 5 + 4] . ": $err\n") if $err;
+		if(lc($config->{enable_zoom}) eq "y") {
+			($width, $height) = split('x', $config->{graph_size}->{zoom});
+			RRDs::graph("$PNG_DIR" . $PNGz[$e * 5 + 4],
+				"--title=$config->{graphs}->{_wowza5}  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=PNG",
+				"--vertical-label=Sessions",
+				"--width=$width",
+				"--height=$height",
+				@riglim,
+				"--lower-limit=0",
+				@{$cgi->{version12}},
+				@{$cgi->{version12_small}},
+				@{$colors->{graph_colors}},
+				"DEF:wms" . $e . "_a0=$rrd:wms" . $e . "_a0_sestot:AVERAGE",
+				"DEF:wms" . $e . "_a1=$rrd:wms" . $e . "_a1_sestot:AVERAGE",
+				"DEF:wms" . $e . "_a2=$rrd:wms" . $e . "_a2_sestot:AVERAGE",
+				"DEF:wms" . $e . "_a3=$rrd:wms" . $e . "_a3_sestot:AVERAGE",
+				"DEF:wms" . $e . "_a4=$rrd:wms" . $e . "_a4_sestot:AVERAGE",
+				"DEF:wms" . $e . "_a5=$rrd:wms" . $e . "_a5_sestot:AVERAGE",
+				"DEF:wms" . $e . "_a6=$rrd:wms" . $e . "_a6_sestot:AVERAGE",
+				"DEF:wms" . $e . "_a7=$rrd:wms" . $e . "_a7_sestot:AVERAGE",
+				@tmpz);
+			$err = RRDs::error;
+			print("ERROR: while graphing $PNG_DIR" . $PNGz[$e * 5 + 4] . ": $err\n") if $err;
+		}
+		$e2 = $e + 5;
+		if($title || ($silent =~ /imagetag/ && $graph =~ /wowza$e2/)) {
+			if(lc($config->{enable_zoom}) eq "y") {
+				if(lc($config->{disable_javascript_void}) eq "y") {
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 5 + 4] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 5 + 4] . "' border='0'></a>\n");
+				}
+				else {
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 5 + 4] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 5 + 4] . "' border='0'></a>\n");
+				}
+			} else {
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 5 + 4] . "'>\n");
+			}
+		}
 
 		if($title) {
 			print("    </td>\n");
