@@ -282,26 +282,31 @@ sub wowza_update {
 				my $conntrej = 0;
 				my $msginbytes = 0;
 				my $msgoutbytes = 0;
+				my $str;
 				if($entry->{Name} eq trim($an)) {
-					$conntacc = $entry->{ConnectionsTotalAccepted} - ($config->{wowza_hist}->{'conntacc'} || 0);
+					$str = $e . $e2 . "conntacc";
+					$conntacc = $entry->{ConnectionsTotalAccepted} - ($config->{wowza_hist}->{$str} || 0);
 					$conntacc = 0 unless $conntacc != $entry->{ConnectionsTotalAccepted};
 					$conntacc /= 60;
-					$config->{wowza_hist}->{'conntacc'} = $entry->{ConnectionsTotalAccepted};
+					$config->{wowza_hist}->{$str} = $entry->{ConnectionsTotalAccepted};
 
-					$conntrej = $entry->{ConnectionsTotalRejected} - ($config->{wowza_hist}->{'conntrej'} || 0);
+					$str = $e . $e2 . "conntrej";
+					$conntrej = $entry->{ConnectionsTotalRejected} - ($config->{wowza_hist}->{$str} || 0);
 					$conntrej = 0 unless $conntrej != $entry->{ConnectionsTotalRejected};
 					$conntrej /= 60;
-					$config->{wowza_hist}->{'conntrej'} = $entry->{ConnectionsTotalRejected};
+					$config->{wowza_hist}->{$str} = $entry->{ConnectionsTotalRejected};
 
-					$msginbytes = $entry->{MessagesInBytesRate} - ($config->{wowza_hist}->{'msginbytes'} || 0);
+					$str = $e . $e2 . "msginbytes";
+					$msginbytes = $entry->{MessagesInBytesRate} - ($config->{wowza_hist}->{$str} || 0);
 					$msginbytes = 0 unless $msginbytes != $entry->{MessagesInBytesRate};
 					$msginbytes /= 60;
-					$config->{wowza_hist}->{'msginbytes'} = $entry->{MessagesInBytesRate};
+					$config->{wowza_hist}->{$str} = $entry->{MessagesInBytesRate};
 
-					$msgoutbytes = $entry->{MessagesOutBytesRate} - ($config->{wowza_hist}->{'msgoutbytes'} || 0);
+					$str = $e . $e2 . "msgoutbytes";
+					$msgoutbytes = $entry->{MessagesOutBytesRate} - ($config->{wowza_hist}->{$str} || 0);
 					$msgoutbytes = 0 unless $msgoutbytes != $entry->{MessagesOutBytesRate};
 					$msgoutbytes /= 60;
-					$config->{wowza_hist}->{'msgoutbytes'} = $entry->{MessagesOutBytesRate};
+					$config->{wowza_hist}->{$str} = $entry->{MessagesOutBytesRate};
 
 					$rrdata .= ":" . $entry->{TimeRunning};
 					$rrdata .= ":" . $entry->{ConnectionsTotal};
@@ -425,21 +430,21 @@ sub wowza_cgi {
 		my $line4;
 		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
 		print("    ");
-		for($n = 0; $n < scalar(my @il = split(',', $wowza->{list})); $n++) {
-			my $l = trim($il[$n]);
-			$line1 = "  ";
-			$line2 .= "  ";
-			$line3 .= "  ";
-			$line4 .= "--";
+		for($n = 0; $n < scalar(my @wl = split(',', $wowza->{list})); $n++) {
+			my $l = trim($wl[$n]);
+			$line1 = " ";
+			$line2 .= " ";
+			$line3 .= " ";
+			$line4 .= "-";
 			foreach my $i (split(',', $wowza->{desc}->{$l})) {
-				$line1 .= "           ";
-				$line2 .= sprintf(" %10s", trim($i));
-				$line3 .= "  List BitR";
-				$line4 .= "-----------";
+				$line1 .= "                               ";
+				$line2 .= sprintf(" %30s", trim($i));
+				$line3 .= "  Con/s MRate Acc/s Rej/s Strms";
+				$line4 .= "-------------------------------";
 			}
 			if($line1) {
 				my $i = length($line1);
-				printf(sprintf("%${i}s", sprintf("Wowza Media Server %2d", $n)));
+				printf(sprintf("%${i}s", $l));
 			}
 		}
 		print("\n");
@@ -451,23 +456,21 @@ sub wowza_cgi {
 		my @row;
 		my $time;
 		my $n2;
-		my $n3;
 		my $from;
 		my $to;
 		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
 			$line = @$data[$n];
 			$time = $time - (1 / $tf->{ts});
 			printf(" %2d$tf->{tc}", $time);
-			for($n2 = 0; $n2 < scalar(my @il = split(',', $wowza->{list})); $n2++) {
-				my $ls = trim($il[$n2]);
-				print("  ");
-				$n3 = 0;
-				foreach my $i (split(',', $wowza->{desc}->{$ls})) {
-					$from = $n2 * 36 + ($n3++ * 4);
-					$to = $from + 4;
-					my ($l, $b, undef, undef) = @$line[$from..$to];
-					@row = ($l, $b);
-					printf("  %4d %4d", @row);
+			for($n2 = 0; $n2 < scalar(my @wl = split(',', $wowza->{list})); $n2++) {
+				my $ls = trim($wl[$n2]);
+				print(" ");
+				foreach (split(',', $wowza->{desc}->{$ls})) {
+					$from = $n2 * 130 + (10);
+					$to = $from + 15;
+					my (undef, undef, $conncur, $conntacc, $conntrej, $minbrt, $moutbrt, undef, undef, undef, undef, undef, $sestot) = @$line[$from..$to];
+					@row = ($conncur, $conntacc, $conntrej, $minbrt + $moutbrt, $sestot);
+					printf("  %5d %5d %5d %5d %5d", @row);
 				}
 			}
 			print("\n");
