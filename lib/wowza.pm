@@ -758,7 +758,7 @@ sub wowza_cgi {
 			$w = trim($w);
 			$str = sprintf("%-20s", substr($w, 0, 20));
 			push(@tmp, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$str");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST: Current\\:%5.1lf\\n");
+			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST: Current\\:%6.2lf\\n");
 			push(@tmpz, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$w");
 			$n++;
 		}
@@ -842,7 +842,7 @@ sub wowza_cgi {
 			$w = trim($w);
 			$str = sprintf("%-20s", substr($w, 0, 20));
 			push(@tmp, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$str");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST: Current\\:%5.1lf\\n");
+			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST: Current\\:%6.2lf\\n");
 			push(@tmpz, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$w");
 			$n++;
 		}
