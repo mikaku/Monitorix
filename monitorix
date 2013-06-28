@@ -461,7 +461,7 @@ foreach (split(',', $config{graph_name} . ", traffacct")) {
 }
 
 if(!scalar($config{func_update})) {
-	logger("nothing to do, exiting.");
+	logger("Nothing to do, exiting.");
 	exit(0);
 }
 
