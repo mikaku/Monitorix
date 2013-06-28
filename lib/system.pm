@@ -321,6 +321,7 @@ sub system_cgi {
 	my @riglim;
 	my @tmp;
 	my @tmpz;
+	my @CDEF,
 	my $n;
 	my $err;
 
@@ -455,6 +456,11 @@ sub system_cgi {
 	push(@tmpz, "LINE1:load1#0000EE");
 	push(@tmpz, "LINE1:load5#EEEE00: 5 min average");
 	push(@tmpz, "LINE1:load15#00EEEE:15 min average");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	if($config->{os} eq "FreeBSD") {
 		push(@tmp, "COMMENT: \\n");
 	}
@@ -479,6 +485,8 @@ sub system_cgi {
 		"DEF:load1=$rrd:system_load1:AVERAGE",
 		"DEF:load5=$rrd:system_load5:AVERAGE",
 		"DEF:load15=$rrd:system_load15:AVERAGE",
+		"CDEF:allvalues=load1,load5,load15,+,+",
+		@CDEF,
 		@tmp,
 		"COMMENT: \\n",
 		$uptimeline);
@@ -500,6 +508,8 @@ sub system_cgi {
 			"DEF:load1=$rrd:system_load1:AVERAGE",
 			"DEF:load5=$rrd:system_load5:AVERAGE",
 			"DEF:load15=$rrd:system_load15:AVERAGE",
+			"CDEF:allvalues=load1,load5,load15,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
@@ -532,11 +542,16 @@ sub system_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:npslp#44AAEE:Sleeping");
 	push(@tmp, "AREA:nprun#EE4444:Running");
 	push(@tmp, "LINE1:nprun#EE0000");
 	push(@tmp, "LINE1:npslp#00EEEE");
 	push(@tmp, "LINE1:nproc#EEEE00:Processes");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -559,6 +574,8 @@ sub system_cgi {
 		"DEF:nproc=$rrd:system_nproc:AVERAGE",
 		"DEF:npslp=$rrd:system_npslp:AVERAGE",
 		"DEF:nprun=$rrd:system_nprun:AVERAGE",
+		"CDEF:allvalues=nproc,npslp,nprun,+,+",
+		@CDEF,
 		@tmp,
 		"COMMENT: \\n");
 	$err = RRDs::error;
@@ -580,6 +597,8 @@ sub system_cgi {
 			"DEF:nproc=$rrd:system_nproc:AVERAGE",
 			"DEF:npslp=$rrd:system_npslp:AVERAGE",
 			"DEF:nprun=$rrd:system_nprun:AVERAGE",
+			"CDEF:allvalues=nproc,npslp,nprun,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
@@ -599,6 +618,7 @@ sub system_cgi {
 
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	if($config->{os} eq "Linux") {
 		push(@tmp, "AREA:m_mused#EE4444:Used");
 		push(@tmp, "AREA:m_mcach#44EE44:Cached");
@@ -622,6 +642,10 @@ sub system_cgi {
 		push(@tmp, "AREA:m_macti#44EE44:Active");
 		push(@tmp, "LINE1:m_macti#00EE00");
 		push(@tmp, "LINE1:m_mused#EE0000");
+	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
@@ -655,6 +679,8 @@ sub system_cgi {
 		"CDEF:m_mused=m_mtotl,mfree,1024,/,-",
 		"CDEF:m_macti=macti,1024,/",
 		"CDEF:m_minac=minac,1024,/",
+		"CDEF:allvalues=mtotl,mbuff,mcach,mfree,macti,minac,+,+,+,+,+",
+		@CDEF,
 		@tmp,
 		"COMMENT: \\n");
 	$err = RRDs::error;
@@ -686,6 +712,8 @@ sub system_cgi {
 			"CDEF:m_mused=m_mtotl,mfree,1024,/,-",
 			"CDEF:m_macti=macti,1024,/",
 			"CDEF:m_minac=minac,1024,/",
+			"CDEF:allvalues=mtotl,mbuff,mcach,mfree,macti,minac,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
