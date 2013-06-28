@@ -253,6 +253,7 @@ if(!$config{theme}->{$color}) {
 	$config{theme}->{$color}->{title_bg} = "777777";
 	$config{theme}->{$color}->{title_fg} = "CCCC00";
 	$config{theme}->{$color}->{graph_bg} = "CCCCCC";
+	$config{theme}->{$color}->{gap} = "FFFFFF";
 }
 
 if($color eq "black") {
@@ -273,6 +274,7 @@ $colors{fg_color} = $config{theme}->{$color}->{main_fg};
 $colors{title_bg_color} = $config{theme}->{$color}->{title_bg};
 $colors{title_fg_color} = $config{theme}->{$color}->{title_fg};
 $colors{graph_bg_color} = $config{theme}->{$color}->{graph_bg};
+$colors{gap} = $config{theme}->{$color}->{gap};
 
 
 ($tf{twhen}) = ($when =~ m/(hour|day|week|month|year)$/);
