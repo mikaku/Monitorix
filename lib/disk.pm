@@ -405,6 +405,11 @@ sub disk_cgi {
 			push(@CDEF, "CDEF:temp_6=temp6");
 			push(@CDEF, "CDEF:temp_7=temp7");
 		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -432,6 +437,7 @@ sub disk_cgi {
 			"DEF:temp5=$rrd:disk" . $e ."_hd5_temp:AVERAGE",
 			"DEF:temp6=$rrd:disk" . $e ."_hd6_temp:AVERAGE",
 			"DEF:temp7=$rrd:disk" . $e ."_hd7_temp:AVERAGE",
+			"CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,temp6,temp7,+,+,+,+,+,+,+",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -456,6 +462,7 @@ sub disk_cgi {
 				"DEF:temp5=$rrd:disk" . $e ."_hd5_temp:AVERAGE",
 				"DEF:temp6=$rrd:disk" . $e ."_hd6_temp:AVERAGE",
 				"DEF:temp7=$rrd:disk" . $e ."_hd7_temp:AVERAGE",
+				"CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,temp6,temp7,+,+,+,+,+,+,+",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -481,6 +488,7 @@ sub disk_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		for($n = 0; $n < 8; $n += 2) {
 			if($d[$n]) {
 				my $dstr = trim($d[$n]);
@@ -500,6 +508,11 @@ sub disk_cgi {
 				push(@tmp, "LINE2:rsc" . ($n + 1) . $LC[$n + 1] . ":$str\\n");
 				push(@tmpz, "LINE2:rsc" . ($n + 1) . $LC[$n + 1] . ":$dstr\\g");
 			}
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
@@ -529,6 +542,8 @@ sub disk_cgi {
 			"DEF:rsc5=$rrd:disk" . $e . "_hd5_smart1:AVERAGE",
 			"DEF:rsc6=$rrd:disk" . $e . "_hd6_smart1:AVERAGE",
 			"DEF:rsc7=$rrd:disk" . $e . "_hd7_smart1:AVERAGE",
+			"CDEF:allvalues=rsc0,rsc1,rsc2,rsc3,rsc4,rsc5,rsc6,rsc7,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 1]: $err\n") if $err;
@@ -553,6 +568,8 @@ sub disk_cgi {
 				"DEF:rsc5=$rrd:disk" . $e . "_hd5_smart1:AVERAGE",
 				"DEF:rsc6=$rrd:disk" . $e . "_hd6_smart1:AVERAGE",
 				"DEF:rsc7=$rrd:disk" . $e . "_hd7_smart1:AVERAGE",
+				"CDEF:allvalues=rsc0,rsc1,rsc2,rsc3,rsc4,rsc5,rsc6,rsc7,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 1]: $err\n") if $err;
@@ -573,6 +590,7 @@ sub disk_cgi {
 
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		for($n = 0; $n < 8; $n += 2) {
 			if($d[$n]) {
 				my $dstr = trim($d[$n]);
@@ -592,6 +610,11 @@ sub disk_cgi {
 				push(@tmp, "LINE2:cps" . ($n + 1) . $LC[$n + 1] . ":$str\\n");
 				push(@tmpz, "LINE2:cps" . ($n + 1) . $LC[$n + 1] . ":$dstr\\g");
 			}
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
@@ -621,6 +644,8 @@ sub disk_cgi {
 			"DEF:cps5=$rrd:disk" . $e . "_hd5_smart2:AVERAGE",
 			"DEF:cps6=$rrd:disk" . $e . "_hd6_smart2:AVERAGE",
 			"DEF:cps7=$rrd:disk" . $e . "_hd7_smart2:AVERAGE",
+			"CDEF:allvalues=cps0,cps1,cps2,cps3,cps4,cps5,cps6,cps7,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 2]: $err\n") if $err;
@@ -645,6 +670,8 @@ sub disk_cgi {
 				"DEF:cps5=$rrd:disk" . $e . "_hd5_smart2:AVERAGE",
 				"DEF:cps6=$rrd:disk" . $e . "_hd6_smart2:AVERAGE",
 				"DEF:cps7=$rrd:disk" . $e . "_hd7_smart2:AVERAGE",
+				"CDEF:allvalues=cps0,cps1,cps2,cps3,cps4,cps5,cps6,cps7,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 2]: $err\n") if $err;
