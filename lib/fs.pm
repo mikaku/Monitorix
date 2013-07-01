@@ -510,6 +510,7 @@ sub fs_cgi {
 	my @PNGz;
 	my @tmp;
 	my @tmpz;
+	my @CDEF;
 	my @riglim;
 	my $n;
 	my $n2;
@@ -648,6 +649,7 @@ sub fs_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "COMMENT: \\n");
 		for($n2 = 0, $n = 0; $n < 8; $n++) {
 			if($f[$n]) {
@@ -682,6 +684,11 @@ sub fs_cgi {
 			print("    <tr>\n");
 			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -708,6 +715,8 @@ sub fs_cgi {
 			"DEF:fs5=$rrd:fs" . $e . "_use5:AVERAGE",
 			"DEF:fs6=$rrd:fs" . $e . "_use6:AVERAGE",
 			"DEF:fs7=$rrd:fs" . $e . "_use7:AVERAGE",
+			"CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3]: $err\n") if $err;
@@ -733,6 +742,8 @@ sub fs_cgi {
 				"DEF:fs5=$rrd:fs" . $e . "_use5:AVERAGE",
 				"DEF:fs6=$rrd:fs" . $e . "_use6:AVERAGE",
 				"DEF:fs7=$rrd:fs" . $e . "_use7:AVERAGE",
+				"CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3]: $err\n") if $err;
@@ -766,6 +777,7 @@ sub fs_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		for($n2 = 0, $n = 0; $n < 8; $n += 2) {
 			my $color;
 			if($f[$n]) {
@@ -801,6 +813,11 @@ sub fs_cgi {
 				push(@tmp, "LINE2:ioa" . ($n + 1) . $color . ":$str\\n");
 			}
 		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -830,6 +847,8 @@ sub fs_cgi {
 			"DEF:ioa5=$rrd:fs" . $e . "_ioa5:AVERAGE",
 			"DEF:ioa6=$rrd:fs" . $e . "_ioa6:AVERAGE",
 			"DEF:ioa7=$rrd:fs" . $e . "_ioa7:AVERAGE",
+			"CDEF:allvalues=ioa0,ioa1,ioa2,ioa3,ioa4,ioa5,ioa6,ioa7,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 1]: $err\n") if $err;
@@ -855,6 +874,8 @@ sub fs_cgi {
 				"DEF:ioa5=$rrd:fs" . $e . "_ioa5:AVERAGE",
 				"DEF:ioa6=$rrd:fs" . $e . "_ioa6:AVERAGE",
 				"DEF:ioa7=$rrd:fs" . $e . "_ioa7:AVERAGE",
+				"CDEF:allvalues=ioa0,ioa1,ioa2,ioa3,ioa4,ioa5,ioa6,ioa7,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 1]: $err\n") if $err;
@@ -884,6 +905,7 @@ sub fs_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		if($config->{os} eq "Linux") {
 			if($config->{kernel} > 2.4) {
 	   			$graph_title = "$config->{graphs}->{_fs3}  ($tf->{nwhen}$tf->{twhen})";
@@ -968,6 +990,11 @@ sub fs_cgi {
 				}
 			}
 		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -997,6 +1024,8 @@ sub fs_cgi {
 			"DEF:tim5=$rrd:fs" . $e . "_tim5:AVERAGE",
 			"DEF:tim6=$rrd:fs" . $e . "_tim6:AVERAGE",
 			"DEF:tim7=$rrd:fs" . $e . "_tim7:AVERAGE",
+			"CDEF:allvalues=tim0,tim1,tim2,tim3,tim4,tim5,tim6,tim7,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 2]: $err\n") if $err;
@@ -1022,6 +1051,8 @@ sub fs_cgi {
 				"DEF:tim5=$rrd:fs" . $e . "_tim5:AVERAGE",
 				"DEF:tim6=$rrd:fs" . $e . "_tim6:AVERAGE",
 				"DEF:tim7=$rrd:fs" . $e . "_tim7:AVERAGE",
+				"CDEF:allvalues=tim0,tim1,tim2,tim3,tim4,tim5,tim6,tim7,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 2]: $err\n") if $err;
