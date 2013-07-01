@@ -240,6 +240,7 @@ sub proc_cgi {
 	my @PNGz;
 	my @tmp;
 	my @tmpz;
+	my @CDEF;
 	my $vlabel;
 	my $ncpu;
 	my $n;
@@ -366,6 +367,7 @@ sub proc_cgi {
 			}
 			undef(@tmp);
 			undef(@tmpz);
+			undef(@CDEF);
 			if(lc($kern->{graph_mode}) eq "r") {
 				$vlabel = "Percent (%)";
 				if(lc($kern->{list}->{user}) eq "y") {
@@ -577,6 +579,12 @@ sub proc_cgi {
 				push(@tmp, "LINE1:user#0000EE");
 				push(@tmpz, "LINE1:user#0000EE");
 			}
+			if(lc($config->{show_gaps}) eq "y") {
+				push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+				push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+				push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+			}
+
 			($width, $height) = split('x', $config->{graph_size}->{$proc->{size}});
 			RRDs::graph("$PNG_DIR" . "$PNG[$n]",
 				"--title=$config->{graphs}->{_proc} $n  ($tf->{nwhen}$tf->{twhen})",
@@ -598,6 +606,8 @@ sub proc_cgi {
 				"DEF:sirq=$rrd:proc" . $n . "_sirq:AVERAGE",
 				"DEF:steal=$rrd:proc" . $n . "_steal:AVERAGE",
 				"DEF:guest=$rrd:proc" . $n . "_guest:AVERAGE",
+				"CDEF:allvalues=user,nice,sys,iow,irq,sirq,steal,guest,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmp);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNG[$n]: $err\n") if $err;
@@ -623,6 +633,8 @@ sub proc_cgi {
 					"DEF:sirq=$rrd:proc" . $n . "_sirq:AVERAGE",
 					"DEF:steal=$rrd:proc" . $n . "_steal:AVERAGE",
 					"DEF:guest=$rrd:proc" . $n . "_guest:AVERAGE",
+					"CDEF:allvalues=user,nice,sys,iow,irq,sirq,steal,guest,+,+,+,+,+,+,+",
+					@CDEF,
 					@tmpz);
 				$err = RRDs::error;
 				print("ERROR: while graphing $PNG_DIR" . "$PNGz[$n]: $err\n") if $err;
