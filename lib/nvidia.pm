@@ -32,6 +32,12 @@ sub nvidia_init {
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 
+	# checks if 'nvidia-smi' does exists.
+	if(!open(IN, "nvidia-smi |")) {
+		logger("$myself: unable to execute 'nvidia-smi'. $!");
+		return;
+	}
+
 	if(!(-e $rrd)) {
 		logger("Creating '$rrd' file.");
 		eval {
