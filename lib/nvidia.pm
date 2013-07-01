@@ -368,6 +368,11 @@ sub nvidia_cgi {
 		push(@CDEF, "CDEF:temp_7=temp7");
 		push(@CDEF, "CDEF:temp_8=temp8");
 	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -394,6 +399,7 @@ sub nvidia_cgi {
 		"DEF:temp6=$rrd:nvidia_temp6:AVERAGE",
 		"DEF:temp7=$rrd:nvidia_temp7:AVERAGE",
 		"DEF:temp8=$rrd:nvidia_temp8:AVERAGE",
+		"CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8,+,+,+,+,+,+,+,+",
 		@CDEF,
 		@tmp,
 		"COMMENT: \\n",
@@ -421,6 +427,7 @@ sub nvidia_cgi {
 			"DEF:temp6=$rrd:nvidia_temp6:AVERAGE",
 			"DEF:temp7=$rrd:nvidia_temp7:AVERAGE",
 			"DEF:temp8=$rrd:nvidia_temp8:AVERAGE",
+			"CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8,+,+,+,+,+,+,+,+",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
@@ -445,6 +452,7 @@ sub nvidia_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "LINE2:gpu0#FFA500:Card 0\\g");
 	push(@tmp, "GPRINT:gpu0:LAST:\\:%3.0lf%%");
 	push(@tmp, "LINE2:gpu3#4444EE:Card 3\\g");
@@ -472,6 +480,11 @@ sub nvidia_cgi {
 	push(@tmpz, "LINE2:gpu2#44EE44:Card 2");
 	push(@tmpz, "LINE2:gpu5#EE4444:Card 5");
 	push(@tmpz, "LINE2:gpu8#963C74:Card 8");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -501,6 +514,8 @@ sub nvidia_cgi {
 		"DEF:gpu6=$rrd:nvidia_gpu6:AVERAGE",
 		"DEF:gpu7=$rrd:nvidia_gpu7:AVERAGE",
 		"DEF:gpu8=$rrd:nvidia_gpu8:AVERAGE",
+		"CDEF:allvalues=gpu0,gpu1,gpu2,gpu3,gpu4,gpu5,gpu6,gpu7,gpu8,+,+,+,+,+,+,+,+",
+		@CDEF,
 		"COMMENT: \\n",
 		@tmp);
 	$err = RRDs::error;
@@ -529,6 +544,8 @@ sub nvidia_cgi {
 			"DEF:gpu6=$rrd:nvidia_gpu6:AVERAGE",
 			"DEF:gpu7=$rrd:nvidia_gpu7:AVERAGE",
 			"DEF:gpu8=$rrd:nvidia_gpu8:AVERAGE",
+			"CDEF:allvalues=gpu0,gpu1,gpu2,gpu3,gpu4,gpu5,gpu6,gpu7,gpu8,+,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
@@ -548,6 +565,7 @@ sub nvidia_cgi {
 
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "LINE2:mem0#FFA500:Card 0\\g");
 	push(@tmp, "GPRINT:mem0:LAST:\\:%3.0lf%%");
 	push(@tmp, "LINE2:mem3#4444EE:Card 3\\g");
@@ -575,6 +593,11 @@ sub nvidia_cgi {
 	push(@tmpz, "LINE2:mem2#44EE44:Card 2");
 	push(@tmpz, "LINE2:mem5#EE4444:Card 5");
 	push(@tmpz, "LINE2:mem8#963C74:Card 8");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -604,6 +627,8 @@ sub nvidia_cgi {
 		"DEF:mem6=$rrd:nvidia_mem6:AVERAGE",
 		"DEF:mem7=$rrd:nvidia_mem7:AVERAGE",
 		"DEF:mem8=$rrd:nvidia_mem8:AVERAGE",
+		"CDEF:allvalues=mem0,mem1,mem2,mem3,mem4,mem5,mem6,mem7,mem8,+,+,+,+,+,+,+,+",
+		@CDEF,
 		"COMMENT: \\n",
 		@tmp);
 	$err = RRDs::error;
@@ -632,6 +657,8 @@ sub nvidia_cgi {
 			"DEF:mem6=$rrd:nvidia_mem6:AVERAGE",
 			"DEF:mem7=$rrd:nvidia_mem7:AVERAGE",
 			"DEF:mem8=$rrd:nvidia_mem8:AVERAGE",
+			"CDEF:allvalues=mem0,mem1,mem2,mem3,mem4,mem5,mem6,mem7,mem8,+,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
