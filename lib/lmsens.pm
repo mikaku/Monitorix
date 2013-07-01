@@ -591,6 +591,11 @@ sub lmsens_cgi {
 		push(@CDEF, "CDEF:core_14=core14");
 		push(@CDEF, "CDEF:core_15=core15");
 	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -624,6 +629,7 @@ sub lmsens_cgi {
 		"DEF:core13=$rrd:lmsens_core13:AVERAGE",
 		"DEF:core14=$rrd:lmsens_core14:AVERAGE",
 		"DEF:core15=$rrd:lmsens_core15:AVERAGE",
+		"CDEF:allvalues=core0,core1,core2,core3,core4,core5,core6,core7,core8,core9,core10,core11,core12,core13,core14,core15,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
@@ -656,6 +662,7 @@ sub lmsens_cgi {
 			"DEF:core13=$rrd:lmsens_core13:AVERAGE",
 			"DEF:core14=$rrd:lmsens_core14:AVERAGE",
 			"DEF:core15=$rrd:lmsens_core15:AVERAGE",
+			"CDEF:allvalues=core0,core1,core2,core3,core4,core5,core6,core7,core8,core9,core10,core11,core12,core13,core14,core15,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
@@ -676,6 +683,7 @@ sub lmsens_cgi {
 
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	$lmsens->{list}->{'volt0'} =~ s/\\// if $lmsens->{list}->{'volt0'};
 	$str = $lmsens->{list}->{'volt0'} ? sprintf("%8s", substr($lmsens->{list}->{'volt0'}, 0, 8)) : "";
 	push(@tmp, ("LINE2:volt0#FFA500:$str\\g", "GPRINT:volt0:LAST:\\:%6.2lf   "));
@@ -739,6 +747,11 @@ sub lmsens_cgi {
 	push(@tmpz, "LINE2:volt10#3CB5B0:$str")unless !$str;
 	$str = $lmsens->{list}->{'volt11'} ? substr($lmsens->{list}->{'volt11'}, 0, 8) : "";
 	push(@tmpz, "LINE2:volt11#597AB7:$str") unless !$str;
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) 
@@ -771,6 +784,8 @@ sub lmsens_cgi {
 		"DEF:volt9=$rrd:lmsens_volt9:AVERAGE",
 		"DEF:volt10=$rrd:lmsens_volt10:AVERAGE",
 		"DEF:volt11=$rrd:lmsens_volt11:AVERAGE",
+		"CDEF:allvalues=volt0,volt1,volt2,volt3,volt4,volt5,volt6,volt7,volt8,volt9,volt10,volt11,+,+,+,+,+,+,+,+,+,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
@@ -797,6 +812,8 @@ sub lmsens_cgi {
 			"DEF:volt9=$rrd:lmsens_volt9:AVERAGE",
 			"DEF:volt10=$rrd:lmsens_volt10:AVERAGE",
 			"DEF:volt11=$rrd:lmsens_volt11:AVERAGE",
+			"CDEF:allvalues=volt0,volt1,volt2,volt3,volt4,volt5,volt6,volt7,volt8,volt9,volt10,volt11,+,+,+,+,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
@@ -818,9 +835,9 @@ sub lmsens_cgi {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-	undef(@CDEF);
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, ("LINE2:mb_0#FFA500:MB 0\\g", "GPRINT:mb_0:LAST:\\:%3.0lf   "));
 	push(@tmp, ("LINE2:cpu_0#4444EE:CPU 0\\g", "GPRINT:cpu_0:LAST:\\:%3.0lf   ")) unless !$lmsens->{list}->{'cpu0'};
 	push(@tmp, ("LINE2:cpu_2#EE44EE:CPU 2\\g", "GPRINT:cpu_2:LAST:\\:%3.0lf\\g")) unless !$lmsens->{list}->{'cpu2'};
@@ -850,6 +867,11 @@ sub lmsens_cgi {
 		push(@CDEF, "CDEF:cpu_2=cpu2");
 		push(@CDEF, "CDEF:cpu_3=cpu3");
 	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -875,6 +897,7 @@ sub lmsens_cgi {
 		"DEF:cpu1=$rrd:lmsens_cpu1:AVERAGE",
 		"DEF:cpu2=$rrd:lmsens_cpu2:AVERAGE",
 		"DEF:cpu3=$rrd:lmsens_cpu3:AVERAGE",
+		"CDEF:allvalues=mb0,mb1,cpu0,cpu1,cpu2,cpu3,+,+,+,+,+",
 		@CDEF,
 		"COMMENT: \\n",
 		@tmp);
@@ -899,6 +922,7 @@ sub lmsens_cgi {
 			"DEF:cpu1=$rrd:lmsens_cpu1:AVERAGE",
 			"DEF:cpu2=$rrd:lmsens_cpu2:AVERAGE",
 			"DEF:cpu3=$rrd:lmsens_cpu3:AVERAGE",
+			"CDEF:allvalues=mb0,mb1,cpu0,cpu1,cpu2,cpu3,+,+,+,+,+",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
@@ -919,6 +943,7 @@ sub lmsens_cgi {
 
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, ("LINE2:fan0#FFA500:Fan 0\\g", "GPRINT:fan0:LAST:\\:%5.0lf"));
 	push(@tmp, ("LINE2:fan3#4444EE:Fan 3\\g", "GPRINT:fan3:LAST:\\:%5.0lf")) unless !$lmsens->{list}->{'fan3'};
 	push(@tmp, ("LINE2:fan6#EE44EE:Fan 6\\g", "GPRINT:fan6:LAST:\\:%5.0lf\\g")) unless !$lmsens->{list}->{'fan6'};
@@ -940,6 +965,11 @@ sub lmsens_cgi {
 	push(@tmpz, "LINE2:fan6#EE44EE:Fan 6") unless !$lmsens->{list}->{'fan6'};
 	push(@tmpz, "LINE2:fan7#EEEE44:Fan 7") unless !$lmsens->{list}->{'fan7'};
 	push(@tmpz, "LINE2:fan8#963C74:Fan 8") unless !$lmsens->{list}->{'fan8'};
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -968,6 +998,8 @@ sub lmsens_cgi {
 		"DEF:fan6=$rrd:lmsens_fan6:AVERAGE",
 		"DEF:fan7=$rrd:lmsens_fan7:AVERAGE",
 		"DEF:fan8=$rrd:lmsens_fan8:AVERAGE",
+		"CDEF:allvalues=fan0,fan1,fan2,fan3,fan4,fan5,fan6,fan7,fan8,+,+,+,+,+,+,+,+",
+		@CDEF,
 		"COMMENT: \\n",
 		@tmp);
 	$err = RRDs::error;
@@ -994,6 +1026,8 @@ sub lmsens_cgi {
 			"DEF:fan6=$rrd:lmsens_fan6:AVERAGE",
 			"DEF:fan7=$rrd:lmsens_fan7:AVERAGE",
 			"DEF:fan8=$rrd:lmsens_fan8:AVERAGE",
+			"CDEF:allvalues=fan0,fan1,fan2,fan3,fan4,fan5,fan6,fan7,fan8,+,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG4z: $err\n") if $err;
@@ -1011,9 +1045,9 @@ sub lmsens_cgi {
 		}
 	}
 
-	undef(@CDEF);
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "LINE2:gpu_0#FFA500:GPU 0\\g");
 	push(@tmp, "GPRINT:gpu_0:LAST:\\:%3.0lf  ");
 	push(@tmp, ("LINE2:gpu_3#4444EE:GPU 3\\g", "GPRINT:gpu_3:LAST:\\:%3.0lf  ")) unless !$lmsens->{list}->{'gpu3'};
@@ -1057,6 +1091,11 @@ sub lmsens_cgi {
 		push(@CDEF, "CDEF:gpu_7=gpu7");
 		push(@CDEF, "CDEF:gpu_8=gpu8");
 	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1086,6 +1125,7 @@ sub lmsens_cgi {
 		"DEF:gpu6=$rrd:lmsens_gpu6:AVERAGE",
 		"DEF:gpu7=$rrd:lmsens_gpu7:AVERAGE",
 		"DEF:gpu8=$rrd:lmsens_gpu8:AVERAGE",
+		"CDEF:allvalues=gpu0,gpu1,gpu2,gpu3,gpu4,gpu5,gpu6,gpu7,gpu8,+,+,+,+,+,+,+,+",
 		@CDEF,
 		"COMMENT: \\n",
 		@tmp);
@@ -1113,6 +1153,7 @@ sub lmsens_cgi {
 			"DEF:gpu6=$rrd:lmsens_gpu6:AVERAGE",
 			"DEF:gpu7=$rrd:lmsens_gpu7:AVERAGE",
 			"DEF:gpu8=$rrd:lmsens_gpu8:AVERAGE",
+			"CDEF:allvalues=gpu0,gpu1,gpu2,gpu3,gpu4,gpu5,gpu6,gpu7,gpu8,+,+,+,+,+,+,+,+",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
