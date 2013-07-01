@@ -360,6 +360,7 @@ sub kern_cgi {
 	my @riglim;
 	my @tmp;
 	my @tmpz;
+	my @CDEF;
 	my $vlabel;
 	my $n;
 	my $err;
@@ -633,6 +634,11 @@ sub kern_cgi {
 		push(@tmp, "LINE1:user#0000EE");
 		push(@tmpz, "LINE1:user#0000EE");
 	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
@@ -673,6 +679,8 @@ sub kern_cgi {
 		"DEF:sirq=$rrd:kern_sirq:AVERAGE",
 		"DEF:steal=$rrd:kern_steal:AVERAGE",
 		"DEF:guest=$rrd:kern_guest:AVERAGE",
+		"CDEF:allvalues=user,nice,sys,iow,irq,sirq,steal,guest,+,+,+,+,+,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG1: $err\n") if $err;
@@ -697,6 +705,8 @@ sub kern_cgi {
 			"DEF:sirq=$rrd:kern_sirq:AVERAGE",
 			"DEF:steal=$rrd:kern_steal:AVERAGE",
 			"DEF:guest=$rrd:kern_guest:AVERAGE",
+			"CDEF:allvalues=user,nice,sys,iow,irq,sirq,steal,guest,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
@@ -720,6 +730,7 @@ sub kern_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:cs#44AAEE:Context switches");
 	push(@tmpz, "AREA:cs#44AAEE:Context switches");
 	push(@tmp, "GPRINT:cs:LAST:     Current\\: %6.0lf\\n");
@@ -736,6 +747,11 @@ sub kern_cgi {
 		push(@tmp, "GPRINT:vforks:LAST:               Current\\: %6.0lf\\n");
 		push(@tmp, "LINE1:vforks#EE0000");
 		push(@tmpz, "LINE1:vforks#EE0000");
+	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 	}
 
 	($width, $height) = split('x', $config->{graph_size}->{small});
@@ -761,6 +777,8 @@ sub kern_cgi {
 		"DEF:cs=$rrd:kern_cs:AVERAGE",
 		"DEF:forks=$rrd:kern_forks:AVERAGE",
 		"DEF:vforks=$rrd:kern_vforks:AVERAGE",
+		"CDEF:allvalues=cs,forks,vforks,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
@@ -780,6 +798,8 @@ sub kern_cgi {
 			"DEF:cs=$rrd:kern_cs:AVERAGE",
 			"DEF:forks=$rrd:kern_forks:AVERAGE",
 			"DEF:vforks=$rrd:kern_vforks:AVERAGE",
+			"CDEF:allvalues=cs,forks,vforks,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
@@ -799,6 +819,7 @@ sub kern_cgi {
 
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:inode#4444EE:inode");
 	push(@tmpz, "AREA:inode#4444EE:inode");
 	push(@tmp, "GPRINT:inode:LAST:                Current\\:  %4.1lf%%\\n");
@@ -818,6 +839,12 @@ sub kern_cgi {
 	}	
 	push(@tmp, "LINE2:file#EE00EE");
 	push(@tmpz, "LINE2:file#EE00EE");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
+
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -842,6 +869,8 @@ sub kern_cgi {
 		"DEF:dentry=$rrd:kern_dentry:AVERAGE",
 		"DEF:file=$rrd:kern_file:AVERAGE",
 		"DEF:inode=$rrd:kern_inode:AVERAGE",
+		"CDEF:allvalues=dentry,file,inode,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
@@ -863,6 +892,8 @@ sub kern_cgi {
 			"DEF:dentry=$rrd:kern_dentry:AVERAGE",
 			"DEF:file=$rrd:kern_file:AVERAGE",
 			"DEF:inode=$rrd:kern_inode:AVERAGE",
+			"CDEF:allvalues=dentry,file,inode,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
