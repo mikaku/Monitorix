@@ -369,6 +369,11 @@ sub hptemp_cgi {
 			push(@CDEF, "CDEF:temp_6=temp6");
 			push(@CDEF, "CDEF:temp_7=temp7");
 		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -393,6 +398,7 @@ sub hptemp_cgi {
 			"DEF:temp5=$rrd:hptemp1_6:AVERAGE",
 			"DEF:temp6=$rrd:hptemp1_7:AVERAGE",
 			"DEF:temp7=$rrd:hptemp1_8:AVERAGE",
+			"CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,temp6,temp7,+,+,+,+,+,+,+",
 			@CDEF,
 			@tmp,
 			"COMMENT: \\n");
@@ -418,6 +424,7 @@ sub hptemp_cgi {
 				"DEF:temp5=$rrd:hptemp1_6:AVERAGE",
 				"DEF:temp6=$rrd:hptemp1_7:AVERAGE",
 				"DEF:temp7=$rrd:hptemp1_8:AVERAGE",
+				"CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,temp6,temp7,+,+,+,+,+,+,+",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -483,6 +490,11 @@ sub hptemp_cgi {
 			push(@CDEF, "CDEF:temp_4=temp4");
 			push(@CDEF, "CDEF:temp_5=temp5");
 		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -506,6 +518,7 @@ sub hptemp_cgi {
 			"DEF:temp3=$rrd:hptemp2_4:AVERAGE",
 			"DEF:temp4=$rrd:hptemp2_5:AVERAGE",
 			"DEF:temp5=$rrd:hptemp2_6:AVERAGE",
+			"CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,+,+,+,+,+",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -529,6 +542,7 @@ sub hptemp_cgi {
 				"DEF:temp3=$rrd:hptemp2_4:AVERAGE",
 				"DEF:temp4=$rrd:hptemp2_5:AVERAGE",
 				"DEF:temp5=$rrd:hptemp2_6:AVERAGE",
+				"CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,+,+,+,+,+",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -590,6 +604,11 @@ sub hptemp_cgi {
 			push(@CDEF, "CDEF:temp_4=temp4");
 			push(@CDEF, "CDEF:temp_5=temp5");
 		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -613,6 +632,7 @@ sub hptemp_cgi {
 			"DEF:temp3=$rrd:hptemp3_4:AVERAGE",
 			"DEF:temp4=$rrd:hptemp3_5:AVERAGE",
 			"DEF:temp5=$rrd:hptemp3_6:AVERAGE",
+			"CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,+,+,+,+,+",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -636,6 +656,7 @@ sub hptemp_cgi {
 				"DEF:temp3=$rrd:hptemp3_4:AVERAGE",
 				"DEF:temp4=$rrd:hptemp3_5:AVERAGE",
 				"DEF:temp5=$rrd:hptemp3_6:AVERAGE",
+				"CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,+,+,+,+,+",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
