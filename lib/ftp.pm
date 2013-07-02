@@ -251,6 +251,7 @@ sub ftp_cgi {
 	my @riglim;
 	my @tmp;
 	my @tmpz;
+	my @CDEF;
 	my $n;
 	my $err;
 
@@ -387,6 +388,11 @@ sub ftp_cgi {
 	push(@tmpz, "LINE1:rmd#44EE44:Dirs deleted (RMD)");
 	push(@tmpz, "LINE1:dele#EE44EE:Files deleted (DELE)");
 	push(@tmpz, "LINE1:mlsd#44EEEE:Dir listings (MLSD)");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -410,6 +416,8 @@ sub ftp_cgi {
 		"DEF:rmd=$rrd:ftp_rmd:AVERAGE",
 		"DEF:dele=$rrd:ftp_dele:AVERAGE",
 		"DEF:mlsd=$rrd:ftp_mlsd:AVERAGE",
+		"CDEF:allvalues=retr,stor,mkd,rmd,dele,mlsd,+,+,+,+,+",
+		@CDEF,
 		"COMMENT: \\n",
 		@tmp);
 	$err = RRDs::error;
@@ -433,6 +441,8 @@ sub ftp_cgi {
 			"DEF:rmd=$rrd:ftp_rmd:AVERAGE",
 			"DEF:dele=$rrd:ftp_dele:AVERAGE",
 			"DEF:mlsd=$rrd:ftp_mlsd:AVERAGE",
+			"CDEF:allvalues=retr,stor,mkd,rmd,dele,mlsd,+,+,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
@@ -465,6 +475,7 @@ sub ftp_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:good_logins#44EEEE:Successful logins");
 	push(@tmp, "GPRINT:good_logins:LAST:     Current\\: %3.0lf\\n");
 	push(@tmp, "AREA:bad_logins#EE4444:Bad logins");
@@ -480,6 +491,11 @@ sub ftp_cgi {
 	push(@tmpz, "LINE2:good_logins#44EEEE");
 	push(@tmpz, "LINE2:bad_logins#EE4444");
 	push(@tmpz, "LINE2:anon_logins#EEEE44");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -505,6 +521,8 @@ sub ftp_cgi {
 		"DEF:good_logins=$rrd:ftp_good_logins:AVERAGE",
 		"DEF:bad_logins=$rrd:ftp_bad_logins:AVERAGE",
 		"DEF:anon_logins=$rrd:ftp_anon_logins:AVERAGE",
+		"CDEF:allvalues=logins,good_logins,bad_logins,anon_logins,+,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
@@ -526,6 +544,8 @@ sub ftp_cgi {
 			"DEF:good_logins=$rrd:ftp_good_logins:AVERAGE",
 			"DEF:bad_logins=$rrd:ftp_bad_logins:AVERAGE",
 			"DEF:anon_logins=$rrd:ftp_anon_logins:AVERAGE",
+			"CDEF:allvalues=logins,good_logins,bad_logins,anon_logins,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
@@ -554,6 +574,7 @@ sub ftp_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:B_up#44EE44:Upload");
 	push(@tmp, "AREA:B_dn#4444EE:Download");
 	push(@tmp, "AREA:B_dn#4444EE:");
@@ -566,6 +587,11 @@ sub ftp_cgi {
 	push(@tmpz, "AREA:B_up#44EE44:");
 	push(@tmpz, "LINE1:B_dn#0000EE");
 	push(@tmpz, "LINE1:B_up#00EE00");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -589,6 +615,8 @@ sub ftp_cgi {
 		@{$colors->{graph_colors}},
 		"DEF:B_dn=$rrd:ftp_bytes_dn:AVERAGE",
 		"DEF:B_up=$rrd:ftp_bytes_up:AVERAGE",
+		"CDEF:allvalues=B_dn,B_up,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
@@ -608,6 +636,8 @@ sub ftp_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:B_dn=$rrd:ftp_bytes_dn:AVERAGE",
 			"DEF:B_up=$rrd:ftp_bytes_up:AVERAGE",
+			"CDEF:allvalues=B_dn,B_up,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
