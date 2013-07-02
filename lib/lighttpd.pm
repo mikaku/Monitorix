@@ -318,6 +318,7 @@ sub lighttpd_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "AREA:lighttpd" . $e . "_idle#4444EE:Idle");
 		push(@tmp, "GPRINT:lighttpd" . $e . "_idle:LAST:            Current\\: %3.0lf");
 		push(@tmp, "GPRINT:lighttpd" . $e . "_idle:AVERAGE:   Average\\: %3.0lf");
@@ -336,6 +337,11 @@ sub lighttpd_cgi {
 		push(@tmpz, "LINE2:lighttpd" . $e . "_idle#0000EE");
 		push(@tmpz, "LINE2:lighttpd" . $e . "_busy#00EEEE");
 		push(@tmpz, "LINE2:lighttpd" . $e . "_tot#EE0000");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -356,6 +362,8 @@ sub lighttpd_cgi {
 			"DEF:lighttpd" . $e . "_busy=$rrd:lighttpd" . $e . "_busy:AVERAGE",
 			"DEF:lighttpd" . $e . "_idle=$rrd:lighttpd" . $e . "_idle:AVERAGE",
 			"CDEF:lighttpd" . $e . "_tot=lighttpd" . $e . "_busy,lighttpd" . $e . "_idle,+",
+			"CDEF:allvalues=lighttpd" . $e . "_busy,lighttpd" . $e . "_idle,lighttpd" . $e . "_tot,+,+",
+			@CDEF,
 			"COMMENT: \\n",
 			@tmp,
 			"COMMENT: \\n",
@@ -378,6 +386,8 @@ sub lighttpd_cgi {
 				"DEF:lighttpd" . $e . "_busy=$rrd:lighttpd" . $e . "_busy:AVERAGE",
 				"DEF:lighttpd" . $e . "_idle=$rrd:lighttpd" . $e . "_idle:AVERAGE",
 				"CDEF:lighttpd" . $e . "_tot=lighttpd" . $e . "_busy,lighttpd" . $e . "_idle,+",
+				"CDEF:allvalues=lighttpd" . $e . "_busy,lighttpd" . $e . "_idle,lighttpd" . $e . "_tot,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3]: $err\n") if $err;
@@ -422,6 +432,11 @@ sub lighttpd_cgi {
 		} else {
 			push(@CDEF, "CDEF:Bytes=lighttpd" . $e . "_kb,1024,*");
 		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -444,6 +459,7 @@ sub lighttpd_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:lighttpd" . $e . "_kb=$rrd:lighttpd" . $e . "_kb:AVERAGE",
+			"CDEF:allvalues=lighttpd" . $e . "_kb",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -463,6 +479,7 @@ sub lighttpd_cgi {
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
 				"DEF:lighttpd" . $e . "_kb=$rrd:lighttpd" . $e . "_kb:AVERAGE",
+				"CDEF:allvalues=lighttpd" . $e . "_kb",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -493,11 +510,17 @@ sub lighttpd_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "AREA:lighttpd" . $e . "_acc#44EE44:Accesses");
 		push(@tmp, "GPRINT:lighttpd" . $e . "_acc:LAST:             Current\\: %5.2lf\\n");
 		push(@tmp, "LINE1:lighttpd" . $e . "_acc#00EE00");
 		push(@tmpz, "AREA:lighttpd" . $e . "_acc#44EE44:Accesses");
 		push(@tmpz, "LINE1:lighttpd" . $e . "_acc#00EE00");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -520,6 +543,8 @@ sub lighttpd_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:lighttpd" . $e . "_acc=$rrd:lighttpd" . $e . "_acc:AVERAGE",
+			"CDEF:allvalues=lighttpd" . $e . "_acc",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 2]: $err\n") if $err;
@@ -538,6 +563,8 @@ sub lighttpd_cgi {
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
 				"DEF:lighttpd" . $e . "_acc=$rrd:lighttpd" . $e . "_acc:AVERAGE",
+				"CDEF:allvalues=lighttpd" . $e . "_acc",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 2]: $err\n") if $err;
