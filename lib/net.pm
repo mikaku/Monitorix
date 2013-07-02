@@ -402,6 +402,11 @@ sub net_cgi {
 			push(@CDEF, "CDEF:B_in=in");
 			push(@CDEF, "CDEF:B_out=out");
 		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -422,6 +427,7 @@ sub net_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:in=$rrd:net" . $n . "_bytes_in:AVERAGE",
 			"DEF:out=$rrd:net" . $n . "_bytes_out:AVERAGE",
+			"CDEF:allvalues=in,out,+",
 			@CDEF,
 			"CDEF:K_in=B_in,1024,/",
 			"CDEF:K_out=B_out,1024,/",
@@ -447,6 +453,7 @@ sub net_cgi {
 				@{$colors->{graph_colors}},
 				"DEF:in=$rrd:net" . $n . "_bytes_in:AVERAGE",
 				"DEF:out=$rrd:net" . $n . "_bytes_out:AVERAGE",
+				"CDEF:allvalues=in,out,+",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -481,6 +488,7 @@ sub net_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "AREA:p_in#44EE44:Input");
 		push(@tmp, "AREA:p_out#4444EE:Output");
 		push(@tmp, "AREA:p_out#4444EE:");
@@ -493,6 +501,11 @@ sub net_cgi {
 		push(@tmpz, "AREA:p_in#44EE44:");
 		push(@tmpz, "LINE1:p_out#0000EE");
 		push(@tmpz, "LINE1:p_in#00EE00");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -516,6 +529,8 @@ sub net_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:p_in=$rrd:net" . $n . "_packs_in:AVERAGE",
 			"DEF:p_out=$rrd:net" . $n . "_packs_out:AVERAGE",
+			"CDEF:allvalues=p_in,p_out,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
@@ -535,6 +550,8 @@ sub net_cgi {
 				@{$colors->{graph_colors}},
 				"DEF:p_in=$rrd:net" . $n . "_packs_in:AVERAGE",
 				"DEF:p_out=$rrd:net" . $n . "_packs_out:AVERAGE",
+				"CDEF:allvalues=p_in,p_out,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
@@ -564,6 +581,7 @@ sub net_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "AREA:e_in#44EE44:Input");
 		push(@tmp, "AREA:e_out#4444EE:Output");
 		push(@tmp, "AREA:e_out#4444EE:");
@@ -576,6 +594,11 @@ sub net_cgi {
 		push(@tmpz, "AREA:e_in#44EE44:");
 		push(@tmpz, "LINE1:e_out#0000EE");
 		push(@tmpz, "LINE1:e_in#00EE00");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -599,6 +622,8 @@ sub net_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:e_in=$rrd:net" . $n . "_error_in:AVERAGE",
 			"DEF:e_out=$rrd:net" . $n . "_error_out:AVERAGE",
+			"CDEF:allvalues=e_in,e_out,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
@@ -618,6 +643,8 @@ sub net_cgi {
 				@{$colors->{graph_colors}},
 				"DEF:e_in=$rrd:net" . $n . "_error_in:AVERAGE",
 				"DEF:e_out=$rrd:net" . $n . "_error_out:AVERAGE",
+				"CDEF:allvalues=e_in,e_out,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
