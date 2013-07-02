@@ -351,6 +351,11 @@ sub nginx_cgi {
 	push(@tmpz, "LINE1:reading#00EE00");
 	push(@tmpz, "LINE1:writing#0000EE");
 	push(@tmpz, "LINE1:waiting#EE00EE");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -374,6 +379,8 @@ sub nginx_cgi {
 		"DEF:reading=$rrd:nginx_reading:AVERAGE",
 		"DEF:writing=$rrd:nginx_writing:AVERAGE",
 		"DEF:waiting=$rrd:nginx_waiting:AVERAGE",
+		"CDEF:allvalues=total,reading,writing,waiting,+,+,+",
+		@CDEF,
 		@tmp,
 		"COMMENT: \\n");
 	$err = RRDs::error;
@@ -395,6 +402,8 @@ sub nginx_cgi {
 			"DEF:reading=$rrd:nginx_reading:AVERAGE",
 			"DEF:writing=$rrd:nginx_writing:AVERAGE",
 			"DEF:waiting=$rrd:nginx_waiting:AVERAGE",
+			"CDEF:allvalues=total,reading,writing,waiting,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
@@ -427,11 +436,17 @@ sub nginx_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:requests#44EEEE:Requests");
 	push(@tmp, "GPRINT:requests:LAST:             Current\\: %5.1lf\\n");
 	push(@tmp, "LINE1:requests#00EEEE");
 	push(@tmpz, "AREA:requests#44EEEE:Requests");
 	push(@tmpz, "LINE1:requests#00EEEE");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -454,6 +469,8 @@ sub nginx_cgi {
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
 		"DEF:requests=$rrd:nginx_requests:AVERAGE",
+		"CDEF:allvalues=requests",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
@@ -472,6 +489,8 @@ sub nginx_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:requests=$rrd:nginx_requests:AVERAGE",
+			"CDEF:allvalues=requests",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
@@ -555,6 +574,11 @@ sub nginx_cgi {
 		push(@CDEF, "CDEF:B_in=in");
 		push(@CDEF, "CDEF:B_out=out");
 	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -579,6 +603,7 @@ sub nginx_cgi {
 		@warning,
 		"DEF:in=$rrd:nginx_bytes_in:AVERAGE",
 		"DEF:out=$rrd:nginx_bytes_out:AVERAGE",
+		"CDEF:allvalues=in,out,+",
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
@@ -600,6 +625,7 @@ sub nginx_cgi {
 			@warning,
 			"DEF:in=$rrd:nginx_bytes_in:AVERAGE",
 			"DEF:out=$rrd:nginx_bytes_out:AVERAGE",
+			"CDEF:allvalues=in,out,+",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
