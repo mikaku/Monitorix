@@ -452,6 +452,7 @@ sub serv_cgi {
 	my $vlabel;
 	my @tmp;
 	my @tmpz;
+	my @CDEF;
 	my $n;
 	my $str;
 	my $err;
@@ -672,6 +673,11 @@ sub serv_cgi {
 		push(@tmpz, "LINE2:i_cups#444444");
 		push(@tmpz, "LINE2:i_f2b#EE4444");
 	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 
 	if($title) {
 		print("    <tr>\n");
@@ -713,6 +719,8 @@ sub serv_cgi {
 		"DEF:l_fax=$rrd:serv_l_fax:AVERAGE",
 		"DEF:l_cups=$rrd:serv_l_cups:AVERAGE",
 		"DEF:l_f2b=$rrd:serv_l_f2b:AVERAGE",
+		"CDEF:allvalues=i_ssh,i_ftp,i_telnet,i_imap,i_smb,i_fax,i_cups,i_f2b,+,+,+,+,+,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG1: $err\n") if $err;
@@ -745,6 +753,8 @@ sub serv_cgi {
 			"DEF:l_fax=$rrd:serv_l_fax:AVERAGE",
 			"DEF:l_cups=$rrd:serv_l_cups:AVERAGE",
 			"DEF:l_f2b=$rrd:serv_l_f2b:AVERAGE",
+			"CDEF:allvalues=i_ssh,i_ftp,i_telnet,i_imap,i_smb,i_fax,i_cups,i_f2b,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
@@ -777,6 +787,7 @@ sub serv_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	if(lc($serv->{mode}) eq "l") {
 		$vlabel = "Accesses/s";
 		push(@tmp, "AREA:l_imap#4444EE:IMAP");
@@ -801,6 +812,11 @@ sub serv_cgi {
 		push(@tmpz, "AREA:i_pop3#44EE44:POP3");
 		push(@tmpz, "LINE2:i_imap#4444EE:");
 		push(@tmpz, "LINE2:i_pop3#44EE44:");
+	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
@@ -827,6 +843,8 @@ sub serv_cgi {
 		"DEF:l_imap=$rrd:serv_l_imap:AVERAGE",
 		"DEF:i_pop3=$rrd:serv_i_pop3:AVERAGE",
 		"DEF:l_pop3=$rrd:serv_l_pop3:AVERAGE",
+		"CDEF:allvalues=i_imap,i_pop3,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
@@ -848,6 +866,8 @@ sub serv_cgi {
 			"DEF:l_imap=$rrd:serv_l_imap:AVERAGE",
 			"DEF:i_pop3=$rrd:serv_i_pop3:AVERAGE",
 			"DEF:l_pop3=$rrd:serv_l_pop3:AVERAGE",
+			"CDEF:allvalues=i_imap,i_pop3,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
@@ -876,6 +896,7 @@ sub serv_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	if(lc($serv->{mode}) eq "l") {
 		$vlabel = "Accesses/s";
 		push(@tmp, "AREA:l_smtp#44EEEE:SMTP");
@@ -913,6 +934,11 @@ sub serv_cgi {
 		push(@tmpz, "LINE2:i_spam#EEEE44");
 		push(@tmpz, "LINE2:i_virus#EE4444");
 	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -940,6 +966,8 @@ sub serv_cgi {
 		"DEF:l_smtp=$rrd:serv_l_smtp:AVERAGE",
 		"DEF:l_spam=$rrd:serv_l_spam:AVERAGE",
 		"DEF:l_virus=$rrd:serv_l_virus:AVERAGE",
+		"CDEF:allvalues=i_smtp,i_spam,i_virus,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
@@ -964,6 +992,8 @@ sub serv_cgi {
 			"DEF:l_smtp=$rrd:serv_l_smtp:AVERAGE",
 			"DEF:l_spam=$rrd:serv_l_spam:AVERAGE",
 			"DEF:l_virus=$rrd:serv_l_virus:AVERAGE",
+			"CDEF:allvalues=i_smtp,i_spam,i_virus,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
