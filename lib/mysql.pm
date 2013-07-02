@@ -622,6 +622,7 @@ sub mysql_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "LINE1:com_select#FFA500:Select");
 		push(@tmp, "GPRINT:com_select:LAST:         Cur\\: %6.1lf");
 		push(@tmp, "GPRINT:com_select:AVERAGE:    Avg\\: %6.1lf");
@@ -682,6 +683,11 @@ sub mysql_cgi {
 		push(@tmpz, "LINE2:com_replace_s#4444EE:Replace Sel");
 		push(@tmpz, "LINE2:com_rollback#444444:Rollback");
 		push(@tmpz, "LINE2:com_stmtex#888888:Prep.Stmt.Exec");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -711,6 +717,8 @@ sub mysql_cgi {
 			"DEF:com_replace_s=$rrd:mysql" . $e . "_creps:AVERAGE",
 			"DEF:com_rollback=$rrd:mysql" . $e . "_crol:AVERAGE",
 			"DEF:com_stmtex=$rrd:mysql" . $e . "_cstmtex:AVERAGE",
+			"CDEF:allvalues=com_select,com_commit,com_delete,com_insert,com_insert_s,com_update,com_replace,com_replace_s,com_rollback,com_stmtex,+,+,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6]: $err\n") if $err;
@@ -737,6 +745,8 @@ sub mysql_cgi {
 				"DEF:com_replace_s=$rrd:mysql" . $e . "_creps:AVERAGE",
 				"DEF:com_rollback=$rrd:mysql" . $e . "_crol:AVERAGE",
 				"DEF:com_stmtex=$rrd:mysql" . $e . "_cstmtex:AVERAGE",
+				"CDEF:allvalues=com_select,com_commit,com_delete,com_insert,com_insert_s,com_update,com_replace,com_replace_s,com_rollback,com_stmtex,+,+,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 6]: $err\n") if $err;
@@ -766,6 +776,7 @@ sub mysql_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "LINE1:tcache_hit_r#FFA500:Thread Cache Hit Rate");
 		push(@tmp, "GPRINT:tcache_hit_r:LAST:  Cur\\: %4.1lf%%");
 		push(@tmp, "GPRINT:tcache_hit_r:AVERAGE:  Avg\\: %4.1lf%%");
@@ -808,6 +819,11 @@ sub mysql_cgi {
 		push(@tmpz, "LINE2:key_buf_u#EE4444:Key Buffer Usage");
 		push(@tmpz, "LINE2:innodb_buf_u#EE44EE:Innodb Buffer P. Usage");
 		push(@tmpz, "LINE2:tmptbltodsk#888888:Temp. Tables to Disk");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -834,6 +850,8 @@ sub mysql_cgi {
 			"DEF:key_buf_u=$rrd:mysql" . $e . "_kbu:AVERAGE",
 			"DEF:innodb_buf_u=$rrd:mysql" . $e . "_innbu:AVERAGE",
 			"DEF:tmptbltodsk=$rrd:mysql" . $e . "_tttd:AVERAGE",
+			"CDEF:allvalues=tcache_hit_r,qcache_hitr,qcache_usage,conns_u,key_buf_u,innodb_buf_u,tmptbltodsk,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 1]: $err\n") if $err;
@@ -857,6 +875,8 @@ sub mysql_cgi {
 				"DEF:key_buf_u=$rrd:mysql" . $e . "_kbu:AVERAGE",
 				"DEF:innodb_buf_u=$rrd:mysql" . $e . "_innbu:AVERAGE",
 				"DEF:tmptbltodsk=$rrd:mysql" . $e . "_tttd:AVERAGE",
+				"CDEF:allvalues=tcache_hit_r,qcache_hitr,qcache_usage,conns_u,key_buf_u,innodb_buf_u,tmptbltodsk,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 6 + 1]: $err\n") if $err;
@@ -890,6 +910,7 @@ sub mysql_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "AREA:opened_tbl#44EEEE:Opened Tables");
 		push(@tmp, "GPRINT:opened_tbl:LAST:        Current\\: %7.1lf\\n");
 		push(@tmp, "AREA:tlocks_w#4444EE:Table Locks Waited");
@@ -901,6 +922,11 @@ sub mysql_cgi {
 		push(@tmpz, "AREA:tlocks_w#4444EE:Table Locks Waited");
 		push(@tmpz, "LINE1:opened_tbl#00EEEE");
 		push(@tmpz, "LINE1:tlocks_w#0000EE");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -924,6 +950,8 @@ sub mysql_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:opened_tbl=$rrd:mysql" . $e . "_ot:AVERAGE",
 			"DEF:tlocks_w=$rrd:mysql" . $e . "_tlw:AVERAGE",
+			"CDEF:allvalues=opened_tbl,tlocks_w,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 2]: $err\n") if $err;
@@ -943,6 +971,8 @@ sub mysql_cgi {
 				@{$colors->{graph_colors}},
 				"DEF:opened_tbl=$rrd:mysql" . $e . "_ot:AVERAGE",
 				"DEF:tlocks_w=$rrd:mysql" . $e . "_tlw:AVERAGE",
+				"CDEF:allvalues=opened_tbl,tlocks_w,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 6 + 2]: $err\n") if $err;
@@ -972,6 +1002,7 @@ sub mysql_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "AREA:qrs#44EEEE:Queries");
 		push(@tmp, "GPRINT:qrs:LAST:              Current\\: %7.1lf\\n");
 		push(@tmp, "AREA:sqrs#4444EE:Slow Queries");
@@ -983,6 +1014,11 @@ sub mysql_cgi {
 		push(@tmpz, "AREA:sqrs#4444EE:Slow Queries");
 		push(@tmpz, "LINE1:qrs#00EEEE");
 		push(@tmpz, "LINE1:sqrs#0000EE");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1006,6 +1042,8 @@ sub mysql_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:qrs=$rrd:mysql" . $e . "_queries:AVERAGE",
 			"DEF:sqrs=$rrd:mysql" . $e . "_sq:AVERAGE",
+			"CDEF:allvalues=qrs,sqrs,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 3]: $err\n") if $err;
@@ -1025,6 +1063,8 @@ sub mysql_cgi {
 				@{$colors->{graph_colors}},
 				"DEF:qrs=$rrd:mysql" . $e . "_queries:AVERAGE",
 				"DEF:sqrs=$rrd:mysql" . $e . "_sq:AVERAGE",
+				"CDEF:allvalues=qrs,sqrs,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 6 + 3]: $err\n") if $err;
@@ -1054,6 +1094,7 @@ sub mysql_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "AREA:conns#44EEEE:Connections");
 		push(@tmp, "GPRINT:conns:LAST:          Current\\: %7.1lf\\n");
 		push(@tmp, "AREA:acli#EEEE44:Aborted Clients");
@@ -1070,6 +1111,11 @@ sub mysql_cgi {
 		push(@tmpz, "LINE1:conns#00EEEE");
 		push(@tmpz, "LINE1:acli#EEEE00");
 		push(@tmpz, "LINE1:acon#EE0000");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1094,6 +1140,8 @@ sub mysql_cgi {
 			"DEF:conns=$rrd:mysql" . $e . "_conns:AVERAGE",
 			"DEF:acli=$rrd:mysql" . $e . "_acli:AVERAGE",
 			"DEF:acon=$rrd:mysql" . $e . "_acon:AVERAGE",
+			"CDEF:allvalues=conns,acli,acon,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 4]: $err\n") if $err;
@@ -1114,6 +1162,8 @@ sub mysql_cgi {
 				"DEF:conns=$rrd:mysql" . $e . "_conns:AVERAGE",
 				"DEF:acli=$rrd:mysql" . $e . "_acli:AVERAGE",
 				"DEF:acon=$rrd:mysql" . $e . "_acon:AVERAGE",
+				"CDEF:allvalues=conns,acli,acon,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 6 + 4]: $err\n") if $err;
@@ -1163,6 +1213,11 @@ sub mysql_cgi {
 			push(@CDEF, "CDEF:B_in=in");
 			push(@CDEF, "CDEF:B_out=out");
 		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1186,6 +1241,7 @@ sub mysql_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:in=$rrd:mysql" . $e . "_brecv:AVERAGE",
 			"DEF:out=$rrd:mysql" . $e . "_bsent:AVERAGE",
+			"CDEF:allvalues=in,out,+",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -1206,6 +1262,7 @@ sub mysql_cgi {
 				@{$colors->{graph_colors}},
 				"DEF:in=$rrd:mysql" . $e . "_brecv:AVERAGE",
 				"DEF:out=$rrd:mysql" . $e . "_bsent:AVERAGE",
+				"CDEF:allvalues=in,out,+",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
