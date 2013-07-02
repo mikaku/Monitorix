@@ -744,6 +744,11 @@ sub mail_cgi {
 		push(@tmpz, "LINE1:n_forwrd#00EEEE");
 		push(@tmpz, "LINE1:n_delvd#0000EE");
 	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 
 	if($title) {
 		print("    <tr>\n");
@@ -772,8 +777,6 @@ sub mail_cgi {
 		"DEF:out=$rrd:mail_out:AVERAGE",
 		"DEF:recvd=$rrd:mail_recvd:AVERAGE",
 		"DEF:delvd=$rrd:mail_delvd:AVERAGE",
-		"DEF:bytes_recvd=$rrd:mail_bytes_recvd:AVERAGE",
-		"DEF:bytes_delvd=$rrd:mail_bytes_delvd:AVERAGE",
 		"DEF:rejtd=$rrd:mail_rejtd:AVERAGE",
 		"DEF:spam=$rrd:mail_spam:AVERAGE",
 		"DEF:virus=$rrd:mail_virus:AVERAGE",
@@ -781,6 +784,8 @@ sub mail_cgi {
 		"DEF:discrd=$rrd:mail_discrd:AVERAGE",
 		"DEF:held=$rrd:mail_held:AVERAGE",
 		"DEF:forwrd=$rrd:mail_forwrd:AVERAGE",
+		"CDEF:allvalues=in,out,recvd,delvd,rejtd,spam,virus,bouncd,discrd,held,forwrd,+,+,+,+,+,+,+,+,+,+",
+		@CDEF,
 		"CDEF:n_forwrd=forwrd,-1,*",
 		"CDEF:n_delvd=delvd,-1,*",
 		"CDEF:n_out=out,-1,*",
@@ -804,8 +809,6 @@ sub mail_cgi {
 			"DEF:out=$rrd:mail_out:AVERAGE",
 			"DEF:recvd=$rrd:mail_recvd:AVERAGE",
 			"DEF:delvd=$rrd:mail_delvd:AVERAGE",
-			"DEF:bytes_recvd=$rrd:mail_bytes_recvd:AVERAGE",
-			"DEF:bytes_delvd=$rrd:mail_bytes_delvd:AVERAGE",
 			"DEF:rejtd=$rrd:mail_rejtd:AVERAGE",
 			"DEF:spam=$rrd:mail_spam:AVERAGE",
 			"DEF:virus=$rrd:mail_virus:AVERAGE",
@@ -813,6 +816,8 @@ sub mail_cgi {
 			"DEF:discrd=$rrd:mail_discrd:AVERAGE",
 			"DEF:held=$rrd:mail_held:AVERAGE",
 			"DEF:forwrd=$rrd:mail_forwrd:AVERAGE",
+			"CDEF:allvalues=in,out,recvd,delvd,rejtd,spam,virus,bouncd,discrd,held,forwrd,+,+,+,+,+,+,+,+,+,+",
+			@CDEF,
 			"CDEF:n_forwrd=forwrd,-1,*",
 			"CDEF:n_delvd=delvd,-1,*",
 			"CDEF:n_out=out,-1,*",
@@ -844,6 +849,7 @@ sub mail_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:B_in#44EE44:K$T/s Received");
 	push(@tmp, "GPRINT:K_in:LAST:      Cur\\: %5.0lf");
 	push(@tmp, "GPRINT:K_in:AVERAGE:    Avg\\: %5.0lf");
@@ -871,6 +877,11 @@ sub mail_cgi {
 		push(@CDEF, "CDEF:B_in=in");
 		push(@CDEF, "CDEF:B_out=out");
 	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -892,6 +903,7 @@ sub mail_cgi {
 		@{$colors->{graph_colors}},
 		"DEF:in=$rrd:mail_bytes_recvd:AVERAGE",
 		"DEF:out=$rrd:mail_bytes_delvd:AVERAGE",
+		"CDEF:allvalues=in,out,+",
 		@CDEF,
 		"CDEF:K_in=B_in,1024,/",
 		"CDEF:K_out=B_out,1024,/",
@@ -913,6 +925,7 @@ sub mail_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:in=$rrd:mail_bytes_recvd:AVERAGE",
 			"DEF:out=$rrd:mail_bytes_delvd:AVERAGE",
+			"CDEF:allvalues=in,out,+",
 			@CDEF,
 			"CDEF:K_in=B_in,1024,/",
 			"CDEF:K_out=B_out,1024,/",
@@ -948,11 +961,17 @@ sub mail_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:queued#EEEE44:Queued");
 	push(@tmp, "LINE1:queued#EEEE00");
 	push(@tmp, "GPRINT:queued:LAST:               Current\\: %5.0lf\\n");
 	push(@tmpz, "AREA:queued#EEEE44:Queued");
 	push(@tmpz, "LINE1:queued#EEEE00");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -975,6 +994,8 @@ sub mail_cgi {
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
 		"DEF:queued=$rrd:mail_queued:AVERAGE",
+		"CDEF:allvalues=queued",
+		@CDEF,
 		"COMMENT: \\n",
 		@tmp,
 		"COMMENT: \\n",
@@ -996,6 +1017,8 @@ sub mail_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:queued=$rrd:mail_queued:AVERAGE",
+			"CDEF:allvalues=queued",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
@@ -1024,11 +1047,17 @@ sub mail_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:queues#44AAEE:Size in KB");
 	push(@tmp, "LINE1:queues#00AAEE");
 	push(@tmp, "GPRINT:K_queues:LAST:           Current\\: %5.1lf\\n");
 	push(@tmpz, "AREA:queues#44AAEE:Size");
 	push(@tmpz, "LINE1:queues#00AAEE");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1051,6 +1080,8 @@ sub mail_cgi {
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
 		"DEF:queues=$rrd:mail_queues:AVERAGE",
+		"CDEF:allvalues=queues",
+		@CDEF,
 		"CDEF:K_queues=queues,1024,/",
 		"COMMENT: \\n",
 		@tmp,
@@ -1073,6 +1104,8 @@ sub mail_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:queues=$rrd:mail_queues:AVERAGE",
+			"CDEF:allvalues=queues",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG4z: $err\n") if $err;
@@ -1101,6 +1134,7 @@ sub mail_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:greylisted#4444EE:Greylisted");
 	push(@tmp, "GPRINT:greylisted:LAST:           Current\\: %5.0lf\\n");
 	push(@tmp, "AREA:whitelisted#44EEEE:Whitelisted");
@@ -1114,6 +1148,11 @@ sub mail_cgi {
 	push(@tmpz, "LINE2:greylisted#0000EE");
 	push(@tmpz, "LINE2:whitelisted#00EEEE");
 	push(@tmpz, "LINE2:records#EE0000:Records");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	if(lc($mail->{mta}) eq "postfix") {
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
@@ -1142,6 +1181,8 @@ sub mail_cgi {
 		"DEF:records=$rrd:mail_val07:AVERAGE",
 		"DEF:greylisted=$rrd:mail_val08:AVERAGE",
 		"DEF:whitelisted=$rrd:mail_val09:AVERAGE",
+		"CDEF:allvalues=records,greylisted,whitelisted,+,+",
+		@CDEF,
 		"COMMENT: \\n",
 		"COMMENT: \\n",
 		@tmp);
@@ -1164,6 +1205,8 @@ sub mail_cgi {
 			"DEF:records=$rrd:mail_val07:AVERAGE",
 			"DEF:greylisted=$rrd:mail_val08:AVERAGE",
 			"DEF:whitelisted=$rrd:mail_val09:AVERAGE",
+			"CDEF:allvalues=records,greylisted,whitelisted,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG5z: $err\n") if $err;
