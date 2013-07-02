@@ -145,6 +145,7 @@ sub user_cgi {
 	my @riglim;
 	my @tmp;
 	my @tmpz;
+	my @CDEF;
 	my $n;
 	my $err;
 
@@ -242,6 +243,11 @@ sub user_cgi {
 	push(@tmp, "LINE1:sys#00EE00");
 	push(@tmpz, "AREA:sys#44EE44:Logged In");
 	push(@tmpz, "LINE1:sys#00EE00");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -260,6 +266,8 @@ sub user_cgi {
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
 		"DEF:sys=$rrd:user_sys:AVERAGE",
+		"CDEF:allvalues=sys",
+		@CDEF,
 		"COMMENT: \\n",
 		@tmp,
 		"COMMENT: \\n",
@@ -281,6 +289,8 @@ sub user_cgi {
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:sys=$rrd:user_sys:AVERAGE",
+			"CDEF:allvalues=sys",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
@@ -313,11 +323,17 @@ sub user_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:smb#EEEE44:Samba");
 	push(@tmp, "GPRINT:smb:LAST:                Current\\: %3.0lf\\n");
 	push(@tmp, "LINE1:smb#EEEE00");
 	push(@tmpz, "AREA:smb#EEEE44:Samba");
 	push(@tmpz, "LINE2:smb#EEEE00");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -340,6 +356,8 @@ sub user_cgi {
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
 		"DEF:smb=$rrd:user_smb:AVERAGE",
+		"CDEF:allvalues=smb",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
@@ -358,6 +376,8 @@ sub user_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:smb=$rrd:user_smb:AVERAGE",
+			"CDEF:allvalues=smb",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
@@ -386,11 +406,17 @@ sub user_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:mac#EE4444:Netatalk");
 	push(@tmp, "GPRINT:mac:LAST:             Current\\: %3.0lf\\n");
 	push(@tmp, "LINE1:mac#EE0000");
 	push(@tmpz, "AREA:mac#EE4444:Netatalk");
 	push(@tmpz, "LINE2:mac#EE0000");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -413,6 +439,8 @@ sub user_cgi {
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
 		"DEF:mac=$rrd:user_mac:AVERAGE",
+		"CDEF:allvalues=mac",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
@@ -431,6 +459,8 @@ sub user_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:mac=$rrd:user_mac:AVERAGE",
+			"CDEF:allvalues=mac",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
