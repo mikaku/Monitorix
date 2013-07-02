@@ -191,6 +191,7 @@ sub apache_cgi {
 	my @PNGz;
 	my @tmp;
 	my @tmpz;
+	my @CDEF;
 	my $e;
 	my $e2;
 	my $n;
@@ -313,6 +314,7 @@ sub apache_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "AREA:apache" . $e . "_idle#4444EE:Idle");
 		push(@tmp, "GPRINT:apache" . $e . "_idle:LAST:            Current\\: %3.0lf");
 		push(@tmp, "GPRINT:apache" . $e . "_idle:AVERAGE:   Average\\: %3.0lf");
@@ -331,6 +333,11 @@ sub apache_cgi {
 		push(@tmpz, "LINE2:apache" . $e . "_idle#0000EE");
 		push(@tmpz, "LINE2:apache" . $e . "_busy#00EEEE");
 		push(@tmpz, "LINE2:apache" . $e . "_tot#EE0000:Total");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -351,6 +358,8 @@ sub apache_cgi {
 			"DEF:apache" . $e . "_busy=$rrd:apache" . $e . "_busy:AVERAGE",
 			"DEF:apache" . $e . "_idle=$rrd:apache" . $e . "_idle:AVERAGE",
 			"CDEF:apache" . $e . "_tot=apache" . $e . "_busy,apache" . $e . "_idle,+",
+			"CDEF:allvalues=apache" . $e . "_busy,apache" . $e . "_idle,apache" . $e . "_tot,+,+",
+			@CDEF,
 			"COMMENT: \\n",
 			@tmp,
 			"COMMENT: \\n",
@@ -373,6 +382,8 @@ sub apache_cgi {
 				"DEF:apache" . $e . "_busy=$rrd:apache" . $e . "_busy:AVERAGE",
 				"DEF:apache" . $e . "_idle=$rrd:apache" . $e . "_idle:AVERAGE",
 				"CDEF:apache" . $e . "_tot=apache" . $e . "_busy,apache" . $e . "_idle,+",
+				"CDEF:allvalues=apache" . $e . "_busy,apache" . $e . "_idle,apache" . $e . "_tot,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3]: $err\n") if $err;
@@ -406,11 +417,17 @@ sub apache_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "AREA:apache" . $e . "_cpu#44AAEE:CPU");
 		push(@tmp, "GPRINT:apache" . $e . "_cpu:LAST:                  Current\\: %5.2lf%%\\n");
 		push(@tmp, "LINE1:apache" . $e . "_cpu#00EEEE");
 		push(@tmpz, "AREA:apache" . $e . "_cpu#44AAEE:CPU");
 		push(@tmpz, "LINE1:apache" . $e . "_cpu#00EEEE");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -433,6 +450,8 @@ sub apache_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:apache" . $e . "_cpu=$rrd:apache" . $e . "_cpu:AVERAGE",
+			"CDEF:allvalues=apache" . $e . "_cpu",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 1]: $err\n") if $err;
@@ -451,6 +470,8 @@ sub apache_cgi {
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
 				"DEF:apache" . $e . "_cpu=$rrd:apache" . $e . "_cpu:AVERAGE",
+				"CDEF:allvalues=apache" . $e . "_cpu",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 1]: $err\n") if $err;
@@ -480,11 +501,17 @@ sub apache_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "AREA:apache" . $e . "_acc#44EE44:Accesses");
 		push(@tmp, "GPRINT:apache" . $e . "_acc:LAST:             Current\\: %5.2lf\\n");
 		push(@tmp, "LINE1:apache" . $e . "_acc#00EE00");
 		push(@tmpz, "AREA:apache" . $e . "_acc#44EE44:Accesses");
 		push(@tmpz, "LINE1:apache" . $e . "_acc#00EE00");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -507,6 +534,8 @@ sub apache_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:apache" . $e . "_acc=$rrd:apache" . $e . "_acc:AVERAGE",
+			"CDEF:allvalues=apache" . $e . "_acc",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 2]: $err\n") if $err;
@@ -525,6 +554,8 @@ sub apache_cgi {
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
 				"DEF:apache" . $e . "_acc=$rrd:apache" . $e . "_acc:AVERAGE",
+				"CDEF:allvalues=apache" . $e . "_acc",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 2]: $err\n") if $err;
