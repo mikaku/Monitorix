@@ -508,6 +508,11 @@ sub port_cgi {
 					push(@CDEF, "CDEF:B_o_out=o_out");
 				}
 			}
+			if(lc($config->{show_gaps}) eq "y") {
+				push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+				push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+				push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+			}
 			($width, $height) = split('x', $config->{graph_size}->{mini});
 			if($silent =~ /imagetag/) {
 				($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -533,6 +538,7 @@ sub port_cgi {
 				"DEF:i_out=$rrd:port" . $n . "_i_out:AVERAGE",
 				"DEF:o_in=$rrd:port" . $n . "_o_in:AVERAGE",
 				"DEF:o_out=$rrd:port" . $n . "_o_out:AVERAGE",
+				"CDEF:allvalues=i_in,i_out,o_in,o_out,+,+,+",
 				@CDEF,
 				@tmp);
 			$err = RRDs::error;
@@ -556,6 +562,7 @@ sub port_cgi {
 					"DEF:i_out=$rrd:port" . $n . "_i_out:AVERAGE",
 					"DEF:o_in=$rrd:port" . $n . "_o_in:AVERAGE",
 					"DEF:o_out=$rrd:port" . $n . "_o_out:AVERAGE",
+					"CDEF:allvalues=i_in,i_out,o_in,o_out,+,+,+",
 					@CDEF,
 					@tmpz);
 				$err = RRDs::error;
