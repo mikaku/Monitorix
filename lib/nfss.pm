@@ -259,6 +259,9 @@ sub nfss_cgi {
 	my @tmp;
 	my @tmpz;
 	my @DEF;
+	my @CDEF;
+	my @allvalues;
+	my @allsigns;
 	my $n;
 	my $err;
 	my @AC = (
@@ -460,9 +463,18 @@ sub nfss_cgi {
 			push(@tmp, "GPRINT:nfs_$i:MIN:    Min\\: %6.1lf");
 			push(@tmp, "GPRINT:nfs_$i:MAX:    Max\\: %6.1lf\\n");
 			push(@tmpz, "LINE2:nfs_$i$AC[$n]:" . sprintf("%-12s", $str));
+			push(@allvalues, "nfs_$i");
+			push(@allsigns, "+");
 		} else {
 			push(@tmp, "COMMENT: \\n");
 		}
+	}
+	pop(@allsigns);
+	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues, @allsigns));
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
@@ -484,6 +496,7 @@ sub nfss_cgi {
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
 		@DEF,
+		@CDEF,
 		@tmp,
 		"COMMENT: \\n");
 	$err = RRDs::error;
@@ -502,6 +515,7 @@ sub nfss_cgi {
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			@DEF,
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
@@ -531,6 +545,9 @@ sub nfss_cgi {
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@DEF);
+	undef(@CDEF);
+	undef(@allvalues);
+	undef(@allsigns);
 	for($n = 0; $n < 10; $n++) {
 		my $str = trim((split(',', $nfss->{graph_1}))[$n]) || "";
 		if(grep {$_ eq $str} @nfsv) {
@@ -542,9 +559,18 @@ sub nfss_cgi {
 			push(@tmp, "GPRINT:nfs_$i:MIN:    Min\\: %6.1lf");
 			push(@tmp, "GPRINT:nfs_$i:MAX:    Max\\: %6.1lf\\n");
 			push(@tmpz, "LINE2:nfs_$i$AC[$n]:" . sprintf("%-12s", $str));
+			push(@allvalues, "nfs_$i");
+			push(@allsigns, "+");
 		} else {
 			push(@tmp, "COMMENT: \\n");
 		}
+	}
+	pop(@allsigns);
+	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues, @allsigns));
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
@@ -566,6 +592,7 @@ sub nfss_cgi {
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
 		@DEF,
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
@@ -583,6 +610,7 @@ sub nfss_cgi {
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			@DEF,
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
@@ -612,6 +640,9 @@ sub nfss_cgi {
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@DEF);
+	undef(@CDEF);
+	undef(@allvalues);
+	undef(@allsigns);
 	for($n = 0; $n < 10; $n++) {
 		my $str = trim((split(',', $nfss->{graph_2}))[$n]) || "";
 		if(grep {$_ eq $str} @nfsv) {
@@ -623,9 +654,18 @@ sub nfss_cgi {
 			push(@tmp, "GPRINT:nfs_$i:MIN:    Min\\: %6.1lf");
 			push(@tmp, "GPRINT:nfs_$i:MAX:    Max\\: %6.1lf\\n");
 			push(@tmpz, "LINE2:nfs_$i$AC[$n]:" . sprintf("%-12s", $str));
+			push(@allvalues, "nfs_$i");
+			push(@allsigns, "+");
 		} else {
 			push(@tmp, "COMMENT: \\n");
 		}
+	}
+	pop(@allsigns);
+	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues, @allsigns));
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
@@ -647,6 +687,7 @@ sub nfss_cgi {
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
 		@DEF,
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
@@ -664,6 +705,7 @@ sub nfss_cgi {
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			@DEF,
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
@@ -696,6 +738,7 @@ sub nfss_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:in#44EE44:Read");
 	push(@tmp, "AREA:out#4444EE:Written");
 	push(@tmp, "AREA:out#4444EE:");
@@ -708,6 +751,11 @@ sub nfss_cgi {
 	push(@tmpz, "AREA:in#44EE44:");
 	push(@tmpz, "LINE1:out#0000EE");
 	push(@tmpz, "LINE1:in#00EE00");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -731,6 +779,8 @@ sub nfss_cgi {
 		@{$colors->{graph_colors}},
 		"DEF:in=$rrd:nfss_io_1:AVERAGE",
 		"DEF:out=$rrd:nfss_io_2:AVERAGE",
+		"CDEF:allvalues=in,out,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG4: $err\n") if $err;
@@ -750,6 +800,8 @@ sub nfss_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:in=$rrd:nfss_io_1:AVERAGE",
 			"DEF:out=$rrd:nfss_io_2:AVERAGE",
+			"CDEF:allvalues=in,out,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG4z: $err\n") if $err;
@@ -778,6 +830,7 @@ sub nfss_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:udp#44EEEE:UDP");
 	push(@tmp, "GPRINT:udp:LAST:                  Current\\: %7.1lf\\n");
 	push(@tmp, "AREA:tcp#4444EE:TCP");
@@ -793,6 +846,11 @@ sub nfss_cgi {
 	push(@tmpz, "LINE1:udp#00EEEE");
 	push(@tmpz, "LINE1:tcp#0000EE");
 	push(@tmpz, "LINE1:tcpconn#EE00EE");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -818,6 +876,8 @@ sub nfss_cgi {
 		"DEF:udp=$rrd:nfss_net_2:AVERAGE",
 		"DEF:tcp=$rrd:nfss_net_3:AVERAGE",
 		"DEF:tcpconn=$rrd:nfss_net_4:AVERAGE",
+		"CDEF:allvalues=packets,udp,tcp,tcpconn,+,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG5: $err\n") if $err;
@@ -839,6 +899,8 @@ sub nfss_cgi {
 			"DEF:udp=$rrd:nfss_net_2:AVERAGE",
 			"DEF:tcp=$rrd:nfss_net_3:AVERAGE",
 			"DEF:tcpconn=$rrd:nfss_net_4:AVERAGE",
+			"CDEF:allvalues=packets,udp,tcp,tcpconn,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG5z: $err\n") if $err;
@@ -867,6 +929,7 @@ sub nfss_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "LINE1:calls#FFA500:Calls");
 	push(@tmp, "GPRINT:calls:LAST:                Current\\: %7.1lf\\n");
 	push(@tmp, "LINE1:badcalls#44EEEE:Badcalls");
@@ -882,6 +945,11 @@ sub nfss_cgi {
 	push(@tmpz, "LINE1:badauth#44EE44:Badauth");
 	push(@tmpz, "LINE1:badclnt#EE4444:Badclnt");
 	push(@tmpz, "LINE1:xdrcall#4444EE:XDRcall");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -908,6 +976,8 @@ sub nfss_cgi {
 		"DEF:badauth=$rrd:nfss_rpc_3:AVERAGE",
 		"DEF:badclnt=$rrd:nfss_rpc_4:AVERAGE",
 		"DEF:xdrcall=$rrd:nfss_rpc_4:AVERAGE",
+		"CDEF:allvalues=calls,badcalls,badauth,badclnt,xdrcall,+,+,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG6: $err\n") if $err;
@@ -930,6 +1000,8 @@ sub nfss_cgi {
 			"DEF:badauth=$rrd:nfss_rpc_3:AVERAGE",
 			"DEF:badclnt=$rrd:nfss_rpc_4:AVERAGE",
 			"DEF:xdrcall=$rrd:nfss_rpc_4:AVERAGE",
+			"CDEF:allvalues=calls,badcalls,badauth,badclnt,xdrcall,+,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG6z: $err\n") if $err;
@@ -958,6 +1030,7 @@ sub nfss_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 #	push(@tmp, "LINE1:threads#444444:Threads usage");
 #	push(@tmp, "GPRINT:threads:LAST:        Current\\: %7.1lf\\n");
 	push(@tmp, "LINE1:th1#33FF00:<10%\\g");
@@ -991,6 +1064,11 @@ sub nfss_cgi {
 	push(@tmpz, "LINE1:th6#FF6600:<80%");
 	push(@tmpz, "LINE1:th8#FF3300:<90%");
 	push(@tmpz, "LINE1:th10#FF0000:<100%");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1023,6 +1101,8 @@ sub nfss_cgi {
 		"DEF:th8=$rrd:nfss_th_8:AVERAGE",
 		"DEF:th9=$rrd:nfss_th_9:AVERAGE",
 		"DEF:th10=$rrd:nfss_th_10:AVERAGE",
+		"CDEF:allvalues=threads,th1,th2,th3,th4,th5,th6,th7,th8,th9,th10,+,+,+,+,+,+,+,+,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG7: $err\n") if $err;
@@ -1051,6 +1131,8 @@ sub nfss_cgi {
 			"DEF:th8=$rrd:nfss_th_8:AVERAGE",
 			"DEF:th9=$rrd:nfss_th_9:AVERAGE",
 			"DEF:th10=$rrd:nfss_th_10:AVERAGE",
+			"CDEF:allvalues=threads,th1,th2,th3,th4,th5,th6,th7,th8,th9,th10,+,+,+,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG7z: $err\n") if $err;
@@ -1079,6 +1161,7 @@ sub nfss_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:hits#44EEEE:Hits");
 	push(@tmp, "GPRINT:hits:LAST:                 Current\\: %7.1lf\\n");
 	push(@tmp, "AREA:misses#4444EE:Misses");
@@ -1094,6 +1177,11 @@ sub nfss_cgi {
 	push(@tmpz, "LINE1:hits#00EEEE");
 	push(@tmpz, "LINE1:misses#0000EE");
 	push(@tmpz, "LINE1:nocache#EEEE44");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1118,6 +1206,8 @@ sub nfss_cgi {
 		"DEF:hits=$rrd:nfss_rc_1:AVERAGE",
 		"DEF:misses=$rrd:nfss_rc_2:AVERAGE",
 		"DEF:nocache=$rrd:nfss_rc_3:AVERAGE",
+		"CDEF:allvalues=hits,misses,nocache,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG8: $err\n") if $err;
@@ -1138,6 +1228,8 @@ sub nfss_cgi {
 			"DEF:hits=$rrd:nfss_rc_1:AVERAGE",
 			"DEF:misses=$rrd:nfss_rc_2:AVERAGE",
 			"DEF:nocache=$rrd:nfss_rc_3:AVERAGE",
+			"CDEF:allvalues=hits,misses,nocache,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG8z: $err\n") if $err;
@@ -1166,6 +1258,7 @@ sub nfss_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "LINE1:lookup#FFA500:Lookups");
 	push(@tmp, "GPRINT:lookup:LAST:              Current\\: %7.1lf\\n");
 	push(@tmp, "LINE1:anon#44EE44:Anonymous lockups");
@@ -1181,6 +1274,11 @@ sub nfss_cgi {
 	push(@tmpz, "LINE1:ncachedir1#44EEEE:Ncachedir");
 	push(@tmpz, "LINE1:ncachedir2#4444EE:Ncachedir");
 	push(@tmpz, "LINE1:stale#EE4444:Stale");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1207,6 +1305,8 @@ sub nfss_cgi {
 		"DEF:ncachedir1=$rrd:nfss_fh_3:AVERAGE",
 		"DEF:ncachedir2=$rrd:nfss_fh_4:AVERAGE",
 		"DEF:stale=$rrd:nfss_fh_4:AVERAGE",
+		"CDEF:allvalues=lookup,anon,ncachedir1,ncachedir2,stale,+,+,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG9: $err\n") if $err;
@@ -1229,6 +1329,8 @@ sub nfss_cgi {
 			"DEF:ncachedir1=$rrd:nfss_fh_3:AVERAGE",
 			"DEF:ncachedir2=$rrd:nfss_fh_4:AVERAGE",
 			"DEF:stale=$rrd:nfss_fh_4:AVERAGE",
+			"CDEF:allvalues=lookup,anon,ncachedir1,ncachedir2,stale,+,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG9z: $err\n") if $err;
