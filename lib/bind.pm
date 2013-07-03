@@ -403,6 +403,7 @@ sub bind_cgi {
 	my @PNGz;
 	my @tmp;
 	my @tmpz;
+	my @CDEF;
 	my $e;
 	my $n;
 	my $n2;
@@ -640,6 +641,7 @@ sub bind_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		my @i;
 		@i = split(',', $bind->{in_queries_list}->{$l});
 		for($n = 0; $n < scalar(@i); $n += 2) {
@@ -658,6 +660,11 @@ sub bind_cgi {
 		if($title) {
 			print("    <tr>\n");
 			print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{medium});
 		RRDs::graph("$PNG_DIR" . "$PNG[$e * 7]",
@@ -692,6 +699,8 @@ sub bind_cgi {
 			"DEF:inq17=$rrd:bind" . $e . "_inq18:AVERAGE",
 			"DEF:inq18=$rrd:bind" . $e . "_inq19:AVERAGE",
 			"DEF:inq19=$rrd:bind" . $e . "_inq20:AVERAGE",
+			"CDEF:allvalues=inq0,inq1,inq2,inq3,inq4,inq5,inq6,inq7,inq8,inq9,inq10,inq11,inq12,inq13,inq14,inq15,inq16,inq17,inq18,inq19,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 7]: $err\n") if $err;
@@ -729,6 +738,8 @@ sub bind_cgi {
 				"DEF:inq17=$rrd:bind" . $e . "_inq18:AVERAGE",
 				"DEF:inq18=$rrd:bind" . $e . "_inq19:AVERAGE",
 				"DEF:inq19=$rrd:bind" . $e . "_inq20:AVERAGE",
+				"CDEF:allvalues=inq0,inq1,inq2,inq3,inq4,inq5,inq6,inq7,inq8,inq9,inq10,inq11,inq12,inq13,inq14,inq15,inq16,inq17,inq18,inq19,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 7]: $err\n") if $err;
@@ -760,6 +771,7 @@ sub bind_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		@i = split(',', $bind->{out_queries_list}->{$l});
 		for($n = 0; $n < scalar(@i); $n += 2) {
 			$str = sprintf("%-8s", substr(trim($i[$n]), 0, 8));
@@ -776,6 +788,11 @@ sub bind_cgi {
 		}
 		if($title) {
 			print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{medium});
 		RRDs::graph("$PNG_DIR" . "$PNG[$e * 7 + 1]",
@@ -810,6 +827,8 @@ sub bind_cgi {
 			"DEF:ouq17=$rrd:bind" . $e . "_ouq18:AVERAGE",
 			"DEF:ouq18=$rrd:bind" . $e . "_ouq19:AVERAGE",
 			"DEF:ouq19=$rrd:bind" . $e . "_ouq20:AVERAGE",
+			"CDEF:allvalues=ouq0,ouq1,ouq2,ouq3,ouq4,ouq5,ouq6,ouq7,ouq8,ouq9,ouq10,ouq11,ouq12,ouq13,ouq14,ouq15,ouq16,ouq17,ouq18,ouq19,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 7 + 1]: $err\n") if $err;
@@ -847,6 +866,8 @@ sub bind_cgi {
 				"DEF:ouq17=$rrd:bind" . $e . "_ouq18:AVERAGE",
 				"DEF:ouq18=$rrd:bind" . $e . "_ouq19:AVERAGE",
 				"DEF:ouq19=$rrd:bind" . $e . "_ouq20:AVERAGE",
+				"CDEF:allvalues=ouq0,ouq1,ouq2,ouq3,ouq4,ouq5,ouq6,ouq7,ouq8,ouq9,ouq10,ouq11,ouq12,ouq13,ouq14,ouq15,ouq16,ouq17,ouq18,ouq19,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 7 + 1]: $err\n") if $err;
@@ -875,6 +896,7 @@ sub bind_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		@i = split(',', $bind->{server_stats_list}->{$l});
 		for($n = 0; $n < scalar(@i); $n += 2) {
 			$str = sprintf("%-14s", substr(trim($i[$n]), 0, 14));
@@ -892,6 +914,11 @@ sub bind_cgi {
 		if($title) {
 			print("    <tr>\n");
 			print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{medium});
 		RRDs::graph("$PNG_DIR" . "$PNG[$e * 7 + 2]",
@@ -926,6 +953,8 @@ sub bind_cgi {
 			"DEF:ss17=$rrd:bind" . $e . "_ss18:AVERAGE",
 			"DEF:ss18=$rrd:bind" . $e . "_ss19:AVERAGE",
 			"DEF:ss19=$rrd:bind" . $e . "_ss20:AVERAGE",
+			"CDEF:allvalues=ss0,ss1,ss2,ss3,ss4,ss5,ss6,ss7,ss8,ss9,ss10,ss11,ss12,ss13,ss14,ss15,ss16,ss17,ss18,ss19,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 7 + 2]: $err\n") if $err;
@@ -963,6 +992,8 @@ sub bind_cgi {
 				"DEF:ss17=$rrd:bind" . $e . "_ss18:AVERAGE",
 				"DEF:ss18=$rrd:bind" . $e . "_ss19:AVERAGE",
 				"DEF:ss19=$rrd:bind" . $e . "_ss20:AVERAGE",
+				"CDEF:allvalues=ss0,ss1,ss2,ss3,ss4,ss5,ss6,ss7,ss8,ss9,ss10,ss11,ss12,ss13,ss14,ss15,ss16,ss17,ss18,ss19,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 7 + 2]: $err\n") if $err;
@@ -994,6 +1025,7 @@ sub bind_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		@i = split(',', $bind->{resolver_stats_list}->{$l});
 		for($n = 0; $n < scalar(@i); $n += 2) {
 			$str = sprintf("%-14s", substr(trim($i[$n]), 0, 14));
@@ -1010,6 +1042,11 @@ sub bind_cgi {
 		}
 		if($title) {
 			print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{medium});
 		RRDs::graph("$PNG_DIR" . "$PNG[$e * 7 + 3]",
@@ -1044,6 +1081,8 @@ sub bind_cgi {
 			"DEF:rs17=$rrd:bind" . $e . "_rs18:AVERAGE",
 			"DEF:rs18=$rrd:bind" . $e . "_rs19:AVERAGE",
 			"DEF:rs19=$rrd:bind" . $e . "_rs20:AVERAGE",
+			"CDEF:allvalues=rs0,rs1,rs2,rs3,rs4,rs5,rs6,rs7,rs8,rs9,rs10,rs11,rs12,rs13,rs14,rs15,rs16,rs17,rs18,rs19,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 7 + 3]: $err\n") if $err;
@@ -1081,6 +1120,8 @@ sub bind_cgi {
 				"DEF:rs17=$rrd:bind" . $e . "_rs18:AVERAGE",
 				"DEF:rs18=$rrd:bind" . $e . "_rs19:AVERAGE",
 				"DEF:rs19=$rrd:bind" . $e . "_rs20:AVERAGE",
+				"CDEF:allvalues=rs0,rs1,rs2,rs3,rs4,rs5,rs6,rs7,rs8,rs9,rs10,rs11,rs12,rs13,rs14,rs15,rs16,rs17,rs18,rs19,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 7 + 3]: $err\n") if $err;
@@ -1109,6 +1150,7 @@ sub bind_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		@i = split(',', $bind->{cache_rrsets_list}->{$l});
 		for($n = 0; $n < scalar(@i); $n += 2) {
 			$str = sprintf("%-8s", substr(trim($i[$n]), 0, 8));
@@ -1126,6 +1168,11 @@ sub bind_cgi {
 		if($title) {
 			print("    <tr>\n");
 			print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{medium});
 		RRDs::graph("$PNG_DIR" . "$PNG[$e * 7 + 4]",
@@ -1160,6 +1207,8 @@ sub bind_cgi {
 			"DEF:crr17=$rrd:bind" . $e . "_crr18:AVERAGE",
 			"DEF:crr18=$rrd:bind" . $e . "_crr19:AVERAGE",
 			"DEF:crr19=$rrd:bind" . $e . "_crr20:AVERAGE",
+			"CDEF:allvalues=crr0,crr1,crr2,crr3,crr4,crr5,crr6,crr7,crr8,crr9,crr10,crr11,crr12,crr13,crr14,crr15,crr16,crr17,crr18,crr19,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 7 + 4]: $err\n") if $err;
@@ -1197,6 +1246,8 @@ sub bind_cgi {
 				"DEF:crr17=$rrd:bind" . $e . "_crr18:AVERAGE",
 				"DEF:crr18=$rrd:bind" . $e . "_crr19:AVERAGE",
 				"DEF:crr19=$rrd:bind" . $e . "_crr20:AVERAGE",
+				"CDEF:allvalues=crr0,crr1,crr2,crr3,crr4,crr5,crr6,crr7,crr8,crr9,crr10,crr11,crr12,crr13,crr14,crr15,crr16,crr17,crr18,crr19,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 7 + 4]: $err\n") if $err;
@@ -1228,6 +1279,7 @@ sub bind_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "LINE1:mem_tu#EEEE44:TotalUse");
 		push(@tmp, "GPRINT:mem_tu_mb" . ":LAST: Cur\\:%6.1lf MB    ");
 		push(@tmpz, "LINE2:mem_tu#EEEE44:TotalUse");
@@ -1245,6 +1297,11 @@ sub bind_cgi {
 		push(@tmpz, "LINE2:mem_l#EE4444:Lost");
 		if($title) {
 			print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{medium2});
 		RRDs::graph("$PNG_DIR" . "$PNG[$e * 7 + 5]",
@@ -1269,6 +1326,8 @@ sub bind_cgi {
 			"CDEF:mem_bs_mb=mem_bs,1024,/,1024,/",
 			"CDEF:mem_cs_mb=mem_cs,1024,/,1024,/",
 			"CDEF:mem_l_mb=mem_l,1024,/,1024,/",
+			"CDEF:allvalues=mem_tu,mem_iu,mem_bs,mem_cs,mem_l,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 7 + 5]: $err\n") if $err;
@@ -1291,6 +1350,8 @@ sub bind_cgi {
 				"DEF:mem_bs=$rrd:bind" . $e . "_mem_blksize:AVERAGE",
 				"DEF:mem_cs=$rrd:bind" . $e . "_mem_ctxtsize:AVERAGE",
 				"DEF:mem_l=$rrd:bind" . $e . "_mem_lost:AVERAGE",
+				"CDEF:allvalues=mem_tu,mem_iu,mem_bs,mem_cs,mem_l,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 7 + 5]: $err\n") if $err;
@@ -1319,6 +1380,7 @@ sub bind_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "LINE1:tsk_dq#EEEE44:Default Quantum");
 		push(@tmp, "GPRINT:tsk_dq" . ":LAST:        Current\\:%4.0lf\\n");
 		push(@tmpz, "LINE2:tsk_dq#EEEE44:Default Quantum");
@@ -1328,6 +1390,11 @@ sub bind_cgi {
 		push(@tmp, "LINE1:tsk_tr#44EEEE:Tasks Running");
 		push(@tmp, "GPRINT:tsk_tr" . ":LAST:          Current\\:%4.0lf\\n");
 		push(@tmpz, "LINE2:tsk_tr#44EEEE:Tasks Running");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{medium2});
 		RRDs::graph("$PNG_DIR" . "$PNG[$e * 7 + 6]",
 			"--title=$config->{graphs}->{_bind7}  ($tf->{nwhen}$tf->{twhen})",
@@ -1344,6 +1411,8 @@ sub bind_cgi {
 			"DEF:tsk_wt=$rrd:bind" . $e . "_tsk_workthrds:AVERAGE",
 			"DEF:tsk_dq=$rrd:bind" . $e . "_tsk_defquantm:AVERAGE",
 			"DEF:tsk_tr=$rrd:bind" . $e . "_tsk_tasksrun:AVERAGE",
+			"CDEF:allvalues=tsk_wt,tsk_dq,tsk_tr,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 7 + 6]: $err\n") if $err;
@@ -1363,6 +1432,8 @@ sub bind_cgi {
 				"DEF:tsk_wt=$rrd:bind" . $e . "_tsk_workthrds:AVERAGE",
 				"DEF:tsk_dq=$rrd:bind" . $e . "_tsk_defquantm:AVERAGE",
 				"DEF:tsk_tr=$rrd:bind" . $e . "_tsk_tasksrun:AVERAGE",
+				"CDEF:allvalues=tsk_wt,tsk_dq,tsk_tr,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 7 + 6]: $err\n") if $err;
