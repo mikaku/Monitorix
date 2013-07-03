@@ -185,6 +185,7 @@ sub ntp_cgi {
 	my @PNGz;
 	my @tmp;
 	my @tmpz;
+	my @CDEF;
 	my $e;
 	my $e2;
 	my $n;
@@ -329,6 +330,7 @@ sub ntp_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "LINE2:ntp" . $e . "_del#4444EE:Delay");
 		push(@tmp, "GPRINT:ntp" . $e . "_del" . ":LAST:     Current\\:%6.3lf");
 		push(@tmp, "GPRINT:ntp" . $e . "_del" . ":AVERAGE:    Average\\:%6.3lf");
@@ -351,6 +353,11 @@ sub ntp_cgi {
 			print("    <tr>\n");
 			print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -370,6 +377,8 @@ sub ntp_cgi {
 			"DEF:ntp" . $e . "_del=$rrd:ntp" . $e . "_del:AVERAGE",
 			"DEF:ntp" . $e . "_off=$rrd:ntp" . $e . "_off:AVERAGE",
 			"DEF:ntp" . $e . "_jit=$rrd:ntp" . $e . "_jit:AVERAGE",
+			"CDEF:allvalues=ntp" . $e . "_del,ntp" . $e . "_off,ntp" . $e . "_jit,+,+",
+			@CDEF,
 			"COMMENT: \\n",
 			@tmp,
 			"COMMENT: \\n",
@@ -391,6 +400,8 @@ sub ntp_cgi {
 				"DEF:ntp" . $e . "_del=$rrd:ntp" . $e . "_del:AVERAGE",
 				"DEF:ntp" . $e . "_off=$rrd:ntp" . $e . "_off:AVERAGE",
 				"DEF:ntp" . $e . "_jit=$rrd:ntp" . $e . "_jit:AVERAGE",
+				"CDEF:allvalues=ntp" . $e . "_del,ntp" . $e . "_off,ntp" . $e . "_jit,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3]: $err\n") if $err;
@@ -424,9 +435,15 @@ sub ntp_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		push(@tmp, "LINE2:ntp" . $e . "_str#44EEEE:Stratum");
 		push(@tmp, "GPRINT:ntp" . $e . "_str" . ":LAST:              Current\\:%2.0lf\\n");
 		push(@tmpz, "LINE2:ntp" . $e . "_str#44EEEE:Stratum");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -446,6 +463,8 @@ sub ntp_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:ntp" . $e . "_str=$rrd:ntp" . $e . "_str:AVERAGE",
+			"CDEF:allvalues=ntp" . $e . "_str",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . $PNG[$e * 3 + 1] . ": $err\n") if $err;
@@ -464,6 +483,8 @@ sub ntp_cgi {
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
 				"DEF:ntp" . $e . "_str=$rrd:ntp" . $e . "_str:AVERAGE",
+				"CDEF:allvalues=ntp" . $e . "_str",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . $PNGz[$e * 3 + 1] . ": $err\n") if $err;
@@ -493,6 +514,7 @@ sub ntp_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		my @i = split(',', $ntp->{desc}->{$host});
 		for($n = 0; $n < 10; $n++) {
 			if(trim($i[$n])) {
@@ -504,6 +526,11 @@ sub ntp_cgi {
 					push(@tmp, ("COMMENT: \\n"));
 				}
 			}
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		if($silent =~ /imagetag/) {
@@ -533,6 +560,8 @@ sub ntp_cgi {
 			"DEF:ntp" . $e . "_c08=$rrd:ntp" . $e . "_c08:AVERAGE",
 			"DEF:ntp" . $e . "_c09=$rrd:ntp" . $e . "_c09:AVERAGE",
 			"DEF:ntp" . $e . "_c10=$rrd:ntp" . $e . "_c10:AVERAGE",
+			"CDEF:allvalues=ntp" . $e . "_c01,ntp" . $e . "_c02,ntp" . $e . "_c03,ntp" . $e . "_c04,ntp" . $e . "_c05,ntp" . $e . "_c06,ntp" . $e . "_c07,ntp" . $e . "_c08,ntp" . $e . "_c09,ntp" . $e . "_c10,+,+,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . $PNG[$e * 3 + 2] . ": $err\n") if $err;
@@ -560,6 +589,8 @@ sub ntp_cgi {
 				"DEF:ntp" . $e . "_c08=$rrd:ntp" . $e . "_c08:AVERAGE",
 				"DEF:ntp" . $e . "_c09=$rrd:ntp" . $e . "_c09:AVERAGE",
 				"DEF:ntp" . $e . "_c10=$rrd:ntp" . $e . "_c10:AVERAGE",
+				"CDEF:allvalues=ntp" . $e . "_c01,ntp" . $e . "_c02,ntp" . $e . "_c03,ntp" . $e . "_c04,ntp" . $e . "_c05,ntp" . $e . "_c06,ntp" . $e . "_c07,ntp" . $e . "_c08,ntp" . $e . "_c09,ntp" . $e . "_c10,+,+,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . $PNGz[$e * 3 + 2] . ": $err\n") if $err;
