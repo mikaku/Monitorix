@@ -37,6 +37,13 @@ sub nfss_init {
 		return;
 	}
 
+	if($config->{os} eq "Linux") {
+		if(!(-e "/proc/net/rpc/nfsd")) {
+			logger("$myself: it doesn't seems you have a NFS server running in this machine.");
+			return;
+		}
+	}
+
 	if(!(-e $rrd)) {
 		logger("Creating '$rrd' file.");
 		eval {
@@ -209,7 +216,7 @@ sub nfss_update {
 			}
 			close(IN);
 		} else {
-			logger("$myself: it doesn't seems you have a NFS server running in this machine.");
+			logger("$myself: ERROR: Unable to open '/proc/net/rpc/nfsd'. $!.");
 			return;
 		}
 	}
