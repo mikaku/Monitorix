@@ -38,6 +38,13 @@ sub nfsc_init {
 		return;
 	}
 
+	if($config->{os} eq "Linux") {
+		if(!(-e "/proc/net/rpc/nfs")) {
+			logger("$myself: it doesn't seems you have a NFS client running in this machine.");
+			return;
+		}
+	}
+
 	if(!(-e $rrd)) {
 		logger("Creating '$rrd' file.");
 		eval {
@@ -158,7 +165,7 @@ sub nfsc_update {
 			}
 			close(IN);
 		} else {
-			logger("$myself: it doesn't seems you have a NFS client running in this machine.");
+			logger("$myself: ERROR: Unable to open '/proc/net/rpc/nfs'. $!.");
 			return;
 		}
 	}
