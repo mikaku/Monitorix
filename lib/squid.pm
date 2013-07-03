@@ -431,6 +431,8 @@ sub squid_cgi {
 	my $i;
 	my @DEF;
 	my @CDEF;
+	my @allvalues;
+	my @allsigns;
 	my $T = "B";
 	my $vlabel = "bytes/s";
 	my $n;
@@ -690,9 +692,18 @@ sub squid_cgi {
 			push(@tmp, "GPRINT:squid_g1_$i:MIN:  Min\\: %6.1lf");
 			push(@tmp, "GPRINT:squid_g1_$i:MAX:  Max\\: %6.1lf\\n");
 			push(@tmpz, "LINE2:squid_g1_$i$AC[$n]:" . trim($sg0[$n]));
+			push(@allvalues, "squid_g1_$i");
+			push(@allsigns, "+");
 		} else {
 			push(@tmp, "COMMENT: \\n");
 		}
+	}
+	pop(@allsigns);
+	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues, @allsigns));
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
@@ -714,6 +725,7 @@ sub squid_cgi {
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
 		@DEF,
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG1: $err\n") if $err;
@@ -731,6 +743,7 @@ sub squid_cgi {
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			@DEF,
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
@@ -760,6 +773,9 @@ sub squid_cgi {
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@DEF);
+	undef(@CDEF);
+	undef(@allvalues);
+	undef(@allsigns);
 	my @sg1 = split(',', $squid->{graph_1});
 	for($n = 0, $i = 1; $n < 9; $n++, $i++) {
 		if(trim($sg1[$n])) {
@@ -772,9 +788,18 @@ sub squid_cgi {
 			push(@tmp, "GPRINT:squid_g2_$i:MIN:  Min\\: %6.1lf");
 			push(@tmp, "GPRINT:squid_g2_$i:MAX:  Max\\: %6.1lf\\n");
 			push(@tmpz, "LINE2:squid_g2_$i$AC[$n]:" . trim($sg1[$n]));
+			push(@allvalues, "squid_g2_$i");
+			push(@allsigns, "+");
 		} else {
 			push(@tmp, "COMMENT: \\n");
 		}
+	}
+	pop(@allsigns);
+	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues, @allsigns));
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
@@ -796,6 +821,7 @@ sub squid_cgi {
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
 		@DEF,
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
@@ -813,6 +839,7 @@ sub squid_cgi {
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			@DEF,
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
@@ -841,7 +868,7 @@ sub squid_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
-	undef(@DEF);
+	undef(@CDEF);
 	push(@tmp, "LINE1:squid_rq_1$AC[0]:Client HTTP requests");
 	push(@tmp, "GPRINT:squid_rq_1:LAST:  Cur\\: %6.1lf");
 	push(@tmp, "GPRINT:squid_rq_1:AVERAGE:  Avg\\: %6.1lf");
@@ -890,6 +917,11 @@ sub squid_cgi {
 	push(@tmpz, "LINE2:squid_rq_6$AC[5]:Aborted requests");
 	push(@tmpz, "LINE2:squid_rq_7$AC[6]:Swap files cleaned");
 	push(@tmpz, "LINE2:squid_rq_8$AC[7]:Unlink requests");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -918,6 +950,8 @@ sub squid_cgi {
 		"DEF:squid_rq_7=$rrd:squid_rq_7:AVERAGE",
 		"DEF:squid_rq_8=$rrd:squid_rq_8:AVERAGE",
 		"DEF:squid_rq_9=$rrd:squid_rq_9:AVERAGE",
+		"CDEF:allvalues=squid_rq_1,squid_rq_2,squid_rq_3,squid_rq_4,squid_rq_5,squid_rq_6,squid_rq_7,squid_rq_8,squid_rq_9,+,+,+,+,+,+,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
@@ -943,6 +977,8 @@ sub squid_cgi {
 			"DEF:squid_rq_7=$rrd:squid_rq_7:AVERAGE",
 			"DEF:squid_rq_8=$rrd:squid_rq_8:AVERAGE",
 			"DEF:squid_rq_9=$rrd:squid_rq_9:AVERAGE",
+			"CDEF:allvalues=squid_rq_1,squid_rq_2,squid_rq_3,squid_rq_4,squid_rq_5,squid_rq_6,squid_rq_7,squid_rq_8,squid_rq_9,+,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
@@ -975,6 +1011,7 @@ sub squid_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "LINE1:m_alloc#EEEE44:Allocated");
 	push(@tmp, "GPRINT:m_alloc:LAST:            Current\\: %7.1lf\\n");
 	push(@tmp, "AREA:m_inuse#44AAEE:In use");
@@ -984,6 +1021,11 @@ sub squid_cgi {
 	push(@tmpz, "LINE2:m_alloc#EEEE44:Allocated");
 	push(@tmpz, "AREA:m_inuse#44AAEE:In use");
 	push(@tmpz, "LINE2:m_inuse#00AAEE:");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1010,6 +1052,8 @@ sub squid_cgi {
 		"CDEF:m_alloc=squid_m_1,1024,/",
 		"CDEF:m_inuse=squid_m_2,1024,/",
 		"CDEF:m_perc=squid_m_2,100,*,squid_m_1,/",
+		"CDEF:allvalues=squid_m_1,squid_m_2,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG4: $err\n") if $err;
@@ -1032,6 +1076,8 @@ sub squid_cgi {
 			"CDEF:m_alloc=squid_m_1,1024,/",
 			"CDEF:m_inuse=squid_m_2,1024,/",
 			"CDEF:m_perc=squid_m_2,100,*,squid_m_1,/",
+			"CDEF:allvalues=squid_m_1,squid_m_2,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG4z: $err\n") if $err;
@@ -1060,6 +1106,7 @@ sub squid_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "LINE1:s_alloc#EEEE44:Allocated");
 	push(@tmp, "GPRINT:s_alloc:LAST:            Current\\: %7.1lf\\n");
 	push(@tmp, "AREA:s_inuse#44AAEE:In use");
@@ -1069,6 +1116,11 @@ sub squid_cgi {
 	push(@tmpz, "LINE2:s_alloc#EEEE44:Allocated");
 	push(@tmpz, "AREA:s_inuse#44AAEE:In use");
 	push(@tmpz, "LINE2:s_inuse#00AAEE:");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1095,6 +1147,8 @@ sub squid_cgi {
 		"CDEF:s_alloc=squid_s_2,1024,/",
 		"CDEF:s_inuse=squid_s_3,1024,/",
 		"CDEF:s_perc=squid_s_3,100,*,squid_s_2,/",
+		"CDEF:allvalues=squid_s_2,squid_s_3,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG5: $err\n") if $err;
@@ -1117,6 +1171,8 @@ sub squid_cgi {
 			"CDEF:s_alloc=squid_s_2,1024,/",
 			"CDEF:s_inuse=squid_s_3,1024,/",
 			"CDEF:s_perc=squid_s_3,100,*,squid_s_2,/",
+			"CDEF:allvalues=squid_s_2,squid_s_3,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG5z: $err\n") if $err;
@@ -1145,6 +1201,7 @@ sub squid_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:ic_requests#44EEEE:Requests");
 	push(@tmp, "GPRINT:ic_requests:LAST:             Current\\: %7.1lf\\n");
 	push(@tmp, "AREA:ic_hits#4444EE:Hits");
@@ -1160,6 +1217,11 @@ sub squid_cgi {
 	push(@tmpz, "LINE1:ic_requests#00EEEE");
 	push(@tmpz, "LINE1:ic_hits#0000EE");
 	push(@tmpz, "LINE1:ic_misses#EE00EE");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1184,6 +1246,8 @@ sub squid_cgi {
 		"DEF:ic_requests=$rrd:squid_ic_1:AVERAGE",
 		"DEF:ic_hits=$rrd:squid_ic_2:AVERAGE",
 		"DEF:ic_misses=$rrd:squid_ic_3:AVERAGE",
+		"CDEF:allvalues=ic_requests,ic_hits,ic_misses,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG6: $err\n") if $err;
@@ -1204,6 +1268,8 @@ sub squid_cgi {
 			"DEF:ic_requests=$rrd:squid_ic_1:AVERAGE",
 			"DEF:ic_hits=$rrd:squid_ic_2:AVERAGE",
 			"DEF:ic_misses=$rrd:squid_ic_3:AVERAGE",
+			"CDEF:allvalues=ic_requests,ic_hits,ic_misses,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG6z: $err\n") if $err;
@@ -1232,6 +1298,7 @@ sub squid_cgi {
 	}
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "AREA:io_http#44EEEE:HTTP");
 	push(@tmp, "GPRINT:io_http:LAST:                 Current\\: %7.1lf\\n");
 	push(@tmp, "AREA:io_ftp#4444EE:FTP");
@@ -1252,6 +1319,11 @@ sub squid_cgi {
 	push(@tmpz, "LINE1:io_ftp#4444EE");
 	push(@tmpz, "LINE1:io_gopher#EE44EE");
 	push(@tmpz, "LINE1:io_wais#EEEE44");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1277,6 +1349,8 @@ sub squid_cgi {
 		"DEF:io_ftp=$rrd:squid_io_2:AVERAGE",
 		"DEF:io_gopher=$rrd:squid_io_3:AVERAGE",
 		"DEF:io_wais=$rrd:squid_io_4:AVERAGE",
+		"CDEF:allvalues=io_http,io_ftp,io_gopher,io_wais,+,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG7: $err\n") if $err;
@@ -1298,6 +1372,8 @@ sub squid_cgi {
 			"DEF:io_ftp=$rrd:squid_io_2:AVERAGE",
 			"DEF:io_gopher=$rrd:squid_io_3:AVERAGE",
 			"DEF:io_wais=$rrd:squid_io_4:AVERAGE",
+			"CDEF:allvalues=io_http,io_ftp,io_gopher,io_wais,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG7z: $err\n") if $err;
@@ -1346,6 +1422,11 @@ sub squid_cgi {
 		push(@CDEF, "CDEF:B_in=in");
 		push(@CDEF, "CDEF:B_out=out");
 	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1369,6 +1450,7 @@ sub squid_cgi {
 		@{$colors->{graph_colors}},
 		"DEF:in=$rrd:squid_tc_1:AVERAGE",
 		"DEF:out=$rrd:squid_tc_2:AVERAGE",
+		"CDEF:allvalues=in,out,+",
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
@@ -1389,6 +1471,7 @@ sub squid_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:in=$rrd:squid_tc_1:AVERAGE",
 			"DEF:out=$rrd:squid_tc_2:AVERAGE",
+			"CDEF:allvalues=in,out,+",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
@@ -1438,6 +1521,11 @@ sub squid_cgi {
 		push(@CDEF, "CDEF:B_in=in");
 		push(@CDEF, "CDEF:B_out=out");
 	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1461,6 +1549,7 @@ sub squid_cgi {
 		@{$colors->{graph_colors}},
 		"DEF:in=$rrd:squid_ts_1:AVERAGE",
 		"DEF:out=$rrd:squid_ts_2:AVERAGE",
+		"CDEF:allvalues=in,out,+",
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
@@ -1481,6 +1570,7 @@ sub squid_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:in=$rrd:squid_ts_1:AVERAGE",
 			"DEF:out=$rrd:squid_ts_2:AVERAGE",
+			"CDEF:allvalues=in,out,+",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
