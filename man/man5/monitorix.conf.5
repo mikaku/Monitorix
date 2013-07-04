@@ -98,6 +98,15 @@ The possible values are:
 Default value: \fIc\fP
 .RE
 .P
+.BI show_gaps
+.RS
+This option, when enabled, shows the gaps (missing data) in the graphs. This is specially useful to detect if the server or Monitorix were stopped for a while, or any other unavailability.
+.P
+In order to be able to locate those gaps easily in each graph, it uses the white color in the default black theme and the black color in the white theme. These default colors are defined in \fImonitorix.conf\fP so they can be changed as any other option.
+.P
+Default value: \fIn\fP
+.RE
+.P
 .BI base_dir
 .RS
 This is the absolute path to the directory where all the web elements are located:
