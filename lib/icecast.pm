@@ -204,6 +204,7 @@ sub icecast_cgi {
 	my @PNGz;
 	my @tmp;
 	my @tmpz;
+	my @CDEF;
 	my $e;
 	my $n;
 	my $str;
@@ -365,6 +366,7 @@ sub icecast_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		$n = 0;
 		foreach my $i (split(',', $icecast->{desc}->{$url})) {
 			$i = trim($i);
@@ -392,6 +394,11 @@ sub icecast_cgi {
 			print("    <tr>\n");
 			print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{medium});
 		RRDs::graph("$PNG_DIR" . "$PNG[$e * 2]",
 			"--title=$config->{graphs}->{_icecast1}  ($tf->{nwhen}$tf->{twhen})",
@@ -413,6 +420,8 @@ sub icecast_cgi {
 			"DEF:ice" . $e . "_mp6=$rrd:icecast" . $e . "_mp6_ls:AVERAGE",
 			"DEF:ice" . $e . "_mp7=$rrd:icecast" . $e . "_mp7_ls:AVERAGE",
 			"DEF:ice" . $e . "_mp8=$rrd:icecast" . $e . "_mp8_ls:AVERAGE",
+			"CDEF:allvalues=ice" . $e . "_mp0,ice" . $e . "_mp1,ice" . $e . "_mp2,ice" . $e . "_mp3,ice" . $e . "_mp4,ice" . $e . "_mp5,ice" . $e . "_mp6,ice" . $e . "_mp7,ice" . $e . "_mp8,+,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 2]: $err\n") if $err;
@@ -438,6 +447,8 @@ sub icecast_cgi {
 				"DEF:ice" . $e . "_mp6=$rrd:icecast" . $e . "_mp6_ls:AVERAGE",
 				"DEF:ice" . $e . "_mp7=$rrd:icecast" . $e . "_mp7_ls:AVERAGE",
 				"DEF:ice" . $e . "_mp8=$rrd:icecast" . $e . "_mp8_ls:AVERAGE",
+				"CDEF:allvalues=ice" . $e . "_mp0,ice" . $e . "_mp1,ice" . $e . "_mp2,ice" . $e . "_mp3,ice" . $e . "_mp4,ice" . $e . "_mp5,ice" . $e . "_mp6,ice" . $e . "_mp7,ice" . $e . "_mp8,+,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 2]: $err\n") if $err;
@@ -469,6 +480,7 @@ sub icecast_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		$n = 0;
 		foreach my $i (split(',', $icecast->{desc}->{$url})) {
 			$i = trim($i);
@@ -484,6 +496,11 @@ sub icecast_cgi {
 
 		if($title) {
 			print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{medium});
 		RRDs::graph("$PNG_DIR" . $PNG[$e * 2 + 1],
@@ -506,6 +523,8 @@ sub icecast_cgi {
 			"DEF:ice" . $e . "_mp6=$rrd:icecast" . $e . "_mp6_br:AVERAGE",
 			"DEF:ice" . $e . "_mp7=$rrd:icecast" . $e . "_mp7_br:AVERAGE",
 			"DEF:ice" . $e . "_mp8=$rrd:icecast" . $e . "_mp8_br:AVERAGE",
+			"CDEF:allvalues=ice" . $e . "_mp0,ice" . $e . "_mp1,ice" . $e . "_mp2,ice" . $e . "_mp3,ice" . $e . "_mp4,ice" . $e . "_mp5,ice" . $e . "_mp6,ice" . $e . "_mp7,ice" . $e . "_mp8,+,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . $PNG[$e * 2 + 1] . ": $err\n") if $err;
@@ -531,6 +550,8 @@ sub icecast_cgi {
 				"DEF:ice" . $e . "_mp6=$rrd:icecast" . $e . "_mp6_br:AVERAGE",
 				"DEF:ice" . $e . "_mp7=$rrd:icecast" . $e . "_mp7_br:AVERAGE",
 				"DEF:ice" . $e . "_mp8=$rrd:icecast" . $e . "_mp8_br:AVERAGE",
+				"CDEF:allvalues=ice" . $e . "_mp0,ice" . $e . "_mp1,ice" . $e . "_mp2,ice" . $e . "_mp3,ice" . $e . "_mp4,ice" . $e . "_mp5,ice" . $e . "_mp6,ice" . $e . "_mp7,ice" . $e . "_mp8,+,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . $PNGz[$e * 2 + 1] . ": $err\n") if $err;
