@@ -344,6 +344,11 @@ sub raspberrypi_cgi {
 		print("    <tr>\n");
 		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -374,6 +379,7 @@ sub raspberrypi_cgi {
 		"DEF:clock6=$rrd:rpi_clock6:AVERAGE",
 		"DEF:clock7=$rrd:rpi_clock7:AVERAGE",
 		"DEF:clock8=$rrd:rpi_clock8:AVERAGE",
+		"CDEF:allvalues=clock0,clock1,clock2,clock3,clock4,clock5,clock6,clock7,clock8,+,+,+,+,+,+,+,+",
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
@@ -400,6 +406,7 @@ sub raspberrypi_cgi {
 			"DEF:clock6=$rrd:rpi_clock6:AVERAGE",
 			"DEF:clock7=$rrd:rpi_clock7:AVERAGE",
 			"DEF:clock8=$rrd:rpi_clock8:AVERAGE",
+			"CDEF:allvalues=clock0,clock1,clock2,clock3,clock4,clock5,clock6,clock7,clock8,+,+,+,+,+,+,+,+",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
@@ -431,9 +438,9 @@ sub raspberrypi_cgi {
 			push(@riglim, "--rigid");
 		}
 	}
-	undef(@CDEF);
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	push(@tmp, "LINE2:temp_0#44AAEE:Temperature");
 	push(@tmp, "GPRINT:temp_0:LAST:          Current\\: %4.1lf\\n");
 	push(@tmpz, "LINE2:temp_0#44AAEE:Temperature");
@@ -442,6 +449,11 @@ sub raspberrypi_cgi {
 		push(@CDEF, "CDEF:temp_0=9,5,/,temp0,*,32,+");
 	} else {
 		push(@CDEF, "CDEF:temp_0=temp0");
+	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
@@ -465,6 +477,7 @@ sub raspberrypi_cgi {
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
 		"DEF:temp0=$rrd:rpi_temp0:AVERAGE",
+		"CDEF:allvalues=temp0",
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
@@ -484,6 +497,7 @@ sub raspberrypi_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:temp0=$rrd:rpi_temp0:AVERAGE",
+			"CDEF:allvalues=temp0",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
@@ -511,9 +525,9 @@ sub raspberrypi_cgi {
 			push(@riglim, "--rigid");
 		}
 	}
-	undef(@CDEF);
 	undef(@tmp);
 	undef(@tmpz);
+	undef(@CDEF);
 	if(scalar(my @volts = split(',', ($raspberrypi->{volts} || "")))) {
 		for($n = 0; $n < 4; $n++) {
 			if($volts[$n]) {
@@ -526,6 +540,11 @@ sub raspberrypi_cgi {
 				push(@tmp, "COMMENT: \\n");
 			}
 		}
+	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
@@ -550,6 +569,8 @@ sub raspberrypi_cgi {
 		"DEF:volt1=$rrd:rpi_volt1:AVERAGE",
 		"DEF:volt2=$rrd:rpi_volt2:AVERAGE",
 		"DEF:volt3=$rrd:rpi_volt3:AVERAGE",
+		"CDEF:allvalues=volt0,volt1,volt2,volt3,+,+,+",
+		@CDEF,
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
@@ -570,6 +591,8 @@ sub raspberrypi_cgi {
 			"DEF:volt1=$rrd:rpi_volt1:AVERAGE",
 			"DEF:volt2=$rrd:rpi_volt2:AVERAGE",
 			"DEF:volt3=$rrd:rpi_volt3:AVERAGE",
+			"CDEF:allvalues=volt0,volt1,volt2,volt3,+,+,+",
+			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
