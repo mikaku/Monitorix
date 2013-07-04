@@ -1489,6 +1489,30 @@ volts = core, sdram_c, sdram_i, sdram_p
 .P
 The maximum number of clocks allowed is 6.
 .RE
+.SS Wowza Media Server (wowza.rrd)
+This graph is able to monitor an unlimited number of Wowza servers.
+.P
+.BI list
+.RS
+This is a list of URLs of Wowza server status pages.
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIwowza.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fIhttp://localhost:8086/connectioncounts\fP
+.RE
+.P
+.BI desc
+.RS
+This is a list of applications configured for every URL specified in the \fBlist\fP option.
+.P
+<desc>
+.br
+	http://localhost:8086/connectioncounts = channel1, channel2, channel3
+.br
+</desc>
+.P
+The maximum number of applications allowed for each URL is 8.
+.RE
 .SS Devices interrupt activity (int.rrd)
 Only the limit and rigid values may be set here.
 .SS Monitoring the Internet traffic of your LAN (traffacct.rrd)
