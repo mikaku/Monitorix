@@ -413,6 +413,13 @@ sub int_cgi {
 	my $width;
 	my $height;
 	my @riglim;
+	my @CDEF;
+	my @allvalues1;
+	my @allvalues2;
+	my @allvalues3;
+	my @allsigns1;
+	my @allsigns2;
+	my @allsigns3;
 	my $n;
 	my $err;
 
@@ -977,16 +984,22 @@ sub int_cgi {
 				push(@DEF2, ("DEF:int" . $n . "=" . $rrd . ":int_" . $n . ":AVERAGE"));
 				push(@AREA2, ("AREA:int" . $n . $ACOLOR2[$n2] . ":(" . $INT[$n] . ")" . $NAME[$n]));
 				push(@LINE2, ("LINE1:int" . $n . $LCOLOR2[$n2]));
+				push(@allvalues2, "int$n");
+				push(@allsigns2, "+");
 				$n2++;
 			} elsif($i < 6 || $NAME[$n] =~ /^xen/) {
 				push(@DEF3, ("DEF:int" . $n . "=" . $rrd . ":int_" . $n . ":AVERAGE"));
 				push(@AREA3, ("AREA:int" . $n . $ACOLOR3[$n3] . ":(" . $INT[$n] . ")" . $NAME[$n]));
 				push(@LINE3, ("LINE1:int" . $n . $LCOLOR3[$n3]));
+				push(@allvalues3, "int$n");
+				push(@allsigns3, "+");
 				$n3++;
 			} else {
 				push(@DEF1, ("DEF:int" . $n . "=" . $rrd . ":int_" . $n . ":AVERAGE"));
 				push(@AREA1, ("AREA:int" . $n . $ACOLOR1[$n1] . ":(" . $INT[$n] . ")" . $NAME[$n]));
 				push(@LINE1, ("LINE1:int" . $n . $LCOLOR1[$n1]));
+				push(@allvalues1, "int$n");
+				push(@allsigns1, "+");
 				$n1++;
 				if(!($n1 % 3)) {
 					push(@AREA1, ("COMMENT: \\n"));
@@ -995,6 +1008,12 @@ sub int_cgi {
 		}
 	}
 	push(@AREA1, ("COMMENT: \\n"));
+	pop(@allsigns1);
+	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues1, @allsigns1));
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@AREA1, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -1012,6 +1031,7 @@ sub int_cgi {
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
 		@DEF1,
+		@CDEF,
 		@AREA1,
 		@LINE1);
 	$err = RRDs::error;
@@ -1030,6 +1050,7 @@ sub int_cgi {
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			@DEF1,
+			@CDEF,
 			@AREA1,
 			@LINE1);
 		$err = RRDs::error;
@@ -1052,6 +1073,8 @@ sub int_cgi {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
+
+	undef(@CDEF);
 	undef(@riglim);
 	if(trim($rigid[1]) eq 1) {
 		push(@riglim, "--upper-limit=" . trim($limit[1]));
@@ -1060,6 +1083,12 @@ sub int_cgi {
 			push(@riglim, "--upper-limit=" . trim($limit[1]));
 			push(@riglim, "--rigid");
 		}
+	}
+	pop(@allsigns2);
+	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues2, @allsigns2));
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@AREA2, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
@@ -1079,6 +1108,7 @@ sub int_cgi {
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
 		@DEF2,
+		@CDEF,
 		@AREA2,
 		@LINE2);
 	$err = RRDs::error;
@@ -1098,6 +1128,7 @@ sub int_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			@DEF2,
+			@CDEF,
 			@AREA2,
 			@LINE2);
 		$err = RRDs::error;
@@ -1116,6 +1147,7 @@ sub int_cgi {
 		}
 	}
 
+	undef(@CDEF);
 	undef(@riglim);
 	if(trim($rigid[2]) eq 1) {
 		push(@riglim, "--upper-limit=" . trim($limit[2]));
@@ -1124,6 +1156,12 @@ sub int_cgi {
 			push(@riglim, "--upper-limit=" . trim($limit[2]));
 			push(@riglim, "--rigid");
 		}
+	}
+	pop(@allsigns3);
+	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues3, @allsigns3));
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@AREA3, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
@@ -1144,6 +1182,7 @@ sub int_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			@DEF3,
+			@CDEF,
 			@AREA3,
 			@LINE3);
 		$err = RRDs::error;
@@ -1163,6 +1202,7 @@ sub int_cgi {
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
 				@DEF3,
+				@CDEF,
 				@AREA3,
 				@LINE3);
 			$err = RRDs::error;
