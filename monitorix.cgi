@@ -253,7 +253,7 @@ if(!$config{theme}->{$color}) {
 	$config{theme}->{$color}->{title_bg} = "777777";
 	$config{theme}->{$color}->{title_fg} = "CCCC00";
 	$config{theme}->{$color}->{graph_bg} = "CCCCCC";
-	$config{theme}->{$color}->{gap} = "FFFFFF";
+	$config{theme}->{$color}->{gap} = "000000";
 }
 
 if($color eq "black") {
