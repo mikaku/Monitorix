@@ -200,6 +200,7 @@ sub fail2ban_cgi {
 	my @PNGz;
 	my @tmp;
 	my @tmpz;
+	my @CDEF;
 	my $n;
 	my $n2;
 	my $str;
@@ -337,6 +338,7 @@ sub fail2ban_cgi {
 			}
 			undef(@tmp);
 			undef(@tmpz);
+			undef(@CDEF);
 			my $e = 0;
 			foreach my $i (split(',', $fail2ban->{desc}->{$n})) {
 				$str = sprintf("%-25s", substr(trim($i), 0, 25));
@@ -351,6 +353,11 @@ sub fail2ban_cgi {
 			while($e < 9) {
 				push(@tmp, "COMMENT: \\n");
 				$e++;
+			}
+			if(lc($config->{show_gaps}) eq "y") {
+				push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+				push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+				push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 			}
 			($width, $height) = split('x', $config->{graph_size}->{medium});
 			$str = substr(trim($fl[$n]), 0, 25);
@@ -375,6 +382,8 @@ sub fail2ban_cgi {
 				"DEF:j7=$rrd:fail2ban" . $n . "_j7:AVERAGE",
 				"DEF:j8=$rrd:fail2ban" . $n . "_j8:AVERAGE",
 				"DEF:j9=$rrd:fail2ban" . $n . "_j9:AVERAGE",
+				"CDEF:allvalues=j1,j2,j3,j4,j5,j6,j7,j8,j9,+,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmp);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNG[$n]: $err\n") if $err;
@@ -401,6 +410,8 @@ sub fail2ban_cgi {
 					"DEF:j7=$rrd:fail2ban" . $n . "_j7:AVERAGE",
 					"DEF:j8=$rrd:fail2ban" . $n . "_j8:AVERAGE",
 					"DEF:j9=$rrd:fail2ban" . $n . "_j9:AVERAGE",
+					"CDEF:allvalues=j1,j2,j3,j4,j5,j6,j7,j8,j9,+,+,+,+,+,+,+,+",
+					@CDEF,
 					@tmpz);
 				$err = RRDs::error;
 				print("ERROR: while graphing $PNG_DIR" . "$PNGz[$n]: $err\n") if $err;
