@@ -544,6 +544,7 @@ sub wowza_cgi {
 
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		$n = 0;
 		foreach my $w (split(',', $wowza->{desc}->{$url})) {
 			$w = trim($w);
@@ -560,6 +561,11 @@ sub wowza_cgi {
 		if($title) {
 			print("    <tr>\n");
 			print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		RRDs::graph("$PNG_DIR" . "$PNG[$e * 5]",
@@ -581,6 +587,8 @@ sub wowza_cgi {
 			"DEF:wms" . $e . "_a5=$rrd:wms" . $e . "_a5_conncur:AVERAGE",
 			"DEF:wms" . $e . "_a6=$rrd:wms" . $e . "_a6_conncur:AVERAGE",
 			"DEF:wms" . $e . "_a7=$rrd:wms" . $e . "_a7_conncur:AVERAGE",
+			"CDEF:allvalues=wms" . $e . "_a0,wms" . $e . "_a1,wms" . $e . "_a2,wms" . $e . "_a3,wms" . $e . "_a4,wms" . $e . "_a5,wms" . $e . "_a6,wms" . $e . "_a7,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp,
 			"COMMENT: \\n",
 			$uptimeline);
@@ -607,6 +615,8 @@ sub wowza_cgi {
 				"DEF:wms" . $e . "_a5=$rrd:wms" . $e . "_a5_conncur:AVERAGE",
 				"DEF:wms" . $e . "_a6=$rrd:wms" . $e . "_a6_conncur:AVERAGE",
 				"DEF:wms" . $e . "_a7=$rrd:wms" . $e . "_a7_conncur:AVERAGE",
+				"CDEF:allvalues=wms" . $e . "_a0,wms" . $e . "_a1,wms" . $e . "_a2,wms" . $e . "_a3,wms" . $e . "_a4,wms" . $e . "_a5,wms" . $e . "_a6,wms" . $e . "_a7,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 5]: $err\n") if $err;
@@ -657,6 +667,11 @@ sub wowza_cgi {
 			push(@CDEF, "CDEF:K_wms" . $e . "_a$n=B_wms" . $e . "_a$n,1024,/");
 			$n++;
 		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		RRDs::graph("$PNG_DIR" . $PNG[$e * 5 + 1],
 			"--title=$config->{graphs}->{_wowza2}  ($tf->{nwhen}$tf->{twhen})",
@@ -685,6 +700,7 @@ sub wowza_cgi {
 			"DEF:wms" . $e . "_a6o=$rrd:wms" . $e . "_a6_moutbrt:AVERAGE",
 			"DEF:wms" . $e . "_a7i=$rrd:wms" . $e . "_a7_minbrt:AVERAGE",
 			"DEF:wms" . $e . "_a7o=$rrd:wms" . $e . "_a7_moutbrt:AVERAGE",
+			"CDEF:allvalues=wms" . $e . "_a0i,wms" . $e . "_a0o,wms" . $e . "_a1i,wms" . $e . "_a1o,wms" . $e . "_a2i,wms" . $e . "_a2o,wms" . $e . "_a3i,wms" . $e . "_a3o,wms" . $e . "_a4i,wms" . $e . "_a4o,wms" . $e . "_a5i,wms" . $e . "_a5o,wms" . $e . "_a6i,wms" . $e . "_a6o,wms" . $e . "_a7i,wms" . $e . "_a7o,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -718,6 +734,7 @@ sub wowza_cgi {
 				"DEF:wms" . $e . "_a6o=$rrd:wms" . $e . "_a6_moutbrt:AVERAGE",
 				"DEF:wms" . $e . "_a7i=$rrd:wms" . $e . "_a7_minbrt:AVERAGE",
 				"DEF:wms" . $e . "_a7o=$rrd:wms" . $e . "_a7_moutbrt:AVERAGE",
+				"CDEF:allvalues=wms" . $e . "_a0i,wms" . $e . "_a0o,wms" . $e . "_a1i,wms" . $e . "_a1o,wms" . $e . "_a2i,wms" . $e . "_a2o,wms" . $e . "_a3i,wms" . $e . "_a3o,wms" . $e . "_a4i,wms" . $e . "_a4o,wms" . $e . "_a5i,wms" . $e . "_a5o,wms" . $e . "_a6i,wms" . $e . "_a6o,wms" . $e . "_a7i,wms" . $e . "_a7o,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -753,6 +770,7 @@ sub wowza_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		$n = 0;
 		foreach my $w (split(',', $wowza->{desc}->{$url})) {
 			$w = trim($w);
@@ -761,6 +779,11 @@ sub wowza_cgi {
 			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST: Current\\:%6.2lf\\n");
 			push(@tmpz, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$w");
 			$n++;
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		RRDs::graph("$PNG_DIR" . $PNG[$e * 5 + 2],
@@ -783,6 +806,8 @@ sub wowza_cgi {
 			"DEF:wms" . $e . "_a5=$rrd:wms" . $e . "_a5_conntacc:AVERAGE",
 			"DEF:wms" . $e . "_a6=$rrd:wms" . $e . "_a6_conntacc:AVERAGE",
 			"DEF:wms" . $e . "_a7=$rrd:wms" . $e . "_a7_conntacc:AVERAGE",
+			"CDEF:allvalues=wms" . $e . "_a0,wms" . $e . "_a1,wms" . $e . "_a2,wms" . $e . "_a3,wms" . $e . "_a4,wms" . $e . "_a5,wms" . $e . "_a6,wms" . $e . "_a7,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . $PNG[$e * 5 + 2] . ": $err\n") if $err;
@@ -808,6 +833,8 @@ sub wowza_cgi {
 				"DEF:wms" . $e . "_a5=$rrd:wms" . $e . "_a5_conntacc:AVERAGE",
 				"DEF:wms" . $e . "_a6=$rrd:wms" . $e . "_a6_conntacc:AVERAGE",
 				"DEF:wms" . $e . "_a7=$rrd:wms" . $e . "_a7_conntacc:AVERAGE",
+				"CDEF:allvalues=wms" . $e . "_a0,wms" . $e . "_a1,wms" . $e . "_a2,wms" . $e . "_a3,wms" . $e . "_a4,wms" . $e . "_a5,wms" . $e . "_a6,wms" . $e . "_a7,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . $PNGz[$e * 5 + 2] . ": $err\n") if $err;
@@ -837,6 +864,7 @@ sub wowza_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		$n = 0;
 		foreach my $w (split(',', $wowza->{desc}->{$url})) {
 			$w = trim($w);
@@ -845,6 +873,11 @@ sub wowza_cgi {
 			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST: Current\\:%6.2lf\\n");
 			push(@tmpz, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$w");
 			$n++;
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		RRDs::graph("$PNG_DIR" . $PNG[$e * 5 + 3],
@@ -867,6 +900,8 @@ sub wowza_cgi {
 			"DEF:wms" . $e . "_a5=$rrd:wms" . $e . "_a5_conntrej:AVERAGE",
 			"DEF:wms" . $e . "_a6=$rrd:wms" . $e . "_a6_conntrej:AVERAGE",
 			"DEF:wms" . $e . "_a7=$rrd:wms" . $e . "_a7_conntrej:AVERAGE",
+			"CDEF:allvalues=wms" . $e . "_a0,wms" . $e . "_a1,wms" . $e . "_a2,wms" . $e . "_a3,wms" . $e . "_a4,wms" . $e . "_a5,wms" . $e . "_a6,wms" . $e . "_a7,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . $PNG[$e * 5 + 3] . ": $err\n") if $err;
@@ -892,6 +927,8 @@ sub wowza_cgi {
 				"DEF:wms" . $e . "_a5=$rrd:wms" . $e . "_a5_conntrej:AVERAGE",
 				"DEF:wms" . $e . "_a6=$rrd:wms" . $e . "_a6_conntrej:AVERAGE",
 				"DEF:wms" . $e . "_a7=$rrd:wms" . $e . "_a7_conntrej:AVERAGE",
+				"CDEF:allvalues=wms" . $e . "_a0,wms" . $e . "_a1,wms" . $e . "_a2,wms" . $e . "_a3,wms" . $e . "_a4,wms" . $e . "_a5,wms" . $e . "_a6,wms" . $e . "_a7,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . $PNGz[$e * 5 + 3] . ": $err\n") if $err;
@@ -921,6 +958,7 @@ sub wowza_cgi {
 		}
 		undef(@tmp);
 		undef(@tmpz);
+		undef(@CDEF);
 		$n = 0;
 		foreach my $w (split(',', $wowza->{desc}->{$url})) {
 			$w = trim($w);
@@ -929,6 +967,11 @@ sub wowza_cgi {
 			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST: Current\\:%3.0lf\\n");
 			push(@tmpz, "LINE2:wms" . $e . "_a$n" . $LC[$n] . ":$w");
 			$n++;
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{small});
 		RRDs::graph("$PNG_DIR" . $PNG[$e * 5 + 4],
@@ -951,6 +994,8 @@ sub wowza_cgi {
 			"DEF:wms" . $e . "_a5=$rrd:wms" . $e . "_a5_sestot:AVERAGE",
 			"DEF:wms" . $e . "_a6=$rrd:wms" . $e . "_a6_sestot:AVERAGE",
 			"DEF:wms" . $e . "_a7=$rrd:wms" . $e . "_a7_sestot:AVERAGE",
+			"CDEF:allvalues=wms" . $e . "_a0,wms" . $e . "_a1,wms" . $e . "_a2,wms" . $e . "_a3,wms" . $e . "_a4,wms" . $e . "_a5,wms" . $e . "_a6,wms" . $e . "_a7,+,+,+,+,+,+,+",
+			@CDEF,
 			@tmp);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . $PNG[$e * 5 + 4] . ": $err\n") if $err;
@@ -976,6 +1021,8 @@ sub wowza_cgi {
 				"DEF:wms" . $e . "_a5=$rrd:wms" . $e . "_a5_sestot:AVERAGE",
 				"DEF:wms" . $e . "_a6=$rrd:wms" . $e . "_a6_sestot:AVERAGE",
 				"DEF:wms" . $e . "_a7=$rrd:wms" . $e . "_a7_sestot:AVERAGE",
+				"CDEF:allvalues=wms" . $e . "_a0,wms" . $e . "_a1,wms" . $e . "_a2,wms" . $e . "_a3,wms" . $e . "_a4,wms" . $e . "_a5,wms" . $e . "_a6,wms" . $e . "_a7,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . $PNGz[$e * 5 + 4] . ": $err\n") if $err;
