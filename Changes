@@ -7,6 +7,15 @@
   NFS filesystems. [#10]
 - Reimplemented the 'theme' option.
 - Added the label 'Total' in the main graph of 'apache'.
+- Added a new option called 'show_gaps' to be able to see the gaps produced by
+  missing data in graphs.
+	(suggested by Skibbi, skibbi AT gmail.com)
+- Add a check during the initialization of the 'nvidia' graph, to test for the
+  existence of the 'nvidia-smi' command.
+- Add a check during the initialization of the 'nfss' graph, to test if there
+  is the '/proc/net/rpc/nfsd' file.
+- Add a check during the initialization of the 'nfsc' graph, to test if there
+  is the '/proc/net/rpc/nfs' file.
 - Fixed a bug that prevented from seeing stats in the 'nfss' graph.
 - Fixed in 'nginx' graph the name of the iptables rules which prevented working
   the network traffic graph. [#22]
