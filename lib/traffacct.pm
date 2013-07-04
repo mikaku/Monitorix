@@ -494,6 +494,11 @@ sub traffacct_cgi {
 					push(@CDEF, "CDEF:B_in=in");
 					push(@CDEF, "CDEF:B_out=out");
 				}
+				if(lc($config->{show_gaps}) eq "y") {
+					push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+					push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+					push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+				}
 				($width, $height) = split('x', $config->{graph_size}->{remote});
 				RRDs::graph("$PNG_DIR" . "$PNG[$n]",
 					"--title=$name traffic  ($tf->{nwhen}$tf->{twhen})",
@@ -509,6 +514,7 @@ sub traffacct_cgi {
 					@{$colors->{graph_colors}},
 					"DEF:in=$rrd:traffacct" . $n . "_in:AVERAGE",
 					"DEF:out=$rrd:traffacct" . $n . "_out:AVERAGE",
+					"CDEF:allvalues=in,out,+",
 					@CDEF,
 					@tmp);
 				$err = RRDs::error;
@@ -529,6 +535,7 @@ sub traffacct_cgi {
 						@{$colors->{graph_colors}},
 						"DEF:in=$rrd:traffacct" . $n . "_in:AVERAGE",
 						"DEF:out=$rrd:traffacct" . $n . "_out:AVERAGE",
+						"CDEF:allvalues=in,out,+",
 						@CDEF,
 						@tmpz);
 					$err = RRDs::error;
@@ -594,6 +601,11 @@ sub traffacct_cgi {
 			push(@CDEF, "CDEF:B_in=in");
 			push(@CDEF, "CDEF:B_out=out");
 		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		RRDs::graph("$PNG_DIR" . "$PNG[$cgi->{val}]",
 			"--title=$tal[$cgi->{val}] traffic  ($tf->{nwhen}$tf->{twhen})",
@@ -608,6 +620,7 @@ sub traffacct_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:in=$rrd:traffacct" . $cgi->{val} . "_in:AVERAGE",
 			"DEF:out=$rrd:traffacct" . $cgi->{val} . "_out:AVERAGE",
+			"CDEF:allvalues=in,out,+",
 			@CDEF,
 			"CDEF:K_in=B_in,1024,/",
 			"CDEF:K_out=B_out,1024,/",
@@ -629,6 +642,7 @@ sub traffacct_cgi {
 				@{$colors->{graph_colors}},
 				"DEF:in=$rrd:traffacct" . $cgi->{val} . "_in:AVERAGE",
 				"DEF:out=$rrd:traffacct" . $cgi->{val} . "_out:AVERAGE",
+				"CDEF:allvalues=in,out,+",
 				@CDEF,
 				"CDEF:K_in=B_in,1024,/",
 				"CDEF:K_out=B_out,1024,/",
