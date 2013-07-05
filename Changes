@@ -21,6 +21,7 @@
   the network traffic graph. [#22]
 - Fixed a bug that prevented a correctly data collection in the 'fail2ban'
   graph. [#23]
+- Fixed the description of 'netstats_in_bps' in monitorix.conf(5) man page.
 - Little code cleaning.
 
 
