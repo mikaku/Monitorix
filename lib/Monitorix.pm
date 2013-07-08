@@ -208,10 +208,12 @@ sub get_nvidia_data {
 				my ($value, undef) = split(' ', $tmp);
 				$value =~ s/[-]/./;
 				$value =~ s/[^0-9.]//g;
+				$value ||= 0;	# zero if not numeric
 				if(int($value) > 0) {
 					$cpu = int($value);
 				}
 			}
+			# not used
 			if($data[$l] =~ /Memory/) {
 				my (undef, $tmp) = split(':', $data[$l]);
 				if($tmp eq "\n") {
@@ -221,6 +223,7 @@ sub get_nvidia_data {
 				my ($value, undef) = split(' ', $tmp);
 				$value =~ s/[-]/./;
 				$value =~ s/[^0-9.]//g;
+				$value ||= 0;	# zero if not numeric
 				if(int($value) > 0) {
 					$mem = int($value);
 				}

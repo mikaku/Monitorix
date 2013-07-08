@@ -22,6 +22,8 @@
 - Fixed a bug that prevented a correctly data collection in the 'fail2ban'
   graph. [#23]
 - Fixed the description of 'netstats_in_bps' in monitorix.conf(5) man page.
+- Fixed a message of 'Argument "" isn't numeric in int ...' in 'nvidia' graph
+  when using newer official drivers.
 - Little code cleaning.
 
 
