@@ -24,6 +24,9 @@
 - Fixed the description of 'netstats_in_bps' in monitorix.conf(5) man page.
 - Fixed a message of 'Argument "" isn't numeric in int ...' in 'nvidia' graph
   when using newer official drivers.
+- Fixed a bug in Groups (Multihost view) that prevented from seeing the remote
+  server's graphs of the selected group.
+	(thanks to Mauro Medda, m.medda AT tiscali.it)
 - Little code cleaning.
 
 
