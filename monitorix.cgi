@@ -45,6 +45,7 @@ sub multihost {
 	my $n2;
 	my @host;
 	my @url;
+	my @foot_url;
 	my $multihost = $config->{multihost};
 
 	if($cgi->{val} =~ m/group(\d*)/) {
@@ -74,7 +75,8 @@ sub multihost {
 				my $h2 = trim($remotehost_list[$n2]);
 				if($h eq $h2) {
 					push(@host, $h);
-					push(@url, (split(',', $multihost->{remotehost_desc}->{$n}))[0] . (split(',', $multihost->{remotehost_desc}->{$n}))[1]);
+					push(@url, (split(',', $multihost->{remotehost_desc}->{$n2}))[0] . (split(',', $multihost->{remotehost_desc}->{$n2}))[2]);
+					push(@foot_url, (split(',', $multihost->{remotehost_desc}->{$n2}))[0] . (split(',', $multihost->{remotehost_desc}->{$n2}))[1]);
 				}
 			}
 		}
@@ -82,7 +84,8 @@ sub multihost {
 		my @remotehost_list = split(',', $multihost->{remotehost_list});
 		for($n = 0; $n < scalar(@remotehost_list); $n++) {
 			push(@host, trim($remotehost_list[$n]));
-			push(@url, (split(',', $multihost->{remotehost_desc}->{$n}))[0] . (split(',', $multihost->{remotehost_desc}->{$n}))[1]);
+			push(@url, (split(',', $multihost->{remotehost_desc}->{$n}))[0] . (split(',', $multihost->{remotehost_desc}->{$n}))[2]);
+			push(@foot_url, (split(',', $multihost->{remotehost_desc}->{$n}))[0] . (split(',', $multihost->{remotehost_desc}->{$n}))[1]);
 		}
 	}
 
@@ -108,7 +111,7 @@ sub multihost {
 			for($n2 = 0, $n = $n - $multihost->{graphs_per_row}; $n2 < $multihost->{graphs_per_row}; $n2++) {
 				if($n < scalar(@host)) {
 					print "  <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
-					print "   <iframe src=" . (split(',', $multihost->{remotehost_desc}->{$n}))[0] . (split(',', $multihost->{remotehost_desc}->{$n}))[2] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetag height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+					print "   <iframe src=" . $url[$n] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetag height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
 					print "  </td>\n";
 
 				}
@@ -122,7 +125,7 @@ sub multihost {
 					print "  <td bgcolor='$colors->{title_bg_color}'>\n";
 					print "   <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
 					print "   <font size='-1'>\n";
-					print "    <b>&nbsp;&nbsp;<a href='" . $url[$n] . "' style='{color: " . $colors->{title_fg_color} . "}'>$url[$n]</a><b>\n";
+					print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$n] . "' style='{color: " . $colors->{title_fg_color} . "}'>$foot_url[$n]</a><b>\n";
 					print "   </font></font>\n";
 					print "  </td>\n";
 				}
@@ -153,7 +156,7 @@ sub multihost {
 			print "   <td bgcolor='$colors->{title_bg_color}'>\n";
 			print "    <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
 			print "    <font size='-1'>\n";
-			print "    <b>&nbsp;&nbsp;<a href='" . $url[$cgi->{val}] . "' style='{color: " . $colors->{title_fg_color} . "}'>$url[$cgi->{val}]</a><b>\n";
+			print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$cgi->{val}] . "' style='{color: " . $colors->{title_fg_color} . "}'>$foot_url[$cgi->{val}]</a><b>\n";
 			print "    </font></font>\n";
 			print "   </td>\n";
 		}
