@@ -198,14 +198,14 @@ Content-Type: text/plain
 FATAL: Monitorix is unable to continue!
 =======================================
 
-File 'monitorix.conf.path' not found.
+File 'monitorix.conf.path' was not found.
 
-Please make sure that 'base_dir' option is correctly configured and that
-this CGI is located in the 'base_dir'/cgi/ directory.
+Please make sure that 'base_dir' option is correctly configured and this
+CGI (monitorix.cgi) is located in the 'base_dir'/cgi/ directory.
 
-And don't forget to restart Monitorix for the changes to take effect.
+And don't forget to restart Monitorix for the changes to take effect!
 EOF
-	die "FATAL: File 'monitorix.conf.path' not found!";
+	die "FATAL: File 'monitorix.conf.path' was not found!";
 }
 
 my $conf = new Config::General(
