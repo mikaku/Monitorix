@@ -668,3 +668,5 @@ sub traffacct_cgi {
 		}
 	}
 }
+
+1;
