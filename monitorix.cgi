@@ -247,10 +247,14 @@ if(lc($config{httpd_builtin}->{enabled} ne "y")) {
 $colors{graph_colors} = ();
 $colors{warning_color} = "--color=CANVAS#880000";
 
+# keep backwards compatibility for v3.2.1 and less
+if(ref($config{theme}) ne "HASH") {
+	delete($config{theme});
+}
+
 if(!$config{theme}->{$color}) {
 	$color = "white";
 
-	# keep backwards compatibility for v3.2.1 and less
 	$config{theme}->{$color}->{main_bg} = "FFFFFF";
 	$config{theme}->{$color}->{main_fg} = "000000";
 	$config{theme}->{$color}->{title_bg} = "777777";
