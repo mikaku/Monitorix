@@ -169,6 +169,7 @@ sub multihost {
 sub graph_header {
 	my ($title, $colspan) = @_;
 	print("\n");
+	print("<!-- graph table begins -->\n");
 	print("  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors{graph_bg_color}' border='1'>\n");
 	print("    <tr>\n");
 	print("      <td bgcolor='$colors{title_bg_color}' colspan='$colspan'>\n");
@@ -181,6 +182,7 @@ sub graph_header {
 
 sub graph_footer {
 	print("  </table>\n");
+	print("<!-- graph table ends -->\n");
 }
 
 
