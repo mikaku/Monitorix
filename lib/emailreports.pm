@@ -40,10 +40,29 @@ sub emailreports_send {
 
 	logger("$myself: sending $report reports.");
 
-	my $to = $emailreports->{$report}->{to};
-	my $html = <<EOF;
+	my $html = <<"EOF";
 <html>
   <body bgcolor='FFFFFF' vlink='#888888' link='#888888'>
+  <table cellspacing='5' cellpadding='0' bgcolor='CCCCCC' border='1'>
+  <tr>
+  <td bgcolor='777777'>
+  <font face='Verdana, sans-serif' color='CCCC00'>
+    <font size='5'><b>&nbsp;&nbsp;Host:&nbsp;<b></font>
+  </font>
+  </td>
+  <td bgcolor='FFFFFF'>
+  <font face='Verdana, sans-serif' color='000000'>
+    <font size='5'><b>&nbsp;&nbsp;$ENV{HOSTNAME}&nbsp;&nbsp;</b></font>
+  </font>
+  </td>
+  <td bgcolor='777777'>
+  <font face='Verdana, sans-serif' color='CCCC00'>
+    <font size='5'><b>&nbsp;&nbsp;$report&nbsp;&nbsp;<b></font>
+  </font>
+  </td>
+  </tr>
+  </table>
+  <br>
 EOF
 	my $html_footer = <<EOF;
   <p>
@@ -98,33 +117,37 @@ EOF
 	$html .= $html_footer;
 
 	# create the multipart container and add attachments
-	my $msg = new MIME::Lite(
-		From		=> $emailreports->{from_address},
-		To		=> $to,
-		Subject		=> "Monitorix: '$report' Report",
-		Type		=> "multipart/related",
-		Organization	=> "Monitorix",
-	);
+	foreach (split(',', $emailreports->{$report}->{to})) {
+		my $to = trim($_);
 
-	$msg->attach(
-		Type		=> 'text/html',
-		Data		=> $html,
-	);
-	$msg->attach(
-		Type		=> 'image/png',
-		Id		=> 'image_logo',
-		Path		=> $config->{base_dir} . $config->{logo_bottom},
-	);
-	while (my ($key, $val) = each(%{$images})) {
+		my $msg = new MIME::Lite(
+			From		=> $emailreports->{from_address},
+			To		=> $to,
+			Subject		=> "Monitorix: '$report' Report",
+			Type		=> "multipart/related",
+			Organization	=> "Monitorix",
+		);
+
+		$msg->attach(
+			Type		=> 'text/html',
+			Data		=> $html,
+		);
 		$msg->attach(
 			Type		=> 'image/png',
-			Id		=> $key,
-			Data		=> $val,
+			Id		=> 'image_logo',
+			Path		=> $config->{base_dir} . $config->{logo_bottom},
 		);
-	}
+		while (my ($key, $val) = each(%{$images})) {
+			$msg->attach(
+				Type		=> 'image/png',
+				Id		=> $key,
+				Data		=> $val,
+			);
+		}
 
-	$msg->send('smtp', $emailreports->{smtp_hostname}, Timeout => 60);
-	logger("\t$myself: to: $to") if $debug;
+		$msg->send('smtp', $emailreports->{smtp_hostname}, Timeout => 60);
+		logger("\t$myself: to: $to") if $debug;
+	}
 }
 
 1;
