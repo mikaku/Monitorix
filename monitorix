@@ -543,6 +543,36 @@ while(1) {
 						logger("emailreports::emailreports_send(): $@");
 					}
 				}
+
+				# weekly (send reports on every Monday)
+				if($wday == 1) {
+					if(lc($emailreports->{weekly}->{enabled}) eq "y") {
+						eval { emailreports::emailreports_send(\%config, "weekly", "1week", $d); };
+						if($@) {
+							logger("emailreports::emailreports_send(): $@");
+						}
+					}
+				}
+
+				# monthly (send reports every first day of each month)
+				if($mday == 1) {
+					if(lc($emailreports->{monthly}->{enabled}) eq "y") {
+						eval { emailreports::emailreports_send(\%config, "monthly", "1month", $d); };
+						if($@) {
+							logger("emailreports::emailreports_send(): $@");
+						}
+					}
+				}
+
+				# yearly (send reports every first day of each year)
+				if($mon == 0 && $mday == 1) {
+					if(lc($emailreports->{yearly}->{enabled}) eq "y") {
+						eval { emailreports::emailreports_send(\%config, "yearly", "1year", $d); };
+						if($@) {
+							logger("emailreports::emailreports_send(): $@");
+						}
+					}
+				}
 			}
 		}
 	}
