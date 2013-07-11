@@ -447,6 +447,7 @@ if(!$silent) {
 	print("\n");
 	print("  </font>\n");
 	print("  </center>\n");
+	print("<!-- footer begins -->\n");
 	print("  <p>\n");
 	print("  <a href='http://www.monitorix.org'><img src='" . $config{url} . "/" . $config{logo_bottom} . "' border='0'></a>\n");
 	print("  <br>\n");
@@ -455,6 +456,7 @@ if(!$silent) {
 	print("  </font>\n");
 	print("  </body>\n");
 	print("</html>\n");
+	print("<!-- footer ends -->\n");
 }
 
 0;
