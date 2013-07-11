@@ -1701,6 +1701,66 @@ An example would be:
 </remotegroup_desc>
 .RE
 .RE
+.SS Automatic email reports (emailreports)
+This allows to send automatically selected graphs to one or more email addresses. This could be specially useful for some system administrators who prefer receiving via email selected graphs instead of browsing to the remote servers every day.
+.P
+.BI enabled
+.RS
+This option enables this feature. Note that you still need to enable the same
+option for each time interval you want to activate: \fIdaily\fP, \fIweekly\fP, \fImonthly\fP, \fIyearly\fP.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI url_prefix
+.RS
+This is the prefix of the same URL you use to connect to Monitorix. This is needed in order to get the graphs of the same machine.
+.P
+Default value: \fIhttp://localhost:8080\fP
+.RE
+.P
+.BI smtp_hostname
+.RS
+This is the hostname that will be used as a SMTP relay to deliver the automatic email reports.
+.RE
+.P
+.BI from_address
+.RS
+This is the address that will be used as remitent for all the monthly report emails.
+.P
+Default value: \fInoreply@example.com\fP
+.RE
+.P
+.BI daily
+.br
+.BI weekly
+.br
+.BI monthly
+.br
+.BI yearly
+.RS
+The email reports are sent based on the following schedule:
+.P
+\fIdaily\fP    reports will be sent every day at 00:00h.
+.br
+\fIweekly\fP   reports will be sent the first Monday of each week.
+.br
+\fImonthly\fP  reports will be sent the first day of each month.
+.br
+\fIyearly\fP   reports will be sent the first day of each year.
+.RE
+.P
+.BI graphs
+.RS
+This is a comma-separated list of graph names you want to appear in the email report. The names are the same as their \fI.rrd\fP files. There is a list of them in the \fBgraph_name\fP option in \fImonitorix.conf\fP.
+.P
+Default value: \fIsystem, fs\fP
+.RE
+.P
+.BI to
+.RS
+This is a comma-separated list of recipient email addresses.
+.RE
 .SS rigid and limit values
 .BI rigid
 .RS
@@ -1710,6 +1770,7 @@ This value defines how the graph must be scaled. Its possible values are:
 .br
 \fI2\fP   The graph will be scaled using the \fBlimit\fP value as its upper-limit value.
 .RE
+.P
 .BI limit
 .RS
 This is where you can enter the upper-limit value for a graph.
