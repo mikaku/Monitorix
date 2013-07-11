@@ -25,7 +25,6 @@ use warnings;
 use Monitorix;
 use MIME::Lite;
 use LWP::UserAgent;
-use Socket;
 use Exporter 'import';
 our @EXPORT = qw(emailreports_send);
 
@@ -34,10 +33,7 @@ sub emailreports_send {
 	my ($config, $report, $when, $debug) = @_;
 	my $emailreports = $config->{emailreports};
 
-	my (undef, undef, undef, undef, $prev_month, $prev_year) = localtime(time - 3600);
 	my $n;
-
-	my $base_url = $config->{base_url};
 	my $base_cgi = $config->{base_cgi};
 	my $imgs_dir = $config->{imgs_dir};
 	my $images;
