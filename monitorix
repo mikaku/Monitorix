@@ -476,7 +476,7 @@ if(lc($config{httpd_builtin}->{enabled} eq "y")) {
 logger("Ok, done.") unless !$options{d};
 
 while(1) {
-	local $SIG{'ALRM'} = sub { alarm(1); };
+	local $SIG{'ALRM'} = sub { };
 	alarm(1);
 	pause();
 
