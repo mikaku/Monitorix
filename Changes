@@ -6,6 +6,7 @@
   This should avoid a complete freeze if the network goes down when monitoring
   NFS filesystems. [#10]
 - Reimplemented the 'theme' option.
+- Implemented a complete email reporting mechanism. [#11]
 - Added the label 'Total' in the main graph of 'apache'.
 - Added a new option called 'show_gaps' to be able to see the gaps produced by
   missing data in graphs.
