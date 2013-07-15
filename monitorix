@@ -78,12 +78,12 @@ sub HUP_handler {
 
 	logger("SIG$signal caught.");
 
-	# upon receiving a SIGHUP signal the logfile is re-opened
+	# upon receiving a SIGHUP signal a new logfile opened
 	close(STDOUT);
 	close(STDERR);
 	open(STDOUT, ">> $config{log_file}") || logger("Can't write to LOG: $!");
 	open(STDERR, ">> $config{log_file}") || logger("Can't write to LOG: $!");
-	logger("$myself: reopening log file.");
+	logger("$myself: opening a new log file.");
 
 	# create the HTTPd logfile
 	open(OUT, "> " . $config{httpd_builtin}->{log_file});
