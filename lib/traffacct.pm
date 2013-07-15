@@ -338,10 +338,10 @@ sub traffacct_sendreports {
 		$to = $traffacct->{reports}->{default_mail} unless $to;
 
 		# get the monthly graph
-		my $url = "http://127.0.0.1" . $base_cgi . "/monitorix.cgi?mode=traffacct.$n&graph=all&when=1month&color=&silent=imagetagbig";
+		my $url = $traffacct->{reports}->{url_prefix} . $base_cgi . "/monitorix.cgi?mode=traffacct.$n&graph=all&when=1month&color=&silent=imagetagbig";
 		my $ua = LWP::UserAgent->new(timeout => 30);
 		$ua->request(HTTP::Request->new('GET', $url));
-		$url = "http://127.0.0.1" . $base_url . "/" . $imgs_dir . "traffacct" . $n . ".1month.png";
+		$url = $traffacct->{reports}->{url_prefix} . $base_url . "/" . $imgs_dir . "traffacct" . $n . ".1month.png";
 		my $image = $ua->request(HTTP::Request->new('GET', $url));
 		if(!$image->is_success) {
 			logger("$myself: ERROR: Unable to connect to '$url'.");
