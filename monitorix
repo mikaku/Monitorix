@@ -428,11 +428,11 @@ if(open(OUT, "> " . $config{base_dir} . "/cgi/monitorix.conf.path")) {
 flush_accounting_rules(\%config, $options{d});
 
 logger("Initializing graphs.") unless !$options{d};
-foreach (split(',', $config{graph_name} . ", traffacct, emailreports")) {
+foreach (split(',', $config{graph_name} . ", traffacct")) {
 	my $g = trim($_);
 	my $e = "n";
 
-	if($g eq "traffacct" || $g eq "emailreports") {
+	if($g eq "traffacct") {
 		$e = lc($config{$g}->{enabled});
 	} else {
 		$e = lc($config{graph_enable}->{$g});
