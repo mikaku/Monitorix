@@ -536,6 +536,12 @@ while(1) {
 			# at 00:00h
 			if($min == 0 && $hour == 0) {
 
+				eval "use emailreports qw(emailreports_send)";
+				if($@) {
+					logger("WARNING: unable to find module 'emailreports'");
+					next;
+				}
+
 				# daily
 				if(lc($emailreports->{daily}->{enabled}) eq "y") {
 					eval { emailreports::emailreports_send(\%config, "daily", "1day", $d); };
