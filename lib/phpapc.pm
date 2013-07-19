@@ -143,7 +143,7 @@ sub phpapc_update {
 		my ($used) = ($data =~ m/<\/span>Used:\s+.*?\((\d+\.\d+)%\)<\/td>/);
 		my ($missed) = ($data =~ m/<\/span>Misses:\s+.*?\((\d+\.\d+)%\)<\/td>/);
 
-		my ($cachf, $cachs, $cache_suffix) = ($data =~ m/<h2>File Cache Information<\/h2>.*?Cached Files<\/td><td>(\d+)\s+\(\s+(\d+\.\d+)\s+(\S+Bytes)\)/);
+		my ($cachf, $cachs, $cache_suffix) = ($data =~ m/<h2>File Cache Information<\/h2>.*?Cached Files<\/td><td>(\d+)\s+\(\s*(\d+\.\d+)\s+(\S+Bytes)\)/);
 		my $str = $e . "cachf";
 		my $cachfps = $cachf - ($config->{phpapc}->{$str} || 0);
 		$cachfps = 0 unless $cachfps != $cachf;
