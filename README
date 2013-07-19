@@ -119,7 +119,7 @@ README.OpenBSD              /usr/share/doc/		documentation
 README.NetBSD               /usr/share/doc/		documentation
 man/man5/monitorix.conf.5   /usr/share/man/man5/	monitorix.conf manpage
 man/man8/monitorix.8        /usr/share/man/man8/	monitorix manpage
-reports/*.html              <base_lib>/reports/		monthly reports i18n
+reports/*.html              <base_lib>/reports/		traffacct reports i18n
 
 
 Once succesfully installed, please take a look into the configuration file to
