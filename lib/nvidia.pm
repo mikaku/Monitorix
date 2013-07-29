@@ -207,6 +207,7 @@ sub nvidia_cgi {
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
+	my $zoom = "--zoom=" . $config->{global_zoom};
 
 	my $u = "";
 	my $width;
@@ -388,6 +389,7 @@ sub nvidia_cgi {
 		"--width=$width",
 		"--height=$height",
 		"--lower-limit=0",
+		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
 		"DEF:temp0=$rrd:nvidia_temp0:AVERAGE",
@@ -502,6 +504,7 @@ sub nvidia_cgi {
 		"--upper-limit=100",
 		"--lower-limit=0",
 		"--rigid",
+		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
@@ -616,6 +619,7 @@ sub nvidia_cgi {
 		"--lower-limit=0",
 		"--rigid",
 		@{$cgi->{version12}},
+		$zoom,
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
 		"DEF:mem0=$rrd:nvidia_mem0:AVERAGE",

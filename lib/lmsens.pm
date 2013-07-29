@@ -303,6 +303,7 @@ sub lmsens_cgi {
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
+	my $zoom = "--zoom=" . $config->{global_zoom};
 
 	my $u = "";
 	my $width;
@@ -611,6 +612,7 @@ sub lmsens_cgi {
 		"--width=$width",
 		"--height=$height",
 		"--lower-limit=0",
+		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
 		"DEF:core0=$rrd:lmsens_core0:AVERAGE",
@@ -770,6 +772,7 @@ sub lmsens_cgi {
 		"--vertical-label=Volts",
 		"--width=$width",
 		"--height=$height",
+		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
 		"DEF:volt0=$rrd:lmsens_volt0:AVERAGE",
@@ -888,6 +891,7 @@ sub lmsens_cgi {
 		"--width=$width",
 		"--height=$height",
 		"--lower-limit=0",
+		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
@@ -986,6 +990,7 @@ sub lmsens_cgi {
 		"--width=$width",
 		"--height=$height",
 		"--lower-limit=0",
+		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
@@ -1113,6 +1118,7 @@ sub lmsens_cgi {
 		"--width=$width",
 		"--height=$height",
 		"--lower-limit=0",
+		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},

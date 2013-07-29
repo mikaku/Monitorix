@@ -195,6 +195,7 @@ sub icecast_cgi {
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
+	my $zoom = "--zoom=" . $config->{global_zoom};
 
 	my $u = "";
 	my $width;
@@ -409,6 +410,7 @@ sub icecast_cgi {
 			"--height=$height",
 			@riglim,
 			"--lower-limit=0",
+			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:ice" . $e . "_mp0=$rrd:icecast" . $e . "_mp0_ls:AVERAGE",
@@ -512,6 +514,7 @@ sub icecast_cgi {
 			"--height=$height",
 			@riglim,
 			"--lower-limit=0",
+			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:ice" . $e . "_mp0=$rrd:icecast" . $e . "_mp0_br:AVERAGE",

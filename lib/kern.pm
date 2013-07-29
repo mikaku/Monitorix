@@ -353,6 +353,7 @@ sub kern_cgi {
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
+	my $zoom = "--zoom=" . $config->{global_zoom};
 
 	my $u = "";
 	my $width;
@@ -669,6 +670,7 @@ sub kern_cgi {
 		"--height=$height",
 		@riglim,
 		"--lower-limit=0",
+		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
 		"DEF:user=$rrd:kern_user:AVERAGE",
@@ -771,6 +773,7 @@ sub kern_cgi {
 		"--width=$width",
 		"--height=$height",
 		"--lower-limit=0",
+		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
@@ -863,6 +866,7 @@ sub kern_cgi {
 		"--upper-limit=100",
 		"--lower-limit=0",
 		"--rigid",
+		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},

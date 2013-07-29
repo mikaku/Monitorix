@@ -191,6 +191,7 @@ sub fail2ban_cgi {
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
+	my $zoom = "--zoom=" . $config->{global_zoom};
 
 	my $u = "";
 	my $width;
@@ -370,6 +371,7 @@ sub fail2ban_cgi {
 				"--height=$height",
 				@riglim,
 				"--lower-limit=0",
+				$zoom,
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},

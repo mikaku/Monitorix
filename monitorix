@@ -473,6 +473,11 @@ if(lc($config{httpd_builtin}->{enabled} eq "y")) {
 	logger("Built-in HTTP server pid is '$config{httpd_pid}'.") if (defined($config{httpd_pid}));
 }
 
+if(!$config{global_zoom}) {
+	logger("WARNING: the 'global_zoom' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
+	$config{global_zoom} = 1;
+}
+
 logger("Ok, done.") unless !$options{d};
 
 while(1) {

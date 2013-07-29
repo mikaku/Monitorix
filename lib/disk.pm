@@ -217,6 +217,7 @@ sub disk_cgi {
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
+	my $zoom = "--zoom=" . $config->{global_zoom};
 
 	my $u = "";
 	my $width;
@@ -427,6 +428,7 @@ sub disk_cgi {
 			"--width=$width",
 			"--height=$height",
 			"--lower-limit=0",
+			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:temp0=$rrd:disk" . $e ."_hd0_temp:AVERAGE",
@@ -531,6 +533,7 @@ sub disk_cgi {
 			"--width=$width",
 			"--height=$height",
 			"--lower-limit=0",
+			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -633,6 +636,7 @@ sub disk_cgi {
 			"--width=$width",
 			"--height=$height",
 			"--lower-limit=0",
+			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},

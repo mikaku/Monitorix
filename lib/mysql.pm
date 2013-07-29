@@ -471,6 +471,7 @@ sub mysql_cgi {
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
+	my $zoom = "--zoom=" . $config->{global_zoom};
 
 	my $u = "";
 	my $width;
@@ -705,6 +706,7 @@ sub mysql_cgi {
 			"--height=$height",
 			@riglim,
 			"--lower-limit=0",
+			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:com_select=$rrd:mysql" . $e . "_csel:AVERAGE",
@@ -841,6 +843,7 @@ sub mysql_cgi {
 			"--height=$height",
 			@riglim,
 			"--lower-limit=0",
+			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:tcache_hit_r=$rrd:mysql" . $e . "_tchr:AVERAGE",
@@ -945,6 +948,7 @@ sub mysql_cgi {
 			"--height=$height",
 			@riglim,
 			"--lower-limit=0",
+			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -1037,6 +1041,7 @@ sub mysql_cgi {
 			"--height=$height",
 			@riglim,
 			"--lower-limit=0",
+			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -1134,6 +1139,7 @@ sub mysql_cgi {
 			"--height=$height",
 			@riglim,
 			"--lower-limit=0",
+			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -1236,6 +1242,7 @@ sub mysql_cgi {
 			"--height=$height",
 			@riglim,
 			"--lower-limit=0",
+			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},

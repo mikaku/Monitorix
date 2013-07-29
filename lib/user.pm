@@ -138,6 +138,7 @@ sub user_cgi {
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
+	my $zoom = "--zoom=" . $config->{global_zoom};
 
 	my $u = "";
 	my $width;
@@ -263,6 +264,7 @@ sub user_cgi {
 		"--height=$height",
 		@riglim,
 		"--lower-limit=0",
+		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
 		"DEF:sys=$rrd:user_sys:AVERAGE",
@@ -352,6 +354,7 @@ sub user_cgi {
 		"--height=$height",
 		@riglim,
 		"--lower-limit=0",
+		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
@@ -435,6 +438,7 @@ sub user_cgi {
 		"--height=$height",
 		@riglim,
 		"--lower-limit=0",
+		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
