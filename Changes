@@ -21,6 +21,7 @@
 - Add a check during the initialization of the 'nfsc' graph, to test if there
   is the '/proc/net/rpc/nfs' file.
 - Added the option 'url_prefix' in the 'traffacct' graph.
+- Added the option 'global_zoom' to all graphs.
 - Fixed a bug that prevented from seeing stats in the 'nfss' graph.
 - Fixed in 'nginx' graph the name of the iptables rules which prevented working
   the network traffic graph. [#22]
