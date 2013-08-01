@@ -37,6 +37,7 @@ sub nvidia_init {
 		logger("$myself: unable to execute 'nvidia-smi'. $!");
 		return;
 	}
+	close(IN);
 
 	if(!(-e $rrd)) {
 		logger("Creating '$rrd' file.");
