@@ -809,7 +809,7 @@ Default value: \fI/path/to/script.sh\fP
 .SS Network traffic and usage (net.rrd)
 .BI list
 .RS
-This is the list of network interfaces that you may want to monitor. An example would be:
+This is a comma-separated list of network interfaces that you may want to monitor. An example would be:
 .P
 .RS
 list = eth0, eth1
@@ -1047,7 +1047,7 @@ This graph is able to monitor an unlimited number of local and remote Apache web
 .P
 .BI list
 .RS
-This is a list of URLs of the monitored Apache web servers.
+This is a comma-separated list of URLs of the monitored Apache web servers.
 .P
 WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIapache.rrd\fP file accordingly, removing all historical data.
 .P
@@ -1078,7 +1078,7 @@ This graph is able to monitor an unlimited number of local and remote Lighttpd w
 .P
 .BI list
 .RS
-This is a list of URLs of the monitored Lighttpd web servers.
+This is a comma-separated list of URLs of the monitored Lighttpd web servers.
 .P
 WARNING: Every time the number of entries of this option changes, Monitorix will resize the \fIlighttpd.rrd\fP file accordingly, removing all historical data.
 .P
@@ -1115,7 +1115,7 @@ Default value: \fIhost\fP
 .P
 .BI list
 .RS
-This is the list of hostnames or path to sockets of MySQL servers.
+This is a comma-separated list of hostnames or path to sockets of MySQL servers.
 .P
 WARNING: Every time the number of entries of this option change Monitorix will resize the \fImysql.rrd\fP file accordingly, removing all historical data.
 .P
@@ -1298,7 +1298,7 @@ This graph is able to monitor an unlimited number of BIND servers.
 .P
 .BI list
 .RS
-This is a list of URLs of BIND servers status pages.
+This is a comma-separated list of URLs of BIND servers status pages.
 .P
 WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIbind.rrd\fP file accordingly, removing all historical data.
 .P
@@ -1307,7 +1307,7 @@ Default value: \fIhttp://localhost:8053/\fP
 .P
 .BI in_queries_list
 .RS
-This is a list of RR (Resource Records) types for each BIND server specified in \fBlist\fP option. The RR types defined here will appear in the Incoming Queries graph which shows the number of incoming queries for each RR type.
+This is a comma-separated list of RR (Resource Records) types for each BIND server specified in \fBlist\fP option. The RR types defined here will appear in the Incoming Queries graph which shows the number of incoming queries for each RR type.
 .P
 For a complete list of RR types check the BIND 9 Administrator Reference Manual at <http://ftp.isc.org/www/bind/arm95/Bv9ARM.html>.
 .P
@@ -1322,7 +1322,7 @@ The maximum number of RR types allowed for this graph is 20.
 .P
 .BI out_queries_list
 .RS
-This is a list of RR (Resource Records) types for each BIND server. The RR types defined here will appear in the Outgoing Queries graph (_default view) which shows the number of outgoing queries sent by the DNS server resolver for each RR type.
+This is a comma-separated list of RR (Resource Records) types for each BIND server. The RR types defined here will appear in the Outgoing Queries graph (_default view) which shows the number of outgoing queries sent by the DNS server resolver for each RR type.
 .P
 <out_queries_list>
 .br
@@ -1335,7 +1335,7 @@ The maximum number of RR types allowed for this graph is 20.
 .P
 .BI server_stats_list
 .RS
-This is a list of counters about incoming request processing. The counters defined here will appear in the Server Statistics graph.
+This is a comma-separated list of counters about incoming request processing. The counters defined here will appear in the Server Statistics graph.
 .P
 <server_stats_list>
 .br
@@ -1348,7 +1348,7 @@ The maximum number of counters allowed for this graph is 20.
 .P
 .BI resolver_stats_list
 .RS
-This is a list of counters about name resolution performed in the internal resolver. The counters defined here will appear in the Resolver Statistics graph (_default view).
+This is a comma-separated list of counters about name resolution performed in the internal resolver. The counters defined here will appear in the Resolver Statistics graph (_default view).
 .P
 <resolver_stats_list>
 .br
@@ -1361,7 +1361,7 @@ The maximum number of counters allowed for this graph is 20.
 .P
 .BI cache_rrsets_list
 .RS
-This is a list of RR (Resource Records) types for each BIND server. The RR types defined here will appear in the Cache DB RRsets graph (_default view) which shows the number of RRsets per RR type (positive or negative) and nonexistent names stored in the cache database.
+This is a comma-separated list of RR (Resource Records) types for each BIND server. The RR types defined here will appear in the Cache DB RRsets graph (_default view) which shows the number of RRsets per RR type (positive or negative) and nonexistent names stored in the cache database.
 .P
 <cache_rrsets_list>
 .br
@@ -1376,7 +1376,7 @@ This graph is able to monitor an unlimited number of NTP servers.
 .P
 .BI list
 .RS
-This is a list of NTP servers.
+This is a comma-separated list of NTP servers.
 .P
 WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIntp.rrd\fP file accordingly, removing all historical data.
 .P
@@ -1406,7 +1406,7 @@ This graph is able to monitor an unlimited number of Fail2ban jails.
 .P
 .BI list
 .RS
-This is the list that describes the groups of jails in \fBdesc\fP. Put one description for each group. For every group specified you need to specify its description in the \fBdesc\fP option.
+This is a comma-separated list that describes the groups of jails in \fBdesc\fP. Put one description for each group. For every group specified you need to specify its description in the \fBdesc\fP option.
 .P
 WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIfail2ban.rrd\fP file accordingly, removing all historical data.
 .P
@@ -1450,7 +1450,7 @@ Default value: \fIhttp://localhost:8000/status.xsl\fP
 .P
 .BI desc
 .RS
-This is a list of mountpoints configured for every URL specified in the \fBlist\fP option.
+This is a comma-separated list of mountpoints configured for every URL specified in the \fBlist\fP option.
 .P
 <desc>
 .br
@@ -1481,7 +1481,7 @@ Default value: \fI/opt/vc/bin/vcgencmd\fP
 .P
 .BI clocks
 .RS
-This is the list of clock types that will be represented in the first graph.
+This is a comma-separated list of clock types that will be represented in the first graph.
 .P
 An example would be:
 .P
@@ -1492,7 +1492,7 @@ The maximum number of clocks allowed is 9.
 .P
 .BI volts
 .RS
-This is the list of voltage types that will be represented in the third graph.
+This is a comma-separated list of voltage types that will be represented in the third graph.
 .P
 An example would be:
 .P
@@ -1500,12 +1500,23 @@ volts = core, sdram_c, sdram_i, sdram_p
 .P
 The maximum number of clocks allowed is 6.
 .RE
+.SS Alternative PHP Cache statistics (phpapc.rrd)
+This graph is able to monitor an unlimited number of PHP-APC installations.
+.P
+.BI list
+.RS
+This is a comma-separated list of URLs of PHP-APC status pages.
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIphpapc.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fIhttp://localhost/apc.php?auto\fP
+.RE
 .SS Wowza Media Server (wowza.rrd)
 This graph is able to monitor an unlimited number of Wowza servers.
 .P
 .BI list
 .RS
-This is a list of URLs of Wowza server status pages.
+This is a comma-separated list of URLs of Wowza server status pages.
 .P
 WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIwowza.rrd\fP file accordingly, removing all historical data.
 .P
@@ -1514,7 +1525,7 @@ Default value: \fIhttp://localhost:8086/connectioncounts\fP
 .P
 .BI desc
 .RS
-This is a list of applications configured for every URL specified in the \fBlist\fP option.
+This is a comma-separated list of applications configured for every URL specified in the \fBlist\fP option.
 .P
 <desc>
 .br
@@ -1556,7 +1567,7 @@ Default value: \fI2\fP
 .P
 .BI list
 .RS
-This is the list of names of PCs, LAN devices or whole networks that you want to monitor. The only requirement is that all they must utilize this server as their gateway.
+This is a comma-separated list of names of PCs, LAN devices or whole networks that you want to monitor. The only requirement is that all they must utilize this server as their gateway.
 .P
 If the names in this list are able to be resolved by a DNS query then you don't need to define the \fBdesc\fP list (below) with corresponding IP addresses, unless you want monthly reports.
 .P
@@ -1657,7 +1668,7 @@ Default value: \fI2\fP
 .P
 .BI remotehost_list
 .RS
-This is a list with descriptive names of remote servers with Monitorix already installed and working that you plan to monitor from here.
+This is a comma-separated list with descriptive names of remote servers with Monitorix already installed and working that you plan to monitor from here.
 .P
 An example of this list would be:
 .P
