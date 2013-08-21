@@ -1,3 +1,11 @@
+3.N.N  - NN-XXX-2013
+====================
+- Fixed error messages about use of uninitialized values in 'system' graph on
+  BSD systems.
+- Fixed error messages about not numeric argument in addition in 'fs' graph on
+  BSD systems.
+
+
 3.3.1  - 21-Nov-2013
 ====================
 - Fixed to correctly sanitize the input string in the built-in HTTP server

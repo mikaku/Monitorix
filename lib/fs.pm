@@ -455,8 +455,8 @@ sub fs_update {
 				} elsif($config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
 					@tmp = split(' ', `iostat -DI | tail -1`);
 					($read_cnt, $read_sec) = @tmp;
-					$write_cnt = "";
-					$write_sec = "";
+					$write_cnt = 0;
+					$write_sec = 0;
 					chomp($read_sec);
 					$read_sec = int($read_sec);
 				}
