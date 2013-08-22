@@ -40,6 +40,7 @@ sub emailreports_send {
 
 	logger("$myself: sending $report reports.");
 
+	my $hostname = $ENV{HOSTNAME} ? $ENV{HOSTNAME} : `hostname`;
 	my $html = <<"EOF";
 <html>
   <body bgcolor='FFFFFF' vlink='#888888' link='#888888'>
@@ -52,7 +53,7 @@ sub emailreports_send {
   </td>
   <td bgcolor='FFFFFF'>
   <font face='Verdana, sans-serif' color='000000'>
-    <font size='5'><b>&nbsp;&nbsp;$ENV{HOSTNAME}&nbsp;&nbsp;</b></font>
+    <font size='5'><b>&nbsp;&nbsp;$hostname&nbsp;&nbsp;</b></font>
   </font>
   </td>
   <td bgcolor='777777'>
