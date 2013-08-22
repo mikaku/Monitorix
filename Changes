@@ -4,6 +4,10 @@
   BSD systems.
 - Fixed error messages about not numeric argument in addition in 'fs' graph on
   BSD systems.
+- Fixed in 'emailreports' to use the command line 'hostname' if the variable
+  $ENV{HOSTNAME} is not defined (Debian/Ubuntu and perhaps other systems).
+	(thanks to Skibbi, skibbi AT gmail.com for pointing this out)
+
 
 
 3.3.1  - 21-Nov-2013
