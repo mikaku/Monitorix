@@ -1,5 +1,7 @@
 3.N.N  - NN-XXX-2013
 ====================
+- Added support for different BIND stats versions (2 and 3 right now).
+	(thanks to Ivo Brhel, ivb AT volny.cz)
 - Fixed error messages about use of uninitialized values in 'system' graph on
   BSD systems.
 - Fixed error messages about not numeric argument in addition in 'fs' graph on
