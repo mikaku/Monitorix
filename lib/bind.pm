@@ -259,7 +259,20 @@ sub bind_update {
 		my $data = XMLin($response->content);
 		my $value;
 
-		$value = $data->{bind}->{statistics}->{server}->{requests}->{opcode}->{counter};
+		my ($major, $minor) = split('\.', $data->{bind}->{statistics}->{version});
+		$minor =~ m/^(\d+)/;
+		if(!grep {$_ eq $major} ("2", "3")) {
+			my $version = $major . "." . $minor;
+			logger("$myself: BIND stats version '$version' unsupported.");
+		}
+
+
+		if($major eq "2") {
+			$value = $data->{bind}->{statistics}->{server}->{requests}->{opcode}->{counter};
+		}
+		if($major eq "3") {
+			$value = $data->{server}->{counters}->[0]->{counter}->{QUERY}->{content};
+		}
 		$str = $n . "totalinq";
 		$value = $value || 0;
 		$totalinq = $value - ($config->{bind_hist}->{$str} || 0);
@@ -267,48 +280,109 @@ sub bind_update {
 		$totalinq /= 60;
 		$config->{bind_hist}->{$str} = $value;
 
-		$value = $data->{bind}->{statistics}->{server}->{'queries-in'}->{rdtype};
-		foreach(keys %{$value}) {
-			$str = $n . "inq_$_";
-			$inq{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
-			$inq{$str} = 0 unless $inq{$str} != $value->{$_}->{counter};
-			$inq{$str} /= 60;
-			$config->{bind_hist}->{$str} = $value->{$_}->{counter};
+
+		if($major eq "2") {
+			$value = $data->{bind}->{statistics}->{server}->{'queries-in'}->{rdtype};
+			foreach(keys %{$value}) {
+				$str = $n . "inq_$_";
+				$inq{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
+				$inq{$str} = 0 unless $inq{$str} != $value->{$_}->{counter};
+				$inq{$str} /= 60;
+				$config->{bind_hist}->{$str} = $value->{$_}->{counter};
+			}
+		}
+		if($major eq "3") {
+			$value = $data->{server}->{counters}->[1]->{counter} ;
+			foreach(keys %{$value}) {
+				$str = $n . "inq_$_";
+				$inq{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
+				$inq{$str} = 0 unless $inq{$str} != $value->{$_}->{content};
+				$inq{$str} /= 60;
+				$config->{bind_hist}->{$str} = $value->{$_}->{content};
+			}
 		}
 
-		my $views_default = $data->{bind}->{statistics}->{views}->{view}->{_default};
-		$value = $views_default->{rdtype};
-		foreach(keys %{$value}) {
-			$str = $n . "ouq_$_";
-			$ouq{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
-			$ouq{$str} = 0 unless $ouq{$str} != $value->{$_}->{counter};
-			$ouq{$str} /= 60;
-			$config->{bind_hist}->{$str} = $value->{$_}->{counter};
+
+		my $views_default;
+		if($major eq "2") {
+			$views_default = $data->{bind}->{statistics}->{views}->{view}->{_default};
+			$value = $views_default->{rdtype};
+			foreach(keys %{$value}) {
+				$str = $n . "ouq_$_";
+				$ouq{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
+				$ouq{$str} = 0 unless $ouq{$str} != $value->{$_}->{counter};
+				$ouq{$str} /= 60;
+				$config->{bind_hist}->{$str} = $value->{$_}->{counter};
+			}
+		}
+		if($major eq "3") {
+			$views_default = $data->{views}->{view}->{_default}->{counters};
+			$value = $views_default->[0]->{counter};
+			foreach(keys %{$value}) {
+				$str = $n . "ouq_$_";
+				$ouq{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
+				$ouq{$str} = 0 unless $ouq{$str} != $value->{$_}->{content};
+				$ouq{$str} /= 60;
+				$config->{bind_hist}->{$str} = $value->{$_}->{content};
+			}
 		}
 
-		$value = $data->{bind}->{statistics}->{server}->{nsstat};
-		foreach(keys %{$value}) {
-			$str = $n . "ss_$_";
-			$ss{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
-			$ss{$str} = 0 unless $ss{$str} != $value->{$_}->{counter};
-			$ss{$str} /= 60;
-			$config->{bind_hist}->{$str} = $value->{$_}->{counter};
+
+		if($major eq "2") {
+			$value = $data->{bind}->{statistics}->{server}->{nsstat};
+			foreach(keys %{$value}) {
+				$str = $n . "ss_$_";
+				$ss{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
+				$ss{$str} = 0 unless $ss{$str} != $value->{$_}->{counter};
+				$ss{$str} /= 60;
+				$config->{bind_hist}->{$str} = $value->{$_}->{counter};
+			}
+		}
+		if($major eq "3") {
+			$value = $data->{server}->{counters}->[2]->{counter};
+			foreach(keys %{$value}) {
+				$str = $n . "ss_$_";
+				$ss{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
+				$ss{$str} = 0 unless $ss{$str} != $value->{$_}->{content};
+				$ss{$str} /= 60;
+				$config->{bind_hist}->{$str} = $value->{$_}->{content};
+			}
 		}
 
-		$value = $views_default->{resstat};
-		foreach(keys %{$value}) {
-			$str = $n . "rs_$_";
-			$rs{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
-			$rs{$str} = 0 unless $rs{$str} != $value->{$_}->{counter};
-			$rs{$str} /= 60;
-			$config->{bind_hist}->{$str} = $value->{$_}->{counter};
+
+		if($major eq "2") {
+			$value = $views_default->{resstat};
+			foreach(keys %{$value}) {
+				$str = $n . "rs_$_";
+				$rs{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
+				$rs{$str} = 0 unless $rs{$str} != $value->{$_}->{counter};
+				$rs{$str} /= 60;
+				$config->{bind_hist}->{$str} = $value->{$_}->{counter};
+			}
+		}
+		if($major eq "3") {
+			$value = $views_default->[1]->{counter};
+			foreach(keys %{$value}) {
+				$str = $n . "rs_$_";
+				$rs{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
+				$rs{$str} = 0 unless $rs{$str} != $value->{$_}->{content};
+				$rs{$str} /= 60;
+				$config->{bind_hist}->{$str} = $value->{$_}->{content};
+			}
 		}
 
-		$value = $views_default->{cache}->{rrset};
+
+		if($major eq "2") {
+			$value = $views_default->{cache}->{rrset};
+		}
+		if($major eq "3") {
+			$value = $data->{views}->{view}->{_default}->{cache}->{rrset};
+		}
 		foreach(keys %{$value}) {
 			$str = $n . "crr_$_";
 			$crr{$str} = $value->{$_}->{counter};
 		}
+
 
 #		Socket I/O Statistics
 #		$value = $data->{bind}->{statistics}->{server}->{sockstat};
@@ -364,14 +438,26 @@ sub bind_update {
 			$rrdata .= ":";
 			$rrdata .= defined($sio{$str}) ? $sio{$str} : 0;
 		}
-		$value = $data->{bind}->{statistics}->{memory};
+
+		if($major eq "2") {
+			$value = $data->{bind}->{statistics}->{memory};
+		}
+		if($major eq "3") {
+			$value = $data->{memory};
+		}
 		$rrdata .= ":" . $value->{summary}->{TotalUse};
 		$rrdata .= ":" . $value->{summary}->{InUse};
 		$rrdata .= ":" . $value->{summary}->{BlockSize};
 		$rrdata .= ":" . $value->{summary}->{ContextSize};
 		$rrdata .= ":" . $value->{summary}->{Lost};
 		$rrdata .= ":0:0:0";
-		$value = $data->{bind}->{statistics}->{taskmgr};
+
+		if($major eq "2") {
+			$value = $data->{bind}->{statistics}->{taskmgr};
+		}
+		if($major eq "3") {
+			$value = $data->{taskmgr};
+		}
 		$rrdata .= ":" . $value->{'thread-model'}->{'worker-threads'};
 		$rrdata .= ":" . $value->{'thread-model'}->{'default-quantum'};
 		$rrdata .= ":" . $value->{'thread-model'}->{'tasks-running'};
