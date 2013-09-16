@@ -135,6 +135,20 @@ sub disk_init {
 		}
 	}
 
+	# check dependencies
+	if(lc($disk->{alerts}->{realloc_enabled}) eq "y") {
+		if(! -x $disk->{alerts}->{realloc_script}) {
+			logger("$myself: ERROR: script '$disk->{alerts}->{realloc_script}' doesn't exist or don't has execution permissions.");
+		}
+	}
+	if(lc($disk->{alerts}->{pendsect_enabled}) eq "y") {
+		if(! -x $disk->{alerts}->{pendsect_script}) {
+			logger("$myself: ERROR: script '$disk->{alerts}->{pendsect_script}' doesn't exist or don't has execution permissions.");
+		}
+	}
+
+	$config->{disk_hist_alert1} = ();
+	$config->{disk_hist_alert2} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
 }
@@ -200,6 +214,34 @@ sub disk_update {
 			$rrdata .= ":$temp";
 			$rrdata .= ":$smart1";
 			$rrdata .= ":$smart2";
+
+			# DISK alert
+			if(lc($disk->{alerts}->{realloc_enabled}) eq "y") {
+				$config->{disk_hist_alert1}->{$n} = 0
+					if(!$config->{disk_hist_alert1}->{$n});
+				if($smart1 >= $disk->{alerts}->{realloc_threshold} && $config->{disk_hist_alert1}->{$n} < $smart1) {
+					if(-x $disk->{alerts}->{realloc_script}) {
+						logger("$myself: ALERT: executing script '$disk->{alerts}->{realloc_script}'.");
+						system($disk->{alerts}->{realloc_script} . " " .$disk->{alerts}->{realloc_timeintvl} . " " . $disk->{alerts}->{realloc_threshold} . " " . $smart1);
+					} else {
+						logger("$myself: ERROR: script '$disk->{alerts}->{realloc_script}' doesn't exist or don't has execution permissions.");
+					}
+					$config->{disk_hist_alert1}->{$n} = $smart1;
+				}
+			}
+			if(lc($disk->{alerts}->{pendsect_enabled}) eq "y") {
+				$config->{disk_hist_alert2}->{$n} = 0
+					if(!$config->{disk_hist_alert2}->{$n});
+				if($smart2 >= $disk->{alerts}->{pendsect_threshold} && $config->{disk_hist_alert2}->{$n} < $smart2) {
+					if(-x $disk->{alerts}->{pendsect_script}) {
+						logger("$myself: ALERT: executing script '$disk->{alerts}->{pendsect_script}'.");
+						system($disk->{alerts}->{pendsect_script} . " " .$disk->{alerts}->{pendsect_timeintvl} . " " . $disk->{alerts}->{pendsect_threshold} . " " . $smart2);
+					} else {
+						logger("$myself: ERROR: script '$disk->{alerts}->{pendsect_script}' doesn't exist or don't has execution permissions.");
+					}
+					$config->{disk_hist_alert2}->{$n} = $smart2;
+				}
+			}
 		}
 	}
 
