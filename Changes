@@ -12,6 +12,8 @@
 - Fixed in 'emailreports' to use the command line 'hostname' if the variable
   $ENV{HOSTNAME} is not defined (Debian/Ubuntu and perhaps other systems).
 	(thanks to Skibbi, skibbi AT gmail.com for pointing this out)
+- Fixed the error message 'String ends after the = sign on CDEF:allvalues=' in
+  the 'int' graph (the Interrupts graph is pending to have a complete rewrite).
 
 
 
