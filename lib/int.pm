@@ -1010,7 +1010,8 @@ sub int_cgi {
 	}
 	push(@AREA1, ("COMMENT: \\n"));
 	pop(@allsigns1);
-	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues1, @allsigns1));
+	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues1, @allsigns1))
+		if(scalar(@allvalues1));
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@AREA1, "AREA:wrongdata#$colors->{gap}:");
 		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
@@ -1087,7 +1088,8 @@ sub int_cgi {
 		}
 	}
 	pop(@allsigns2);
-	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues2, @allsigns2));
+	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues2, @allsigns2))
+		if(scalar(@allvalues2));
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@AREA2, "AREA:wrongdata#$colors->{gap}:");
 		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
@@ -1161,7 +1163,8 @@ sub int_cgi {
 		}
 	}
 	pop(@allsigns3);
-	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues3, @allsigns3));
+	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues3, @allsigns3))
+		if(scalar(@allvalues3));
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@AREA3, "AREA:wrongdata#$colors->{gap}:");
 		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
