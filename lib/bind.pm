@@ -261,11 +261,10 @@ sub bind_update {
 
 		# BIND v9.9+ has different statistics layout than BIND v9.5+,
 		# so attempt first to get stats from a BIND v9.9+
-		if(!($value = $data->{version})) {
+		if(!($value = $data->{'statistics version'})) {
 			# otherwise attempt it on a BIND v9.5+
 			$value = $data->{bind}->{statistics}->{version};
 		}
-
 		my ($major, $minor) = split('\.', $value);
 		$minor =~ m/^(\d+)/;
 		if(!grep {$_ eq $major} ("2", "3")) {
