@@ -259,9 +259,9 @@ sub bind_update {
 		my $data = XMLin($response->content);
 		my $value;
 
-		# BIND v9.9+ has different statistics layout than BIND v9.5+
-		# attempt first to get stats from a BIND v9.9+
-		if(!($value = $data->{statistics}->{version})) {
+		# BIND v9.9+ has different statistics layout than BIND v9.5+,
+		# so attempt first to get stats from a BIND v9.9+
+		if(!($value = $data->{version})) {
 			# otherwise attempt it on a BIND v9.5+
 			$value = $data->{bind}->{statistics}->{version};
 		}
@@ -302,7 +302,7 @@ sub bind_update {
 			$value = $data->{server}->{counters}->[1]->{counter} ;
 			foreach(keys %{$value}) {
 				$str = $n . "inq_$_";
-				$inq{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
+				$inq{$str} = $value->{$_}->{content} - ($config->{bind_hist}->{$str} || 0);
 				$inq{$str} = 0 unless $inq{$str} != $value->{$_}->{content};
 				$inq{$str} /= 60;
 				$config->{bind_hist}->{$str} = $value->{$_}->{content};
@@ -327,7 +327,7 @@ sub bind_update {
 			$value = $views_default->[0]->{counter};
 			foreach(keys %{$value}) {
 				$str = $n . "ouq_$_";
-				$ouq{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
+				$ouq{$str} = $value->{$_}->{content} - ($config->{bind_hist}->{$str} || 0);
 				$ouq{$str} = 0 unless $ouq{$str} != $value->{$_}->{content};
 				$ouq{$str} /= 60;
 				$config->{bind_hist}->{$str} = $value->{$_}->{content};
@@ -349,7 +349,7 @@ sub bind_update {
 			$value = $data->{server}->{counters}->[2]->{counter};
 			foreach(keys %{$value}) {
 				$str = $n . "ss_$_";
-				$ss{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
+				$ss{$str} = $value->{$_}->{content} - ($config->{bind_hist}->{$str} || 0);
 				$ss{$str} = 0 unless $ss{$str} != $value->{$_}->{content};
 				$ss{$str} /= 60;
 				$config->{bind_hist}->{$str} = $value->{$_}->{content};
@@ -371,7 +371,7 @@ sub bind_update {
 			$value = $views_default->[1]->{counter};
 			foreach(keys %{$value}) {
 				$str = $n . "rs_$_";
-				$rs{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
+				$rs{$str} = $value->{$_}->{content} - ($config->{bind_hist}->{$str} || 0);
 				$rs{$str} = 0 unless $rs{$str} != $value->{$_}->{content};
 				$rs{$str} /= 60;
 				$config->{bind_hist}->{$str} = $value->{$_}->{content};
