@@ -808,6 +808,10 @@ sub int_cgi {
 				if(/\s+1:/) {
 					$i8042_pos = index($_, "i8042", 0);
 				}
+				# Assuming int 3 will be only for "BCM2708 Timer Tick" (on Raspberry Pi)
+				if(/\s+3:/ && !$timer_pos) {
+					$timer_pos = index($_, "BCM2708 Timer Tick", 0);
+				}
 				$timer_pos = $timer_pos == 0 ? 999 : $timer_pos;
 				$i8042_pos = $i8042_pos == -1 ? 0 : $i8042_pos;
 				$good_pos = $timer_pos > $i8042_pos ? $i8042_pos : $timer_pos;
@@ -981,7 +985,7 @@ sub int_cgi {
 			} else {
 				($i) = split(',', $INT[$n]);
 			}
-			if($i < 3 || $NAME[$n] =~ /timer/) {
+			if($i < 3 || $NAME[$n] =~ /timer/i) {
 				push(@DEF2, ("DEF:int" . $n . "=" . $rrd . ":int_" . $n . ":AVERAGE"));
 				push(@AREA2, ("AREA:int" . $n . $ACOLOR2[$n2] . ":(" . $INT[$n] . ")" . $NAME[$n]));
 				push(@LINE2, ("LINE1:int" . $n . $LCOLOR2[$n2]));
