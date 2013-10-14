@@ -33,6 +33,11 @@ sub disk_init {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $disk = $config->{disk};
 
+	my $info;
+	my @ds;
+	my @tmp;
+	my $n;
+
 	foreach my $k (sort keys %{$disk->{list}}) {
 		# values delimitted by ", " (comma + space)
 		my @dsk = split(', ', $disk->{list}->{$k});
@@ -52,11 +57,6 @@ sub disk_init {
 		}
 	}
 
-	my $info;
-	my @ds;
-	my @tmp;
-	my $n;
-
 	if(-e $rrd) {
 		$info = RRDs::info($rrd);
 		for my $key (keys %$info) {
@@ -67,7 +67,7 @@ sub disk_init {
 			}
 		}
 		if(scalar(@ds) / 24 != keys(%{$disk->{list}})) {
-			logger("Detected size mismatch between <list>...</list> (" . keys(%{$disk->{list}}) . ") and $rrd (" . scalar(@ds) / 24 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
+			logger("$myself: Detected size mismatch between <list>...</list> (" . keys(%{$disk->{list}}) . ") and $rrd (" . scalar(@ds) / 24 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 	}
