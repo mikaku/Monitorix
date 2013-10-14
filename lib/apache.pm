@@ -75,14 +75,13 @@ sub apache_init {
 	}
 
 	if(!(-e $rrd)) {
+		logger("Creating '$rrd' file.");
 		for($n = 1; $n <= $config->{max_historic_years}; $n++) {
 			push(@average, "RRA:AVERAGE:0.5:1440:" . (365 * $n));
 			push(@min, "RRA:MIN:0.5:1440:" . (365 * $n));
 			push(@max, "RRA:MAX:0.5:1440:" . (365 * $n));
 			push(@last, "RRA:LAST:0.5:1440:" . (365 * $n));
 		}
-
-		logger("Creating '$rrd' file.");
 		for($n = 0; $n < scalar(my @al = split(',', $apache->{list})); $n++) {
 			push(@tmp, "DS:apache" . $n . "_acc:GAUGE:120:0:U");
 			push(@tmp, "DS:apache" . $n . "_kb:GAUGE:120:0:U");
