@@ -477,6 +477,10 @@ if(!$config{global_zoom}) {
 	logger("WARNING: the 'global_zoom' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
 	$config{global_zoom} = 1;
 }
+if(!$config{max_historic_years} || $config{max_historic_years} > 5) {
+	logger("WARNING: the 'max_historic_years' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
+	$config{max_historic_years} = 1;
+}
 
 logger("Ok, done.") unless !$options{d};
 
