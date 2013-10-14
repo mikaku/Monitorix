@@ -5,6 +5,10 @@
 - Added two new alerts in the 'disk' graph in order to know if a disk drive has
   exceeded or reached a threshold for reallocated and pending sectors.
 	(suggested by Matthew Connelly, maff AT maff.im)
+- Added a new option called 'max_historic_years' (with a default value of 1),
+  which enables the ability to have up to 5 years of data. Beware with this
+  option because it generates a new '.rrd' file every time is changed, losing
+  the current historical data.
 - Fixed error messages about use of uninitialized values in 'system' graph on
   BSD systems.
 - Fixed error messages about not numeric argument in addition in 'fs' graph on
