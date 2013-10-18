@@ -351,24 +351,16 @@ sub int_update {
 		close(IN);
 	} elsif(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD")) {
 		open(IN, "vmstat -i |");
-		my @allfields;
 		my $num;
 		my $name;
 		my $ticks;
 		$maxints = 0;
 		while(<IN>) {
-			if(/^\D{3}\d+/) {
-				@allfields = split(' ', $_);
-				$num = $allfields[0];
-				$name = $allfields[1];
-				$ticks = $allfields[$#allfields - 1];
+			if(/^\D{3}(\d+)[\:\/]\s*(\S+)\s*?(\d+)/) {
+				$num = $1;
+				$name = $2;
+				$ticks = $3;
 				chomp($ticks);
-				if($name eq "timer") {
-					$num = 0;
-				} else {
-					$num =~ s/^\D{3}//;
-					$num =~ s/://;
-				}
 				$int[$num] += $ticks;
 				$maxints = $maxints < $num ? $num : $maxints;
 			}
@@ -837,21 +829,12 @@ sub int_cgi {
 		close(IN);
 	} elsif(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD")) {
 		open(IN, "vmstat -i | sort |");
-		my @allfields;
 		my $num;
 		my $name;
 		while(<IN>) {
-			if(/^\D{3}\d+/) {
-				@allfields = split(' ', $_);
-				$num = $allfields[0];
-				$name = "";
-				for($n = 1; $n <= $#allfields - 2; $n++) {
-					$name .= $allfields[$n] . " ";
-				}
-				$num =~ s/^\D{3}//;
-				$num =~ s/://;
-				$name =~ s/\s+$//;
-
+			if(/^\D{3}(\d+)[\:\/]\s*(\S+)\s*?(\d+)/) {
+				$num = $1;
+				$name = $2;
 				# only the first timer (cpu0) is covered
 				if($name eq "timer") {
 					if($num != 0) {
