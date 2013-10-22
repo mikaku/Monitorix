@@ -65,11 +65,11 @@ sub apache_init {
 			}
 		}
 		if(scalar(@ds) / 5 != scalar(my @al = split(',', $apache->{list}))) {
-			logger("$myself: Detected size mismatch between 'list' option (" . scalar(my @al = split(',', $apache->{list})) . ") and $rrd (" . scalar(@ds) / 5 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
+			logger("$myself: Detected size mismatch between 'list' (" . scalar(my @al = split(',', $apache->{list})) . ") and $rrd (" . scalar(@ds) / 5 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 		if(scalar(@rra) != 12 + (4 * $config->{max_historic_years})) {
-			logger("$myself: Detected size mismatch between 'max_historic_years' option (" . $config->{max_historic_years} . ") and $rrd (" . ((scalar(@rra) -12) / 4) . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
+			logger("$myself: Detected size mismatch between 'max_historic_years' (" . $config->{max_historic_years} . ") and $rrd (" . ((scalar(@rra) -12) / 4) . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 	}
