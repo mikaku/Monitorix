@@ -61,7 +61,7 @@ sub fs_init {
 			}
 		}
 		if(scalar(@ds) / 24 != keys(%{$fs->{list}})) {
-			logger("Detected size mismatch between <list>...</list> (" . keys(%{$fs->{list}}) . ") and $rrd (" . scalar(@ds) / 24 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
+			logger("$myself: Detected size mismatch between <list>...</list> (" . keys(%{$fs->{list}}) . ") and $rrd (" . scalar(@ds) / 24 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 		if(scalar(@rra) != 12 + (4 * $config->{max_historic_years})) {
