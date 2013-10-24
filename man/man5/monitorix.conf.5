@@ -55,9 +55,9 @@ The interface mode defines the manner in which data is shown in the browser. Sin
 .P
 The possible values are:
 .RS
-\fIgraph\fP  for rendered graphs
+\fIgraph\fP  for rendered graphs.
 .br
-\fItext\fP   for plain text representation
+\fItext\fP   for plain text representation.
 .RE
 .P
 Default value: \fIgraph\fP
@@ -90,9 +90,9 @@ This option toggles between values in Celsius or in Fahrenheit in those graphs t
 .P
 The possible values are:
 .RS
-\fIc\fP  for Celsius
+\fIc\fP  for Celsius.
 .br
-\fIf\fP  for Fahrenheit
+\fIf\fP  for Fahrenheit.
 .RE
 .P
 Default value: \fIc\fP
@@ -123,17 +123,17 @@ Default value: \fI1\fP
 This is the absolute path to the directory where all the web elements are located:
 .P
 .RS
-\fIcgi/\fP              \fBmonitorix.cgi\fP script directory
+\fIcgi/\fP              \fBmonitorix.cgi\fP script directory.
 .br
-\fIimgs/\fP             .png graph images directory
+\fIimgs/\fP             .png graph images directory.
 .br
-\fIindex.html\fP        Monitorix main page
+\fIindex.html\fP        Monitorix main page.
 .br
-\fIlogo_bot.png\fP      Monitorix bottom logo
+\fIlogo_bot.png\fP      Monitorix bottom logo.
 .br
-\fIlogo_top.png\fP      Monitorix top logo
+\fIlogo_top.png\fP      Monitorix top logo.
 .br
-\fImonitorixico.png\fP  Monitorix favicon logo
+\fImonitorixico.png\fP  Monitorix favicon logo.
 .RE
 .P
 Default value: \fI/usr/share/monitorix/\fP
@@ -146,11 +146,11 @@ Default value: \fI/usr/share/monitorix/\fP
 This is the absolute path to the directory where all of the monthly reports, daily traffic usage, and RRD files are located:
 .P
 .RS
-\fIreports/\fP          monthly reports localization directory
+\fIreports/\fP          monthly reports localization directory.
 .br
-\fIusage/\fP            daily traffic usage data directory
+\fIusage/\fP            daily traffic usage data directory.
 .br
-\fI*.rrd\fP             RRD files
+\fI*.rrd\fP             RRD files.
 .RE
 .P
 Default value: \fI/var/lib/monitorix/\fP
@@ -407,11 +407,11 @@ This is the full path name of the script that will be executed by this alert.
 .P
 It will receive the following three parameters:
 .P
-1st - the value currently defined in \fBloadavg_timeintvl\fP
+1st - the value currently defined in \fBloadavg_timeintvl\fP.
 .br
-2nd - the value currently defined in \fBloadavg_threshold\fP
+2nd - the value currently defined in \fBloadavg_threshold\fP.
 .br
-3rd - the current 15min CPU load average
+3rd - the current 15min CPU load average.
 .P
 Default value: \fI/path/to/script.sh\fP
 .RE
@@ -449,17 +449,17 @@ This option sets the size of all processors graphs.
 .P
 The possible values are:
 .RS
-\fImain\fP     for 450x150 graphs
+\fImain\fP     for 450x150 graphs.
 .br
-\fImedium\fP   for 325x150 graphs
+\fImedium\fP   for 325x150 graphs.
 .br
-\fImedium2\fP  for 325x70 graphs
+\fImedium2\fP  for 325x70 graphs.
 .br
-\fIsmall\fP    for 200x66 graphs
+\fIsmall\fP    for 200x66 graphs.
 .br
-\fImini\fP     for 183x66 graphs
+\fImini\fP     for 183x66 graphs.
 .br
-\fItiny\fP     for 110x40 graphs
+\fItiny\fP     for 110x40 graphs.
 .RE
 .P
 Default value: \fImedium\fP
@@ -478,11 +478,11 @@ This list will hold the defined temperature sensors for each graph. You must hav
 .P
 Each graph has a limited number of IDs:
 .P
-\fBgraph_0\fP up to 8 IDs
+\fBgraph_0\fP up to 8 IDs.
 .br
-\fBgraph_1\fP up to 6 IDs
+\fBgraph_1\fP up to 6 IDs.
 .br
-\fBgraph_2\fP up to 6 IDs
+\fBgraph_2\fP up to 6 IDs.
 .P
 The following is a configuration example of selected IDs:
 .P
@@ -646,17 +646,17 @@ The last one, \fIgpu0\fP, is set here just in case you have a supported graphics
 This list has the following maximums allowed:
 .P
 .RS
-Up to 16 \fIcore\fP keys (from core0 to core15)
+Up to 16 \fIcore\fP keys (from core0 to core15).
 .br
-Up to 2 \fImb\fP keys (mb0 and mb1)
+Up to 2 \fImb\fP keys (mb0 and mb1).
 .br
-Up to 4 \fIcpu\fP keys (from cpu0 to cpu3)
+Up to 4 \fIcpu\fP keys (from cpu0 to cpu3).
 .br
-Up to 9 \fIfan\fP keys (from fan0 to fan8)
+Up to 9 \fIfan\fP keys (from fan0 to fan8).
 .br
-Up to 12 \fIvolt\fP keys (from volt0 to volt11)
+Up to 12 \fIvolt\fP keys (from volt0 to volt11).
 .br
-Up to 9 \fIgpu\fP keys (from gpu0 to gpu8)
+Up to 9 \fIgpu\fP keys (from gpu0 to gpu8).
 .RE
 .RE
 .SS NVIDIA temperatures and usage (nvidia.rrd)
@@ -700,6 +700,86 @@ If you see good results as above, you can add it to the group 0 like this:
 .RE
 .P
 The maximum number of disk device names allowed per group is 8.
+.RE
+.P
+.BI realloc_enabled
+.RS
+This section enables or disables one of the alert capabilities for this graph; the alert for the number of reallocated sectors in disk. It works as follows:
+.P
+If the number of reallocated sectors in any of the specified disk device names reaches the \fBrealloc_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBrealloc_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI realloc_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fI0\fP
+.RE
+.P
+.BI realloc_threshold
+.RS
+This is the value that needs to be reached or exceeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fI1\fP
+.RE
+.P
+.BI realloc_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBrealloc_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBrealloc_threshold\fP.
+.br
+3rd - the current number of reallocated sectors.
+.P
+Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI pendsect_enabled
+.RS
+This section enables or disables one of the alert capabilities for this graph; the alert for the number of current pending sectors (or bad sectors) in disk. It works as follows:
+.P
+If the number of current pending sectors in any of the specified disk device names reaches the \fBpendsect_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBpendsect_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI pendsect_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fI0\fP
+.RE
+.P
+.BI pendsect_threshold
+.RS
+This is the value that needs to be reached or exceeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fI1\fP
+.RE
+.P
+.BI pendsect_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBpendsect_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBpendsect_threshold\fP.
+.br
+3rd - the current number of pending sectors.
+.P
+Default value: \fI/path/to/script.sh\fP
 .RE
 .P
 .BI accept_invalid_disk
@@ -799,11 +879,11 @@ This is the full path name of the script that will be executed by this alert.
 .P
 It will receive the following three parameters:
 .P
-1st - the value currently defined in \fBrootfs_timeintvl\fP
+1st - the value currently defined in \fBrootfs_timeintvl\fP.
 .br
-2nd - the value currently defined in \fBrootfs_threshold\fP
+2nd - the value currently defined in \fBrootfs_threshold\fP.
 .br
-3rd - the current root filesystem disk usage
+3rd - the current root filesystem disk usage.
 .P
 Default value: \fI/path/to/script.sh\fP
 .RE
@@ -849,9 +929,9 @@ This is where the network interface that acts as the gateway for this server is 
 This option toggles the way the System Services Demand data is represented in the graph. There are two possible values:
 .P
 .RS
-\fIi\fP  for incremental style
+\fIi\fP  for incremental style.
 .br
-\fIl\fP  for load (peaks) style
+\fIl\fP  for load (peaks) style.
 .RE
 .P
 Default value: \fIi\fP
@@ -916,11 +996,11 @@ This is the full path name of the script that will be executed by this alert.
 .P
 It will receive the following three parameters:
 .P
-1st - the value currently defined in \fBdelvd_timeintvl\fP
+1st - the value currently defined in \fBdelvd_timeintvl\fP.
 .br
-2nd - the value currently defined in \fBdelvd_threshold\fP
+2nd - the value currently defined in \fBdelvd_threshold\fP.
 .br
-3rd - the number of delivered messages
+3rd - the number of delivered messages.
 .P
 Default value: \fI/path/to/script.sh\fP
 .RE
@@ -958,11 +1038,11 @@ This is the full path name of the script that will be executed by this alert.
 .P
 It will receive the following three parameters:
 .P
-1st - the value currently defined in \fBmqueued_timeintvl\fP
+1st - the value currently defined in \fBmqueued_timeintvl\fP.
 .br
-2nd - the value currently defined in \fBmqueued_threshold\fP
+2nd - the value currently defined in \fBmqueued_threshold\fP.
 .br
-3rd - the number of messages in the mail queue
+3rd - the number of messages in the mail queue.
 .P
 Default value: \fI/path/to/script.sh\fP
 .RE
@@ -1106,9 +1186,9 @@ NOTE: It is strongly recommended that you restart the MySQL service in order to 
 This option toggles the way how Monitorix establishes the connection with the MySQL server. There are two possible values:
 .P
 .RS
-\fIhost\fP    using the network (hostname and IP address)
+\fIhost\fP    using the network (hostname and IP address).
 .br
-\fIsocket\fP  using a socket file
+\fIsocket\fP  using a socket file.
 .RE
 .P
 Default value: \fIhost\fP
@@ -1224,11 +1304,11 @@ This option specifies which NFS server version is running in the system in order
 .P
 The possible values are:
 .RS
-\fI2\fP  for NFS version 2
+\fI2\fP for NFS v2.
 .br
-\fI3\fP  for NFS version 3
+\fI3\fP for NFS v3.
 .br
-\fI4\fP  for NFS version 4
+\fI4\fP for NFS v4.
 .RE
 .P
 Default value: \fI3\fP
@@ -1252,11 +1332,11 @@ This option specifies which NFS server version is running in the system in order
 .P
 The possible values are:
 .RS
-\fI2\fP  for NFS version 2
+\fI2\fP for NFS v2.
 .br
-\fI3\fP  for NFS version 3
+\fI3\fP for NFS v3.
 .br
-\fI4\fP  for NFS version 4
+\fI4\fP for NFS v4.
 .RE
 .P
 Default value: \fI3\fP
@@ -1276,15 +1356,15 @@ These five lists hold the defined NFS client activity statistics to be shown in 
 .P
 Each graph has the following limit number of entries:
 .P
-\fBgraph_1\fP up to 10 entries
+\fBgraph_1\fP up to 10 entries.
 .br
-\fBgraph_2\fP up to 10 entries
+\fBgraph_2\fP up to 10 entries.
 .br
-\fBgraph_3\fP up to 4 entries
+\fBgraph_3\fP up to 4 entries.
 .br
-\fBgraph_4\fP up to 4 entries
+\fBgraph_4\fP up to 4 entries.
 .br
-\fBgraph_5\fP up to 4 entries
+\fBgraph_5\fP up to 4 entries.
 .RE
 .SS BIND statistics (bind.rrd)
 This graph requires a BIND server with version 9.5 or higher, and in order to see all statistics provided by BIND you must configure the \fIstatistics-channels\fP option like this:
