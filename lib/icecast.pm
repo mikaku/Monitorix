@@ -60,11 +60,11 @@ sub icecast_init {
 			}
 		}
 		if(scalar(@ds) / 36 != scalar(my @il = split(',', $icecast->{list}))) {
-			logger("$myself: Detected size mismatch between 'list' (" . scalar(my @il = split(',', $icecast->{list})) . ") and $rrd (" . scalar(@ds) / 36 . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
+			logger("$myself: Detected size mismatch between 'list' (" . scalar(my @il = split(',', $icecast->{list})) . ") and $rrd (" . scalar(@ds) / 36 . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 		if(scalar(@rra) != 12 + (4 * $config->{max_historic_years})) {
-			logger("$myself: Detected size mismatch between 'max_historic_years' (" . $config->{max_historic_years} . ") and $rrd (" . ((scalar(@rra) -12) / 4) . "). Resizing it accordingly. All historic data will be lost. Backup file created.");
+			logger("$myself: Detected size mismatch between 'max_historic_years' (" . $config->{max_historic_years} . ") and $rrd (" . ((scalar(@rra) -12) / 4) . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 	}
