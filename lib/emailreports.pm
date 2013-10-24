@@ -87,6 +87,12 @@ EOF
 		my $data = $response->content;
 		$data =~ s/\n/@@@/g;
 		(my $graph) = $data =~ m/<!-- graph table begins -->@@@(.*?)<!-- graph table ends -->/;
+
+		if(!$graph) {
+			logger("$myself: unable to retrieve graphs from '$g'. It's enabled?");
+			next;
+		}
+
 		$graph =~ s/@@@/\n/g;
 
 		$graph =~ s/<a href=.*?>//g;
