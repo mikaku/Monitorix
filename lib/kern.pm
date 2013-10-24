@@ -33,7 +33,6 @@ sub kern_init {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 
 	my $info;
-	my @ds;
 	my @rra;
 	my @tmp;
 	my $n;
