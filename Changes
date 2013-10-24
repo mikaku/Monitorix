@@ -11,7 +11,7 @@
   the current historical data.
 	(suggested by Mohan Reddy, Mohan.Reddy AT analog.com)
 - Improved the regexp when collecting data from devices's interrupts which also
-  fixes some annoying messages amb using non-numeric arguments.
+  fixes some annoying messages on using non-numeric arguments.
 - Fixed error messages about use of uninitialized values in 'system' graph on
   BSD systems.
 - Fixed error messages about not numeric argument in addition in 'fs' graph on
@@ -22,7 +22,7 @@
 - Fixed the error message 'String ends after the = sign on CDEF:allvalues=' in
   the 'int' graph (the Interrupts graph is pending to have a complete rewrite).
 - Fixed the interrupt graph in order to be more compatible with Raspberry Pi.
-- Small fixes.
+- Small fixes and typos.
 
 
 
