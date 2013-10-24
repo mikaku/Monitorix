@@ -416,6 +416,7 @@ It will receive the following three parameters:
 Default value: \fI/path/to/script.sh\fP
 .RE
 .SS Global kernel usage (kern.rrd)
+Note that the VFS graph is just informative of how the kernel is balancing its tables.
 .BI graph_mode
 .RS
 This changes the layout of the kernel usage graph, the possible values are \fIr\fP for a real graph, or \fIs\fP for a stacked graph (every line or area is stacked on top of the previous element).
@@ -1468,7 +1469,6 @@ This changes the layout of the listeners graph, the possible values are \fIr\fP 
 Default value: \fIr\fP
 .RE
 .SS Raspberry Pi sensor statistics (raspberrypi.rrd)
-This graph requires to have installed the command \fIvcgencmd\fP that should come with the Raspberry Pi firmware.
 .P
 For more information please refer to http://elinux.org/RPI_vcgencmd_usage.
 .P
