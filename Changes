@@ -7,8 +7,8 @@
 	(suggested by Matthew Connelly, maff AT maff.im)
 - Added a new option called 'max_historic_years' (with a default value of 1),
   which enables the ability to have up to 5 years of data. Beware with this
-  option because it generates a new '.rrd' file every time is changed, losing
-  the current historical data.
+  option because it generates a new '.rrd' file every time the value is
+  extended, losing the current historical data.
 	(suggested by Mohan Reddy, Mohan.Reddy AT analog.com)
 - Improved the regexp when collecting data from devices's interrupts which also
   fixes some annoying messages on using non-numeric arguments.
