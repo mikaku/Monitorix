@@ -67,7 +67,7 @@ sub proc_init {
 			logger("$myself: Detected size mismatch between 'max = $proc->{max}' and $rrd (" . scalar(@ds) / 9 . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
-		if(scalar(@rra) != 12 + (4 * $config->{max_historic_years})) {
+		if(scalar(@rra) < 12 + (4 * $config->{max_historic_years})) {
 			logger("$myself: Detected size mismatch between 'max_historic_years' (" . $config->{max_historic_years} . ") and $rrd (" . ((scalar(@rra) -12) / 4) . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}

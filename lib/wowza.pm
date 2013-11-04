@@ -64,7 +64,7 @@ sub wowza_init {
 			logger("$myself: Detected size mismatch between 'list' (" . scalar(my @il = split(',', $wowza->{list})) . ") and $rrd (" . scalar(@ds) / 130 . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
-		if(scalar(@rra) != 12 + (4 * $config->{max_historic_years})) {
+		if(scalar(@rra) < 12 + (4 * $config->{max_historic_years})) {
 			logger("$myself: Detected size mismatch between 'max_historic_years' (" . $config->{max_historic_years} . ") and $rrd (" . ((scalar(@rra) -12) / 4) . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
