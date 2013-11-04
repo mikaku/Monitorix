@@ -125,7 +125,7 @@ sub traffacct_init {
 
 	if($config->{os} eq "Linux") {
 		if(!$config->{net}->{gateway}) {
-			logger("ERROR: You must assign a valid ethernet interface in 'net->gateway'");
+			logger("$myself: ERROR: You must assign a valid ethernet interface in 'net->gateway'");
 			return;
 		}
 		# set the iptables rules for each defined host/network
