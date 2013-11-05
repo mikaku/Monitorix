@@ -372,7 +372,11 @@ sub bind_update {
 		$rrdata .= ":" . $value->{summary}->{Lost};
 		$rrdata .= ":0:0:0";
 		$value = $data->{bind}->{statistics}->{taskmgr};
-		$rrdata .= ":" . $value->{'thread-model'}->{'worker-threads'};
+		if ($value->{'thread-model'}->{'worker-threads'}) {
+			$rrdata .= ":" . $value->{'thread-model'}->{'worker-threads'};
+		} else {
+			$rrdata .= ":" . "1";
+		}
 		$rrdata .= ":" . $value->{'thread-model'}->{'default-quantum'};
 		$rrdata .= ":" . $value->{'thread-model'}->{'tasks-running'};
 		$rrdata .= ":0:0:0";
