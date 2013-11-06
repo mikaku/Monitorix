@@ -485,7 +485,7 @@ sub bind_update {
 		if($major eq "3") {
 			$value = $data->{taskmgr};
 		}
-		$rrdata .= ":" . $value->{'thread-model'}->{'worker-threads'};
+		$rrdata .= ":" . ($value->{'thread-model'}->{'worker-threads'} || 0);
 		$rrdata .= ":" . $value->{'thread-model'}->{'default-quantum'};
 		$rrdata .= ":" . $value->{'thread-model'}->{'tasks-running'};
 		$rrdata .= ":0:0:0";
