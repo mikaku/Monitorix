@@ -283,6 +283,11 @@ sub serv_update {
 					$ftp++;
 					next;
 				}
+				# Pure-FTPd log
+				if(/ \[INFO\] .*? is now logged in/) {
+					$ftp++;
+					next;
+				}
 			}
 		}
 		close(IN);
