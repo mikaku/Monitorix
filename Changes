@@ -12,6 +12,7 @@
 	(suggested by Mohan Reddy, Mohan.Reddy AT analog.com)
 - Improved the regexp when collecting data from devices's interrupts which also
   fixes some annoying messages on using non-numeric arguments.
+- Added support for the Pure-FTPd logs in the 'serv' and 'ftp' graphs.
 - Fixed error messages about use of uninitialized values in 'system' graph on
   BSD systems.
 - Fixed error messages about not numeric argument in addition in 'fs' graph on
