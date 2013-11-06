@@ -40,7 +40,9 @@ sub emailreports_send {
 
 	logger("$myself: sending $report reports.");
 
-	my $hostname = $ENV{HOSTNAME} ? $ENV{HOSTNAME} : `hostname`;
+	my $uri = URI->new($emailreports->{url_prefix});
+	my $hostname = $uri->host;
+
 	my $html = <<"EOF";
 <html>
   <body bgcolor='FFFFFF' vlink='#888888' link='#888888'>
