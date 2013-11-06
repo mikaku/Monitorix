@@ -326,7 +326,7 @@ Default value: \fI/var/log/cups/page_log\fP
 .P
 .BI ftp_log
 .RS
-This is the path to the FTP server (ProFTPD or vsftpd) log. Monitorix uses this file to report FTP successful logins and other FTP-related information.
+This is the path to the FTP server (ProFTPD, vsftpd or Pure-FTPd) log. Monitorix uses this file to report FTP successful logins and other FTP-related information.
 .P
 Default value: \fI/var/log/proftpd/access.log\fP
 .RE
@@ -1106,7 +1106,7 @@ Default value: \fI3\fP
 .SS Users using the system (user.rrd)
 Only the limit and rigid values may be set here.
 .SS FTP statistics (ftp.rrd)
-This graph supports currently ProFTPD and vsftpd log file formats.
+This graph supports currently ProFTPD, vsftpd and Pure-FTPd log file formats.
 .P
 For best results with the ProFTPD server I recommend to add the following line in its configuration file:
 .P
@@ -1121,6 +1121,8 @@ This option specifies the FTP server. The currently supported FTP servers are:
 \fIProFTPD\fP
 .br
 \fIvsftpd\fP
+.br
+\fIPure-FTPd\fP
 .RE
 .P
 Default value: \fIproftpd\fP
