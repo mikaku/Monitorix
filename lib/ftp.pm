@@ -252,6 +252,43 @@ sub ftp_update {
 					}
 				}
 			}
+			if(lc($ftp->{server}) eq "pure-ftpd") {
+				my $date = strftime("%b %e", localtime);
+				if(/^$date /) {
+					if(/ \[NOTICE\] .*? downloaded  \((\d+) bytes,.*?/) {
+						$retr++;
+						$bytes_down += int($1);
+					}
+					if(/ \[NOTICE\] .*? uploaded  \((\d+) bytes,.*?/) {
+						$stor++;
+						$bytes_up += int($1);
+					}
+					if(/ \[DEBUG\] Command \[mkd\] /) {
+						$mkd++;
+					}
+					if(/ \[DEBUG\] Command \[rmd\] /) {
+						$rmd++;
+					}
+					if(/ \[DEBUG\] Command \[dele\] /) {
+						$dele++;
+					}
+					if(/ \[DEBUG\] Command (\[mlsd\]|\[list\]) /) {
+						$mlsd++;
+					}
+					if(/ \[INFO\] .*? is now logged in/) {
+						if(/ anon password /) {	# XXX
+							$anon_logins++;	# XXX
+							$logins++;	# XXX
+						} else {
+							$good_logins++;
+							$logins++;
+						}
+					}
+					if(/ \[WARNING\] Authentication failed for user /) {
+						$bad_logins++;
+					}
+				}
+			}
 		}
 		close(IN);
 	}
