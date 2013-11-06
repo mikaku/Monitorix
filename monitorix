@@ -326,6 +326,24 @@ EOF
             <font color="$title_fore_color"><b>Yearly&nbsp;</b></font>
         </td>
       </tr>
+EOF
+
+	if($config{max_historic_years} > 1) {
+		print(OUT "      <tr>\n");
+	}
+	for($n = 2; $n <= $config{max_historic_years}; $n++) {
+		print(OUT <<EOF);
+        <td bgcolor="$title_back_color">
+          <input type="radio" name="when" value="${n}year">
+            <font color="$title_fore_color"><b>$n Years&nbsp;</b></font>
+        </td>
+EOF
+	}
+	if($config{max_historic_years} > 1) {
+		print(OUT "      </tr>\n");
+	}
+
+	print(OUT <<EOF);
     </table>
     <p>
     <input type="hidden" name="color" value="$theme">
@@ -388,7 +406,7 @@ $0 = sprintf("%s %s%s%s%s",
 	$options{d} ? " -d $options{d}" : "",
 	$options{v} ? " -v" : "");
 
-daemonize();
+#daemonize();
 logger("Starting Monitorix version " . VERSION . " (pid $$).");
 
 if($options{p}) {
