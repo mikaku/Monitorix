@@ -106,11 +106,9 @@ EOF
 				push(@tmp, "<img src='cid:image_$g$n' border='0'>");
 				$images->{"image_$g$n"} = "";
 
-				if($config->{graphs}->{"_$g$n"}) {
-					($url) = $_ =~ m/<img src='(.*?)' /;
-					$response = $ua->request(HTTP::Request->new('GET', $url));
-					$images->{"image_$g$n"} = $response->content;
-				}
+				($url) = $_ =~ m/<img src='(.*?)' /;
+				$response = $ua->request(HTTP::Request->new('GET', $url));
+				$images->{"image_$g$n"} = $response->content;
 				$n++;
 			} else {
 				push(@tmp, $_);
