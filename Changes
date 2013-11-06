@@ -24,6 +24,11 @@
   the 'int' graph (the Interrupts graph is pending to have a complete rewrite).
 - Fixed the interrupt graph in order to be more compatible with Raspberry Pi.
 - Fixed in 'bind.pm' to store a 0 value if threads are disabled. [#29]
+- Fixed to correctly sent images in graphs 'proc', 'port' and 'fail2ban' when
+  using emailreports.
+	(thanks to Bénoît Segond von Banchet,
+	bjm.segondvonbanchet AT telfort.nl for pointing this out)
+- Fixed to show the real hostname in the emailreports.
 - Small fixes and typos.
 
 
