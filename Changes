@@ -1,5 +1,6 @@
 3.N.N  - NN-XXX-2013
 ====================
+- Added a complete statistical Memcached graph.
 - Added support for different BIND stats versions (2 and 3 right now).
 	(thanks to Ivo Brhel, ivb AT volny.cz)
 - Added two new alerts in the 'disk' graph in order to know if a disk drive has
