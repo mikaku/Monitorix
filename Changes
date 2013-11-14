@@ -1,4 +1,4 @@
-3.N.N  - NN-XXX-2013
+3.N.N  - DD-MMM-2013
 ====================
 - Added a complete statistical Memcached graph.
 - Added support for different BIND stats versions (2 and 3 right now).
