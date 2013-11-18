@@ -835,6 +835,11 @@ sub int_cgi {
 				if(/\s+3:/ && !$timer_pos) {
 					$timer_pos = index($_, "BCM2708 Timer Tick", 0);
 				}
+
+				# Assuming int 1 will be only for "orion_tick" (on Excito B3)
+				if(/\s+1:/ && !$timer_pos) {
+					$timer_pos = index($_, "orion_tick", 0);
+				}
 				$timer_pos = $timer_pos == 0 ? 999 : $timer_pos;
 				$i8042_pos = $i8042_pos == -1 ? 0 : $i8042_pos;
 				$good_pos = $timer_pos > $i8042_pos ? $i8042_pos : $timer_pos;
