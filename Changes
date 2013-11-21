@@ -32,6 +32,8 @@
 - Fixed to show the real hostname in the emailreports.
 - Fixed the 'int' graph in order to be compatible with Excito B3 product.
 	(thanks to Patrick Fallberg, patrick AT fallberg.net for pointing this out)
+- Fixed to correctly sanitize the input string in the built-in HTTP server
+  which led a number of security vulnerabilities. [#30]
 - Small fixes and typos.
 
 
