@@ -1,6 +1,6 @@
 3.N.N  - DD-MMM-2013
 ====================
-- Added a complete statistical Memcached graph.
+- Added a complete statistical Memcached graph. [#27]
 - Added support for different BIND stats versions (2 and 3 right now).
 	(thanks to Ivo Brhel, ivb AT volny.cz)
 - Added two new alerts in the 'disk' graph in order to know if a disk drive has
@@ -23,13 +23,15 @@
 	(thanks to Skibbi, skibbi AT gmail.com for pointing this out)
 - Fixed the error message 'String ends after the = sign on CDEF:allvalues=' in
   the 'int' graph (the Interrupts graph is pending to have a complete rewrite).
-- Fixed the interrupt graph in order to be more compatible with Raspberry Pi.
+- Fixed the 'int' graph in order to be more compatible with Raspberry Pi.
 - Fixed in 'bind.pm' to store a 0 value if threads are disabled. [#29]
 - Fixed to correctly sent images in graphs 'proc', 'port' and 'fail2ban' when
   using emailreports.
 	(thanks to Bénoît Segond von Banchet,
 	bjm.segondvonbanchet AT telfort.nl for pointing this out)
 - Fixed to show the real hostname in the emailreports.
+- Fixed the 'int' graph in order to be compatible with Excito B3 product.
+	(thanks to Patrick Fallberg, patrick AT fallberg.net for pointing this out)
 - Small fixes and typos.
 
 
