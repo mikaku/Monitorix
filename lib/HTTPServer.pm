@@ -148,6 +148,7 @@ sub handle_request {
 	my $target;
 	my $target_cgi;
 	my @data;
+	my $OK_CHARS='-a-zA-Z0-9_./';	# a restrictive list of valid chars
 
 	return if fork();	# parent returns
 
@@ -192,8 +193,12 @@ sub handle_request {
 	}
 	($mimetype) = ($target =~ m/.*\.(html|cgi|png)$/);
 
-	$target =~ s/^\///;		# removes leading slash
-	$target_cgi =~ s/^\///;		# removes leading slash
+	$target =~ s/^\/*//;		# removes leading slashes
+	$target_cgi =~ s/^\/*//;	# removes leading slashes
+
+	$target =~ s/[^$OK_CHARS]/_/go;		# only $OK_CHARS are allowed
+	$target_cgi =~ s/[^$OK_CHARS]/_/go;	# only $OK_CHARS are allowed
+
 	if($target_cgi eq "monitorix.cgi") {
 		chdir("cgi");
 		open(EXEC, "./$target_cgi |");

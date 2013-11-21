@@ -1,3 +1,9 @@
+3.3.1  - 21-Nov-2013
+====================
+- Fixed to correctly sanitize the input string in the built-in HTTP server
+  which led a number of security vulnerabilities. [#30]
+
+
 3.3.0  - 12-Aug-2013
 ====================
 - Added a complete statistical Wowza Media Server graph.
