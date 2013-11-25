@@ -153,6 +153,18 @@ sub handle_request {
 	return if fork();	# parent returns
 
 	my $url = $cgi->path_info();
+	my $url_disarmed = $url;
+
+	# this should disarm all XSS and Cookie Injection attempts
+	$url_disarmed =~ s/\&/&amp;/g;
+	$url_disarmed =~ s/\</&lt;/g;
+	$url_disarmed =~ s/\>/&gt;/g;
+	$url_disarmed =~ s/\"/&quot;/g;
+	$url_disarmed =~ s/\'/&#x27;/g;
+	$url_disarmed =~ s/\(/&#x28;/g;
+	$url_disarmed =~ s/\)/&#x29;/g;
+	$url_disarmed =~ s/\//&#x2F;/g;
+
 	$0 = "monitorix-httpd";	# change process' name
 
 	# check if the IP address is allowed to connect
@@ -166,7 +178,7 @@ sub handle_request {
 		print "<title>403 Forbidden</title>\r\n";
 		print "</head><body>\r\n";
 		print "<h1>Forbidden</h1>\r\n";
-		print "<p>You don't have permission to access $url\r\n";
+		print "<p>You don't have permission to access $url_disarmed\r\n";
 		print "on this server.</p>\r\n";
 		print "<hr>\r\n";
 		print "<address>Monitorix HTTP Server listening at $host Port $port</address>\r\n";
@@ -242,7 +254,7 @@ sub handle_request {
 		print "<title>404 Not Found</title>\r\n";
 		print "</head><body>\r\n";
 		print "<h1>Not Found</h1>\r\n";
-		print "The requested URL $url was not found on this server.<p>\r\n";
+		print "The requested URL $url_disarmed was not found on this server.<p>\r\n";
 		print "<hr>\r\n";
 		print "<address>Monitorix HTTP Server listening at $host Port $port</address>\r\n";
 		print "</body></html>\r\n";

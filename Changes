@@ -33,9 +33,12 @@
 - Fixed the 'int' graph in order to be compatible with Excito B3 product.
 	(thanks to Patrick Fallberg, patrick AT fallberg.net for pointing this out)
 - Fixed to correctly sanitize the input string in the built-in HTTP server
-  which led a number of security vulnerabilities. [#30]
+  which led into a number of security vulnerabilities. [#30]
 - Fixed the lack of minimum definition in some data sources of 'bind' graph.
 	(thanks to Andreas Itzchak Rehberg, izzy AT qumran.org for pointing this out)
+- Fixed a fail to adequately sanitize request strings of malicious JavaScript.
+  [#30]
+	(thanks to Jacob Amey, jamey AT securityinspection.com for pointing this out)
 - Small fixes and typos.
 
 
