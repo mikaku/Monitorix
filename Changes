@@ -34,6 +34,8 @@
 	(thanks to Patrick Fallberg, patrick AT fallberg.net for pointing this out)
 - Fixed to correctly sanitize the input string in the built-in HTTP server
   which led a number of security vulnerabilities. [#30]
+- Fixed the lack of minimum definition in some data sources of 'bind' graph.
+	(thanks to Andreas Itzchak Rehberg, izzy AT qumran.org for pointing this out)
 - Small fixes and typos.
 
 

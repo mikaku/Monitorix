@@ -79,12 +79,12 @@ sub bind_init {
 			push(@last, "RRA:LAST:0.5:1440:" . (365 * $n));
 		}
 		for($n = 0; $n < scalar(my @bl = split(',', $bind->{list})); $n++) {
-			push(@tmp, "DS:bind" . $n . "_totalinq:GAUGE:120:U:U");
-			push(@tmp, "DS:bind" . $n . "_inq01:GAUGE:120:U:U");
-			push(@tmp, "DS:bind" . $n . "_inq02:GAUGE:120:U:U");
-			push(@tmp, "DS:bind" . $n . "_inq03:GAUGE:120:U:U");
-			push(@tmp, "DS:bind" . $n . "_inq04:GAUGE:120:U:U");
-			push(@tmp, "DS:bind" . $n . "_inq05:GAUGE:120:U:U");
+			push(@tmp, "DS:bind" . $n . "_totalinq:GAUGE:120:0:U");
+			push(@tmp, "DS:bind" . $n . "_inq01:GAUGE:120:0:U");
+			push(@tmp, "DS:bind" . $n . "_inq02:GAUGE:120:0:U");
+			push(@tmp, "DS:bind" . $n . "_inq03:GAUGE:120:0:U");
+			push(@tmp, "DS:bind" . $n . "_inq04:GAUGE:120:0:U");
+			push(@tmp, "DS:bind" . $n . "_inq05:GAUGE:120:0:U");
 			push(@tmp, "DS:bind" . $n . "_inq06:GAUGE:120:0:U");
 			push(@tmp, "DS:bind" . $n . "_inq07:GAUGE:120:0:U");
 			push(@tmp, "DS:bind" . $n . "_inq08:GAUGE:120:0:U");
@@ -100,11 +100,11 @@ sub bind_init {
 			push(@tmp, "DS:bind" . $n . "_inq18:GAUGE:120:0:U");
 			push(@tmp, "DS:bind" . $n . "_inq19:GAUGE:120:0:U");
 			push(@tmp, "DS:bind" . $n . "_inq20:GAUGE:120:0:U");
-			push(@tmp, "DS:bind" . $n . "_ouq01:GAUGE:120:U:U");
-			push(@tmp, "DS:bind" . $n . "_ouq02:GAUGE:120:U:U");
-			push(@tmp, "DS:bind" . $n . "_ouq03:GAUGE:120:U:U");
-			push(@tmp, "DS:bind" . $n . "_ouq04:GAUGE:120:U:U");
-			push(@tmp, "DS:bind" . $n . "_ouq05:GAUGE:120:U:U");
+			push(@tmp, "DS:bind" . $n . "_ouq01:GAUGE:120:0:U");
+			push(@tmp, "DS:bind" . $n . "_ouq02:GAUGE:120:0:U");
+			push(@tmp, "DS:bind" . $n . "_ouq03:GAUGE:120:0:U");
+			push(@tmp, "DS:bind" . $n . "_ouq04:GAUGE:120:0:U");
+			push(@tmp, "DS:bind" . $n . "_ouq05:GAUGE:120:0:U");
 			push(@tmp, "DS:bind" . $n . "_ouq06:GAUGE:120:0:U");
 			push(@tmp, "DS:bind" . $n . "_ouq07:GAUGE:120:0:U");
 			push(@tmp, "DS:bind" . $n . "_ouq08:GAUGE:120:0:U");
@@ -160,11 +160,11 @@ sub bind_init {
 			push(@tmp, "DS:bind" . $n . "_rs18:GAUGE:120:0:U");
 			push(@tmp, "DS:bind" . $n . "_rs19:GAUGE:120:0:U");
 			push(@tmp, "DS:bind" . $n . "_rs20:GAUGE:120:0:U");
-			push(@tmp, "DS:bind" . $n . "_crr01:GAUGE:120:U:U");
-			push(@tmp, "DS:bind" . $n . "_crr02:GAUGE:120:U:U");
-			push(@tmp, "DS:bind" . $n . "_crr03:GAUGE:120:U:U");
-			push(@tmp, "DS:bind" . $n . "_crr04:GAUGE:120:U:U");
-			push(@tmp, "DS:bind" . $n . "_crr05:GAUGE:120:U:U");
+			push(@tmp, "DS:bind" . $n . "_crr01:GAUGE:120:0:U");
+			push(@tmp, "DS:bind" . $n . "_crr02:GAUGE:120:0:U");
+			push(@tmp, "DS:bind" . $n . "_crr03:GAUGE:120:0:U");
+			push(@tmp, "DS:bind" . $n . "_crr04:GAUGE:120:0:U");
+			push(@tmp, "DS:bind" . $n . "_crr05:GAUGE:120:0:U");
 			push(@tmp, "DS:bind" . $n . "_crr06:GAUGE:120:0:U");
 			push(@tmp, "DS:bind" . $n . "_crr07:GAUGE:120:0:U");
 			push(@tmp, "DS:bind" . $n . "_crr08:GAUGE:120:0:U");
@@ -248,6 +248,28 @@ sub bind_init {
 			}
 			return;
 		}
+	}
+
+	# this fixes the lack of minimum definition in some data sources
+	for($n = 0; $n < scalar(my @bl = split(',', $bind->{list})); $n++) {
+		RRDs::tune($rrd,
+			"--minimum=bind" . $n . "_totalinq:0",
+			"--minimum=bind" . $n . "_inq01:0",
+			"--minimum=bind" . $n . "_inq02:0",
+			"--minimum=bind" . $n . "_inq03:0",
+			"--minimum=bind" . $n . "_inq04:0",
+			"--minimum=bind" . $n . "_inq05:0",
+			"--minimum=bind" . $n . "_ouq01:0",
+			"--minimum=bind" . $n . "_ouq02:0",
+			"--minimum=bind" . $n . "_ouq03:0",
+			"--minimum=bind" . $n . "_ouq04:0",
+			"--minimum=bind" . $n . "_ouq05:0",
+			"--minimum=bind" . $n . "_crr01:0",
+			"--minimum=bind" . $n . "_crr02:0",
+			"--minimum=bind" . $n . "_crr03:0",
+			"--minimum=bind" . $n . "_crr04:0",
+			"--minimum=bind" . $n . "_crr05:0",
+		);
 	}
 
 	$config->{bind_hist} = ();
