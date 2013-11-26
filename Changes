@@ -42,7 +42,6 @@
 - Small fixes and typos.
 
 
-
 3.3.1  - 21-Nov-2013
 ====================
 - Fixed to correctly sanitize the input string in the built-in HTTP server
