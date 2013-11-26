@@ -5,7 +5,7 @@ Wants=local-fs.target
 
 [Service]
 Type=forking
-EnvironmentFiles=-/etc/sysconfig/monitorix
+EnvironmentFile=-/etc/sysconfig/monitorix
 ExecStart=/usr/bin/monitorix -c /etc/monitorix.conf -p /run/monitorix.pid
 PIDFile=/run/monitorix.pid
 
