@@ -1611,6 +1611,17 @@ WARNING: Every time the number of entries in this option changes, Monitorix will
 .P
 Default value: \fIhttp://localhost/apc.php?auto\fP
 .RE
+.SS Memcached statistics (memcached.rrd)
+This graph is able to monitor an unlimited number of Memcached installations.
+.P
+.BI list
+.RS
+This is a comma-separated list of hostnames with network port running Memcached.
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fImemcached.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fIlocalhost:11211\fP
+.RE
 .SS Wowza Media Server (wowza.rrd)
 This graph is able to monitor an unlimited number of Wowza servers.
 .P
