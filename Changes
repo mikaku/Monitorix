@@ -43,6 +43,7 @@
 - Fixed a typo in monitorix.service. [#32]
 - Fixed the requests value in the 'nginx' graph. Now it honours the label to
   show the value per second, instead of per minute.
+	(thanks to Martin Culak, culak AT firma.azet.sk for pointing this out)
 - Small fixes and typos.
 
 
