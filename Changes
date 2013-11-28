@@ -41,6 +41,8 @@
   [#30]
 	(thanks to Jacob Amey, jamey AT securityinspection.com for pointing this out)
 - Fixed a typo in monitorix.service. [#32]
+- Fixed the requests value in the 'nginx' graph. Now it honours the label to
+  show the value per second, instead of per minute.
 - Small fixes and typos.
 
 

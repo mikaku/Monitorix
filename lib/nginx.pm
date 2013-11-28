@@ -160,6 +160,7 @@ sub nginx_update {
 		if(/^\s+(\d+)\s+(\d+)\s+(\d+)\s*/) {
 			$reqs = $3 - ($config->{nginx_hist}->{'requests'} || 0);
 			$reqs = 0 unless $reqs != $3;
+			$reqs /= 60;
 			$config->{nginx_hist}->{'requests'} = $3;
 		}
 		if(/^Reading:\s+(\d+).*Writing:\s+(\d+).*Waiting:\s+(\d+)\s*/) {
