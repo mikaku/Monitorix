@@ -215,7 +215,6 @@ my $conf = new Config::General(
 );
 %config = $conf->getall;
 
-print "https_url = " . $config{httpd_builtin}->{https_url} . "<br>";
 $config{url} = ($ENV{HTTPS} || ($config{httpd_builtin}->{https_url} || "n") eq "y") ? "https://" . $ENV{HTTP_HOST} : "http://" . $ENV{HTTP_HOST};
 $config{hostname} = $config{hostname} || $ENV{SERVER_NAME};
 if(!($config{hostname})) {	# called from the command line
