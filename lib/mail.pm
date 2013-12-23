@@ -854,7 +854,7 @@ sub mail_cgi {
 			"DEF:held=$rrd:mail_held:AVERAGE",
 			"DEF:forwrd=$rrd:mail_forwrd:AVERAGE",
 			"CDEF:allvalues_p=in,out,recvd,delvd,rejtd,spam,virus,bouncd,discrd,held,forwrd,+,+,+,+,+,+,+,+,+,+",
-			"CDEF:allvalues_m=in,out,recvd,delvd,rejtd,spam,virus,bouncd,discrd,held,forwrd,+,+,+,+,+,+,+,+,+,+,-1,*",
+			"CDEF:allvalues_m=allvalues_p,UN,-1,UNKN,IF",
 			@CDEF,
 			"CDEF:n_forwrd=forwrd,-1,*",
 			"CDEF:n_delvd=delvd,-1,*",
