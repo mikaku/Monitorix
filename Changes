@@ -1,6 +1,7 @@
 3.N.N  - DD-MMM-2013
 ====================
 - Fixed to expand gaps also for negative values. [#34]
+- Fixed in email reports to show all graphs in the list. [#33]
 
 
 3.4.0  - 02-Dec-2013
