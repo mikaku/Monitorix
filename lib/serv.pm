@@ -195,13 +195,16 @@ sub serv_update {
 	if(-r $config->{imap_log}) {
 		$config->{imap_log_date_format} = $config->{imap_log_date_format} || "%b %d";
 		my $date_dovecot = strftime($config->{imap_log_date_format}, localtime);
-		my $date_uw = strftime("%b %e %T", localtime);
+		my $date_uw = strftime("%b %e", localtime);
 		open(IN, "$config->{imap_log}");
 		while(<IN>) {
 			# UW-IMAP log
 			if(/$date_uw/) {
 				if(/ imapd\[/ && / Login user=/) {
 					$imap++;
+				}
+				if(/ ipop3d\[/ && / Login user=/) {
+					$pop3++;
 				}
 			}
 			# Dovecot log
