@@ -33,7 +33,6 @@ sub emailreports_send {
 	my ($config, $report, $when, $debug) = @_;
 	my $emailreports = $config->{emailreports};
 
-	my $n;
 	my $base_cgi = $config->{base_cgi};
 	my $imgs_dir = $config->{imgs_dir};
 	my $images;
@@ -80,6 +79,8 @@ EOF
 
 	foreach (split(',', $emailreports->{$report}->{graphs})) {
 		my $g = trim($_);
+		my $n;
+		my $e;
 
 		# generate the graphs and get the html source
 		my $url = $emailreports->{url_prefix} . $base_cgi . "/monitorix.cgi?mode=localhost&graph=_$g&when=$when&color=white";
@@ -87,38 +88,43 @@ EOF
 		my $response = $ua->request(HTTP::Request->new('GET', $url));
 
 		my $data = $response->content;
-		$data =~ s/\n/@@@/g;
-		(my $graph) = $data =~ m/<!-- graph table begins -->@@@(.*?)<!-- graph table ends -->/;
+		$e = 0;
+		foreach ($data =~ /<!-- graph table begins -->/gi) {
+			$data =~ s/\n/@@@/g;
+			(my $graph) = $data =~ m/<!-- graph table begins -->@@@(.*?)<!-- graph table ends -->/;
 
-		if(!$graph) {
-			logger("$myself: unable to retrieve graphs from '$g'. It's enabled?");
-			next;
-		}
-
-		$graph =~ s/@@@/\n/g;
-
-		$graph =~ s/<a href=.*?>//g;
-		$graph =~ s/><\/a>/>/g;
-
-		# get the images
-		my @tmp = ();
-		$n = 1;
-		foreach (split('\n', $graph)) {
-			if(/<img src=/) {
-				push(@tmp, "<img src='cid:image_$g$n' border='0'>");
-				$images->{"image_$g$n"} = "";
-
-				($url) = $_ =~ m/<img src='(.*?)' /;
-				$response = $ua->request(HTTP::Request->new('GET', $url));
-				$images->{"image_$g$n"} = $response->content;
-				$n++;
-			} else {
-				push(@tmp, $_);
+			if(!$graph) {
+				logger("$myself: unable to retrieve graphs from '$g'. It's enabled?");
+				next;
 			}
-		}
 
-		$html .= join("\n", @tmp);
-		$html .= "<br>";
+			$graph =~ s/@@@/\n/g;
+
+			$graph =~ s/<a href=.*?>//g;
+			$graph =~ s/><\/a>/>/g;
+
+			# get the images
+			my @tmp = ();
+			$n = 1;
+			foreach (split('\n', $graph)) {
+				if(/<img src=/) {
+					push(@tmp, "<img src='cid:image_$g$e$n' border='0'>");
+					$images->{"image_$g$n"} = "";
+
+					($url) = $_ =~ m/<img src='(.*?)' /;
+					$response = $ua->request(HTTP::Request->new('GET', $url));
+					$images->{"image_$g$e$n"} = $response->content;
+					$n++;
+				} else {
+					push(@tmp, $_);
+				}
+			}
+
+			$html .= join("\n", @tmp);
+			$html .= "<br>";
+			$data =~ s/<!-- graph table begins -->.*?<!-- graph table ends -->//;
+			$e++;
+		}
 	}
 
 	$html .= $html_footer;
