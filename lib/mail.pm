@@ -777,9 +777,12 @@ sub mail_cgi {
 		push(@tmpz, "LINE1:n_delvd#0000EE");
 	}
 	if(lc($config->{show_gaps}) eq "y") {
-		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
-		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
-		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		push(@tmp, "AREA:wrongdata_p#$colors->{gap}:");
+		push(@tmp, "AREA:wrongdata_m#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata_p#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata_m#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata_p=allvalues_p,UN,INF,UNKN,IF");
+		push(@CDEF, "CDEF:wrongdata_m=allvalues_m,0,LT,INF,-1,*,UNKN,IF");
 	}
 
 	if($title) {
@@ -817,7 +820,8 @@ sub mail_cgi {
 		"DEF:discrd=$rrd:mail_discrd:AVERAGE",
 		"DEF:held=$rrd:mail_held:AVERAGE",
 		"DEF:forwrd=$rrd:mail_forwrd:AVERAGE",
-		"CDEF:allvalues=in,out,recvd,delvd,rejtd,spam,virus,bouncd,discrd,held,forwrd,+,+,+,+,+,+,+,+,+,+",
+		"CDEF:allvalues_p=in,out,recvd,delvd,rejtd,spam,virus,bouncd,discrd,held,forwrd,+,+,+,+,+,+,+,+,+,+",
+		"CDEF:allvalues_m=allvalues_p,UN,-1,UNKN,IF",
 		@CDEF,
 		"CDEF:n_forwrd=forwrd,-1,*",
 		"CDEF:n_delvd=delvd,-1,*",
@@ -849,7 +853,8 @@ sub mail_cgi {
 			"DEF:discrd=$rrd:mail_discrd:AVERAGE",
 			"DEF:held=$rrd:mail_held:AVERAGE",
 			"DEF:forwrd=$rrd:mail_forwrd:AVERAGE",
-			"CDEF:allvalues=in,out,recvd,delvd,rejtd,spam,virus,bouncd,discrd,held,forwrd,+,+,+,+,+,+,+,+,+,+",
+			"CDEF:allvalues_p=in,out,recvd,delvd,rejtd,spam,virus,bouncd,discrd,held,forwrd,+,+,+,+,+,+,+,+,+,+",
+			"CDEF:allvalues_m=in,out,recvd,delvd,rejtd,spam,virus,bouncd,discrd,held,forwrd,+,+,+,+,+,+,+,+,+,+,-1,*",
 			@CDEF,
 			"CDEF:n_forwrd=forwrd,-1,*",
 			"CDEF:n_delvd=delvd,-1,*",
