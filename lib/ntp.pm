@@ -376,9 +376,12 @@ sub ntp_cgi {
 			print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
-			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
-			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
-			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+			push(@tmp, "AREA:wrongdata_p#$colors->{gap}:");
+			push(@tmp, "AREA:wrongdata_m#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata_p#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata_m#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata_p=allvalues_p,UN,INF,UNKN,IF");
+			push(@CDEF, "CDEF:wrongdata_m=allvalues_m,0,LT,INF,-1,*,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
@@ -400,7 +403,8 @@ sub ntp_cgi {
 			"DEF:ntp" . $e . "_del=$rrd:ntp" . $e . "_del:AVERAGE",
 			"DEF:ntp" . $e . "_off=$rrd:ntp" . $e . "_off:AVERAGE",
 			"DEF:ntp" . $e . "_jit=$rrd:ntp" . $e . "_jit:AVERAGE",
-			"CDEF:allvalues=ntp" . $e . "_del,ntp" . $e . "_off,ntp" . $e . "_jit,+,+",
+			"CDEF:allvalues_p=ntp" . $e . "_del,ntp" . $e . "_off,ntp" . $e . "_jit,+,+",
+			"CDEF:allvalues_m=allvalues_p,UN,-1,UNKN,IF",
 			@CDEF,
 			"COMMENT: \\n",
 			@tmp,
@@ -423,7 +427,8 @@ sub ntp_cgi {
 				"DEF:ntp" . $e . "_del=$rrd:ntp" . $e . "_del:AVERAGE",
 				"DEF:ntp" . $e . "_off=$rrd:ntp" . $e . "_off:AVERAGE",
 				"DEF:ntp" . $e . "_jit=$rrd:ntp" . $e . "_jit:AVERAGE",
-				"CDEF:allvalues=ntp" . $e . "_del,ntp" . $e . "_off,ntp" . $e . "_jit,+,+",
+				"CDEF:allvalues_p=ntp" . $e . "_del,ntp" . $e . "_off,ntp" . $e . "_jit,+,+",
+				"CDEF:allvalues_m=allvalues_p,UN,-1,UNKN,IF",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
