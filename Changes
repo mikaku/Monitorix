@@ -4,6 +4,7 @@
 - Fixed in email reports to show all graphs in the list. [#33]
 - Fixed the date format to match with UW-IMAP logs and also add POP3 login
   accounting.
+  	(thanks to Wijatmoko U. Prayitno, koko AT crypto.my.id for pointing this out)
 
 
 3.4.0  - 02-Dec-2013
