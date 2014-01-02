@@ -5,6 +5,7 @@
 - Fixed the date format to match with UW-IMAP logs and also add POP3 login
   accounting.
   	(thanks to Wijatmoko U. Prayitno, koko AT crypto.my.id for pointing this out)
+- Fixed to show the text interface in the 'memcached' graph.
 
 
 3.4.0  - 02-Dec-2013
