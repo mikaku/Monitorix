@@ -21,7 +21,7 @@
 
 package memcached;
 
-#use strict;
+use strict;
 use warnings;
 use Monitorix;
 use RRDs;
@@ -445,21 +445,19 @@ sub memcached_cgi {
 		print("ERROR: while fetching $rrd: $err\n") if $err;
 		my $line1;
 		my $line2;
-		my $line3;
 		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
 		print("    ");
-		for($n = 0; $n < scalar(my @pl = split(',', $phpapc->{list})); $n++) {
-			$line1 = "                                           ";
-			$line2 .= "    Free   Used  Frag.   Hits  Miss. CacheF";
-			$line3 .= "-------------------------------------------";
-			if($line1) {
-				my $i = length($line1);
+		for($n = 0; $n < scalar(my @pl = split(',', $memcached->{list})); $n++) {
+			$line1 .= "    Inc.Hits Inc:Miss Dec.Hits Dec.Miss Get.Hits Get.Miss Del.Hits Del.Miss Aut.Cmds Aut.Errs Cas.Hits Cas.Miss Cas.Bads Cmd.Sets Cmd.Flus CacheUsg    Items    Items Eviction Reclaimd Tot.Conn Conn.Now  Threads Bytes_Read Bytes_Writ";
+			$line2 .= "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";
+			if($line2) {
+				my $i = length($line2);
 				printf(sprintf("%${i}s", sprintf("%s", trim($pl[$n]))));
 			}
 		}
 		print("\n");
-		print("Time$line2\n");
-		print("----$line3 \n");
+		print("Time$line1\n");
+		print("----$line2 \n");
 		my $line;
 		my @row;
 		my $time;
@@ -470,12 +468,12 @@ sub memcached_cgi {
 			$line = @$data[$n];
 			$time = $time - (1 / $tf->{ts});
 			printf(" %2d$tf->{tc}", $time);
-			for($n2 = 0; $n2 < scalar(my @pl = split(',', $phpapc->{list})); $n2++) {
+			for($n2 = 0; $n2 < scalar(my @pl = split(',', $memcached->{list})); $n2++) {
 				undef(@row);
-				$from = $n2 * 14;
-				$to = $from + 14;
-				my (undef, $free, $used, $hits, $miss, $cachf, undef, undef, $frag) = @$line[$from..$to];
-				printf("  %5.1f%% %5.1f%% %5.1f%% %5.1f%% %5.1f%% %6d", $free || 0, $used || 0, $frag || 0, $hits || 0, $miss || 0, $cachf || 0);
+				$from = $n2 * 37;
+				$to = $from + 37;
+				my ($cconn, $tconn, undef, $cmdset, $cmdfls, $gethit, $getmis, $delmis, $delhit, $incmis, $inchit, $decmis, $dechit, $casmis, $cashit, $casbad, $autcmd, $auterr, $bread, $bwrit, undef, $thrds, $bytes, $evict, $reclm, $citems, $titems) = @$line[$from..$to];
+				printf("    %8.1f %8.1f %8.1f %8.1f %8.1f %8.1f %8.1f %8.1f %8.1f %8.1f %8.1f %8.1f %8.1f %8.1f %8.1f %8d %8d %8.1f %8.1f %8.1f %8.1f %8.1f %8.1f %10d %10d", $inchit || 0, $incmis || 0, $dechit || 0, $decmis || 0, $gethit || 0, $getmis || 0, $delhit || 0, $delmis || 0, $autcmd || 0, $auterr || 0, $cashit || 0, $casmis || 0, $casbad || 0, $cmdset || 0, $cmdfls || 0, $bytes || 0, $citems || 0, $titems || 0, $evict || 0, $reclm || 0, $tconn || 0, $cconn || 0, $thrds || 0, $bread || 0, $bwrit || 0);
 			}
 			print("\n");
 		}
