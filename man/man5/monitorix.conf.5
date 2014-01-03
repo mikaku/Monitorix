@@ -1622,6 +1622,24 @@ WARNING: Every time the number of entries in this option changes, Monitorix will
 .P
 Default value: \fIlocalhost:11211\fP
 .RE
+.SS APC UPS statistics (apcupsd.rrd)
+This graph is able to monitor an unlimited number of APC UPS (apcupsd) installations.
+.P
+.BI cmd
+.RS
+This is the command that will be used (with the values in \fIlist\fP) to get the statistics.
+.P
+Default value: \fIapcaccess\fP
+.RE
+.P
+.BI list
+.RS
+This is a comma-separated list of hostnames with network port running \fIapcupsd\fP.
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIapcupsd.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fIlocalhost:3551\fP
+.RE
 .SS Wowza Media Server (wowza.rrd)
 This graph is able to monitor an unlimited number of Wowza servers.
 .P
