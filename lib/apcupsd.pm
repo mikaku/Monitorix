@@ -349,6 +349,8 @@ sub apcupsd_cgi {
 				$from = $n2 * 22;
 				$to = $from + 22;
 				my ($linev, $loadc, $bchar, undef, $mbatc, $ovolt, $ltran, $htran, $itemp, $battv, $linef, undef, $nomov, $nomiv, $nomba, $humid, $atemp) = @$line[$from..$to];
+				$itemp = celsius_to($config, $itemp);
+				$atemp = celsius_to($config, $atemp);
 				printf("    %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %5.1f %5.1f %5.1f %6.1f %6.1f %6.1f %6.1f %6.1f", $htran || 0, $linev || 0, $ovolt || 0, $ltran || 0, $bchar || 0, $loadc || 0, $mbatc || 0, $itemp || 0, $atemp || 0, $humid || 0, $battv || 0, $nomba || 0, $nomiv || 0, $nomov || 0, $linef || 0);
 			}
 			print("\n");
