@@ -25,7 +25,6 @@ use strict;
 use warnings;
 use Monitorix;
 use RRDs;
-use IO::Socket;
 use Exporter 'import';
 our @EXPORT = qw(apcupsd_init apcupsd_update apcupsd_cgi);
 
@@ -92,7 +91,7 @@ sub apcupsd_init {
 			push(@tmp, "DS:apcupsd" . $n . "_linef:GAUGE:120:0:U");
 			push(@tmp, "DS:apcupsd" . $n . "_nxfer:GAUGE:120:0:U");
 			push(@tmp, "DS:apcupsd" . $n . "_nomov:GAUGE:120:0:U");
-			push(@tmp, "DS:apcupsd" . $n . "_nomiv:GAUGE:120:0:U");
+			push(@tmp, "DS:apcupsd" . $n . "_minti:GAUGE:120:0:U");
 			push(@tmp, "DS:apcupsd" . $n . "_nomba:GAUGE:120:0:U");
 			push(@tmp, "DS:apcupsd" . $n . "_humid:GAUGE:120:0:100");
 			push(@tmp, "DS:apcupsd" . $n . "_atemp:GAUGE:120:0:U");
@@ -165,7 +164,7 @@ sub apcupsd_update {
 		my $linef = 0;
 		my $nxfer = 0;
 		my $nomov = 0;
-		my $nomiv = 0;
+		my $minti = 0;
 		my $nomba = 0;
 		my $humid = 0;
 		my $atemp = 0;
@@ -175,31 +174,14 @@ sub apcupsd_update {
 		my $val04 = 0;
 		my $val05 = 0;
 
-		my ($host, $port) = split(':', trim($al[$e]));
-		my $r = IO::Socket::INET->new(
-			Proto		=> "tcp",
-			PeerAddr	=> $host,
-			PeerPort	=> $port,
-		);
-		if(!$r) {
-			logger("$myself: unable to connect to port '$port' on host '$host'");
-			$rrdata .= ":$linev:$loadc:$bchar:$timel:$mbatc:$ovolt:$ltran:$htran:$itemp:$battv:$linef:$nxfer:$nomov:$nomiv:$nomba:$humid:$atemp:0:0:0:0:0";
-			next;
-		}
-
 		my $data;
-		$r->send("status");
-		shutdown($r, 1);
-		$r->recv($data, 4096);
-		$r->close();
-
-		$data =~ s/\r//g;	# remove (possible) DOS format
-
-		if(!$data) {
-			if(open(EXEC, $apcupsd->{cmd} . " status " . $al[$e] . " |")) {
-				while(<EXEC>) { $data .= $_; }
-				close(EXEC);
-			}
+		if(open(EXEC, $apcupsd->{cmd} . " status " . $al[$e] . " |")) {
+			while(<EXEC>) { $data .= $_; }
+			close(EXEC);
+		} else {
+			logger("$myself: unable to execute '" . $apcupsd->{cmd} . "' command.");
+			$rrdata .= ":$linev:$loadc:$bchar:$timel:$mbatc:$ovolt:$ltran:$htran:$itemp:$battv:$linef:$nxfer:$nomov:$minti:$nomba:$humid:$atemp:0:0:0:0:0";
+			next;
 		}
 
 		foreach(my @l = split('\n', $data)) {
@@ -242,8 +224,8 @@ sub apcupsd_update {
 			if(/^NOMOUTV\s*:\s*(\d+)\s+Volts/) {
 				$nomov = $1;
 			}
-			if(/^NOMINV\s*:\s*(\d+)/) {
-				$nomiv = $1;
+			if(/^MINTIMEL\s*:\s*(\d+)\s+Minutes/) {
+				$minti = $1;
 			}
 			if(/^NOMBATTV\s*:\s*(\d+\.\d+)\s+Volts/) {
 				$nomba = $1;
@@ -255,7 +237,7 @@ sub apcupsd_update {
 				$atemp = $1;
 			}
 		}
-		$rrdata .= ":$linev:$loadc:$bchar:$timel:$mbatc:$ovolt:$ltran:$htran:$itemp:$battv:$linef:$nxfer:$nomov:$nomiv:$nomba:$humid:$atemp:0:0:0:0:0";
+		$rrdata .= ":$linev:$loadc:$bchar:$timel:$mbatc:$ovolt:$ltran:$htran:$itemp:$battv:$linef:$nxfer:$nomov:$minti:$nomba:$humid:$atemp:0:0:0:0:0";
 		$e++;
 	}
 
@@ -324,7 +306,7 @@ sub apcupsd_cgi {
 		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
 		print("    ");
 		for($n = 0; $n < scalar(my @pl = split(',', $apcupsd->{list})); $n++) {
-			$line1 .= "    HTrans  LineV OutpuV LTrans BCharg  BLoad ShutLv ITemp ATemp Humid Voltag Nomina  NomIn NomOut Freqcy";
+			$line1 .= "    HTrans  LineV OutpuV LTrans BCharg  BLoad ShutLv ITemp ATemp Humid Voltag Nomina TimeLf ShutLv Freqcy";
 			$line2 .= "---------------------------------------------------------------------------------------------------------";
 			if($line2) {
 				my $i = length($line2);
@@ -348,10 +330,10 @@ sub apcupsd_cgi {
 				undef(@row);
 				$from = $n2 * 22;
 				$to = $from + 22;
-				my ($linev, $loadc, $bchar, undef, $mbatc, $ovolt, $ltran, $htran, $itemp, $battv, $linef, undef, $nomov, $nomiv, $nomba, $humid, $atemp) = @$line[$from..$to];
+				my ($linev, $loadc, $bchar, $timel, $mbatc, $ovolt, $ltran, $htran, $itemp, $battv, $linef, undef, undef, $minti, $nomba, $humid, $atemp) = @$line[$from..$to];
 				$itemp = celsius_to($config, $itemp);
 				$atemp = celsius_to($config, $atemp);
-				printf("    %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %5.1f %5.1f %5.1f %6.1f %6.1f %6.1f %6.1f %6.1f", $htran || 0, $linev || 0, $ovolt || 0, $ltran || 0, $bchar || 0, $loadc || 0, $mbatc || 0, $itemp || 0, $atemp || 0, $humid || 0, $battv || 0, $nomba || 0, $nomiv || 0, $nomov || 0, $linef || 0);
+				printf("    %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %5.1f %5.1f %5.1f %6.1f %6.1f %6.1f %6.1f %6.1f", $htran || 0, $linev || 0, $ovolt || 0, $ltran || 0, $bchar || 0, $loadc || 0, $mbatc || 0, $itemp || 0, $atemp || 0, $humid || 0, $battv || 0, $nomba || 0, $timel || 0, $minti || 0, $linef || 0);
 			}
 			print("\n");
 		}
@@ -393,28 +375,10 @@ sub apcupsd_cgi {
 	$e = 0;
 	foreach my $url (my @al = split(',', $apcupsd->{list})) {
 
-		# get additional information from apcupsd
-		my ($host, $port) = split(':', trim($al[$e]));
-		my $r = IO::Socket::INET->new(
-			Proto		=> "tcp",
-			PeerAddr	=> $host,
-			PeerPort	=> $port,
-		);
-		if(!$r) {
-			logger("$myself: unable to connect to port '$port' on host '$host'.");
-		}
 		my $data;
-		$r->send("stats\n");
-		shutdown($r, 1);
-		$r->recv($data, 4096);
-		$r->close();
-		$data =~ s/\r//g;	# remove (possible) DOS format
-
-		if(!$data) {
-			if(open(EXEC, $apcupsd->{cmd} . " status " . $al[$e] . " |")) {
-				while(<EXEC>) { $data .= $_; }
-				close(EXEC);
-			}
+		if(open(EXEC, $apcupsd->{cmd} . " status " . $al[$e] . " |")) {
+			while(<EXEC>) { $data .= $_; }
+			close(EXEC);
 		}
 
 		my $driver = "";
@@ -446,10 +410,10 @@ sub apcupsd_cgi {
 		}
 		if($RRDs::VERSION > 1.2) {
 			$driver = "COMMENT: $driver\\: $model ($status)\\c",
-			$timeleft = "COMMENT: time left\\: $timeleft (xfers\\: $numxfers)\\c",
+			$timeleft = "COMMENT: Number of transfers to batteries\\: $numxfers\\c",
 		} else {
 			$driver = "COMMENT: $driver: $model ($status)\\c",
-			$timeleft = "COMMENT: time left: $timeleft (xfers: $numxfers)\\c",
+			$timeleft = "COMMENT: Number of transfers to batteries: $numxfers\\c",
 		}
 
 		if($e) {
@@ -588,8 +552,8 @@ sub apcupsd_cgi {
 		push(@tmp, "GPRINT:bchar:AVERAGE:   Average\\: %4.1lf%%");
 		push(@tmp, "GPRINT:bchar:MIN:   Min\\: %4.1lf%%");
 		push(@tmp, "GPRINT:bchar:MAX:   Max\\: %4.1lf%%\\n");
-		push(@tmp, "AREA:loadc#EE4444:Load");
-		push(@tmp, "GPRINT:loadc:LAST:            Current\\: %4.1lf%%");
+		push(@tmp, "AREA:loadc#EE4444:Load capacity");
+		push(@tmp, "GPRINT:loadc:LAST:   Current\\: %4.1lf%%");
 		push(@tmp, "GPRINT:loadc:AVERAGE:   Average\\: %4.1lf%%");
 		push(@tmp, "GPRINT:loadc:MIN:   Min\\: %4.1lf%%");
 		push(@tmp, "GPRINT:loadc:MAX:   Max\\: %4.1lf%%\\n");
@@ -878,12 +842,12 @@ sub apcupsd_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
-		push(@tmp, "LINE2:nomiv#44EE44:Nominal input");
-		push(@tmp, "GPRINT:nomiv:LAST:        Current\\: %5.1lf\\n");
-		push(@tmp, "LINE2:nomov#4444EE:Nominal output");
-		push(@tmp, "GPRINT:nomov:LAST:       Current\\: %5.1lf\\n");
-		push(@tmpz, "LINE2:nomiv#44EE44:Input");
-		push(@tmpz, "LINE2:nomov#4444EE:Output");
+		push(@tmp, "LINE2:timel#44EEEE:Minutes left");
+		push(@tmp, "GPRINT:timel:LAST:         Current\\: %3.0lf\\n");
+		push(@tmp, "LINE2:minti#EEEE44:Shutdown level");
+		push(@tmp, "GPRINT:minti:LAST:       Current\\: %3.0lf\\n");
+		push(@tmpz, "LINE2:timel#44EEEE:Minutes left");
+		push(@tmpz, "LINE2:minti#EEEE44:Shutdown level");
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -902,7 +866,7 @@ sub apcupsd_cgi {
 			"--title=$config->{graphs}->{_apcupsd5}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Volts",
+			"--vertical-label=Minutes",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
@@ -911,9 +875,9 @@ sub apcupsd_cgi {
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
-			"DEF:nomiv=$rrd:apcupsd" . $e . "_nomiv:AVERAGE",
-			"DEF:nomov=$rrd:apcupsd" . $e . "_nomov:AVERAGE",
-			"CDEF:allvalues=nomiv,nomov,+",
+			"DEF:timel=$rrd:apcupsd" . $e . "_timel:AVERAGE",
+			"DEF:minti=$rrd:apcupsd" . $e . "_minti:AVERAGE",
+			"CDEF:allvalues=timel,minti,+",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -932,9 +896,9 @@ sub apcupsd_cgi {
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
-				"DEF:nomiv=$rrd:apcupsd" . $e . "_nomiv:AVERAGE",
-				"DEF:nomov=$rrd:apcupsd" . $e . "_nomov:AVERAGE",
-				"CDEF:allvalues=nomiv,nomov,+",
+				"DEF:timel=$rrd:apcupsd" . $e . "_timel:AVERAGE",
+				"DEF:minti=$rrd:apcupsd" . $e . "_minti:AVERAGE",
+				"CDEF:allvalues=timel,minti,+",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
