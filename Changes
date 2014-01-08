@@ -2,7 +2,7 @@
 ====================
 - Added a complete statistical APC UPS (apcupsd) graph.
 	(thanks to Ilya Karpov, gibzer AT gmail.com)
-- Added support for AMaViS in the 'mail' graph.
+- Added support for amavisd-new in the 'mail' graph.
 - Fixed to expand gaps also for negative values. [#34]
 - Fixed in email reports to show all graphs in the list. [#33]
 - Fixed the date format to match with UW-IMAP logs and also add POP3 login
