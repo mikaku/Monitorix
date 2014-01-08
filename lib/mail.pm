@@ -314,6 +314,7 @@ sub mail_update {
 
 	$spam = $virus = 0;
 	if(-r $config->{mail_log}) {
+		my $date = strftime("%b %e", localtime);
 		open(IN, $config->{mail_log});
 		if(!seek(IN, 0, 2)) {
 			logger("Couldn't seek to the end ($config->{mail_log}): $!");
@@ -329,13 +330,19 @@ sub mail_update {
 		}
 		while(<IN>) {
 			my @line;
-			if(/MailScanner/ && /Spam Checks:/ && /Found/ && /spam messages/) {
+			if(/^$date/ && /MailScanner/ && /Spam Checks:/ && /Found/ && /spam messages/) {
 				@line = split(' ', $_);
 				$spam += int($line[8]);
 			}
-			if(/MailScanner/ && /Virus Scanning:/ && /Found/ && /viruses/) {
+			if(/^$date/ && /MailScanner/ && /Virus Scanning:/ && /Found/ && /viruses/) {
 				@line = split(' ', $_);
 				$virus += int($line[8]);
+			}
+			if(/^$date/ && /amavis\[.* SPAM/) {
+				$spam++;
+			}
+			if(/^$date/ && /amavis\[.* INFECTED|amavis\[.* BANNED/) {
+				$virus++;
 			}
 		}
 		close(IN);
