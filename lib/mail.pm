@@ -176,9 +176,9 @@ sub mail_update {
 
 	my $n;
 	my $mail_log_seekpos;
-	my $mail_log_size;
+	my $mail_log_size = 0;
 	my $sa_log_seekpos;
-	my $sa_log_size;
+	my $sa_log_size = 0;
 	my $clamav_log_seekpos;
 	my $clamav_log_size = 0;
 	my $rrdata = "N";
