@@ -178,7 +178,9 @@ sub apcupsd_update {
 		if(open(EXEC, $apcupsd->{cmd} . " status " . $al[$e] . " |")) {
 			while(<EXEC>) { $data .= $_; }
 			close(EXEC);
-		} else {
+		}
+
+		if(!$data) {
 			logger("$myself: unable to execute '" . $apcupsd->{cmd} . "' command.");
 			$rrdata .= ":$linev:$loadc:$bchar:$timel:$mbatc:$ovolt:$ltran:$htran:$itemp:$battv:$linef:$nxfer:$nomov:$minti:$nomba:$humid:$atemp:0:0:0:0:0";
 			next;
