@@ -383,6 +383,8 @@ sub apcupsd_cgi {
 			close(EXEC);
 		}
 
+		next if !$data;
+
 		my $driver = "";
 		my $model = "";
 		my $status = "";
