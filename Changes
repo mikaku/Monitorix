@@ -4,6 +4,7 @@
 	(thanks to Ilya Karpov, gibzer AT gmail.com)
 - Added support for amavisd-new in the 'mail' graph.
 	(thanks to Dirk Tanneberger, dirk AT tanneberger.biz)
+- Added support for PHP APC 4.0. [#36]
 - Fixed to expand gaps also for negative values. [#34]
 - Fixed in email reports to show all graphs in the list. [#33]
 - Fixed the date format to match with UW-IMAP logs and also add POP3 login
