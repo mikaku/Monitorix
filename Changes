@@ -17,6 +17,7 @@
 - Fixed to avoid unexpected grouping of network interfaces with aliases in the
   'net' graph.
 	(thanks to Ivo Brhel, ivb AT volny.cz)
+- Fixed to enclose URLs with signle quotes in the Multihost HTML.
 
 
 3.4.0  - 02-Dec-2013
