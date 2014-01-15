@@ -111,7 +111,7 @@ sub multihost {
 			for($n2 = 0, $n = $n - $multihost->{graphs_per_row}; $n2 < $multihost->{graphs_per_row}; $n2++) {
 				if($n < scalar(@host)) {
 					print "  <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
-					print "   <iframe src=" . $url[$n] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetag height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+					print "   <iframe src='" . $url[$n] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetag' height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
 					print "  </td>\n";
 
 				}
@@ -148,7 +148,7 @@ sub multihost {
 		print "   </tr>\n";
 		print "   <tr>\n";
 		print "    <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
-		print "     <iframe src=" . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0] . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetagbig height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+		print "     <iframe src='" . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0] . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetagbig' height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
 		print "    </td>\n";
 		print "   </tr>\n";
 		print "   <tr>\n";
