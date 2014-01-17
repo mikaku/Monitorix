@@ -180,7 +180,8 @@ sub proc_update {
 		my @data = split(' ', <IN>);
 		close(IN);
 		chomp($ncpu);
-		for($n = 0; $n < $proc->{max}; $n++) {
+		$ncpu = min($ncpu, $proc->{max});
+		for($n = 0; $n < $ncpu; $n++) {
 			$str = "cpu" . $n;
 			$from = $n * 5;
 			$to = $from + 4;
