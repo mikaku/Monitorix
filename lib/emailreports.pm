@@ -87,6 +87,13 @@ EOF
 		my $ua = LWP::UserAgent->new(timeout => 30);
 		my $response = $ua->request(HTTP::Request->new('GET', $url));
 
+		if(!$response->is_success) {
+			logger("$myself: " . $response->status_line);
+			$html .= "<pre>\n";
+			$html .= $response->status_line;
+			$html .= "</pre>\n";
+		}
+
 		my $data = $response->content;
 		$e = 0;
 		foreach ($data =~ /<!-- graph table begins -->/gi) {
