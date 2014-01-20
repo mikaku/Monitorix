@@ -22,6 +22,8 @@
 - Fixed to enclose URLs with signle quotes in the Multihost HTML.
 - Fixed messages of 'use of uninitialized values' in 'proc' graph on FreeBSD
   systems.
+- Fixed to match exactly the connection types 'in', 'out' or 'in/out' in 'port'
+  graph.
 
 
 3.4.0  - 02-Dec-2013
