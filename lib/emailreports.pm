@@ -129,6 +129,28 @@ EOF
 
 			$html .= join("\n", @tmp);
 			$html .= "<br>";
+
+			# addendum data included in report
+			if($emailreports->{$report}->{addendum_script}) {
+				$html .= <<"EOF";
+<table cellspacing='5' cellpadding='0' width='1' bgcolor='CCCCCC' border='1'>
+ <tr>
+  <td bgcolor='777777'>
+   <font face='Verdana, sans-serif' color='CCCC00'>
+    <b>&nbsp;&nbsp;Addendum data&nbsp;<b>
+   </font>
+  </td>
+ </tr>
+ <tr>
+  <td bgcolor='FFFFFF'>
+EOF
+				$html .= `$emailreports->{$report}->{addendum_script}`;
+				$html .= "\n";
+				$html .= "  </td>\n";
+				$html .= " </tr>\n";
+				$html .= "</table>\n";
+			}
+
 			$data =~ s/<!-- graph table begins -->.*?<!-- graph table ends -->//;
 			$e++;
 		}
