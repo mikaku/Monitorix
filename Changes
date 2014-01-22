@@ -30,6 +30,7 @@
   graph.
 - Fixed to compare kernel versions as strings instead as numbers and improved
   the way how is extracted the kernel version.
+	(thanks to Jean-Louis Halleux, monitorix AT ritm.be)
 
 
 3.4.0  - 02-Dec-2013
