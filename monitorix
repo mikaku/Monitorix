@@ -388,9 +388,11 @@ $config{func_update} = ();
 # get the current OS and kernel version and check its support
 my $release;
 ($config{os}, undef, $release) = uname();
-my ($major, $minor) = split('\.', $release);
-$minor =~ m/^(\d+)/;
-$config{kernel} = $major . "." . $1;
+if(!($release =~ m/^(\d+)\.(\d+)/)) {
+        die "FATAL: unable to get the kernel version.";
+}
+$config{kernel} = "$1.$2";
+
 if(!grep {$_ eq $config{os}} @suppsys) {
 	die "FATAL: your operating system ($config{os}) is not supported.";
 }
