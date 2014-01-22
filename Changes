@@ -23,8 +23,9 @@
   'net' graph.
 	(thanks to Ivo Brhel, ivb AT volny.cz)
 - Fixed to enclose URLs with signle quotes in the Multihost HTML.
-- Fixed messages of 'use of uninitialized values' in 'proc' graph on FreeBSD
-  systems.
+- Fixed messages of 'use of uninitialized values' and 'non-numeric arguments in
+  addition' in 'proc' and 'fs' graphs respectively on FreeBSD systems.
+	(thanks to Janusz Pruszewicz, janusz AT pruszewicz.com)
 - Fixed to match exactly the connection types 'in', 'out' or 'in/out' in 'port'
   graph.
 - Fixed to compare kernel versions as strings instead as numbers.
