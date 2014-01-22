@@ -223,12 +223,6 @@ if(!($config{hostname})) {	# called from the command line
 }
 $config{url} .= $config{base_url};
 
-# get the current OS and kernel version
-my $release;
-($config{os}, undef, $release) = uname();
-my ($major, $minor) = split('\.', $release);
-$config{kernel} = $major . "." . $minor;
-
 our $mode = defined(param('mode')) ? param('mode') : '';
 our $graph = param('graph');
 our $when = param('when');
@@ -245,6 +239,13 @@ if(lc($config{httpd_builtin}->{enabled} ne "y")) {
 	print("\n");
 }
 
+# get the current OS and kernel version
+my $release;
+($config{os}, undef, $release) = uname();
+if(!($release =~ m/^(\d+)\.(\d+)/)) {
+	die "FATAL: unable to get the kernel version.";
+}
+$config{kernel} = "$1.$2";
 
 $colors{graph_colors} = ();
 $colors{warning_color} = "--color=CANVAS#880000";
