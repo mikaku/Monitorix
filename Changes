@@ -27,6 +27,7 @@
   systems.
 - Fixed to match exactly the connection types 'in', 'out' or 'in/out' in 'port'
   graph.
+- Fixed to compare kernel versions as strings instead as numbers.
 
 
 3.4.0  - 02-Dec-2013
