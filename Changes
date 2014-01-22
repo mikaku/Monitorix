@@ -28,7 +28,8 @@
 	(thanks to Janusz Pruszewicz, janusz AT pruszewicz.com)
 - Fixed to match exactly the connection types 'in', 'out' or 'in/out' in 'port'
   graph.
-- Fixed to compare kernel versions as strings instead as numbers.
+- Fixed to compare kernel versions as strings instead as numbers and improved
+  the way how is extracted the kernel version.
 
 
 3.4.0  - 02-Dec-2013
