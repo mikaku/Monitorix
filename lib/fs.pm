@@ -170,7 +170,7 @@ sub fs_init {
 				};
 			}
 
-			if($config->{os} eq "Linux" && $config->{kernel} > 2.4) {
+			if($config->{os} eq "Linux" && $config->{kernel} gt "2.4") {
 				my $lvm;
 				my $lvm_disk;
 				my $is_md;
@@ -434,7 +434,7 @@ sub fs_update {
 			my $d = $fs->{devmap}->{$f};
 			if($d) {
 				if($config->{os} eq "Linux") {
-					if($config->{kernel} > 2.4) {
+					if($config->{kernel} gt "2.4") {
 						open(IN, "/proc/diskstats");
 						while(<IN>) {
 							if(/ $d /) {
@@ -931,7 +931,7 @@ sub fs_cgi {
 		undef(@tmpz);
 		undef(@CDEF);
 		if($config->{os} eq "Linux") {
-			if($config->{kernel} > 2.4) {
+			if($config->{kernel} gt "2.4") {
 	   			$graph_title = "$config->{graphs}->{_fs3}  ($tf->{nwhen}$tf->{twhen})";
 				$vlabel = "Milliseconds";
 			} else {
