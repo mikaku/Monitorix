@@ -468,8 +468,8 @@ sub fs_update {
 					} else {
 						@tmp = split(' ', `iostat -dI | tail -1`);
 						(undef, $read_cnt, $read_sec) = @tmp;
-						$write_cnt = "";
-						$write_sec = "";
+						$write_cnt = 0;
+						$write_sec = 0;
 						chomp($read_sec);
 						$read_sec = int($read_sec);
 					}
