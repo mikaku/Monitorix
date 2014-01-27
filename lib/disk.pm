@@ -24,6 +24,8 @@ use strict;
 use warnings;
 use Monitorix;
 use RRDs;
+use Cwd 'abs_path';
+use File::Basename;
 use Exporter 'import';
 our @EXPORT = qw(disk_init disk_update disk_cgi);
 
@@ -198,6 +200,15 @@ sub disk_update {
 				my $d = trim($dsk[$n]);
 				$d =~ s/^\"//;
 				$d =~ s/\"$//;
+
+				# check if device name is a symbolic link
+				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+				if(-l $d) {
+					$d = abs_path(dirname($d) . "/" . readlink($d));
+					chomp($d);
+				}
+				logger("d = '$d'");
+
 	  			open(IN, "smartctl -A $d |");
 				while(<IN>) {
 					if(/^  5/ && /Reallocated_Sector_Ct/) {
@@ -431,6 +442,14 @@ sub disk_cgi {
 				my $dstr = trim($d[$n]);
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
+
+				# check if device name is a symbolic link
+				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+				if(-l $dstr) {
+					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
+					chomp($dstr);
+				}
+
 				$dstr =~ s/^(.+?) .*$/$1/;
 				$str = sprintf("%-20s", $dstr);
 				push(@tmp, "LINE2:temp_" . $n . $LC[$n] . ":$str");
@@ -559,6 +578,14 @@ sub disk_cgi {
 				my $dstr = trim($d[$n]);
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
+
+				# check if device name is a symbolic link
+				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+				if(-l $dstr) {
+					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
+					chomp($dstr);
+				}
+
 				$dstr =~ s/^(.+?) .*$/$1/;
 				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:rsc" . $n . $LC[$n] . ":$str");
@@ -568,6 +595,14 @@ sub disk_cgi {
 				my $dstr = trim($d[$n + 1]);
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
+
+				# check if device name is a symbolic link
+				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+				if(-l $dstr) {
+					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
+					chomp($dstr);
+				}
+
 				$dstr =~ s/^(.+?) .*$/$1/;
 				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:rsc" . ($n + 1) . $LC[$n + 1] . ":$str\\n");
@@ -662,6 +697,14 @@ sub disk_cgi {
 				my $dstr = trim($d[$n]);
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
+
+				# check if device name is a symbolic link
+				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+				if(-l $dstr) {
+					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
+					chomp($dstr);
+				}
+
 				$dstr =~ s/^(.+?) .*$/$1/;
 				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:cps" . $n . $LC[$n] . ":$str");
@@ -671,6 +714,14 @@ sub disk_cgi {
 				my $dstr = trim($d[$n + 1]);
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
+
+				# check if device name is a symbolic link
+				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+				if(-l $dstr) {
+					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
+					chomp($dstr);
+				}
+
 				$dstr =~ s/^(.+?) .*$/$1/;
 				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:cps" . ($n + 1) . $LC[$n + 1] . ":$str\\n");
