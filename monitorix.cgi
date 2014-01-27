@@ -100,7 +100,7 @@ sub multihost {
 				if($n < scalar(@host)) {
 					print "  <td bgcolor='$colors->{title_bg_color}'>\n";
 					print "   <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
-					print "   <b>&nbsp;&nbsp;" . $host[$n] . "<b>\n";
+					print "   <b>&nbsp;&nbsp;" . $host[$n] . "</b>\n";
 					print "   </font>\n";
 					print "  </td>\n";
 				}
@@ -125,7 +125,7 @@ sub multihost {
 					print "  <td bgcolor='$colors->{title_bg_color}'>\n";
 					print "   <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
 					print "   <font size='-1'>\n";
-					print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$n] . "' style='{color: " . $colors->{title_fg_color} . "}'>$foot_url[$n]</a><b>\n";
+					print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$n] . "' style='{color: " . $colors->{title_fg_color} . "}'>$foot_url[$n]</a></b>\n";
 					print "   </font></font>\n";
 					print "  </td>\n";
 				}
@@ -142,7 +142,7 @@ sub multihost {
 		print "   <tr>\n";
 		print "    <td bgcolor='$colors->{title_bg_color}'>\n";
 		print "    <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
-		print "    <b>&nbsp;&nbsp;" . $host[$cgi->{val}] . "<b>\n";
+		print "    <b>&nbsp;&nbsp;" . $host[$cgi->{val}] . "</b>\n";
 		print "    </font>\n";
 		print "    </td>\n";
 		print "   </tr>\n";
@@ -156,7 +156,7 @@ sub multihost {
 			print "   <td bgcolor='$colors->{title_bg_color}'>\n";
 			print "    <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
 			print "    <font size='-1'>\n";
-			print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$cgi->{val}] . "' style='{color: " . $colors->{title_fg_color} . "}'>$foot_url[$cgi->{val}]</a><b>\n";
+			print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$cgi->{val}] . "' style='{color: " . $colors->{title_fg_color} . "}'>$foot_url[$cgi->{val}]</a></b>\n";
 			print "    </font></font>\n";
 			print "   </td>\n";
 		}
@@ -174,7 +174,7 @@ sub graph_header {
 	print("    <tr>\n");
 	print("      <td bgcolor='$colors{title_bg_color}' colspan='$colspan'>\n");
 	print("        <font face='Verdana, sans-serif' color='$colors{title_fg_color}'>\n");
-	print("          <b>&nbsp;&nbsp;$title<b>\n");
+	print("          <b>&nbsp;&nbsp;$title</b>\n");
 	print("        </font>\n");
 	print("      </td>\n");
 	print("    </tr>\n");
@@ -352,7 +352,7 @@ if(!$silent) {
 	if(($val ne "all" || $val ne "group") && $mode ne "multihost") {
 		print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
 		print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
-		print("    <font size='5'><b>&nbsp;&nbsp;Host:&nbsp;<b></font>\n");
+		print("    <font size='5'><b>&nbsp;&nbsp;Host:&nbsp;</b></font>\n");
 		print("  </font>\n");
 		print("  </td>\n");
 	}
@@ -363,7 +363,7 @@ if(!$silent) {
 		$gname = trim($gname);
 		print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
 		print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
-		print("    <font size='5'><b>&nbsp;&nbsp;$gname&nbsp;<b></font>\n");
+		print("    <font size='5'><b>&nbsp;&nbsp;$gname&nbsp;</b></font>\n");
 		print("  </font>\n");
 		print("  </td>\n");
 	}
@@ -395,7 +395,7 @@ if(!$silent) {
 	print("  </td>\n");
 		print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
 		print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
-		print("    <font size='5'><b>&nbsp;&nbsp;last&nbsp;$tf{twhen}&nbsp;&nbsp;<b></font>\n");
+		print("    <font size='5'><b>&nbsp;&nbsp;last&nbsp;$tf{twhen}&nbsp;&nbsp;</b></font>\n");
 		print("  </font>\n");
 		print("  </td>\n");
 	print("  </tr>\n");
