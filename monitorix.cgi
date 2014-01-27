@@ -336,7 +336,7 @@ if(!$silent) {
 	my $title;
 	my $str;
 
-	print("<!DOCTYPE html>\n");
+	print("<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 3.2 Final//EN'>\n");
 	print("<html>\n");
 	print("  <head>\n");
 	print("    <title>$config{title}</title>\n");
