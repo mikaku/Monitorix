@@ -34,6 +34,8 @@
   the way how is extracted the kernel version.
 	(thanks to Jean-Louis Halleux, monitorix AT ritm.be)
 - Fixed some HTML tags in 'monitorix.cgi'.
+- Fixed a missing HTML tag in 'port' graph.
+	(thanks to Jean-Louis Halleux, monitorix AT ritm.be)
 
 
 3.4.0  - 02-Dec-2013
