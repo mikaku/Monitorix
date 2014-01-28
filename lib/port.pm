@@ -426,6 +426,8 @@ sub port_cgi {
 		if($title) {
 			if($n == 0) {
 				main::graph_header($title, $port->{graphs_per_row});
+			}
+			if($n2 == 1) {
 				print("    <tr>\n");
 			}
 		}
