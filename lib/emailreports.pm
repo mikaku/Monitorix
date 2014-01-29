@@ -37,8 +37,6 @@ sub emailreports_send {
 	my $imgs_dir = $config->{imgs_dir};
 	my $images;
 	
-	my $self_signed_certs = $config->{use_self_signed_certificates};
-
 	logger("$myself: sending $report reports.");
 
 	my $uri = URI->new($emailreports->{url_prefix});
@@ -87,9 +85,10 @@ EOF
 		# generate the graphs and get the html source
 		my $url = $emailreports->{url_prefix} . $base_cgi . "/monitorix.cgi?mode=localhost&graph=_$g&when=$when&color=white";
 		my $ua = LWP::UserAgent->new(timeout => 30);
-		if ($self_signed_certs == 1) {
-			$ua->ssl_opts(verify_hostname => 0);
-		}
+
+		$ua->ssl_opts(verify_hostname => 0)
+			if lc($config->{accept_selfsigned_certs}) eq "y";
+
 		my $response = $ua->request(HTTP::Request->new('GET', $url));
 
 		if(!$response->is_success) {
