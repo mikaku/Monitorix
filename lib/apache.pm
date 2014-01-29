@@ -142,6 +142,10 @@ sub apache_update {
 	foreach(my @al = split(',', $apache->{list})) {
 		my $url = trim($_) . "/server-status?auto";
 		my $ua = LWP::UserAgent->new(timeout => 30);
+
+		$ua->ssl_opts(verify_hostname => 0)
+			if lc($config->{accept_selfsigned_certs}) eq "y";
+
 		my $response = $ua->request(HTTP::Request->new('GET', $url));
 
 		if(!$response->is_success) {
