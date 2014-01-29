@@ -561,8 +561,8 @@ while(1) {
 		# Email Reports
 		if(lc($config{emailreports}->{enabled}) eq "y") {
 			my $emailreports = $config{emailreports};
-			my $email_m = $config{email_report_minute};
-			my $email_h = $config{email_report_hour};
+			my $email_m = $emailreports->{minute};
+			my $email_h = $emailreports->{hour};
 			my $d = "emailreports";
 			undef($d) if(!grep {trim($_) eq $d} (@{$config{debug}}));
 
