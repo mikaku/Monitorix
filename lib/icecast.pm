@@ -170,6 +170,10 @@ sub icecast_update {
 	foreach(my @il = split(',', $icecast->{list})) {
 		my $ils = trim($il[$e]);
 		my $ua = LWP::UserAgent->new(timeout => 30);
+
+		$ua->ssl_opts(verify_hostname => 0)
+			if lc($config->{accept_selfsigned_certs}) eq "y";
+
 		my $response = $ua->request(HTTP::Request->new('GET', $ils));
 		my $data = $response->content;
 
