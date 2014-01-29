@@ -12,6 +12,8 @@
 	(thanks to Dirk Tanneberger, dirk AT tanneberger.biz)
 - Added support to use '/dev/disk/by-path/' paths as device names in the 'disk'
   graph. [#37]
+- Added two new options to 'emailreports' to configure the time when email
+  reports will be sent. [#39]
 - Fixed to expand gaps also for negative values. [#34]
 - Fixed in email reports to show all graphs in the list. [#33]
 - Fixed the date format to match with UW-IMAP logs and also add POP3 login
