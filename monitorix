@@ -561,11 +561,12 @@ while(1) {
 		# Email Reports
 		if(lc($config{emailreports}->{enabled}) eq "y") {
 			my $emailreports = $config{emailreports};
+			my $email_m = $config{email_report_minute};
+			my $email_h = $config{email_report_hour};
 			my $d = "emailreports";
 			undef($d) if(!grep {trim($_) eq $d} (@{$config{debug}}));
 
-			# at 00:00h
-			if($min == 0 && $hour == 0) {
+			if($min == $email_m && $hour == $email_h) {
 
 				eval "use emailreports qw(emailreports_send)";
 				if($@) {
