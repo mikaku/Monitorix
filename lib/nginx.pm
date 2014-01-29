@@ -145,6 +145,10 @@ sub nginx_update {
 
 	my $url = "http://127.0.0.1:" . $nginx->{port} . "/nginx_status";
 	my $ua = LWP::UserAgent->new(timeout => 30);
+
+	$ua->ssl_opts(verify_hostname => 0)
+		if lc($config->{accept_selfsigned_certs}) eq "y";
+
 	my $response = $ua->request(HTTP::Request->new('GET', $url));
 	my $rrdata = "N";
 
