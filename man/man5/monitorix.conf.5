@@ -129,6 +129,13 @@ The maximum allowed is 5.
 Default value: \fI1\fP
 .RE
 .P
+.BI accept_selfsigned_certs
+.RS
+This option forces to accept self-signed certificates when collecting values remotely using HTTPS protocol.
+.P
+Default value: \fIy\fP
+.RE
+.P
 .BI base_dir
 .RS
 This is the absolute path to the directory where all the web elements are located:
@@ -693,7 +700,7 @@ This graph is able to monitor an unlimited number of disk drives.
 .P
 .BI list
 .RS
-This is a list of groups of disk device names that you want to monitor. Each group will become a graph and there may be an unlimited number of groups.
+This is a list of groups of disk drives that you want to monitor. Each group will become a graph and there may be an unlimited number of groups. You can define device names or paths to devices like \fI/dev/disk/by-path/pci-0000:00:11.0-scsi-0:0:0:0\fP.
 .P
 WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIdisk.rrd\fP file accordingly, removing all historical data.
 .P
@@ -942,6 +949,8 @@ The maximum number of entries allowed is 10.
 This is where the network interface that acts as the gateway for this server is defined. This is mainly used if you plan to monitor network traffic usage of your devices/networks using the \fBtraffacct\fP graph below.
 .RE
 .SS System services demand (serv.rrd)
+This graph requires either \fIMailScanner\fP or \fIamavisd-new\fP mail scanners in order to account spam and virus emails.
+.P
 .BI mode
 .RS
 This option toggles the way the System Services Demand data is represented in the graph. There are two possible values:
@@ -955,6 +964,8 @@ This option toggles the way the System Services Demand data is represented in th
 Default value: \fIi\fP
 .RE
 .SS Mail statistics (mail.rrd)
+This graph requires either \fIMailScanner\fP or \fIamavisd-new\fP mail scanners in order to account spam and virus emails. Spamassassin and Clamav antivirus are also used for spam and virus email accounting.
+.P
 .BI mta
 .RS
 This option specifies the MTA that Monitorix will use to collect mail statistics. The currently supported MTAs are:
@@ -1083,7 +1094,9 @@ Default value: \fI24000\fP
 .P
 .BI list
 .RS
-You may define here up to \fBmax\fP network port numbers. If you see a red color in the background of a network port graph, it means that there is not a daemon listening on that port. This can be useful to know if some service gone down unexpectedly.
+You may define here up to \fBmax\fP network port numbers. If you need to monitor the same network port with TCP and UDP protocols, you can add your own suffix to the port number (e.g: 443t and 443u) in order to distinguish it from the double definition in the <desc> block.
+.P
+If you see a red color in the background of a network port graph, it means that there is not a daemon listening on that port. This can be useful to know if some service gone down unexpectedly.
 .RE
 .P
 .BI desc
@@ -1634,7 +1647,7 @@ Default value: \fIapcaccess\fP
 .P
 .BI list
 .RS
-This is a comma-separated list of hostnames with network port running \fIapcupsd\fP.
+This is a comma-separated list of hostnames with the network port running \fIapcupsd\fP.
 .P
 WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIapcupsd.rrd\fP file accordingly, removing all historical data.
 .P
@@ -1889,6 +1902,20 @@ This is the address that will be used as remitent for all the monthly report ema
 Default value: \fInoreply@example.com\fP
 .RE
 .P
+.BI hour
+.RS
+This is the hour (in 24h format) when the email reports will be sent.
+.P
+Default value: \fI0\fP
+.RE
+.P
+.BI minute
+.RS
+This is the minute when the email reports will be sent.
+.P
+Default value: \fI0\fP
+.RE
+.P
 .BI daily
 .br
 .BI weekly
@@ -1908,6 +1935,13 @@ The email reports are sent based on the following schedule:
 \fIyearly\fP   reports will be sent the first day of each year.
 .RE
 .P
+.BI enabled
+.RS
+This option enables each report individually.
+.P
+Default value: \fIn\fP
+.RE
+.P
 .BI graphs
 .RS
 This is a comma-separated list of graph names you want to appear in the email report. The names are the same as their \fI.rrd\fP files. There is a list of them in the \fBgraph_name\fP option in \fImonitorix.conf\fP.
@@ -1918,6 +1952,13 @@ Default value: \fIsystem, fs\fP
 .BI to
 .RS
 This is a comma-separated list of recipient email addresses.
+.RE
+.P
+.BI addendum_script
+.RS
+This is the full path name of an external script that will be executed during the creation of the report, and its output will be appended to the mail. This is useful for system administrators that want to add extra system information to the reports.
+.P
+Default value: \fInone\fP
 .RE
 .SS rigid and limit values
 .BI rigid
