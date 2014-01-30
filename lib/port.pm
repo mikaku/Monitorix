@@ -118,6 +118,10 @@ sub port_init {
 		}
 	}
 
+	if(scalar(my @pls = split(',', $port->{list})) > $port->{max}) {
+		logger("$myself: WARNING: 'max' option indicates less ports than really defined in 'list'.");
+	}
+
 	if($config->{os} eq "Linux") {
 		my $num;
 		my @line;
@@ -126,18 +130,19 @@ sub port_init {
 		my @pl = split(',', $port->{list});
 		for($n = 0; $n < $port->{max}; $n++) {
 			$pl[$n] = trim($pl[$n]);
-			if($pl[$n]) {
+			my ($np) = ($pl[$n] =~ m/^(\d+).*?/);
+			if($pl[$n] && $np) {
 				my $p = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[1])) || "all";
 				my $conn = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[2]));
 				if($conn eq "in" || $conn eq "in/out") {
 					system("iptables -N monitorix_IN_$n 2>/dev/null");
-					system("iptables -I INPUT -p $p --sport 1024:65535 --dport $pl[$n] -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
-					system("iptables -I OUTPUT -p $p --sport $pl[$n] --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
+					system("iptables -I INPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
+					system("iptables -I OUTPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
 				}
 				if($conn eq "out" || $conn eq "in/out") {
 					system("iptables -N monitorix_OUT_$n 2>/dev/null");
-					system("iptables -I INPUT -p $p --sport $pl[$n] --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
-					system("iptables -I OUTPUT -p $p --sport 1024:65535 --dport $pl[$n] -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
+					system("iptables -I INPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
+					system("iptables -I OUTPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
 				}
 				if($conn ne "in" && $conn ne "out" && $conn ne "in/out") {
 					logger("$myself: Invalid connection type '$conn'; must be 'in', 'out' or 'in/out'.");
@@ -150,11 +155,12 @@ sub port_init {
 		my @pl = split(',', $port->{list});
 		for($n = 0; $n < $port->{max}; $n++) {
 			$pl[$n] = trim($pl[$n]);
-			if($pl[$n]) {
+			my ($np) = ($pl[$n] =~ m/^(\d+).*?/);
+			if($pl[$n] && $np) {
 				my $p = lc((split(',', $port->{desc}->{$pl[$n]}))[1]) || "all";
-				# in/out support pending XXX
-				system("ipfw -q add $port->{rule} count $p from me $pl[$n] to any");
-				system("ipfw -q add $port->{rule} count $p from any to me $pl[$n]");
+				# in/out not support yet  FIXME
+				system("ipfw -q add $port->{rule} count $p from me $np to any");
+				system("ipfw -q add $port->{rule} count $p from any to me $np");
 			}
 		}
 	}
@@ -237,7 +243,8 @@ sub port_update {
 				$i_in[$n] = 0 unless $i_in[$n];
 				$o_in[$n] = 0 unless $o_in[$n];
 				$pl[$n] = trim($pl[$n]);
-				if(/ from any to me dst-port $pl[$n]$/) {
+				my ($np) = ($pl[$n] =~ m/^(\d+).*?/);
+				if(/ from any to me dst-port $np$/) {
 					my (undef, undef, $bytes) = split(' ', $_);
 					chomp($bytes);
 					$i_in[$n] = $bytes - ($config->{port_hist_i_in}[$n] || 0);
@@ -247,7 +254,7 @@ sub port_update {
 				}
 				$o_out[$n] = 0 unless $o_out[$n];
 				$i_out[$n] = 0 unless $i_out[$n];
-				if(/ from me $pl[$n] to any$/) {
+				if(/ from me $np to any$/) {
 					my (undef, undef, $bytes) = split(' ', $_);
 					chomp($bytes);
 					$i_out[$n] = $bytes - ($config->{port_hist_i_out}[$n] || 0);
