@@ -15,8 +15,8 @@
   graph. [#37]
 - Added two new options to 'emailreports' to configure the time when email
   reports will be sent. [#39]
-- Added a new option to accept self-signed certificates when collecting value
-  remotely. [#40]
+- Added a new option to accept self-signed certificates when collecting values
+  remotely using HTTPS protocol. [#40]
 - Added support in the 'port' graph to define multiple network protocols to the
   same port number.
 	(suggested by Jean-Louis Halleux, monitorix AT ritm.be)
@@ -32,7 +32,7 @@
 - Fixed to avoid unexpected grouping of network interfaces with aliases in the
   'net' graph.
 	(thanks to Ivo Brhel, ivb AT volny.cz)
-- Fixed to enclose URLs with signle quotes in the Multihost HTML.
+- Fixed to enclose URLs with single quotes in the Multihost HTML.
 - Fixed messages of 'use of uninitialized values' and 'non-numeric arguments in
   addition' in 'proc' and 'fs' graphs respectively on FreeBSD systems.
 	(thanks to Janusz Pruszewicz, janusz AT pruszewicz.com)
