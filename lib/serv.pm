@@ -321,6 +321,12 @@ sub serv_update {
 				if(/MailScanner/ && /Virus Scanning:/ && /Found/ && /viruses/) {
 					$virus++;
 				}
+				if(/amavis\[.* SPAM/) {
+					$spam++;
+				}
+				if(/amavis\[.* INFECTED|amavis\[.* BANNED/) {
+					$virus++;
+				}
 			}
 		}
 		close(IN);
