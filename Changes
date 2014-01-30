@@ -16,6 +16,9 @@
   reports will be sent. [#39]
 - Added a new option to accept self-signed certificates when collecting value
   remotely. [#40]
+- Added support in the 'port' graph to define multiple network protocols to the
+  same port number.
+	(suggested by Jean-Louis Halleux, monitorix AT ritm.be)
 - Fixed to expand gaps also for negative values. [#34]
 - Fixed in email reports to show all graphs in the list. [#33]
 - Fixed the date format to match with UW-IMAP logs and also add POP3 login
