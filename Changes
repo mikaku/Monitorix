@@ -2,7 +2,8 @@
 ====================
 - Added a complete statistical APC UPS (apcupsd) graph.
 	(thanks to Ilya Karpov, gibzer AT gmail.com)
-- Added support for amavisd-new in the 'mail' graph.
+- Added support for amavisd-new in the 'serv' and 'mail' graphs for spam and
+  virus email accounting.
 	(thanks to Dirk Tanneberger, dirk AT tanneberger.biz)
 - Added support for PHP APC 4.0. [#36]
 - Added an error message into the email if 'emailreports' can't connect with
