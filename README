@@ -106,8 +106,8 @@ monitorixico.png            <base_dir>			favicon
 monitorix-alert.sh          /usr/share/doc/		alert example script
 monitorix-apache.conf       /etc/httpd/conf.d/		apache configuration
 monitorix.service           /usr/lib/systemd/system/	systemd service template
-monitorix.init              /etc/init.d/		redhat init script
-monitorix-deb.init          /etc/init.d/		debian init script
+monitorix.init              /etc/init.d/		redhat SysV init script
+monitorix-deb.init          /etc/init.d/		debian SysV init script
 monitorix.logrotate         /etc/logrotate.d/		logrotate script
 monitorix.spec              /usr/share/doc/		RPM spec file
 monitorix.sysconfig         /etc/sysconfig/		pre-run config file
@@ -120,6 +120,7 @@ README.NetBSD               /usr/share/doc/		documentation
 man/man5/monitorix.conf.5   /usr/share/man/man5/	monitorix.conf manpage
 man/man8/monitorix.8        /usr/share/man/man8/	monitorix manpage
 reports/*.html              <base_lib>/reports/		traffacct reports i18n
+usage/                      <base_lib>/usage/		traffacct usage data
 
 
 Once succesfully installed, please take a look into the configuration file to
