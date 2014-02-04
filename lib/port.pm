@@ -128,7 +128,7 @@ sub port_init {
 
 		# set the iptables rules for each defined port
 		my @pl = split(',', $port->{list});
-		for($n = 0; $n < $port->{max}; $n++) {
+		for($n = 0; $n < min($port->{max}, scalar(@pl)); $n++) {
 			$pl[$n] = trim($pl[$n]);
 			my ($np) = ($pl[$n] =~ m/^(\d+).*?/);
 			if($pl[$n] && $np) {
@@ -153,12 +153,12 @@ sub port_init {
 	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 		# set the ipfw rules for each defined port
 		my @pl = split(',', $port->{list});
-		for($n = 0; $n < $port->{max}; $n++) {
+		for($n = 0; $n < min($port->{max}, scalar(@pl)); $n++) {
 			$pl[$n] = trim($pl[$n]);
 			my ($np) = ($pl[$n] =~ m/^(\d+).*?/);
 			if($pl[$n] && $np) {
 				my $p = lc((split(',', $port->{desc}->{$pl[$n]}))[1]) || "all";
-				# in/out not support yet  FIXME
+				# in/out not supported yet  FIXME
 				system("ipfw -q add $port->{rule} count $p from me $np to any");
 				system("ipfw -q add $port->{rule} count $p from any to me $np");
 			}
@@ -335,7 +335,8 @@ sub port_cgi {
 		my $line2;
 		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
 		print("    ");
-		for($n = 0; $n < $port->{max} && $n < scalar(my @pl = split(',', $port->{list})); $n++) {
+		my $max = min($port->{max}, scalar(my @pl = split(',', $port->{list})));
+		for($n = 0; $n < $max; $n++) {
 			$pl[$n] = trim($pl[$n]);
 			my $pn = trim((split(',', $port->{desc}->{$pl[$n]}))[0]);
 			my $pc = trim((split(',', $port->{desc}->{$pl[$n]}))[2]);
@@ -358,7 +359,7 @@ sub port_cgi {
 			$line = @$data[$n];
 			$time = $time - (1 / $tf->{ts});
 			printf(" %2d$tf->{tc} ", $time);
-			for($n2 = 0; $n2 < $port->{max} && $n2 < scalar(my @pl = split(',', $port->{list})); $n2++) {
+			for($n2 = 0; $n2 < $max; $n2++) {
 				$pl[$n2] = trim($pl[$n2]);
 				my $pc = trim((split(',', $port->{desc}->{$pl[$n2]}))[2]);
 				$from = $n2 * 4;
