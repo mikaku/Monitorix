@@ -140,7 +140,8 @@ sub apache_update {
 
 	my $n = 0;
 	foreach(my @al = split(',', $apache->{list})) {
-		my $url = trim($_) . "/server-status?auto";
+#		my $url = trim($_) . "/server-status?auto";
+		my $url = trim($_);
 		my $ua = LWP::UserAgent->new(timeout => 30);
 
 		$ua->ssl_opts(verify_hostname => 0)
@@ -187,6 +188,11 @@ sub apache_update {
 				last;
 			}
 		}
+
+		if(!$acc && !$kb && !$busy && !$idle) {
+			logger("$myself: WARNING: collected values are zero. Check the URL defined.");
+		}
+
 		$rrdata .= ":$acc:$kb:$cpu:$busy:$idle";
 		$n++;
 	}
