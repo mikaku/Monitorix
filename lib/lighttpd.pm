@@ -144,7 +144,7 @@ sub lighttpd_update {
 
 	my $n = 0;
 	foreach(my @ll = split(',', $lighttpd->{list})) {
-		my $url = trim($_) . "/server-status?auto";
+		my $url = trim($_);
 		my $ua = LWP::UserAgent->new(timeout => 30);
 
 		$ua->ssl_opts(verify_hostname => 0)
