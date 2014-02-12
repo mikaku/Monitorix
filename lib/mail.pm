@@ -302,7 +302,7 @@ sub mail_update {
 				return;
 			}
 			while(<IN>) {
-				if(/^# Summary:\s+(\d+) records,\s+(\d+) greylisted,\s+(\d+) whitelisted$/) {
+				if(/^# Summary:\s+(\d+) records,\s+(\d+) greylisted,\s+(\d+) whitelisted/) {
 					$gl_records = $1;
 					$gl_greylisted = $2;
 					$gl_whitelisted = $3;
