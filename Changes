@@ -24,7 +24,8 @@
   'lighttpd' modules, now it most be part of the URL(s) defined in the 'list'
   option.
 - Removed the EOL mark in the regexp to be able to collect 'milter-greylist'
-  stats in order to support newer versions.
+  stats in order to support newer version 4.4.3.
+  	(thanks to Sean Wilson, monitorix AT bsdpanic.com)
 - Fixed to expand gaps also for negative values. [#34]
 - Fixed in email reports to show all graphs in the list. [#33]
 - Fixed the date format to match with UW-IMAP logs and also add POP3 login
