@@ -227,14 +227,24 @@ sub mail_update {
 
 		for my $path (split /:/, $ENV{PATH}) {
 			if(-f "$path/pflogsumm" && -x _) {
-				open(IN, "pflogsumm -d today -h 0 -u 0 --smtpd_stats --no_bounce_detail --no_deferral_detail --no_reject_detail --no_no_msg_size --no_smtpd_warnings $config->{mail_log} 2>/dev/null |");
+				if(open(IN, "pflogsumm -d today -h 0 -u 0 --smtpd_stats --no_bounce_detail --no_deferral_detail --no_reject_detail --no_no_msg_size --no_smtpd_warnings $config->{mail_log} 2>/dev/null |")) {
+					@data = <IN>;
+					close(IN);
+					last;
+				}
 			}
 			if(-f "$path/pflogsumm.pl" && -x _) {
-				open(IN, "pflogsumm.pl -d today -h 0 -u 0 --smtpd_stats --no_bounce_detail --no_deferral_detail --no_reject_detail --no_no_msg_size --no_smtpd_warnings $config->{mail_log} 2>/dev/null |");
+				if(open(IN, "pflogsumm.pl -d today -h 0 -u 0 --smtpd_stats --no_bounce_detail --no_deferral_detail --no_reject_detail --no_no_msg_size --no_smtpd_warnings $config->{mail_log} 2>/dev/null |")) {
+					@data = <IN>;
+					close(IN);
+					last;
+				}
 			}
 		}
-		@data = <IN>;
-		close(IN);
+
+		logger("$myself: 'pflogsumm' returned empty data. Does it's really installed?")
+			if !@data;
+
 		foreach(@data) {
 			if(/^\s*(\d{1,7})([ km])\s*received$/) {
 				$recvd = $1;
