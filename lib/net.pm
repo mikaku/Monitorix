@@ -192,7 +192,7 @@ sub net_update {
 				open(IN, "/proc/net/dev");
 				while(<IN>) {
 					my ($dev, $data) = split(':', $_);
-					if(trim($dev) eq /$nl[$n]/) {
+					if(trim($dev) eq $nl[$n]) {
 						($net_bytes_in[$n], $net_packs_in[$n], $net_error_in[$n], undef, undef, undef, undef, undef, $net_bytes_out[$n], $net_packs_out[$n], $net_error_out[$n]) = split(' ', $data);
 						last;
 					}
