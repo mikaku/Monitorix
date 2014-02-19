@@ -297,11 +297,12 @@ sub bind_update {
 
 	for($n = 0; $n < scalar(my @bl = split(',', $bind->{list})); $n++) {
 		my $l = trim($bl[$n]);
-		my $ua = LWP::UserAgent->new(timeout => 30);
+		my $ssl = "";
 
-		$ua->ssl_opts(verify_hostname => 0)
+		$ssl = "ssl_opts => {verify_hostname => 0}"
 			if lc($config->{accept_selfsigned_certs}) eq "y";
 
+		my $ua = LWP::UserAgent->new(timeout => 30, $ssl);
 		my $response = $ua->request(HTTP::Request->new('GET', $l));
 		my $data = XMLin($response->content);
 		my $value;

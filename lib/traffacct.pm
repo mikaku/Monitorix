@@ -360,11 +360,12 @@ sub traffacct_sendreports {
 
 		# get the monthly graph
 		my $url = $traffacct->{reports}->{url_prefix} . $base_cgi . "/monitorix.cgi?mode=traffacct.$n&graph=all&when=1month&color=&silent=imagetagbig";
-		my $ua = LWP::UserAgent->new(timeout => 30);
+		my $ssl = "";
 
-		$ua->ssl_opts(verify_hostname => 0)
+		$ssl = "ssl_opts => {verify_hostname => 0}"
 			if lc($config->{accept_selfsigned_certs}) eq "y";
 
+		my $ua = LWP::UserAgent->new(timeout => 30, $ssl);
 		$ua->request(HTTP::Request->new('GET', $url));
 
 		$url = $traffacct->{reports}->{url_prefix} . $base_url . "/" . $imgs_dir . "traffacct" . $n . ".1month.png";
