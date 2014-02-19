@@ -332,17 +332,16 @@ sub netstat_cgi {
 		$err = RRDs::error;
 		print("ERROR: while fetching $rrd: $err\n") if $err;
 		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
-		print("Time    Logged In     Samba  Netatalk\n");
-		print("------------------------------------- \n");
+		print("                                                                                            IPv4                                                                                        IPv6\n");
+		print("Time  CLOSED LISTEN SYNSEN SYNREC ESTBLS FINWA1 FINWA2 CLOSIN TIMEWA CLOSEW LASTAC UNKNOW    UDP  CLOSED LISTEN SYNSEN SYNREC ESTBLS FINWA1 FINWA2 CLOSIN TIMEWA CLOSEW LASTAC UNKNOW    UDP\n");
+		print("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- \n");
 		my $line;
 		my @row;
 		my $time;
 		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
 			$line = @$data[$n];
-			my ($sys, $smb, $mac) = @$line;
-			@row = ($sys, $smb, $mac);
 			$time = $time - (1 / $tf->{ts});
-			printf(" %2d$tf->{tc}       %6d    %6d    %6d\n", $time, @row);
+			printf(" %2d$tf->{tc}  %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d  %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", $time, @$line[0..12], @$line[18..30]);
 		}
 		print("    </pre>\n");
 		if($title) {
