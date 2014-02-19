@@ -341,7 +341,9 @@ sub netstat_cgi {
 		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
 			$line = @$data[$n];
 			$time = $time - (1 / $tf->{ts});
-			printf(" %2d$tf->{tc}  %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d  %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", $time, @$line[0..12], @$line[18..30]);
+			my ($i4_closed, $i4_listen, $i4_synsent, $i4_syncrecv, $i4_estblshd, $i4_finwait1, $i4_finwait2, $i4_closing, $i4_timewait, $i4_closewait, $i4_lastack, $i4_unknown, $i4_udp, $i6_closed, $i6_listen, $i6_synsent, $i6_syncrecv, $i6_estblshd, $i6_finwait1, $i6_finwait2, $i6_closing, $i6_timewait, $i6_closewait, $i6_lastack, $i6_unknown, $i6_udp) = @$line;
+			@row = ($i4_closed || 0, $i4_listen || 0, $i4_synsent || 0, $i4_syncrecv || 0, $i4_estblshd || 0, $i4_finwait1 || 0, $i4_finwait2 || 0, $i4_closing || 0, $i4_timewait || 0, $i4_closewait || 0, $i4_lastack || 0, $i4_unknown || 0, $i4_udp || 0, $i6_closed || 0, $i6_listen || 0, $i6_synsent || 0, $i6_syncrecv || 0, $i6_estblshd || 0, $i6_finwait1 || 0, $i6_finwait2 || 0, $i6_closing || 0, $i6_timewait || 0, $i6_closewait || 0, $i6_lastack || 0, $i6_unknown || 0, $i6_udp || 0);
+			printf(" %2d$tf->{tc}  %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d  %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", $time, @row);
 		}
 		print("    </pre>\n");
 		if($title) {
