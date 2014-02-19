@@ -2,6 +2,7 @@
 ====================
 - Added a complete statistical APC UPS (apcupsd) graph.
 	(thanks to Ilya Karpov, gibzer AT gmail.com)
+- Added a complete statistical Netstat (netstat) graph.
 - Added support for amavisd-new in the 'serv' and 'mail' graphs for spam and
   virus email accounting.
 	(thanks to Dirk Tanneberger, dirk AT tanneberger.biz)
