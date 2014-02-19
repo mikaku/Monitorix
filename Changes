@@ -21,6 +21,8 @@
 - Added support in the 'port' graph to define multiple network protocols to the
   same port number.
 	(suggested by Jean-Louis Halleux, monitorix AT ritm.be)
+- Changed the default path '/usr/share/monitorix' of the 'base_dir' option to
+  '/var/lib/monitorix/www'. This should make Monitorix more FHS friendly.
 - Removed the hard coded suffix '/server-status?auto' from the 'apache' and
   'lighttpd' modules, now it most be part of the URL(s) defined in the 'list'
   option.
