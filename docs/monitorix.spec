@@ -49,13 +49,13 @@ mkdir -p %{buildroot}%{_bindir}
 install -m 0755 monitorix %{buildroot}%{_bindir}/monitorix
 mkdir -p %{buildroot}%{_libdir}/monitorix
 install -m 0644 lib/*.pm %{buildroot}%{_libdir}/monitorix
-mkdir -p %{buildroot}%{_datadir}/monitorix
-install -m 0644 logo_top.png %{buildroot}%{_datadir}/monitorix
-install -m 0644 logo_bot.png %{buildroot}%{_datadir}/monitorix
-install -m 0644 monitorixico.png %{buildroot}%{_datadir}/monitorix
-mkdir -p %{buildroot}%{_datadir}/monitorix/imgs
-mkdir -p %{buildroot}%{_datadir}/monitorix/cgi
-install -m 0755 monitorix.cgi %{buildroot}%{_datadir}/monitorix/cgi
+mkdir -p %{buildroot}%{_localstatedir}/lib/monitorix/www
+install -m 0644 logo_top.png %{buildroot}%{_localstatedir}/lib/monitorix/www
+install -m 0644 logo_bot.png %{buildroot}%{_localstatedir}/lib/monitorix/www
+install -m 0644 monitorixico.png %{buildroot}%{_localstatedir}/lib/monitorix/www
+mkdir -p %{buildroot}%{_localstatedir}/lib/monitorix/www/imgs
+mkdir -p %{buildroot}%{_localstatedir}/lib/monitorix/www/cgi
+install -m 0755 monitorix.cgi %{buildroot}%{_localstatedir}/lib/monitorix/www/cgi
 mkdir -p %{buildroot}%{_localstatedir}/lib/monitorix/reports
 install -m 0644 reports/*.html %{buildroot}%{_localstatedir}/lib/monitorix/reports
 mkdir -p %{buildroot}%{_localstatedir}/lib/monitorix/usage
@@ -78,11 +78,11 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/monitorix.conf
 %{_bindir}/monitorix
 %{_libdir}/monitorix/*.pm
-%{_datadir}/monitorix/logo_top.png
-%{_datadir}/monitorix/logo_bot.png
-%{_datadir}/monitorix/monitorixico.png
-%{_datadir}/monitorix/cgi/monitorix.cgi
-%attr(777,root,root) %{_datadir}/monitorix/imgs
+%{_localstatedir}/lib/monitorix/www/logo_top.png
+%{_localstatedir}/lib/monitorix/www/logo_bot.png
+%{_localstatedir}/lib/monitorix/www/monitorixico.png
+%{_localstatedir}/lib/monitorix/www/cgi/monitorix.cgi
+%attr(777,root,root) %{_localstatedir}/lib/monitorix/www/imgs
 %attr(755,root,root) %{_localstatedir}/lib/monitorix/usage
 %config(noreplace) %{_localstatedir}/lib/monitorix/reports/*.html
 %doc %{_mandir}/man5/monitorix.conf.5.gz
