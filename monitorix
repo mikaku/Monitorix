@@ -269,6 +269,10 @@ EOF
 			if($g eq "port") {
 				for($n = 0; $n < $config{port}->{max} && $n < scalar(my @port_list = split(',', $config{port}->{list})); $n++) {
 					my $num = trim($port_list[$n]);
+					if(!$config{port}->{desc}->{$num}) {
+						logger("$myself: port number '$num' listed but not defined.");
+						next;
+					}
 					my $name = trim((split(',', $config{port}->{desc}->{$num}))[0]);
 					my $pcon = trim((split(',', $config{port}->{desc}->{$num}))[2]);
 					$gname = "_" . $g;
