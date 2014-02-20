@@ -428,7 +428,7 @@ if($mode eq "localhost") {
 				next;
 			}
 
-			if($graph eq "all" || $graph =~ /_$g/) {
+			if($graph eq "all" || $graph =~ m/^_$g\d+/) {
 				no strict "refs";
 				&$cgi($g, \%config, \%cgi);
 			}
