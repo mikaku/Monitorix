@@ -3,7 +3,7 @@
 
 Summary: Monitorix is a system monitoring tool
 Name: monitorix
-Version: 3.4.0
+Version: 3.4.90
 Release: 1%{?dist}
 License: GPL
 Group: Applications/System
@@ -23,6 +23,7 @@ Requires: perl-DBI
 Requires: perl-XML-Simple
 Requires: perl-Config-General
 Requires: perl-HTTP-Server-Simple
+Requires: perl-IO-Socket-SSL
 
 %description
 Monitorix is a free, open source, lightweight system monitoring tool designed
