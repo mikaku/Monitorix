@@ -53,6 +53,9 @@
 - Fixed some HTML tags in 'monitorix.cgi'.
 - Fixed a missing HTML tag in 'port' graph.
 	(thanks to Jean-Louis Halleux, monitorix AT ritm.be)
+- Fixed messages of 'use of uninitialized value' in 'port' graph.
+	(thanks to Claude Nadon, claude AT ws01.info for pointing this out)
+- Small fixes and typos.
 
 
 3.4.0  - 02-Dec-2013
