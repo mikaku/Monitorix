@@ -46,7 +46,7 @@ $SIG{'TERM'} = 'INT_handler';
 $SIG{'CHLD'} = 'CHLD_handler';
 $SIG{'HUP' } = 'HUP_handler';
 
-use constant VERSION	=> "3.4.90";
+use constant VERSION	=> "3.4.91";
 use constant RELDATE	=> "19-Feb-2014";
 
 my @suppsys = ("Linux", "FreeBSD", "OpenBSD", "NetBSD");
@@ -411,6 +411,7 @@ $0 = sprintf("%s %s%s%s%s",
 daemonize();
 logger("Starting Monitorix version " . VERSION . " (pid $$).");
 
+# save the pidfile
 if($options{p}) {
 	$options{p} = abs_path($options{p});
 	open(OUT, "> $options{p}")
