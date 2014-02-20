@@ -131,6 +131,11 @@ sub port_init {
 		for($n = 0; $n < min($port->{max}, scalar(@pl)); $n++) {
 			$pl[$n] = trim($pl[$n]);
 			my ($np) = ($pl[$n] =~ m/^(\d+).*?/);
+
+			if(!$port->{desc}->{$pl[$n]}) {
+				logger("$myself: port number '$np' listed but not defined.");
+				next;
+			}
 			if($pl[$n] && $np) {
 				my $p = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[1])) || "all";
 				my $conn = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[2]));
@@ -414,6 +419,8 @@ sub port_cgi {
 	my $max = min($port->{max}, scalar(my @pl = split(',', $port->{list})));
 	for($n = 0; $n < $max; $n++) {
 		$pl[$n] = trim($pl[$n]);
+		next if !$port->{desc}->{$pl[$n]};
+
 		my $pc = trim((split(',', $port->{desc}->{$pl[$n]}))[2]);
 		foreach my $conn (split('/', $pc)) {
 			$str = $u . $package . $n . substr($conn, 0 ,1) . "." . $tf->{when} . ".png";
@@ -431,6 +438,13 @@ sub port_cgi {
 	$n2 = 1;
 	while($n < $max) {
 		next unless $pl[$n];
+
+		# continue if port was listed by not defined
+		if(!$port->{desc}->{$pl[$n]}) {
+			$n++;
+			next;
+		}
+
 		if($title) {
 			if($n == 0) {
 				main::graph_header($title, $port->{graphs_per_row});
