@@ -42,6 +42,11 @@ sub int_init {
 	my @max;
 	my @last;
 
+	if($config->{os} eq "NetBSD") {
+		logger("$myself is not supported yet by your operating system ($config->{os}).");
+		return;
+	}
+
 	if(-e $rrd) {
 		$info = RRDs::info($rrd);
 		for my $key (keys %$info) {
