@@ -42,6 +42,11 @@ sub netstat_init {
 	my @max;
 	my @last;
 
+	if($config->{os} eq "NetBSD") {
+		logger("$myself is not supported yet by your operating system ($config->{os}).");
+		return;
+	}
+
 	if(-e $rrd) {
 		$info = RRDs::info($rrd);
 		for my $key (keys %$info) {
@@ -232,7 +237,7 @@ sub netstat_update {
 			$i6_udp++ if /^udp\s+/;
 		}
 		close(IN);
-	} elsif($config->{os} eq "OpenBSD") {
+	} elsif(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD")) {
 		open(IN, "netstat -na -p tcp -f inet |");
 		while(<IN>) {
 			if(/^.*?\s\s\s\s\s(\S+)\s*$/) {
@@ -253,7 +258,7 @@ sub netstat_update {
 		close(IN);
 		open(IN, "netstat -na -p udp -f inet |");
 		while(<IN>) {
-			$i4_udp++ if /^udp\s+/;
+			$i4_udp++ if /^udp.\s+/;
 		}
 		close(IN);
 		open(IN, "netstat -na -p tcp -f inet6 |");
@@ -276,7 +281,7 @@ sub netstat_update {
 		close(IN);
 		open(IN, "netstat -na -p udp -f inet6 |");
 		while(<IN>) {
-			$i6_udp++ if /^udp\s+/;
+			$i6_udp++ if /^udp.\s+/;
 		}
 		close(IN);
 	}
