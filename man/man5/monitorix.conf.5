@@ -1169,7 +1169,7 @@ This is a comma-separated list of URLs of the monitored Apache web servers.
 .P
 WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIapache.rrd\fP file accordingly, removing all historical data.
 .P
-Default value: \fIhttp://localhost:80/\fP
+Default value: \fIhttp://localhost/server-status?auto\fP
 .RE
 .SS Nginx statistics (nginx.rrd)
 This graph may require adding some lines in the configuration file \fInginx.conf\fP. Please see the \fIREADME.nginx\fP file to determine the exact steps needed to configure Nginx to get status information.
@@ -1200,7 +1200,7 @@ This is a comma-separated list of URLs of the monitored Lighttpd web servers.
 .P
 WARNING: Every time the number of entries of this option changes, Monitorix will resize the \fIlighttpd.rrd\fP file accordingly, removing all historical data.
 .P
-Default value: \fIhttp://localhost:80/\fP
+Default value: \fIhttp://localhost/server-status?auto\fP
 .RE
 .SS MySQL statistics (mysql.rrd)
 This graph requires that you create a password protected MySQL user that is NOT granted privileges on any DB.
