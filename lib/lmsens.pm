@@ -42,6 +42,11 @@ sub lmsens_init {
 	my @max;
 	my @last;
 
+	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
+		logger("$myself is not supported yet by your operating system ($config->{os}).");
+		return;
+	}
+
 	if(-e $rrd) {
 		$info = RRDs::info($rrd);
 		for my $key (keys %$info) {
