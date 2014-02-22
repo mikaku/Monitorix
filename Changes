@@ -19,7 +19,7 @@
   reports will be sent. [#39]
 - Added a new option to accept self-signed certificates when collecting values
   remotely using HTTPS protocol. [#40]
-- Added support in the 'port' graph to define multiple network protocols to the
+- Added support in the 'port' graph to define multiple network protocols on the
   same port number.
 	(suggested by Jean-Louis Halleux, monitorix AT ritm.be)
 - Changed the default path '/usr/share/monitorix' of the 'base_dir' option to
