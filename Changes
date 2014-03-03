@@ -15,7 +15,7 @@
 	(thanks to Dirk Tanneberger, dirk AT tanneberger.biz)
 - Added support to use '/dev/disk/by-path/' paths as device names in the 'disk'
   graph. [#37]
-- Added two new options to 'emailreports' to configure the time when email
+- Added two new options in 'emailreports' to configure the time when email
   reports will be sent. [#39]
 - Added a new option to accept self-signed certificates when collecting values
   remotely using HTTPS protocol. [#40]
