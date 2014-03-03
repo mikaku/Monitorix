@@ -382,12 +382,14 @@ if(!$silent) {
 			$str = substr($graph, 0, 5);
 			my $p = substr($graph, 5, 1);
 			$title = $config{graphs}->{$str};
-			$p = (split(',', $config{port_list}))[$p];
+			$p = (split(',', $config{port}->{list}))[$p];
 			$title .= " " . trim($p);
-			$p = (split(',', $config{port_desc}->{$p}))[0];
+			$p = (split(',', $config{port}->{desc}->{$p}))[0];
 			$title .= " (" . trim($p) . ")";
 		} else {
-			$title = $config{graphs}->{$graph};
+			my ($g1, $g2) = ($graph =~ /(_\D+).*?(\d)$/);
+			$g2 = "" if $g1 eq "_proc";	# '_procn' must be converted to '_proc'
+			$title = $config{graphs}->{$g1 . $g2};
 		}
 	}
 	$title =~ s/ /&nbsp;/g;
