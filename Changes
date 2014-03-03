@@ -56,6 +56,7 @@
 	(thanks to Jean-Louis Halleux, monitorix AT ritm.be)
 - Fixed messages of 'use of uninitialized value' in 'port' graph.
 	(thanks to Claude Nadon, claude AT ws01.info for pointing this out)
+- Fixed the title of certain graphs in Multihost mode.
 - Small fixes and typos.
 
 
