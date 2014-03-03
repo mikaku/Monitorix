@@ -375,19 +375,14 @@ if(!$silent) {
 		$title = $config{hostname};
 	} elsif($mode eq "multihost") {
 		$graph = $graph eq "all" ? "_system1" : $graph;
-		if(substr($graph, 0, 4) eq "_net") {
-			$str = "_net" . substr($graph, 5, 1);
-			$title = $config{graphs}->{$str};
-		} elsif(substr($graph, 0, 5) eq "_port") {
-			$str = substr($graph, 0, 5);
-			my $p = substr($graph, 5, 1);
-			$title = $config{graphs}->{$str};
-			$p = (split(',', $config{port}->{list}))[$p];
-			$title .= " " . trim($p);
-			$p = (split(',', $config{port}->{desc}->{$p}))[0];
-			$title .= " (" . trim($p) . ")";
+		my ($g1, $g2) = ($graph =~ /(_\D+).*?(\d)$/);
+		if($g1 eq "_port") {
+			$title = $config{graphs}->{$g1};
+			$g2 = trim((split(',', $config{port}->{list}))[$g2]);
+			$title .= " " . $g2;
+			$g2 = (split(',', $config{port}->{desc}->{$g2}))[0];
+			$title .= " (" . trim($g2) . ")";
 		} else {
-			my ($g1, $g2) = ($graph =~ /(_\D+).*?(\d)$/);
 			$g2 = "" if $g1 eq "_proc";	# '_procn' must be converted to '_proc'
 			$title = $config{graphs}->{$g1 . $g2};
 		}
