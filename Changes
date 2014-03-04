@@ -1,4 +1,4 @@
-3.N.N  - DD-MMM-2013
+3.N.N  - DD-MMM-2014
 ====================
 - Added a complete statistical APC UPS (apcupsd) graph.
 	(thanks to Ilya Karpov, gibzer AT gmail.com)
@@ -22,8 +22,11 @@
 - Added support in the 'port' graph to define multiple network protocols on the
   same port number.
 	(suggested by Jean-Louis Halleux, monitorix AT ritm.be)
+- Added the inode usage in the 'fs' graph and refactored the layout.
+	(suggested by Andreas Itzchak Rehberg, izzy AT qumran.org)
 - Changed the default path '/usr/share/monitorix' of the 'base_dir' option to
   '/var/lib/monitorix/www'. This should make Monitorix more FHS friendly.
+- Incremented the font size of the titles in the 'bind' graph.
 - Removed the hard coded suffix '/server-status?auto' from the 'apache' and
   'lighttpd' modules, now it most be part of the URL(s) defined in the 'list'
   option.
