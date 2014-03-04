@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2013 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2014 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -755,11 +755,11 @@ sub fs_cgi {
 			my @f = split(',', $fs->{list}->{$k});
 			for($n = 0; $n < scalar(@f); $n++) {
 				$f[$n] = trim($f[$n]);
-				$str = sprintf("%23s", $fs->{desc}->{$f[$n]} || $f[$n]);
+				$str = sprintf("%29s", $fs->{desc}->{$f[$n]} || $f[$n]);
 				$line1 .= $str;
-				$str = sprintf("   Use     I/O    Time ");
+				$str = sprintf("   Use     I/O    Time Inode ");
 				$line2 .= $str;
-				$line3 .=      "-----------------------";
+				$line3 .=      "-----------------------------";
 			}
 		}
 		print("    $line1\n");
@@ -779,11 +779,11 @@ sub fs_cgi {
 			foreach my $k (sort keys %{$fs->{list}}) {
 				my @f = split(',', $fs->{list}->{$k});
 				for($n2 = 0; $n2 < scalar(@f); $n2++) {
-					$from = ($e * 8 * 3) + ($n2 * 3);
-					$to = $from + 3;
-					my ($use, $ioa, $tim) = @$line[$from..$to];
-					@row = ($use, $ioa, $tim);
-					printf(" %4.1f%% %7.1f %7.1f ", @row);
+					$from = ($e * 8 * 5) + ($n2 * 5);
+					$to = $from + 5;
+					my ($use, $ioa, $tim, $ino) = @$line[$from..$to];
+					@row = ($use, $ioa, $tim, $ino);
+					printf(" %4.1f%% %7.1f %7.1f %4.1f%% ", @row);
 				}
 				$e++;
 			}
@@ -812,7 +812,7 @@ sub fs_cgi {
 	}
 
 	for($n = 0; $n < keys(%{$fs->{list}}); $n++) {
-		for($n2 = 1; $n2 <= 3; $n2++) {
+		for($n2 = 1; $n2 <= 4; $n2++) {
 			$str = $u . $package . $n . $n2 . "." . $tf->{when} . ".png";
 			push(@PNG, $str);
 			unlink("$PNG_DIR" . $str);
@@ -847,7 +847,6 @@ sub fs_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
-		push(@tmp, "COMMENT: \\n");
 		for($n2 = 0, $n = 0; $n < 8; $n++) {
 			if($f[$n]) {
 				$f[$n] = trim($f[$n]);
@@ -867,15 +866,9 @@ sub fs_cgi {
 				$str = sprintf("%-23s", $str);
 				push(@tmp, "LINE2:fs" . $n . $color . ":$str");
 				push(@tmp, "GPRINT:fs" . $n . ":LAST:Cur\\: %4.1lf%%");
-				push(@tmp, "GPRINT:fs" . $n . ":AVERAGE:   Avg\\: %4.1lf%%");
-				push(@tmp, "GPRINT:fs" . $n . ":MIN:   Min\\: %4.1lf%%");
-				push(@tmp, "GPRINT:fs" . $n . ":MAX:   Max\\: %4.1lf%%\\n");
+				push(@tmp, "GPRINT:fs" . $n . ":MIN: Min\\: %4.1lf%%");
+				push(@tmp, "GPRINT:fs" . $n . ":MAX: Max\\: %4.1lf%%\\n");
 			}
-		}
-		push(@tmp, "COMMENT: \\n");
-		push(@tmp, "COMMENT: \\n");
-		if(scalar(@f) && (scalar(@f) % 2)) {
-			push(@tmp, "COMMENT: \\n");
 		}
 		if($title) {
 			print("    <tr>\n");
@@ -886,7 +879,7 @@ sub fs_cgi {
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
 			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
-		($width, $height) = split('x', $config->{graph_size}->{main});
+		($width, $height) = split('x', $config->{graph_size}->{medium});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
@@ -976,10 +969,11 @@ sub fs_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
-		for($n2 = 0, $n = 0; $n < 8; $n += 2) {
-			my $color;
+		for($n2 = 0, $n = 0; $n < 8; $n++) {
 			if($f[$n]) {
 				$f[$n] = trim($f[$n]);
+				my $color;
+
 				$str = $fs->{desc}->{$f[$n]} || $f[$n];
 				if($f[$n] eq "/") {
 					$color = "#EE4444";
@@ -990,25 +984,12 @@ sub fs_cgi {
 				} else {
 					$color = $LC[$n2++];
 				}
-				push(@tmpz, "LINE2:ioa" . $n . $color . ":$str\\g");
-				$str = sprintf("%-17s", substr($str, 0, 17));
+				push(@tmpz, "LINE2:ioa" . $n . $color . ":$str");
+				$str = sprintf("%-23s", $str);
 				push(@tmp, "LINE2:ioa" . $n . $color . ":$str");
-			}
-			if($f[$n + 1]) {
-				$f[$n + 1] = trim($f[$n + 1]);
-				$str = $fs->{desc}->{$f[$n + 1]} || $f[$n + 1];
-				if($f[$n + 1] eq "/") {
-					$color = "#EE4444";
-				} elsif($f[$n + 1] eq "swap") {
-					$color = "#CCCCCC";
-				} elsif($f[$n + 1] eq "/boot") {
-					$color = "#666666";
-				} else {
-					$color = $LC[$n2++];
-				}
-				push(@tmpz, "LINE2:ioa" . ($n + 1) . $color . ":$str\\g");
-				$str = sprintf("%-17s", substr($str, 0, 17));
-				push(@tmp, "LINE2:ioa" . ($n + 1) . $color . ":$str\\n");
+				push(@tmp, "GPRINT:ioa" . $n . ":LAST:Cur\\: %4.0lf");
+				push(@tmp, "GPRINT:ioa" . $n . ":MIN: Min\\: %4.0lf");
+				push(@tmp, "GPRINT:ioa" . $n . ":MAX: Max\\: %4.0lf\\n");
 			}
 		}
 		if(lc($config->{show_gaps}) eq "y") {
@@ -1016,7 +997,7 @@ sub fs_cgi {
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
 			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
-		($width, $height) = split('x', $config->{graph_size}->{small});
+		($width, $height) = split('x', $config->{graph_size}->{medium});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
@@ -1036,7 +1017,6 @@ sub fs_cgi {
 			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
-			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:ioa0=$rrd:fs" . $e . "_ioa0:AVERAGE",
 			"DEF:ioa1=$rrd:fs" . $e . "_ioa1:AVERAGE",
@@ -1063,7 +1043,6 @@ sub fs_cgi {
 				@riglim,
 				"--lower-limit=0",
 				@{$cgi->{version12}},
-				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
 				"DEF:ioa0=$rrd:fs" . $e . "_ioa0:AVERAGE",
 				"DEF:ioa1=$rrd:fs" . $e . "_ioa1:AVERAGE",
@@ -1105,126 +1084,66 @@ sub fs_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
-		if($config->{os} eq "Linux") {
-			if($config->{kernel} gt "2.4") {
-	   			$graph_title = "$config->{graphs}->{_fs3}  ($tf->{nwhen}$tf->{twhen})";
-				$vlabel = "Milliseconds";
-			} else {
-	   			$graph_title = "Disk sectors activity  ($tf->{nwhen}$tf->{twhen})";
-				$vlabel = "Sectors/s";
-			}
-			for($n2 = 0, $n = 0; $n < 8; $n += 2) {
+		for($n2 = 0, $n = 0; $n < 8; $n++) {
+			if($f[$n]) {
+				$f[$n] = trim($f[$n]);
 				my $color;
-				if($f[$n]) {
-					$f[$n] = trim($f[$n]);
-					$str = $fs->{desc}->{$f[$n]} || $f[$n];
-					if($f[$n] eq "/") {
-						$color = "#EE4444";
-					} elsif($f[$n] eq "swap") {
-						$color = "#CCCCCC";
-					} elsif($f[$n] eq "/boot") {
-						$color = "#666666";
-					} else {
-						$color = $LC[$n2++];
-					}
-					push(@tmpz, "LINE2:tim" . $n . $color . ":$str\\g");
-					$str = sprintf("%-17s", substr($str, 0, 17));
-					push(@tmp, "LINE2:tim" . $n . $color . ":$str");
-				}
-				if($f[$n + 1]) {
-					$f[$n + 1] = trim($f[$n + 1]);
-					$str = $fs->{desc}->{$f[$n + 1]} || $f[$n + 1];
-					if($f[$n + 1] eq "/") {
-						$color = "#EE4444";
-					} elsif($f[$n + 1] eq "swap") {
-						$color = "#CCCCCC";
-					} elsif($f[$n + 1] eq "/boot") {
-						$color = "#666666";
-					} else {
-						$color = $LC[$n2++];
-					}
-					push(@tmpz, "LINE2:tim" . ($n + 1) . $color . ":$str\\g");
-					$str = sprintf("%-17s", substr($str, 0, 17));
-					push(@tmp, "LINE2:tim" . ($n + 1) . $color . ":$str\\n");
-				}
-			}
-		} elsif(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
-	   		$graph_title = "Disk data activity  ($tf->{nwhen}$tf->{twhen})";
-			$vlabel = "KB/s";
-			for($n2 = 0, $n = 0; $n < 8; $n += 2) {
-				my $color;
-				my $str2;
 
-				if($f[$n]) {
-					$f[$n] = trim($f[$n]);
-					$str2 = $fs->{desc}->{$f[$n]} || $f[$n];
-					$str = sprintf("%-17s", $str2, 0, 17);
-					if($f[$n] eq "/") {
-						$color = "#EE4444";
-					} elsif($f[$n] eq "swap") {
-						$color = "#CCCCCC";
-					} elsif($f[$n] eq "/boot") {
-						$color = "#666666";
-					} else {
-						$color = $LC[$n2++];
-					}
-					push(@tmp, "LINE2:tim" . $n . $color . ":$str");
-					push(@tmpz, "LINE2:tim" . $n . $color . ":$f[$n]\\g");
+				$str = $fs->{desc}->{$f[$n]} || $f[$n];
+				if($f[$n] eq "/") {
+					$color = "#EE4444";
+				} elsif($f[$n] eq "swap") {
+					$color = "#CCCCCC";
+				} elsif($f[$n] eq "/boot") {
+					$color = "#666666";
+				} else {
+					$color = $LC[$n2++];
 				}
-				if($f[$n + 1]) {
-					$f[$n + 1] = trim($f[$n + 1]);
-					$str2 = $fs->{desc}->{$f[$n + 1]} || $f[$n + 1];
-					$str = sprintf("%-17s", $str2, 0, 17);
-					if($f[$n + 1] eq "/") {
-						$color = "#EE4444";
-					} elsif($f[$n + 1] eq "swap") {
-						$color = "#CCCCCC";
-					} elsif($f[$n + 1] eq "/boot") {
-						$color = "#666666";
-					} else {
-						$color = $LC[$n2++];
-					}
-					push(@tmp, "LINE2:tim" . ($n + 1) . $color . ":$str\\n");
-					push(@tmpz, "LINE2:tim" . ($n + 1) . $color . ":$f[$n + 1]\\g");
-				}
+				push(@tmpz, "LINE2:fs" . $n . $color . ":$str");
+				$str = sprintf("%-23s", $str);
+				push(@tmp, "LINE2:fs" . $n . $color . ":$str");
+				push(@tmp, "GPRINT:fs" . $n . ":LAST:Cur\\: %4.1lf%%");
+				push(@tmp, "GPRINT:fs" . $n . ":MIN: Min\\: %4.1lf%%");
+				push(@tmp, "GPRINT:fs" . $n . ":MAX: Max\\: %4.1lf%%\\n");
 			}
+		}
+		if($title) {
+			print("    <tr>\n");
+			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
 			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
-		($width, $height) = split('x', $config->{graph_size}->{small});
+		($width, $height) = split('x', $config->{graph_size}->{medium});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
-			push(@tmp, "COMMENT: \\n");
-			push(@tmp, "COMMENT: \\n");
-			push(@tmp, "COMMENT: \\n");
 		}
 		RRDs::graph("$PNG_DIR" . "$PNG[$e * 3 + 2]",
-			"--title=$graph_title",
+			"--title=$config->{graphs}->{_fs3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=$vlabel",
+			"--vertical-label=Percent (%)",
 			"--width=$width",
 			"--height=$height",
+			"--upper-limit=100",
 			@riglim,
 			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
-			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
-			"DEF:tim0=$rrd:fs" . $e . "_tim0:AVERAGE",
-			"DEF:tim1=$rrd:fs" . $e . "_tim1:AVERAGE",
-			"DEF:tim2=$rrd:fs" . $e . "_tim2:AVERAGE",
-			"DEF:tim3=$rrd:fs" . $e . "_tim3:AVERAGE",
-			"DEF:tim4=$rrd:fs" . $e . "_tim4:AVERAGE",
-			"DEF:tim5=$rrd:fs" . $e . "_tim5:AVERAGE",
-			"DEF:tim6=$rrd:fs" . $e . "_tim6:AVERAGE",
-			"DEF:tim7=$rrd:fs" . $e . "_tim7:AVERAGE",
-			"CDEF:allvalues=tim0,tim1,tim2,tim3,tim4,tim5,tim6,tim7,+,+,+,+,+,+,+",
+			"DEF:fs0=$rrd:fs" . $e . "_ino0:AVERAGE",
+			"DEF:fs1=$rrd:fs" . $e . "_ino1:AVERAGE",
+			"DEF:fs2=$rrd:fs" . $e . "_ino2:AVERAGE",
+			"DEF:fs3=$rrd:fs" . $e . "_ino3:AVERAGE",
+			"DEF:fs4=$rrd:fs" . $e . "_ino4:AVERAGE",
+			"DEF:fs5=$rrd:fs" . $e . "_ino5:AVERAGE",
+			"DEF:fs6=$rrd:fs" . $e . "_ino6:AVERAGE",
+			"DEF:fs7=$rrd:fs" . $e . "_ino7:AVERAGE",
+			"CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -1232,26 +1151,26 @@ sub fs_cgi {
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
 			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 3 + 2]",
-				"--title=$graph_title",
+				"--title=$config->{graphs}->{_fs3}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=$vlabel",
+				"--vertical-label=Percent (%)",
 				"--width=$width",
 				"--height=$height",
+				"--upper-limit=100",
 				@riglim,
 				"--lower-limit=0",
 				@{$cgi->{version12}},
-				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
-				"DEF:tim0=$rrd:fs" . $e . "_tim0:AVERAGE",
-				"DEF:tim1=$rrd:fs" . $e . "_tim1:AVERAGE",
-				"DEF:tim2=$rrd:fs" . $e . "_tim2:AVERAGE",
-				"DEF:tim3=$rrd:fs" . $e . "_tim3:AVERAGE",
-				"DEF:tim4=$rrd:fs" . $e . "_tim4:AVERAGE",
-				"DEF:tim5=$rrd:fs" . $e . "_tim5:AVERAGE",
-				"DEF:tim6=$rrd:fs" . $e . "_tim6:AVERAGE",
-				"DEF:tim7=$rrd:fs" . $e . "_tim7:AVERAGE",
-				"CDEF:allvalues=tim0,tim1,tim2,tim3,tim4,tim5,tim6,tim7,+,+,+,+,+,+,+",
+				"DEF:fs0=$rrd:fs" . $e . "_ino0:AVERAGE",
+				"DEF:fs1=$rrd:fs" . $e . "_ino1:AVERAGE",
+				"DEF:fs2=$rrd:fs" . $e . "_ino2:AVERAGE",
+				"DEF:fs3=$rrd:fs" . $e . "_ino3:AVERAGE",
+				"DEF:fs4=$rrd:fs" . $e . "_ino4:AVERAGE",
+				"DEF:fs5=$rrd:fs" . $e . "_ino5:AVERAGE",
+				"DEF:fs6=$rrd:fs" . $e . "_ino6:AVERAGE",
+				"DEF:fs7=$rrd:fs" . $e . "_ino7:AVERAGE",
+				"CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -1268,6 +1187,160 @@ sub fs_cgi {
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "'>\n");
+			}
+		}
+
+		if($title) {
+			print("    </td>\n");
+			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		}
+		undef(@riglim);
+		if(trim($rigid[3]) eq 1) {
+			push(@riglim, "--upper-limit=" . trim($limit[3]));
+		} else {
+			if(trim($rigid[3]) eq 2) {
+				push(@riglim, "--upper-limit=" . trim($limit[3]));
+				push(@riglim, "--rigid");
+			}
+		}
+		undef(@tmp);
+		undef(@tmpz);
+		undef(@CDEF);
+		if($config->{os} eq "Linux") {
+			if($config->{kernel} gt "2.4") {
+	   			$graph_title = "$config->{graphs}->{_fs4}  ($tf->{nwhen}$tf->{twhen})";
+				$vlabel = "Milliseconds";
+			} else {
+	   			$graph_title = "Disk sectors activity  ($tf->{nwhen}$tf->{twhen})";
+				$vlabel = "Sectors/s";
+			}
+			for($n2 = 0, $n = 0; $n < 8; $n++) {
+				if($f[$n]) {
+					$f[$n] = trim($f[$n]);
+					my $color;
+	
+					$str = $fs->{desc}->{$f[$n]} || $f[$n];
+					if($f[$n] eq "/") {
+						$color = "#EE4444";
+					} elsif($f[$n] eq "swap") {
+						$color = "#CCCCCC";
+					} elsif($f[$n] eq "/boot") {
+						$color = "#666666";
+					} else {
+						$color = $LC[$n2++];
+					}
+					push(@tmpz, "LINE2:tim" . $n . $color . ":$str");
+					$str = sprintf("%-23s", $str);
+					push(@tmp, "LINE2:tim" . $n . $color . ":$str");
+					push(@tmp, "GPRINT:tim" . $n . ":LAST:Cur\\: %4.0lf");
+					push(@tmp, "GPRINT:tim" . $n . ":MIN: Min\\: %4.0lf");
+					push(@tmp, "GPRINT:tim" . $n . ":MAX: Max\\: %4.0lf\\n");
+				}
+			}
+		} elsif(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
+	   		$graph_title = "Disk data activity  ($tf->{nwhen}$tf->{twhen})";
+			$vlabel = "KB/s";
+			for($n2 = 0, $n = 0; $n < 8; $n++) {
+				if($f[$n]) {
+					$f[$n] = trim($f[$n]);
+					my $color;
+	
+					$str = $fs->{desc}->{$f[$n]} || $f[$n];
+					if($f[$n] eq "/") {
+						$color = "#EE4444";
+					} elsif($f[$n] eq "swap") {
+						$color = "#CCCCCC";
+					} elsif($f[$n] eq "/boot") {
+						$color = "#666666";
+					} else {
+						$color = $LC[$n2++];
+					}
+					push(@tmpz, "LINE2:tim" . $n . $color . ":$str");
+					$str = sprintf("%-23s", $str);
+					push(@tmp, "LINE2:tim" . $n . $color . ":$str");
+					push(@tmp, "GPRINT:tim" . $n . ":LAST:Cur\\: %4.0lf");
+					push(@tmp, "GPRINT:tim" . $n . ":MIN: Min\\: %4.0lf");
+					push(@tmp, "GPRINT:tim" . $n . ":MAX: Max\\: %4.0lf\\n");
+				}
+			}
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
+		($width, $height) = split('x', $config->{graph_size}->{medium});
+		if($silent =~ /imagetag/) {
+			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+			@tmp = @tmpz;
+			push(@tmp, "COMMENT: \\n");
+			push(@tmp, "COMMENT: \\n");
+			push(@tmp, "COMMENT: \\n");
+		}
+		RRDs::graph("$PNG_DIR" . "$PNG[$e * 3 + 3]",
+			"--title=$graph_title",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=$vlabel",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			"--lower-limit=0",
+			$zoom,
+			@{$cgi->{version12}},
+			@{$colors->{graph_colors}},
+			"DEF:tim0=$rrd:fs" . $e . "_tim0:AVERAGE",
+			"DEF:tim1=$rrd:fs" . $e . "_tim1:AVERAGE",
+			"DEF:tim2=$rrd:fs" . $e . "_tim2:AVERAGE",
+			"DEF:tim3=$rrd:fs" . $e . "_tim3:AVERAGE",
+			"DEF:tim4=$rrd:fs" . $e . "_tim4:AVERAGE",
+			"DEF:tim5=$rrd:fs" . $e . "_tim5:AVERAGE",
+			"DEF:tim6=$rrd:fs" . $e . "_tim6:AVERAGE",
+			"DEF:tim7=$rrd:fs" . $e . "_tim7:AVERAGE",
+			"CDEF:allvalues=tim0,tim1,tim2,tim3,tim4,tim5,tim6,tim7,+,+,+,+,+,+,+",
+			@CDEF,
+			@tmp);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 3]: $err\n") if $err;
+		if(lc($config->{enable_zoom}) eq "y") {
+			($width, $height) = split('x', $config->{graph_size}->{zoom});
+			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 3 + 3]",
+				"--title=$graph_title",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=PNG",
+				"--vertical-label=$vlabel",
+				"--width=$width",
+				"--height=$height",
+				@riglim,
+				"--lower-limit=0",
+				@{$cgi->{version12}},
+				@{$colors->{graph_colors}},
+				"DEF:tim0=$rrd:fs" . $e . "_tim0:AVERAGE",
+				"DEF:tim1=$rrd:fs" . $e . "_tim1:AVERAGE",
+				"DEF:tim2=$rrd:fs" . $e . "_tim2:AVERAGE",
+				"DEF:tim3=$rrd:fs" . $e . "_tim3:AVERAGE",
+				"DEF:tim4=$rrd:fs" . $e . "_tim4:AVERAGE",
+				"DEF:tim5=$rrd:fs" . $e . "_tim5:AVERAGE",
+				"DEF:tim6=$rrd:fs" . $e . "_tim6:AVERAGE",
+				"DEF:tim7=$rrd:fs" . $e . "_tim7:AVERAGE",
+				"CDEF:allvalues=tim0,tim1,tim2,tim3,tim4,tim5,tim6,tim7,+,+,+,+,+,+,+",
+				@CDEF,
+				@tmpz);
+			$err = RRDs::error;
+			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 3]: $err\n") if $err;
+		}
+		$e2 = $e . "4";
+		if($title || ($silent =~ /imagetag/ && $graph =~ /fs$e2/)) {
+			if(lc($config->{enable_zoom}) eq "y") {
+				if(lc($config->{disable_javascript_void}) eq "y") {
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 3] . "' border='0'></a>\n");
+				}
+				else {
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 3] . "' border='0'></a>\n");
+				}
+			} else {
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 3] . "'>\n");
 			}
 		}
 
