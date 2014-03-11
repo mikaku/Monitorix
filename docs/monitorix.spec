@@ -45,6 +45,7 @@ install -m 0644 docs/monitorix.logrotate %{buildroot}%{_sysconfdir}/logrotate.d/
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
 install -m 0644 docs/monitorix.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/monitorix
 mkdir -p %{buildroot}%{_sysconfdir}/monitorix
+mkdir -p %{buildroot}%{_sysconfdir}/monitorix/conf.d
 install -m 0644 monitorix.conf %{buildroot}%{_sysconfdir}/monitorix/monitorix.conf
 mkdir -p %{buildroot}%{_bindir}
 install -m 0755 monitorix %{buildroot}%{_bindir}/monitorix
