@@ -411,6 +411,7 @@ $0 = sprintf("%s %s%s%s%s",
 	$options{d} ? " -d $options{d}" : "",
 	$options{v} ? " -v" : "");
 
+daemonize();
 logger("Starting Monitorix version " . VERSION . " (pid $$).");
 
 # save the pidfile
@@ -427,7 +428,6 @@ unless(chdir("/tmp")) {
 	die "can't chdir to /tmp: $!";
 }
 
-daemonize();
 if($options{d}) {
 	if($options{d} ne "none" && $options{d} ne "all") {
 		@{$config{debug}} = split(',', $options{d});
