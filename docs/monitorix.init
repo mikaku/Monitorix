@@ -7,7 +7,7 @@
 # chkconfig: 2345 99 10
 # description: Monitorix is a lightweight system monitoring tool
 # processname: monitorix
-# config: /etc/monitorix.conf
+# config: /etc/monitorix/monitorix.conf
 # pidfile: /var/run/monitorix.pid
 
 ### BEGIN INIT INFO
@@ -33,7 +33,7 @@ RETVAL=0
 PROG="monitorix"
 DAEMON="/usr/bin/monitorix"
 PIDFILE="/var/run/monitorix.pid"
-CONF="/etc/monitorix.conf"
+CONF="/etc/monitorix/monitorix.conf"
 
 start() {
 	if [ ! -f /var/lock/subsys/$PROG ] ; then

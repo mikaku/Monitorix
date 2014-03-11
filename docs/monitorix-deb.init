@@ -14,7 +14,7 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 
 DESC="Monitorix"
 NAME="monitorix"
-CONF="/etc/monitorix.conf"
+CONF="/etc/monitorix/monitorix.conf"
 DAEMON="/usr/bin/$NAME"
 PIDFILE="/var/run/$NAME.pid"
 LOCKFILE="/var/lock/$NAME"
