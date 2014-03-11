@@ -78,6 +78,7 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/logrotate.d/monitorix
 %config(noreplace) %{_sysconfdir}/sysconfig/monitorix
 %config(noreplace) %{_sysconfdir}/monitorix/monitorix.conf
+%attr(755,root,root) %{_sysconfdir}/monitorix/conf.d
 %{_bindir}/monitorix
 %{_libdir}/monitorix/*.pm
 %{_localstatedir}/lib/monitorix/www/logo_top.png
