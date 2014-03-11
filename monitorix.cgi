@@ -210,10 +210,52 @@ EOF
 	die "FATAL: File 'monitorix.conf.path' was not found!";
 }
 
+# load main configuration file
 my $conf = new Config::General(
 	-ConfigFile => $config_path,
 );
 %config = $conf->getall;
+
+# load additional configuration files
+if(opendir(DIR, $config{include_dir})) {
+	my @files = grep { !/^[.]/ } readdir(DIR);
+	close(DIR);
+	foreach my $c (sort @files) {
+		my $conf_inc = new Config::General(
+			-ConfigFile => $config{include_dir} . "/$c",
+		);
+		my %config_inc = $conf_inc->getall;
+		my $g = $config_inc{graph_name};
+		if(!$g) {
+			next;
+		}
+		if(grep {trim($_) eq $g} (split(',', $config{graph_name}))) {
+			next;
+		}
+		if(!$config_inc{graph_enable}->{$g}) {
+			next;
+		}
+		if(!$config_inc{graph_title}->{$g}) {
+			next;
+		}
+		if(!$config_inc{$g}) {
+			next;
+		}
+		$config{graph_enable}->{$g} = $config_inc{graph_enable}->{$g};
+		$config{$g} = $config_inc{$g};
+		$config{graph_title}->{$g} = $config_inc{graph_title}->{$g};
+		$config{graph_name} .= ", $g";
+		foreach my $k (sort keys %{$config_inc{graphs}}) {
+			$config{graphs}->{$k} = $config_inc{graphs}->{$k};
+		}
+		delete $config_inc{graph_name};
+		delete $config_inc{graph_enable};
+		delete $config_inc{$g};
+		delete $config_inc{graph_title};
+		delete $config_inc{graphs};
+		@config{keys %config_inc} = values %config_inc;
+	}
+}
 
 $config{url} = ($ENV{HTTPS} || ($config{httpd_builtin}->{https_url} || "n") eq "y") ? "https://" . $ENV{HTTP_HOST} : "http://" . $ENV{HTTP_HOST};
 $config{hostname} = $config{hostname} || $ENV{SERVER_NAME};
