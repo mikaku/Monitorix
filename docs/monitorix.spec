@@ -3,7 +3,7 @@
 
 Summary: Monitorix is a system monitoring tool
 Name: monitorix
-Version: 3.4.91
+Version: 3.4.93
 Release: 1%{?dist}
 License: GPL
 Group: Applications/System
@@ -44,8 +44,8 @@ mkdir -p %{buildroot}%{_sysconfdir}/logrotate.d
 install -m 0644 docs/monitorix.logrotate %{buildroot}%{_sysconfdir}/logrotate.d/monitorix
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
 install -m 0644 docs/monitorix.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/monitorix
-mkdir -p %{buildroot}%{_sysconfdir}
-install -m 0644 monitorix.conf %{buildroot}%{_sysconfdir}/monitorix.conf
+mkdir -p %{buildroot}%{_sysconfdir}/monitorix
+install -m 0644 monitorix.conf %{buildroot}%{_sysconfdir}/monitorix/monitorix.conf
 mkdir -p %{buildroot}%{_bindir}
 install -m 0755 monitorix %{buildroot}%{_bindir}/monitorix
 mkdir -p %{buildroot}%{_libdir}/monitorix
@@ -76,7 +76,7 @@ rm -rf %{buildroot}
 %{_initrddir}/monitorix
 %config(noreplace) %{_sysconfdir}/logrotate.d/monitorix
 %config(noreplace) %{_sysconfdir}/sysconfig/monitorix
-%config(noreplace) %{_sysconfdir}/monitorix.conf
+%config(noreplace) %{_sysconfdir}/monitorix/monitorix.conf
 %{_bindir}/monitorix
 %{_libdir}/monitorix/*.pm
 %{_localstatedir}/lib/monitorix/www/logo_top.png
