@@ -136,6 +136,17 @@ This option forces to accept self-signed certificates when collecting values rem
 Default value: \fIy\fP
 .RE
 .P
+.BI include_dir
+.RS
+The main configuration file is usually called \fImonitorix.conf\fP and its location is provided as part of the command line arguments. In addition, other configuration files may be loaded placing them in the directory pointed by this option. The names must end with .conf to be included.
+.P
+This option is mainly intended to include third-party modules with their own configuration files without having to modify any file from your Monitorix installation. All modules are located in \fI/usr/lib/monitorix\fP (in some operating systems that path can change).
+.P
+All the configuration files in there will be loaded in alphabetic order, so the last file loaded will overwrite any previous option.
+.P
+Default value: \fI/etc/monitorix/conf.d\fP
+.RE
+.P
 .BI base_dir
 .RS
 This is the absolute path to the directory where all the web elements are located:
