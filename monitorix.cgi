@@ -221,6 +221,8 @@ if(opendir(DIR, $config{include_dir})) {
 	my @files = grep { !/^[.]/ } readdir(DIR);
 	close(DIR);
 	foreach my $c (sort @files) {
+		next unless -f $config{include_dir} . "/$c";
+		next unless $c =~ m/\.conf$/;
 		my $conf_inc = new Config::General(
 			-ConfigFile => $config{include_dir} . "/$c",
 		);

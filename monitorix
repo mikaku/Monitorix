@@ -446,13 +446,15 @@ if(opendir(DIR, $config{include_dir})) {
 	my @files = grep { !/^[.]/ } readdir(DIR);
 	close(DIR);
 	foreach my $c (sort @files) {
+		next unless -f $config{include_dir} . "/$c";
+		next unless $c =~ m/\.conf$/;
 		my $conf_inc = new Config::General(
 			-ConfigFile => $config{include_dir} . "/$c",
 		);
 		my %config_inc = $conf_inc->getall;
 		my $g = $config_inc{graph_name};
 		if(!$g) {
-			logger("ERROR: graph name not defined.");
+			logger("ERROR: graph name not defined in '$c'.");
 			next;
 		}
 		if(grep {trim($_) eq $g} (split(',', $config{graph_name}))) {
