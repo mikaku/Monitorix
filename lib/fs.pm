@@ -1232,9 +1232,9 @@ sub fs_cgi {
 					push(@tmpz, "LINE2:tim" . $n . $color . ":$str");
 					$str = sprintf("%-23s", $str);
 					push(@tmp, "LINE2:tim" . $n . $color . ":$str");
-					push(@tmp, "GPRINT:tim" . $n . ":LAST:Cur\\: %4.0lf");
-					push(@tmp, "GPRINT:tim" . $n . ":MIN: Min\\: %4.0lf");
-					push(@tmp, "GPRINT:tim" . $n . ":MAX: Max\\: %4.0lf\\n");
+					push(@tmp, "GPRINT:stim" . $n . ":LAST:Cur\\: %4.1lfs");
+					push(@tmp, "GPRINT:stim" . $n . ":MIN:Min\\: %4.1lfs");
+					push(@tmp, "GPRINT:stim" . $n . ":MAX:Max\\: %4.1lfs\\n");
 				}
 			}
 		} elsif(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
@@ -1299,6 +1299,14 @@ sub fs_cgi {
 			"DEF:tim6=$rrd:fs" . $e . "_tim6:AVERAGE",
 			"DEF:tim7=$rrd:fs" . $e . "_tim7:AVERAGE",
 			"CDEF:allvalues=tim0,tim1,tim2,tim3,tim4,tim5,tim6,tim7,+,+,+,+,+,+,+",
+			"CDEF:stim0=tim0,1000,/",
+			"CDEF:stim1=tim1,1000,/",
+			"CDEF:stim2=tim2,1000,/",
+			"CDEF:stim3=tim3,1000,/",
+			"CDEF:stim4=tim4,1000,/",
+			"CDEF:stim5=tim5,1000,/",
+			"CDEF:stim6=tim6,1000,/",
+			"CDEF:stim7=tim7,1000,/",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -1325,6 +1333,14 @@ sub fs_cgi {
 				"DEF:tim6=$rrd:fs" . $e . "_tim6:AVERAGE",
 				"DEF:tim7=$rrd:fs" . $e . "_tim7:AVERAGE",
 				"CDEF:allvalues=tim0,tim1,tim2,tim3,tim4,tim5,tim6,tim7,+,+,+,+,+,+,+",
+				"CDEF:stim0=tim0,1000,/",
+				"CDEF:stim1=tim1,1000,/",
+				"CDEF:stim2=tim2,1000,/",
+				"CDEF:stim3=tim3,1000,/",
+				"CDEF:stim4=tim4,1000,/",
+				"CDEF:stim5=tim5,1000,/",
+				"CDEF:stim6=tim6,1000,/",
+				"CDEF:stim7=tim7,1000,/",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
