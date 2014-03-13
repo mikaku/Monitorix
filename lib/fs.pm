@@ -43,7 +43,7 @@ sub upgrade_to_350 {
 	my $end_tim = 0;
 	my $str = "";
 
-	logger("$myself: Adding new 'ino' plus 1 extra DS to '$rrd'.");
+	logger("$myself: Adding new 'ino' plus 4 extra DS to '$rrd'.");
 	logger("$myself: $!") if !(open(IN, "rrdtool dump $rrd |"));
 	logger("$myself: $!") if !(open(OUT, "| rrdtool restore - $rrd.new"));
 
@@ -76,7 +76,55 @@ sub upgrade_to_350 {
 		<unknown_sec> 0 </unknown_sec>
 	</ds>
 EOF
-					$str =~ s/ino/val/;
+					$str =~ s/ino/va1/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/va1/va2/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/va2/va3/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/va3/va4/;
 					print OUT "\n";
 					print OUT <<EOF;
 	<ds>
@@ -114,6 +162,24 @@ EOF
 			<value> NaN </value>
 			<unknown_datapoints> 0 </unknown_datapoints>
 			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
 EOF
 					$cdp++;
 					next;
@@ -125,7 +191,7 @@ EOF
 		if(/<\/row>/) {
 			my $str = $_;
 			my $n = 0;
-			$str =~ s/( <\/v>)/++$n % 3 == 0 ? " $1<v> NaN <\/v><v> NaN <\/v>" : $1/eg;
+			$str =~ s/( <\/v>)/++$n % 3 == 0 ? " $1<v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v>" : $1/eg;
 			print OUT $str;
 			next;
 		}
@@ -175,7 +241,7 @@ sub fs_init {
 			}
 		}
 
-		# convert from 3.4.0- to 3.5.0 (add fs_ino DS)
+		# convert from 3.4.0- to 3.5.0 (add fs_ino plus 4 extra DS)
 		upgrade_to_350($rrd) if scalar(@ds) == 24;
 		# recalculate the number of DS
 		undef(@ds);
@@ -188,8 +254,8 @@ sub fs_init {
 			}
 		}
 
-		if(scalar(@ds) / 40 != keys(%{$fs->{list}})) {
-			logger("$myself: Detected size mismatch between <list>...</list> (" . keys(%{$fs->{list}}) . ") and $rrd (" . scalar(@ds) / 40 . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
+		if(scalar(@ds) / 64 != keys(%{$fs->{list}})) {
+			logger("$myself: Detected size mismatch between <list>...</list> (" . keys(%{$fs->{list}}) . ") and $rrd (" . scalar(@ds) / 64 . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 		if(scalar(@rra) < 12 + (4 * $config->{max_historic_years})) {
@@ -211,42 +277,66 @@ sub fs_init {
 			push(@tmp, "DS:fs" . $n . "_ioa0:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_tim0:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_ino0:GAUGE:120:0:100");
-			push(@tmp, "DS:fs" . $n . "_val0:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va10:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va20:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va30:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va40:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_use1:GAUGE:120:0:100");
 			push(@tmp, "DS:fs" . $n . "_ioa1:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_tim1:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_ino1:GAUGE:120:0:100");
-			push(@tmp, "DS:fs" . $n . "_val1:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va11:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va21:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va31:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va41:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_use2:GAUGE:120:0:100");
 			push(@tmp, "DS:fs" . $n . "_ioa2:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_tim2:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_ino2:GAUGE:120:0:100");
-			push(@tmp, "DS:fs" . $n . "_val2:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va12:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va22:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va32:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va42:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_use3:GAUGE:120:0:100");
 			push(@tmp, "DS:fs" . $n . "_ioa3:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_tim3:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_ino3:GAUGE:120:0:100");
-			push(@tmp, "DS:fs" . $n . "_val3:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va13:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va23:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va33:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va43:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_use4:GAUGE:120:0:100");
 			push(@tmp, "DS:fs" . $n . "_ioa4:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_tim4:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_ino4:GAUGE:120:0:100");
-			push(@tmp, "DS:fs" . $n . "_val4:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va14:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va24:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va34:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va44:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_use5:GAUGE:120:0:100");
 			push(@tmp, "DS:fs" . $n . "_ioa5:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_tim5:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_ino5:GAUGE:120:0:100");
-			push(@tmp, "DS:fs" . $n . "_val5:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va15:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va25:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va35:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va45:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_use6:GAUGE:120:0:100");
 			push(@tmp, "DS:fs" . $n . "_ioa6:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_tim6:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_ino6:GAUGE:120:0:100");
-			push(@tmp, "DS:fs" . $n . "_val6:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va16:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va26:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va36:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va46:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_use7:GAUGE:120:0:100");
 			push(@tmp, "DS:fs" . $n . "_ioa7:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_tim7:GAUGE:120:0:U");
 			push(@tmp, "DS:fs" . $n . "_ino7:GAUGE:120:0:100");
-			push(@tmp, "DS:fs" . $n . "_val7:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va17:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va27:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va37:GAUGE:120:0:U");
+			push(@tmp, "DS:fs" . $n . "_va47:GAUGE:120:0:U");
 		}
 		eval {
 			RRDs::create($rrd,
@@ -675,7 +765,7 @@ sub fs_update {
 			$tim /= 60;
 			$config->{fs_hist}->{$str} = $val;
 
-			$rrdata .= ":$use:$ioa:$tim:$ino:0";
+			$rrdata .= ":$use:$ioa:$tim:$ino:0:0:0:0";
 		}
 		$e++;
 	}
