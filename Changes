@@ -21,12 +21,13 @@
   remotely using HTTPS protocol. [#40]
 - Added support in the 'port' graph to define multiple network protocols on the
   same port number.
-	(suggested by Jean-Louis Halleux, monitorix AT ritm.be)
+	(thanks by Jean-Louis Halleux, monitorix AT ritm.be)
 - Added the inode usage in the 'fs' graph and refactored the layout.
 	(suggested by Andreas Itzchak Rehberg, izzy AT qumran.org)
-- Added a new option called 'include_dir' to be able to load configuration files
-  from a specific directory ('/etc/monitorix/conf.d' by default). The config
-  file is now located into the new directory '/etc/monitorix/'.
+- Added a new option called 'include_dir' to be able to load additional
+  configuration files from a specific directory ('/etc/monitorix/conf.d' by
+  default). As a result of this, the main configuration file is now located
+  into the new directory '/etc/monitorix/'.
 - Changed the default path '/usr/share/monitorix' of the 'base_dir' option to
   '/var/lib/monitorix/www'. This should make Monitorix more FHS friendly.
 - Incremented the font size of the titles in the 'bind' graph.
