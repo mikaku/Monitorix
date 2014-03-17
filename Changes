@@ -28,12 +28,16 @@
   configuration files from a specific directory ('/etc/monitorix/conf.d' by
   default). As a result of this, the main configuration file is now located
   into the new directory '/etc/monitorix/'.
+- Added the option 'url' in the 'nginx' graph to define a full URL to be used
+  to collect stats.
+	(suggested by Melkor, morgoth AT free.fr)
 - Changed the default path '/usr/share/monitorix' of the 'base_dir' option to
   '/var/lib/monitorix/www'. This should make Monitorix more FHS friendly.
 - Incremented the font size of the titles in the 'bind' graph.
 - Removed the hard coded suffix '/server-status?auto' from the 'apache' and
   'lighttpd' modules, now it most be part of the URL(s) defined in the 'list'
   option.
+	(suggested by Melkor, morgoth AT free.fr)
 - Removed the EOL mark in the regexp of the 'milter-greylist' stats in order to
   support newer version 4.4.3.
   	(thanks to Sean Wilson, monitorix AT bsdpanic.com)
