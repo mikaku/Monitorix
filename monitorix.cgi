@@ -217,7 +217,7 @@ my $conf = new Config::General(
 %config = $conf->getall;
 
 # load additional configuration files
-if(opendir(DIR, $config{include_dir})) {
+if($config{include_dir} && opendir(DIR, $config{include_dir})) {
 	my @files = grep { !/^[.]/ } readdir(DIR);
 	close(DIR);
 	foreach my $c (sort @files) {

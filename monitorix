@@ -442,7 +442,7 @@ if($options{d}) {
 }
 
 # load additional configuration files
-if(opendir(DIR, $config{include_dir})) {
+if($config{include_dir} && opendir(DIR, $config{include_dir})) {
 	my @files = grep { !/^[.]/ } readdir(DIR);
 	close(DIR);
 	foreach my $c (sort @files) {
@@ -488,7 +488,8 @@ if(opendir(DIR, $config{include_dir})) {
 		@config{keys %config_inc} = values %config_inc;
 	}
 } else {
-	logger("Can't read directory '$config{include_dir}'. $!");
+	logger("Can't read directory '$config{include_dir}'. $!")
+		if $config{include_dir};
 }
 
 # save the path of the configuration file
