@@ -207,7 +207,6 @@ sub disk_update {
 					$d = abs_path(dirname($d) . "/" . readlink($d));
 					chomp($d);
 				}
-				logger("d = '$d'");
 
 	  			open(IN, "smartctl -A $d |");
 				while(<IN>) {
