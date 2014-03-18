@@ -52,8 +52,8 @@ Since the release 2.6.0 Monitorix includes support for NetBSD systems.
 With the release of the 3.0.0 version, Monitorix suffered another large rewrite
 which became into a complete modular code structure reducing in some cases
 its memory footprint. That new version also included a number of new features,
-cleaned up all the code, fixed a lot of bugs and had a safest code
-as it used 'strict' and 'warnings' in all its modules.
+cleaned up all the code, fixed a lot of bugs and had a safer code as it used
+'strict' and 'warnings' in all its modules.
 
 With this new modular structure, Monitorix can now be packaged either into a
 single one package requiring all its dependences to be satisfied during the
@@ -73,13 +73,14 @@ distribution may or may not have:
 
 - Perl
 - Perl-CGI
+- Perl-libwww
 - Perl-MailTools
 - Perl-MIME-Lite
-- Perl-libwww
 - Perl-DBI
 - Perl-XML-Simple
 - Perl-Config-General
 - Perl-HTTP-Server-Simple
+- perl-IO-Socket-SSL
 - RRDtool and its Perl bindings (perl-rrdtool or rrdtool-perl)
 - (Optional) a CGI capable Web server (Apache, Nginx, lighttpd, etc.)
 
@@ -96,27 +97,28 @@ File                        Recommended location		Description
 -------------------------------------------------------------------------------
 monitorix                   /usr/bin/			main program (daemon)
 monitorix.cgi               <base_dir>/cgi/		CGI (viewer)
-monitorix.conf              /etc/			configuration file
+monitorix.conf              /etc/monitorix/		configuration file
 lib/*.pm                    /usr/lib/monitorix/		modules
-Changes                     /usr/share/doc/		changes log file
-COPYING                     /usr/share/doc/		license
+Changes                     /usr/share/doc/monitorix/	changes log file
+COPYING                     /usr/share/doc/monitorix/	license
 logo_bot.png                <base_dir>			bottom logo
 logo_top.png                <base_dir>			top logo
 monitorixico.png            <base_dir>			favicon
-monitorix-alert.sh          /usr/share/doc/		alert example script
+monitorix-alert.sh          /usr/share/doc/monitorix/	alert example script
 monitorix-apache.conf       /etc/httpd/conf.d/		apache configuration
 monitorix.service           /usr/lib/systemd/system/	systemd service template
 monitorix.init              /etc/init.d/		redhat SysV init script
 monitorix-deb.init          /etc/init.d/		debian SysV init script
 monitorix.logrotate         /etc/logrotate.d/		logrotate script
-monitorix.spec              /usr/share/doc/		RPM spec file
+monitorix.spec              /usr/share/doc/monitorix/	RPM spec file
 monitorix.sysconfig         /etc/sysconfig/		pre-run config file
-monitorix.lighttpd          /etc/lighttpd/		lighttpd configuration
-README                      /usr/share/doc/		documentation
-README.FreeBSD              /usr/share/doc/		documentation
-README.nginx                /usr/share/doc/		documentation
-README.OpenBSD              /usr/share/doc/		documentation
-README.NetBSD               /usr/share/doc/		documentation
+monitorix.lighttpd.conf     /etc/lighttpd/		lighttpd configuration
+htpasswd.pl                 /usr/share/doc/monitorix/	documentation
+README                      /usr/share/doc/monitorix/	documentation
+README.FreeBSD              /usr/share/doc/monitorix/	documentation
+README.nginx                /usr/share/doc/monitorix/	documentation
+README.OpenBSD              /usr/share/doc/monitorix/	documentation
+README.NetBSD               /usr/share/doc/monitorix/	documentation
 man/man5/monitorix.conf.5   /usr/share/man/man5/	monitorix.conf manpage
 man/man8/monitorix.8        /usr/share/man/man8/	monitorix manpage
 reports/*.html              <base_lib>/reports/		traffacct reports i18n
