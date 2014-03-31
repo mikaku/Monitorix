@@ -130,14 +130,17 @@ sub create_index {
 		$config{theme_color} = "white";
 	}
 
-	my $theme = $config{theme_color};
+	my $theme = $config{theme_color} || "white";
+	if(!$config{theme}->{$theme}) {
+		logger("$myself: ERROR: invalid value in 'theme_color' option. Defaulting to white theme.");
+		$theme = $config{theme_color} = "white";
+	}
+
 	if($config{theme}->{$theme}) {
 		$bgcolor = $config{theme}->{$theme}->{main_bg};
 		$table_back_color = $config{theme}->{$theme}->{graph_bg};
 		$title_back_color = $config{theme}->{$theme}->{title_bg};
 		$title_fore_color = $config{theme}->{$theme}->{title_fg};
-	} else {
-		logger("$myself: ERROR: invalid value in 'theme_color' option");
 	}
 
 	# force to only one trailing slash
