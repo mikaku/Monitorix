@@ -6,13 +6,13 @@
 	(suggested by Maarten van Lieshout, mlieshout AT cocomowebbeheer.nl)
 - Added support for amavisd-new in the 'serv' and 'mail' graphs for spam and
   virus email accounting.
-	(thanks to Dirk Tanneberger, dirk AT tanneberger.biz)
+	(thanks to Dirk Tanneberger, os AT tanneberger.biz)
 - Added support for PHP APC 4.0. [#36]
 - Added an error message into the email if 'emailreports' can't connect with
   Monitorix.
 - Added the new 'addendum_script' option in the 'emailreports' in order to
   include user's own data in the emails.
-	(thanks to Dirk Tanneberger, dirk AT tanneberger.biz)
+	(thanks to Dirk Tanneberger, os AT tanneberger.biz)
 - Added support to use '/dev/disk/by-path/' paths as device names in the 'disk'
   graph. [#37]
 - Added two new options in 'emailreports' to configure the time when email
@@ -49,7 +49,7 @@
 - Fixed to show the text interface in the 'memcached' graph.
 - Fixed to initialize a pair of variables in 'mail.pm' in order to avoid
   'Use of uninitialized value...' messages in log file.
-	(thanks to Dirk Tanneberger, dirk AT tanneberger.biz)
+	(thanks to Dirk Tanneberger, os AT tanneberger.biz)
 - Fixed to avoid unexpected grouping of network interfaces with aliases in the
   'net' graph.
 	(thanks to Ivo Brhel, ivb AT volny.cz)
