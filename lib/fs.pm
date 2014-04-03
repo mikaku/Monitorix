@@ -191,7 +191,7 @@ EOF
 		if(/<\/row>/) {
 			my $str = $_;
 			my $n = 0;
-			$str =~ s/( <\/v>)/++$n % 3 == 0 ? " $1<v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v>" : $1/eg;
+			$str =~ s/(\s*<\/v>)/++$n % 3 == 0 ? " $1<v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v>" : $1/eg;
 			print OUT $str;
 			next;
 		}
