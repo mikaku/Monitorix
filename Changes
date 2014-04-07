@@ -1,5 +1,7 @@
 3.N.N  - DD-MMM-2014
 ====================
+- Added proper permission parameters depending on Apache version in the Apache
+  configuration file 'docs/monitorix-apache.conf'. <https://bugzilla.redhat.com/show_bug.cgi?id=1062202>
 - Fixed to default to white color theme if 'theme_color' option is invalid or
   not defined.
 
