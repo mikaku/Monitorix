@@ -2,6 +2,10 @@
 ====================
 - Added proper permission parameters depending on Apache version in the Apache
   configuration file 'docs/monitorix-apache.conf'. <https://bugzilla.redhat.com/show_bug.cgi?id=1062202>
+- Added more error-verbosity when initializing modules.
+- Added an extra configuration file specific for Debian systems. That file is
+  expected to be placed in conf.d/ directory.
+	(thanks to Andreas Itzchak Rehberg, izzy AT qumran.org)
 - Fixed to default to white color theme if 'theme_color' option is invalid or
   not defined.
 - Fixed to merge correctly with the main configuration file any extra
