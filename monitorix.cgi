@@ -463,7 +463,7 @@ if($mode eq "localhost") {
 
 			eval "use $g qw(" . $cgi . ")";
 			if($@) {
-				print(STDERR "WARNING: unable to find module '$g'\n");
+				print(STDERR "WARNING: unable to load module '$g. $@'\n");
 				next;
 			}
 
@@ -478,7 +478,7 @@ if($mode eq "localhost") {
 } elsif($mode eq "traffacct") {
 	eval "use $mode qw(traffacct_cgi)";
 	if($@) {
-		print(STDERR "WARNING: unable to find module '$mode'\n");
+		print(STDERR "WARNING: unable to load module '$mode'. $@\n");
 		exit;
 	}
 	traffacct_cgi($mode, \%config, \%cgi);

@@ -625,7 +625,7 @@ while(1) {
 
 				eval "use emailreports qw(emailreports_send)";
 				if($@) {
-					logger("WARNING: unable to find module 'emailreports'");
+					logger("WARNING: unable to load module 'emailreports'. $@");
 					next;
 				}
 
