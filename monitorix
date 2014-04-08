@@ -452,6 +452,7 @@ if($config{include_dir} && opendir(DIR, $config{include_dir})) {
 	foreach my $c (sort @files) {
 		next unless -f $config{include_dir} . "/$c";
 		next unless $c =~ m/\.conf$/;
+		logger("Loading configuration file '$config{include_dir}/$c'.") unless !$options{d};
 		my $conf_inc = new Config::General(
 			-ConfigFile => $config{include_dir} . "/$c",
 		);
