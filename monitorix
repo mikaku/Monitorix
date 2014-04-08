@@ -102,7 +102,7 @@ sub daemonize {
 
 sub usage {
 	print(STDERR << "EOF");
-Usage: monitorix -c configfile [-p pidfile] [-d none | graph[,graph] | all ] [-v]
+Usage: monitorix -c configfile [-p pidfile] [-d none | graph[,graph] | all ] [-v] [-n]
 
 EOF
 	exit(1);
@@ -366,7 +366,7 @@ EOF
 
 # Main
 # ----------------------------------------------------------------------------
-getopts("d:vc:p:", \%options) || usage();
+getopts("c:p:d:vn", \%options) || usage();
 
 if($options{v}) {
 	print("Monitorix version " . VERSION . " (" . RELDATE . ")\n");
@@ -412,9 +412,10 @@ $0 = sprintf("%s %s%s%s%s",
 	$options{c} ? "-c $options{c}" : "",
 	$options{p} ? " -p $options{p}" : "",
 	$options{d} ? " -d $options{d}" : "",
-	$options{v} ? " -v" : "");
+	$options{v} ? " -v" : "",
+	$options{n} ? " -n" : "");
 
-daemonize();
+daemonize() unless $options{n};
 logger("Starting Monitorix version " . VERSION . " (pid $$).");
 
 # save the pidfile
