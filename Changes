@@ -9,6 +9,7 @@
 - Added a new command line argument '-n' to prevent Monitorix from daemonizing
   and force it to run in the foreground. This is specially useful in debugging
   mode.
+- Fixed the error message 'ERROR: line 1237: expected </row> element but found <v>' when upgrading to 3.5.0 version.
 - Fixed to default to white color theme if 'theme_color' option is invalid or
   not defined.
 - Fixed to merge correctly with the main configuration file any extra
