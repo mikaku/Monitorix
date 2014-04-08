@@ -520,7 +520,7 @@ foreach (split(',', $config{graph_name} . ", traffacct")) {
 
 		eval "use $g qw(" . $init . " " . $g . "_update)";
 		if($@) {
-			logger("WARNING: unable to find module '$g'.");
+			logger("WARNING: unable to load module '$g'. $@");
 			next;
 		}
 		{
