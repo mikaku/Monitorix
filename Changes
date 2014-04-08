@@ -4,6 +4,8 @@
   configuration file 'docs/monitorix-apache.conf'. <https://bugzilla.redhat.com/show_bug.cgi?id=1062202>
 - Fixed to default to white color theme if 'theme_color' option is invalid or
   not defined.
+- Fixed to merge correctly with the main configuration file any extra
+  configuration files in conf.d/ directory.
 
 
 3.5.0  - 24-Mar-2014
