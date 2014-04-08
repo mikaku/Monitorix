@@ -6,6 +6,9 @@
 - Added an extra configuration file specific for Debian systems. That file is
   expected to be placed in conf.d/ directory.
 	(thanks to Andreas Itzchak Rehberg, izzy AT qumran.org)
+- Added a new command line argument '-n' to prevent Monitorix from daemonizing
+  and force it to run in the foreground. This is specially useful in debugging
+  mode.
 - Fixed to default to white color theme if 'theme_color' option is invalid or
   not defined.
 - Fixed to merge correctly with the main configuration file any extra
