@@ -227,35 +227,33 @@ if($config{include_dir} && opendir(DIR, $config{include_dir})) {
 			-ConfigFile => $config{include_dir} . "/$c",
 		);
 		my %config_inc = $conf_inc->getall;
-		my $g = $config_inc{graph_name};
-		if(!$g) {
-			next;
+		while(my ($key, $val) = each(%config_inc)) {
+			if(ref($val) eq "HASH") {
+				# two level options
+				while(my ($key2, $val2) = each(%{$val})) {
+					if(ref($val2) eq "HASH") {
+						# three level options
+						while(my ($key3, $val3) = each(%{$val2})) {
+							$config{$key}->{$key2}->{$key3} = $val3;
+							delete $config_inc{$key}->{$key2}->{$key3};
+						}
+						next;
+					}
+					$config{$key}->{$key2} = $val2;
+					delete $config_inc{$key}->{$key2};
+				}
+				next;
+			}
+			# graph_name option is special
+			if($key eq "graph_name") {
+				$config{graph_name} .= ", $val";
+				delete $config_inc{graph_name};
+				next;
+			}
+			# one level options
+			$config{$key} = $val;
+			delete $config_inc{$key};
 		}
-		if(grep {trim($_) eq $g} (split(',', $config{graph_name}))) {
-			next;
-		}
-		if(!$config_inc{graph_enable}->{$g}) {
-			next;
-		}
-		if(!$config_inc{graph_title}->{$g}) {
-			next;
-		}
-		if(!$config_inc{$g}) {
-			next;
-		}
-		$config{graph_enable}->{$g} = $config_inc{graph_enable}->{$g};
-		$config{$g} = $config_inc{$g};
-		$config{graph_title}->{$g} = $config_inc{graph_title}->{$g};
-		$config{graph_name} .= ", $g";
-		foreach my $k (sort keys %{$config_inc{graphs}}) {
-			$config{graphs}->{$k} = $config_inc{graphs}->{$k};
-		}
-		delete $config_inc{graph_name};
-		delete $config_inc{graph_enable};
-		delete $config_inc{$g};
-		delete $config_inc{graph_title};
-		delete $config_inc{graphs};
-		@config{keys %config_inc} = values %config_inc;
 	}
 }
 
