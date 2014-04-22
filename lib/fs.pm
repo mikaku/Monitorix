@@ -387,8 +387,12 @@ sub fs_init {
 				my $pid;
 				eval {
 					local $SIG{'ALRM'} = sub {
-						kill 9, $pid;
-						logger("$myself: Timeout! Process with PID $pid was hung after $config->{timeout} secs. Killed.");
+						if($pid) {
+							logger("$myself: Timeout! Process with PID '$pid' still hung after $config->{timeout} secs. Killed.");
+							kill 9, $pid;
+						} else {
+							logger("$myself: WARNING: \$pid has no value ('$pid') in ALRM sighandler.");
+						}
 					};
 					alarm($config->{timeout});
 					$pid = open(IN, "df -P $f |");
@@ -621,8 +625,12 @@ sub fs_update {
 				my $pid;
 				eval {
 					local $SIG{'ALRM'} = sub {
-						kill 9, $pid;
-						logger("$myself: Timeout! Process with PID $pid was hung after $config->{timeout} secs. Killed.");
+						if($pid) {
+							logger("$myself: Timeout! Process with PID '$pid' still hung after $config->{timeout} secs. Killed.");
+							kill 9, $pid;
+						} else {
+							logger("$myself: WARNING: \$pid has no value ('$pid') in ALRM sighandler.");
+						}
 						@tmp = (0, 0, 0, 0);
 					};
 					alarm($config->{timeout});
@@ -643,8 +651,12 @@ sub fs_update {
 
 				eval {
 					local $SIG{'ALRM'} = sub {
-						kill 9, $pid;
-						logger("$myself: Timeout! Process with PID $pid was hung after $config->{timeout} secs. Killed.");
+						if($pid) {
+							logger("$myself: Timeout! Process with PID '$pid' still hung after $config->{timeout} secs. Killed.");
+							kill 9, $pid;
+						} else {
+							logger("$myself: WARNING: \$pid has no value ('$pid') in ALRM sighandler.");
+						}
 						@tmp = (0, 0, 0, 0, 0, 0, 0);
 					};
 					alarm($config->{timeout});
