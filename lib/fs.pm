@@ -975,7 +975,7 @@ sub fs_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 3]",
+		RRDs::graph("$PNG_DIR" . "$PNG[$e * 4]",
 			"--title=$config->{graphs}->{_fs1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -1000,10 +1000,10 @@ sub fs_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3]: $err\n") if $err;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 4]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 3]",
+			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 4]",
 				"--title=$config->{graphs}->{_fs1}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -1027,19 +1027,19 @@ sub fs_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3]: $err\n") if $err;
+			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 4]: $err\n") if $err;
 		}
 		$e2 = $e . "1";
 		if($title || ($silent =~ /imagetag/ && $graph =~ /fs$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4] . "'>\n");
 			}
 		}
 
@@ -1096,7 +1096,7 @@ sub fs_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 3 + 1]",
+		RRDs::graph("$PNG_DIR" . "$PNG[$e * 4 + 1]",
 			"--title=$config->{graphs}->{_fs2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -1120,10 +1120,10 @@ sub fs_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 1]: $err\n") if $err;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 4 + 1]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 3 + 1]",
+			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 4 + 1]",
 				"--title=$config->{graphs}->{_fs2}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -1146,19 +1146,19 @@ sub fs_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 1]: $err\n") if $err;
+			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 4 + 1]: $err\n") if $err;
 		}
 		$e2 = $e . "2";
 		if($title || ($silent =~ /imagetag/ && $graph =~ /fs$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 1] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 1] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4 + 1] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 1] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 1] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 1] . "'>\n");
 			}
 		}
 
@@ -1212,7 +1212,7 @@ sub fs_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 3 + 2]",
+		RRDs::graph("$PNG_DIR" . "$PNG[$e * 4 + 2]",
 			"--title=$config->{graphs}->{_fs3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -1237,10 +1237,10 @@ sub fs_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 2]: $err\n") if $err;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 4 + 2]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 3 + 2]",
+			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 4 + 2]",
 				"--title=$config->{graphs}->{_fs3}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -1264,19 +1264,19 @@ sub fs_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 2]: $err\n") if $err;
+			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 4 + 2]: $err\n") if $err;
 		}
 		$e2 = $e . "3";
 		if($title || ($silent =~ /imagetag/ && $graph =~ /fs$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4 + 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 2] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 2] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4 + 2] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 2] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 2] . "'>\n");
 			}
 		}
 
@@ -1368,7 +1368,7 @@ sub fs_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 3 + 3]",
+		RRDs::graph("$PNG_DIR" . "$PNG[$e * 4 + 3]",
 			"--title=$graph_title",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -1400,10 +1400,10 @@ sub fs_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 3]: $err\n") if $err;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 4 + 3]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 3 + 3]",
+			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 4 + 3]",
 				"--title=$graph_title",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -1434,19 +1434,19 @@ sub fs_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 3]: $err\n") if $err;
+			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 4 + 3]: $err\n") if $err;
 		}
 		$e2 = $e . "4";
 		if($title || ($silent =~ /imagetag/ && $graph =~ /fs$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 3] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4 + 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 3] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 3] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4 + 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 3] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 3] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 3] . "'>\n");
 			}
 		}
 
