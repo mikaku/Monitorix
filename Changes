@@ -16,6 +16,9 @@
   configuration files in conf.d/ directory.
 - Fixed a bug in the naming scheme of the graphs on multiple lists in the 'fs'
   module.
+- Fixed a bug in the 'fs' module that could kill Monitorix itself if open()
+  couldn't fork(). This only should happen in rare situations.
+
 
 3.5.0  - 24-Mar-2014
 ====================
