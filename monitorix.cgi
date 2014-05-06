@@ -457,19 +457,24 @@ $cgi{silent} = $silent;
 
 if($mode eq "localhost") {
 	foreach (split(',', $config{graph_name})) {
-		my $g = trim($_);
-		if(lc($config{graph_enable}->{$g}) eq "y") {
-			my $cgi = $g . "_cgi";
+		my $gn = trim($_);
+		my $g = "";
+		if($graph ne "all") {
+			($g) = ($graph =~ m/^_*($gn)\d*$/);
+			next unless $g;
+		}
+		if(lc($config{graph_enable}->{$gn}) eq "y") {
+			my $cgi = $gn . "_cgi";
 
-			eval "use $g qw(" . $cgi . ")";
+			eval "use $gn qw(" . $cgi . ")";
 			if($@) {
-				print(STDERR "WARNING: unable to load module '$g. $@'\n");
+				print(STDERR "WARNING: unable to load module '$gn. $@'\n");
 				next;
 			}
 
-			if($graph eq "all" || $graph =~ m/^_$g\d+/) {
+			if($graph eq "all" || $gn eq $g) {
 				no strict "refs";
-				&$cgi($g, \%config, \%cgi);
+				&$cgi($gn, \%config, \%cgi);
 			}
 		}
 	}
