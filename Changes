@@ -1,4 +1,4 @@
-3.N.N  - DD-MMM-2014
+3.N.N  - DD-May-2014
 ====================
 - Added proper permission parameters depending on Apache version in the Apache
   configuration file 'docs/monitorix-apache.conf'. <https://bugzilla.redhat.com/show_bug.cgi?id=1062202>
@@ -12,13 +12,18 @@
 - Fixed the error message 'ERROR: line 1237: expected </row> element but found <v>' when upgrading to 3.5.0 version.
 - Fixed to default to white color theme if 'theme_color' option is invalid or
   not defined.
-- Fixed to merge correctly with the main configuration file any extra
+- Fixed to merge correctly the main configuration file with any extra
   configuration files in conf.d/ directory.
 - Fixed a bug in the naming scheme of the graphs on multiple lists in the 'fs'
   module.
 	(thanks to Monitar, monitarisso AT sapo.pt for pointing this out)
 - Fixed a bug in the 'fs' module that could kill Monitorix itself if open()
   couldn't fork(). This only should happen in rare situations.
+- Fix a bug that affected the 'emailreports' module, which was sending emails
+  with no graphs.
+	(thanks to Patrick Fallberg, patrick AT fallberg.net for pointing this out)
+	(thanks to Sam, yst.guy.tw AT gmail.com for pointing this out)
+- Small fixes and typos.
 
 
 3.5.0  - 24-Mar-2014
