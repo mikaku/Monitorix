@@ -1,0 +1,11 @@
+description "Monitorix - system monitoring service"
+author "Cameron Norman <camerontnorman@gmail.com>"
+
+start on filesystem
+stop on runlevel [016]
+
+expect fork
+respawn
+
+pre-start exec test -x /usr/bin/monitorix || { stop; exit 0; }
+exec /usr/bin/monitorix -c /etc/monitorix/monitorix.conf
