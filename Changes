@@ -1,3 +1,8 @@
+3.N.N  - DD-MMM-2014
+====================
+- Added Upstart job. [#46]
+
+
 3.5.1  - 06-May-2014
 ====================
 - Added proper permission parameters depending on Apache version in the Apache
