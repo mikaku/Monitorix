@@ -1,6 +1,9 @@
 3.N.N  - DD-MMM-2014
 ====================
 - Added Upstart job. [#46]
+- Fixed regexp that prevented collecting LOADPCT and ITEMP values in 'apcupsd'
+  module.
+	(thanks to Patrick Fallberg, patrick AT fallberg.net)
 
 
 3.5.1  - 06-May-2014
