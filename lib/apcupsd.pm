@@ -189,7 +189,7 @@ sub apcupsd_update {
 			if(/^LINEV\s*:\s*(\d+\.\d+)\s+Volts/) {
 				$linev = $1;
 			}
-			if(/^LOADPCT\s*:\s*(\d+\.\d+)\s+Percent Load Capacity/) {
+			if(/^LOADPCT\s*:\s*(\d+\.\d+)\s+Percent/) {
 				$loadc = $1;
 			}
 			if(/^BCHARGE\s*:\s*(\d+\.\d+)\s+Percent/) {
@@ -210,7 +210,7 @@ sub apcupsd_update {
 			if(/^HITRANS\s*:\s*(\d+\.\d+)\s+Volts/) {
 				$htran = $1;
 			}
-			if(/^ITEMP\s*:\s*(\d+\.\d+)\s+C Internal/) {
+			if(/^ITEMP\s*:\s*(\d+\.\d+)\s+C/) {
 				$itemp = $1;
 			}
 			if(/^BATTV\s*:\s*(\d+\.\d+)\s+Volts/) {
