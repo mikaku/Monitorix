@@ -623,6 +623,7 @@ sub fs_update {
 				$use = ($used * 100) / ($used + $free) unless $used + $free == 0;
 			} elsif($f) {
 				my $pid;
+				@tmp = (0) x 10;
 				eval {
 					local $SIG{'ALRM'} = sub {
 						if($pid) {

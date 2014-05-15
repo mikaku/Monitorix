@@ -4,6 +4,12 @@
 - Fixed regexp that prevented collecting LOADPCT and ITEMP values in 'apcupsd'
   module.
 	(thanks to Patrick Fallberg, patrick AT fallberg.net)
+- Fixed to show the filesystem name when Monitorix is unable to detect its
+  device name.
+- Fixed messages of argument isn't numeric in addition at fs.pm in lines 650 and
+  684. This happened if one of the filesystems defined is not a real mount
+  point with an associated device name.
+	(thanks to Andreas Itzchak Rehberg, izzy AT qumran.org for pointing this out)
 
 
 3.5.1  - 06-May-2014
