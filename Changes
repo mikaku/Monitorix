@@ -1,5 +1,6 @@
 3.N.N  - DD-MMM-2014
 ====================
+- Added a complete statistical Libvirt (libvirt) graph.
 - Added Upstart job. [#46]
 - Fixed regexp that prevented collecting LOADPCT and ITEMP values in 'apcupsd'
   module.
