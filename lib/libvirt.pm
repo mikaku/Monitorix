@@ -1,0 +1,946 @@
+#
+# Monitorix - A lightweight system monitoring tool.
+#
+# Copyright (C) 2005-2014 by Jordi Sanfeliu <jordi@fibranet.cat>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+package libvirt;
+
+use strict;
+use warnings;
+use Monitorix;
+use RRDs;
+use Exporter 'import';
+our @EXPORT = qw(libvirt_init libvirt_update libvirt_cgi);
+
+sub libvirt_init {
+	my $myself = (caller(0))[3];
+	my ($package, $config, $debug) = @_;
+	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $libvirt = $config->{libvirt};
+
+	my $info;
+	my @ds;
+	my @rra;
+	my @tmp;
+	my $n;
+
+	my @average;
+	my @min;
+	my @max;
+	my @last;
+
+	if(-e $rrd) {
+		$info = RRDs::info($rrd);
+		for my $key (keys %$info) {
+			if(index($key, 'ds[') == 0) {
+				if(index($key, '.type') != -1) {
+					push(@ds, substr($key, 3, index($key, ']') - 3));
+				}
+			}
+			if(index($key, 'rra[') == 0) {
+				if(index($key, '.rows') != -1) {
+					push(@rra, substr($key, 4, index($key, ']') - 4));
+				}
+			}
+		}
+
+		if(scalar(@ds) / 64 != keys(%{$libvirt->{list}})) {
+			logger("$myself: Detected size mismatch between <list>...</list> (" . keys(%{$libvirt->{list}}) . ") and $rrd (" . scalar(@ds) / 64 . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
+			rename($rrd, "$rrd.bak");
+		}
+		if(scalar(@rra) < 12 + (4 * $config->{max_historic_years})) {
+			logger("$myself: Detected size mismatch between 'max_historic_years' (" . $config->{max_historic_years} . ") and $rrd (" . ((scalar(@rra) -12) / 4) . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
+			rename($rrd, "$rrd.bak");
+		}
+	}
+
+	if(!(-e $rrd)) {
+		logger("Creating '$rrd' file.");
+		for($n = 1; $n <= $config->{max_historic_years}; $n++) {
+			push(@average, "RRA:AVERAGE:0.5:1440:" . (365 * $n));
+			push(@min, "RRA:MIN:0.5:1440:" . (365 * $n));
+			push(@max, "RRA:MAX:0.5:1440:" . (365 * $n));
+			push(@last, "RRA:LAST:0.5:1440:" . (365 * $n));
+		}
+		for($n = 0; $n < keys(%{$libvirt->{list}}); $n++) {
+			push(@tmp, "DS:libv" . $n . "_cpu0:GAUGE:120:0:100");
+			push(@tmp, "DS:libv" . $n . "_mem0:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_dsk0:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_net0:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va10:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va20:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va30:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va40:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_cpu1:GAUGE:120:0:100");
+			push(@tmp, "DS:libv" . $n . "_mem1:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_dsk1:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_net1:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va11:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va21:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va31:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va41:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_cpu2:GAUGE:120:0:100");
+			push(@tmp, "DS:libv" . $n . "_mem2:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_dsk2:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_net2:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va12:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va22:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va32:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va42:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_cpu3:GAUGE:120:0:100");
+			push(@tmp, "DS:libv" . $n . "_mem3:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_dsk3:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_net3:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va13:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va23:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va33:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va43:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_cpu4:GAUGE:120:0:100");
+			push(@tmp, "DS:libv" . $n . "_mem4:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_dsk4:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_net4:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va14:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va24:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va34:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va44:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_cpu5:GAUGE:120:0:100");
+			push(@tmp, "DS:libv" . $n . "_mem5:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_dsk5:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_net5:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va15:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va25:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va35:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va45:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_cpu6:GAUGE:120:0:100");
+			push(@tmp, "DS:libv" . $n . "_mem6:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_dsk6:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_net6:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va16:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va26:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va36:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va46:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_cpu7:GAUGE:120:0:100");
+			push(@tmp, "DS:libv" . $n . "_mem7:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_dsk7:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_net7:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va17:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va27:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va37:GAUGE:120:0:U");
+			push(@tmp, "DS:libv" . $n . "_va47:GAUGE:120:0:U");
+		}
+		eval {
+			RRDs::create($rrd,
+				"--step=60",
+				@tmp,
+				"RRA:AVERAGE:0.5:1:1440",
+				"RRA:AVERAGE:0.5:30:336",
+				"RRA:AVERAGE:0.5:60:744",
+				@average,
+				"RRA:MIN:0.5:1:1440",
+				"RRA:MIN:0.5:30:336",
+				"RRA:MIN:0.5:60:744",
+				@min,
+				"RRA:MAX:0.5:1:1440",
+				"RRA:MAX:0.5:30:336",
+				"RRA:MAX:0.5:60:744",
+				@max,
+				"RRA:LAST:0.5:1:1440",
+				"RRA:LAST:0.5:30:336",
+				"RRA:LAST:0.5:60:744",
+				@last,
+			);
+		};
+		my $err = RRDs::error;
+		if($@ || $err) {
+			logger("$@") unless !$@;
+			if($err) {
+				logger("ERROR: while creating $rrd: $err");
+				if($err eq "RRDs::error") {
+					logger("... is the RRDtool Perl package installed?");
+				}
+			}
+			return;
+		}
+	}
+
+	$config->{libvirt_hist} = ();
+	push(@{$config->{func_update}}, $package);
+	logger("$myself: Ok") if $debug;
+}
+
+sub libvirt_update {
+	my $myself = (caller(0))[3];
+	my ($package, $config, $debug) = @_;
+	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $libvirt = $config->{libvirt};
+
+	my $n;
+	my $rrdata = "N";
+
+	my $e = 0;
+	foreach my $vmg (sort keys %{$libvirt->{list}}) {
+		my @lvl = split(',', $libvirt->{list}->{$vmg});
+		for($n = 0; $n < 8; $n++) {
+			my $cpu = 0;
+			my $mem = 0;
+			my $dsk = 0;
+			my $net = 0;
+
+			my $str;
+			my $state = "";
+			my $vm = trim($lvl[$n] || "");
+			my $vda = trim((split(',', $libvirt->{desc}->{$vm} || ""))[1]);
+			my $vmac = trim((split(',', $libvirt->{desc}->{$vm} || ""))[2]);
+			my $vnet = "";
+
+			if($vm && (!$vda || !$vmac)) {
+				logger("$myself: missing parameters in '$vm' virtual machine.");
+				$vm = "";	# invalidates this vm
+			}
+
+			# check first if that 'vm' is running
+			if($vm && open(IN, "virsh domstate $vm |")) {
+				$state = trim(<IN>);
+				close(IN);
+			}
+
+			if($state eq "running") {
+				if(open(IN, "virsh cpu-stats $vm --total |")) {
+					my $c = 0;
+					while(<IN>) {
+						if(/^\s+cpu_time\s+(\d+\.\d+) seconds$/) {
+							$c = $1;
+						}
+					}
+					close(IN);
+					$str = $e . "_cpu" . $n;
+					$cpu = $c - ($config->{libvirt_hist}->{$str} || 0);
+					$cpu = 0 unless $c != $cpu;
+					$cpu = $cpu * 100 / 60;
+					$config->{libvirt_hist}->{$str} = $c;
+				}
+				if(open(IN, "virsh dommemstat $vm |")) {
+					while(<IN>) {
+						if(/^rss\s+(\d+)$/) {
+							$mem = $1 * 1024;
+						}
+					}
+					close(IN);
+				}
+				if(open(IN, "virsh domblkstat $vm $vda |")) {
+					my $r = 0;
+					my $w = 0;
+					while(<IN>) {
+						if(/^$vda\s+rd_bytes\s+(\d+)$/) {
+							$r = $1;
+						}
+						if(/^$vda\s+wr_bytes\s+(\d+)$/) {
+							$w = $1;
+							last;
+						}
+					}
+					close(IN);
+					my $t = $r + $w;
+					$str = $e . "_dsk" . $n;
+					$dsk = $t - ($config->{libvirt_hist}->{$str} || 0);
+					$dsk = 0 unless $t != $dsk;
+					$dsk /= 60;
+					$config->{libvirt_hist}->{$str} = $t;
+				}
+				if(open(IN, "virsh domiflist $vm |")) {
+					while(<IN>) {
+						if(/^(\S+)\s+.*?\s+$vmac$/) {
+							$vnet = $1;
+						}
+					}
+					close(IN);
+				}
+				if(open(IN, "virsh domifstat $vm $vnet |")) {
+					my $r = 0;
+					my $w = 0;
+					while(<IN>) {
+						if(/^$vnet\s+rx_bytes\s+(\d+)$/) {
+							$r = $1;
+						}
+						if(/^$vnet\s+tx_bytes\s+(\d+)$/) {
+							$w = $1;
+							last;
+						}
+					}
+					close(IN);
+					my $t = $r + $w;
+					$str = $e . "_net" . $n;
+					$net = $t - ($config->{libvirt_hist}->{$str} || 0);
+					$net = 0 unless $t != $net;
+					$net /= 60;
+					$config->{libvirt_hist}->{$str} = $t;
+				}
+			}
+			$rrdata .= ":$cpu:$mem:$dsk:$net:0:0:0:0";
+		}
+		$e++;
+	}
+
+	RRDs::update($rrd, $rrdata);
+	logger("$myself: $rrdata") if $debug;
+	my $err = RRDs::error;
+	logger("ERROR: while updating $rrd: $err") if $err;
+}
+
+sub libvirt_cgi {
+	my ($package, $config, $cgi) = @_;
+
+	my $libvirt = $config->{libvirt};
+	my @rigid = split(',', $libvirt->{rigid});
+	my @limit = split(',', $libvirt->{limit});
+	my $tf = $cgi->{tf};
+	my $colors = $cgi->{colors};
+	my $graph = $cgi->{graph};
+	my $silent = $cgi->{silent};
+	my $zoom = "--zoom=" . $config->{global_zoom};
+
+	my $u = "";
+	my $width;
+	my $height;
+	my $graph_title;
+	my @PNG;
+	my @PNGz;
+	my @tmp;
+	my @tmpz;
+	my @CDEF;
+	my @riglim;
+	my $n;
+	my $n2;
+	my $e;
+	my $e2;
+	my $str;
+	my $err;
+	my @LC = (
+		"#FFA500",
+		"#44EEEE",
+		"#44EE44",
+		"#4444EE",
+		"#448844",
+		"#5F04B4",
+		"#EE44EE",
+		"#EEEE44",
+	);
+
+	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $title = $config->{graph_title}->{$package};
+	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
+
+	$title = !$silent ? $title : "";
+
+
+	# text mode
+	#
+	if(lc($config->{iface_mode}) eq "text") {
+		if($title) {
+			main::graph_header($title, 2);
+			print("    <tr>\n");
+			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+		}
+		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"AVERAGE",
+			"-r $tf->{res}");
+		$err = RRDs::error;
+		print("ERROR: while fetching $rrd: $err\n") if $err;
+		my $line1;
+		my $line2;
+		my $line3;
+		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
+		foreach my $vmg (sort keys %{$libvirt->{list}}) {
+			my @lvl = split(',', $libvirt->{list}->{$vmg});
+			for($n = 0; $n < scalar(@lvl); $n++) {
+				my $vm = trim($lvl[$n]);
+				$str = sprintf("%31s", trim((split(',', $libvirt->{desc}->{$vm} || $vm))[0]));
+				$line1 .= $str;
+				$str = sprintf("  CPU%%  Memory    Disk     Net ");
+				$line2 .= $str;
+				$line3 .=      "-------------------------------";
+			}
+		}
+		print("    $line1\n");
+		print("Time $line2\n");
+		print("-----$line3\n");
+		my $line;
+		my @row;
+		my $time;
+		my $from;
+		my $to;
+		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
+			$line = @$data[$n];
+			$time = $time - (1 / $tf->{ts});
+			my ($root, $swap) = @$line;
+			printf(" %2d$tf->{tc} ", $time);
+			$e = 0;
+			foreach my $vmg (sort keys %{$libvirt->{list}}) {
+				my @lvl = split(',', $libvirt->{list}->{$vmg});
+				for($n2 = 0; $n2 < scalar(@lvl); $n2++) {
+					$from = ($e * 8 * 8) + ($n2 * 8);
+					$to = $from + 8;
+					my ($cpu, $mem, $dsk, $net) = @$line[$from..$to];
+					@row = ($cpu || 0, ($mem || 0) / 1024 / 1024, ($dsk || 0) / 1024, ($net || 0) / 1024);
+					printf(" %4.1f%% %6dM %6.1fM %6.1fM ", @row);
+				}
+				$e++;
+			}
+			print("\n");
+		}
+		print("    </pre>\n");
+		if($title) {
+			print("    </td>\n");
+			print("    </tr>\n");
+			main::graph_footer();
+		}
+		print("  <br>\n");
+		return;
+	}
+
+
+	# graph mode
+	#
+	if($silent eq "yes" || $silent eq "imagetag") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "_";
+	}
+	if($silent eq "imagetagbig") {
+		$colors->{fg_color} = "#000000";  # visible color for text mode
+		$u = "";
+	}
+
+	for($n = 0; $n < keys(%{$libvirt->{list}}); $n++) {
+		for($n2 = 1; $n2 <= 4; $n2++) {
+			$str = $u . $package . $n . $n2 . "." . $tf->{when} . ".png";
+			push(@PNG, $str);
+			unlink("$PNG_DIR" . $str);
+			if(lc($config->{enable_zoom}) eq "y") {
+				$str = $u . $package . $n . $n2 . "z." . $tf->{when} . ".png";
+				push(@PNGz, $str);
+				unlink("$PNG_DIR" . $str);
+			}
+		}
+	}
+
+	$e = $e2 = 0;
+	foreach my $vmg (sort keys %{$libvirt->{list}}) {
+		my @lvl = split(',', $libvirt->{list}->{$vmg});
+
+		if($e) {
+			print("   <br>\n");
+		}
+		if($title) {
+			main::graph_header($title, 2);
+		}
+
+		undef(@riglim);
+		if(trim($rigid[0]) eq 1) {
+			push(@riglim, "--upper-limit=" . trim($limit[0]));
+		} else {
+			if(trim($rigid[0]) eq 2) {
+				push(@riglim, "--upper-limit=" . trim($limit[0]));
+				push(@riglim, "--rigid");
+			}
+		}
+		undef(@tmp);
+		undef(@tmpz);
+		undef(@CDEF);
+		for($n = 0; $n < 8; $n++) {
+			my $vm = trim($lvl[$n] || "");
+
+			if($vm) {
+				$str = trim((split(',', $libvirt->{desc}->{$vm} || ""))[0]);
+				push(@tmpz, "LINE2:cpu" . $n . $LC[$n] . ":$str");
+				$str = sprintf("%-20s", substr($str, 0, 20));
+				push(@tmp, "LINE2:cpu" . $n . $LC[$n] . ":$str");
+				push(@tmp, "GPRINT:cpu" . $n . ":LAST:Cur\\: %4.1lf%%");
+				push(@tmp, "GPRINT:cpu" . $n . ":MIN:  Min\\: %4.1lf%%");
+				push(@tmp, "GPRINT:cpu" . $n . ":MAX:  Max\\: %4.1lf%%\\n");
+			}
+		}
+		if($title) {
+			print("    <tr>\n");
+			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
+		($width, $height) = split('x', $config->{graph_size}->{medium});
+		if($silent =~ /imagetag/) {
+			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+			@tmp = @tmpz;
+		}
+		RRDs::graph("$PNG_DIR" . "$PNG[$e * 4]",
+			"--title=$config->{graphs}->{_libvirt1}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Percent (%)",
+			"--width=$width",
+			"--height=$height",
+			"--upper-limit=100",
+			@riglim,
+			"--lower-limit=0",
+			$zoom,
+			@{$cgi->{version12}},
+			@{$colors->{graph_colors}},
+			"DEF:cpu0=$rrd:libv" . $e . "_cpu0:AVERAGE",
+			"DEF:cpu1=$rrd:libv" . $e . "_cpu1:AVERAGE",
+			"DEF:cpu2=$rrd:libv" . $e . "_cpu2:AVERAGE",
+			"DEF:cpu3=$rrd:libv" . $e . "_cpu3:AVERAGE",
+			"DEF:cpu4=$rrd:libv" . $e . "_cpu4:AVERAGE",
+			"DEF:cpu5=$rrd:libv" . $e . "_cpu5:AVERAGE",
+			"DEF:cpu6=$rrd:libv" . $e . "_cpu6:AVERAGE",
+			"DEF:cpu7=$rrd:libv" . $e . "_cpu7:AVERAGE",
+			"CDEF:allvalues=cpu0,cpu1,cpu2,cpu3,cpu4,cpu5,cpu6,cpu7,+,+,+,+,+,+,+",
+			@CDEF,
+			@tmp);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 4]: $err\n") if $err;
+		if(lc($config->{enable_zoom}) eq "y") {
+			($width, $height) = split('x', $config->{graph_size}->{zoom});
+			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 4]",
+				"--title=$config->{graphs}->{_libvirt1}  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=PNG",
+				"--vertical-label=Percent (%)",
+				"--width=$width",
+				"--height=$height",
+				"--upper-limit=100",
+				@riglim,
+				"--lower-limit=0",
+				@{$cgi->{version12}},
+				@{$colors->{graph_colors}},
+				"DEF:cpu0=$rrd:libv" . $e . "_cpu0:AVERAGE",
+				"DEF:cpu1=$rrd:libv" . $e . "_cpu1:AVERAGE",
+				"DEF:cpu2=$rrd:libv" . $e . "_cpu2:AVERAGE",
+				"DEF:cpu3=$rrd:libv" . $e . "_cpu3:AVERAGE",
+				"DEF:cpu4=$rrd:libv" . $e . "_cpu4:AVERAGE",
+				"DEF:cpu5=$rrd:libv" . $e . "_cpu5:AVERAGE",
+				"DEF:cpu6=$rrd:libv" . $e . "_cpu6:AVERAGE",
+				"DEF:cpu7=$rrd:libv" . $e . "_cpu7:AVERAGE",
+				"CDEF:allvalues=cpu0,cpu1,cpu2,cpu3,cpu4,cpu5,cpu6,cpu7,+,+,+,+,+,+,+",
+				@CDEF,
+				@tmpz);
+			$err = RRDs::error;
+			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 4]: $err\n") if $err;
+		}
+		$e2 = $e . "1";
+		if($title || ($silent =~ /imagetag/ && $graph =~ /libvirt$e2/)) {
+			if(lc($config->{enable_zoom}) eq "y") {
+				if(lc($config->{disable_javascript_void}) eq "y") {
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4] . "' border='0'></a>\n");
+				}
+				else {
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4] . "' border='0'></a>\n");
+				}
+			} else {
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4] . "'>\n");
+			}
+		}
+
+		if($title) {
+			print("    </td>\n");
+			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		}
+		undef(@riglim);
+		if(trim($rigid[1]) eq 1) {
+			push(@riglim, "--upper-limit=" . trim($limit[1]));
+		} else {
+			if(trim($rigid[1]) eq 2) {
+				push(@riglim, "--upper-limit=" . trim($limit[1]));
+				push(@riglim, "--rigid");
+			}
+		}
+		undef(@tmp);
+		undef(@tmpz);
+		undef(@CDEF);
+		for($n = 0; $n < 8; $n++) {
+			my $vm = trim($lvl[$n] || "");
+
+			if($vm) {
+				$str = trim((split(',', $libvirt->{desc}->{$vm} || ""))[0]);
+				push(@tmpz, "LINE2:mem" . $n . $LC[$n] . ":$str");
+				$str = sprintf("%-20s", substr($str, 0, 20));
+				push(@tmp, "LINE2:mem" . $n . $LC[$n] . ":$str");
+				push(@tmp, "GPRINT:m_mem" . $n . ":LAST:Cur\\: %4.0lfM");
+				push(@tmp, "GPRINT:m_mem" . $n . ":MIN:  Min\\: %4.0lfM");
+				push(@tmp, "GPRINT:m_mem" . $n . ":MAX:  Max\\: %4.0lfM\\n");
+			}
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
+		($width, $height) = split('x', $config->{graph_size}->{medium});
+		if($silent =~ /imagetag/) {
+			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+			@tmp = @tmpz;
+			push(@tmp, "COMMENT: \\n");
+			push(@tmp, "COMMENT: \\n");
+			push(@tmp, "COMMENT: \\n");
+		}
+		RRDs::graph("$PNG_DIR" . "$PNG[$e * 4 + 1]",
+			"--title=$config->{graphs}->{_libvirt2}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=bytes",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			"--lower-limit=0",
+			$zoom,
+			@{$cgi->{version12}},
+			@{$colors->{graph_colors}},
+			"DEF:mem0=$rrd:libv" . $e . "_mem0:AVERAGE",
+			"DEF:mem1=$rrd:libv" . $e . "_mem1:AVERAGE",
+			"DEF:mem2=$rrd:libv" . $e . "_mem2:AVERAGE",
+			"DEF:mem3=$rrd:libv" . $e . "_mem3:AVERAGE",
+			"DEF:mem4=$rrd:libv" . $e . "_mem4:AVERAGE",
+			"DEF:mem5=$rrd:libv" . $e . "_mem5:AVERAGE",
+			"DEF:mem6=$rrd:libv" . $e . "_mem6:AVERAGE",
+			"DEF:mem7=$rrd:libv" . $e . "_mem7:AVERAGE",
+			"CDEF:allvalues=mem0,mem1,mem2,mem3,mem4,mem5,mem6,mem7,+,+,+,+,+,+,+",
+			"CDEF:m_mem0=mem0,1024,/,1024,/",
+			"CDEF:m_mem1=mem1,1024,/,1024,/",
+			"CDEF:m_mem2=mem2,1024,/,1024,/",
+			"CDEF:m_mem3=mem3,1024,/,1024,/",
+			"CDEF:m_mem4=mem4,1024,/,1024,/",
+			"CDEF:m_mem5=mem5,1024,/,1024,/",
+			"CDEF:m_mem6=mem6,1024,/,1024,/",
+			"CDEF:m_mem7=mem7,1024,/,1024,/",
+			@CDEF,
+			@tmp);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 4 + 1]: $err\n") if $err;
+		if(lc($config->{enable_zoom}) eq "y") {
+			($width, $height) = split('x', $config->{graph_size}->{zoom});
+			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 4 + 1]",
+				"--title=$config->{graphs}->{_libvirt2}  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=PNG",
+				"--vertical-label=bytes",
+				"--width=$width",
+				"--height=$height",
+				@riglim,
+				"--lower-limit=0",
+				@{$cgi->{version12}},
+				@{$colors->{graph_colors}},
+				"DEF:mem0=$rrd:libv" . $e . "_mem0:AVERAGE",
+				"DEF:mem1=$rrd:libv" . $e . "_mem1:AVERAGE",
+				"DEF:mem2=$rrd:libv" . $e . "_mem2:AVERAGE",
+				"DEF:mem3=$rrd:libv" . $e . "_mem3:AVERAGE",
+				"DEF:mem4=$rrd:libv" . $e . "_mem4:AVERAGE",
+				"DEF:mem5=$rrd:libv" . $e . "_mem5:AVERAGE",
+				"DEF:mem6=$rrd:libv" . $e . "_mem6:AVERAGE",
+				"DEF:mem7=$rrd:libv" . $e . "_mem7:AVERAGE",
+				"CDEF:allvalues=mem0,mem1,mem2,mem3,mem4,mem5,mem6,mem7,+,+,+,+,+,+,+",
+				"CDEF:m_mem0=mem0,1024,/,1024,/",
+				"CDEF:m_mem1=mem1,1024,/,1024,/",
+				"CDEF:m_mem2=mem2,1024,/,1024,/",
+				"CDEF:m_mem3=mem3,1024,/,1024,/",
+				"CDEF:m_mem4=mem4,1024,/,1024,/",
+				"CDEF:m_mem5=mem5,1024,/,1024,/",
+				"CDEF:m_mem6=mem6,1024,/,1024,/",
+				"CDEF:m_mem7=mem7,1024,/,1024,/",
+				@CDEF,
+				@tmpz);
+			$err = RRDs::error;
+			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 4 + 1]: $err\n") if $err;
+		}
+		$e2 = $e . "2";
+		if($title || ($silent =~ /imagetag/ && $graph =~ /libvirt$e2/)) {
+			if(lc($config->{enable_zoom}) eq "y") {
+				if(lc($config->{disable_javascript_void}) eq "y") {
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 1] . "' border='0'></a>\n");
+				}
+				else {
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4 + 1] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 1] . "' border='0'></a>\n");
+				}
+			} else {
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 1] . "'>\n");
+			}
+		}
+
+		undef(@riglim);
+		if(trim($rigid[2]) eq 1) {
+			push(@riglim, "--upper-limit=" . trim($limit[2]));
+		} else {
+			if(trim($rigid[2]) eq 2) {
+				push(@riglim, "--upper-limit=" . trim($limit[2]));
+				push(@riglim, "--rigid");
+			}
+		}
+		undef(@tmp);
+		undef(@tmpz);
+		undef(@CDEF);
+		for($n = 0; $n < 8; $n++) {
+			my $vm = trim($lvl[$n] || "");
+
+			if($vm) {
+				$str = trim((split(',', $libvirt->{desc}->{$vm} || ""))[0]);
+				push(@tmpz, "LINE2:dsk" . $n . $LC[$n] . ":$str");
+				$str = sprintf("%-20s", substr($str, 0, 20));
+				push(@tmp, "LINE2:dsk" . $n . $LC[$n] . ":$str");
+				push(@tmp, "GPRINT:m_dsk" . $n . ":LAST:Cur\\: %4.1lfM");
+				push(@tmp, "GPRINT:m_dsk" . $n . ":MIN:  Min\\: %4.1lfM");
+				push(@tmp, "GPRINT:m_dsk" . $n . ":MAX:  Max\\: %4.1lfM\\n");
+			}
+		}
+		if($title) {
+			print("    <tr>\n");
+			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
+		($width, $height) = split('x', $config->{graph_size}->{medium});
+		if($silent =~ /imagetag/) {
+			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+			@tmp = @tmpz;
+		}
+		RRDs::graph("$PNG_DIR" . "$PNG[$e * 4 + 2]",
+			"--title=$config->{graphs}->{_libvirt3}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=bytes/s",
+			"--width=$width",
+			"--height=$height",
+			"--upper-limit=100",
+			@riglim,
+			"--lower-limit=0",
+			$zoom,
+			@{$cgi->{version12}},
+			@{$colors->{graph_colors}},
+			"DEF:dsk0=$rrd:libv" . $e . "_dsk0:AVERAGE",
+			"DEF:dsk1=$rrd:libv" . $e . "_dsk1:AVERAGE",
+			"DEF:dsk2=$rrd:libv" . $e . "_dsk2:AVERAGE",
+			"DEF:dsk3=$rrd:libv" . $e . "_dsk3:AVERAGE",
+			"DEF:dsk4=$rrd:libv" . $e . "_dsk4:AVERAGE",
+			"DEF:dsk5=$rrd:libv" . $e . "_dsk5:AVERAGE",
+			"DEF:dsk6=$rrd:libv" . $e . "_dsk6:AVERAGE",
+			"DEF:dsk7=$rrd:libv" . $e . "_dsk7:AVERAGE",
+			"CDEF:allvalues=dsk0,dsk1,dsk2,dsk3,dsk4,dsk5,dsk6,dsk7,+,+,+,+,+,+,+",
+			"CDEF:m_dsk0=dsk0,1024,/,1024,/",
+			"CDEF:m_dsk1=dsk1,1024,/,1024,/",
+			"CDEF:m_dsk2=dsk2,1024,/,1024,/",
+			"CDEF:m_dsk3=dsk3,1024,/,1024,/",
+			"CDEF:m_dsk4=dsk4,1024,/,1024,/",
+			"CDEF:m_dsk5=dsk5,1024,/,1024,/",
+			"CDEF:m_dsk6=dsk6,1024,/,1024,/",
+			"CDEF:m_dsk7=dsk7,1024,/,1024,/",
+			@CDEF,
+			@tmp);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 4 + 2]: $err\n") if $err;
+		if(lc($config->{enable_zoom}) eq "y") {
+			($width, $height) = split('x', $config->{graph_size}->{zoom});
+			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 4 + 2]",
+				"--title=$config->{graphs}->{_libvirt3}  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=PNG",
+				"--vertical-label=bytes/s",
+				"--width=$width",
+				"--height=$height",
+				"--upper-limit=100",
+				@riglim,
+				"--lower-limit=0",
+				@{$cgi->{version12}},
+				@{$colors->{graph_colors}},
+				"DEF:dsk0=$rrd:libv" . $e . "_dsk0:AVERAGE",
+				"DEF:dsk1=$rrd:libv" . $e . "_dsk1:AVERAGE",
+				"DEF:dsk2=$rrd:libv" . $e . "_dsk2:AVERAGE",
+				"DEF:dsk3=$rrd:libv" . $e . "_dsk3:AVERAGE",
+				"DEF:dsk4=$rrd:libv" . $e . "_dsk4:AVERAGE",
+				"DEF:dsk5=$rrd:libv" . $e . "_dsk5:AVERAGE",
+				"DEF:dsk6=$rrd:libv" . $e . "_dsk6:AVERAGE",
+				"DEF:dsk7=$rrd:libv" . $e . "_dsk7:AVERAGE",
+				"CDEF:allvalues=dsk0,dsk1,dsk2,dsk3,dsk4,dsk5,dsk6,dsk7,+,+,+,+,+,+,+",
+				@CDEF,
+				"CDEF:m_dsk0=dsk0,1024,/,1024,/",
+				"CDEF:m_dsk1=dsk1,1024,/,1024,/",
+				"CDEF:m_dsk2=dsk2,1024,/,1024,/",
+				"CDEF:m_dsk3=dsk3,1024,/,1024,/",
+				"CDEF:m_dsk4=dsk4,1024,/,1024,/",
+				"CDEF:m_dsk5=dsk5,1024,/,1024,/",
+				"CDEF:m_dsk6=dsk6,1024,/,1024,/",
+				"CDEF:m_dsk7=dsk7,1024,/,1024,/",
+				@tmpz);
+			$err = RRDs::error;
+			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 4 + 2]: $err\n") if $err;
+		}
+		$e2 = $e . "3";
+		if($title || ($silent =~ /imagetag/ && $graph =~ /libvirt$e2/)) {
+			if(lc($config->{enable_zoom}) eq "y") {
+				if(lc($config->{disable_javascript_void}) eq "y") {
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4 + 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 2] . "' border='0'></a>\n");
+				}
+				else {
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4 + 2] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 2] . "' border='0'></a>\n");
+				}
+			} else {
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 2] . "'>\n");
+			}
+		}
+
+		if($title) {
+			print("    </td>\n");
+			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		}
+		undef(@riglim);
+		if(trim($rigid[3]) eq 1) {
+			push(@riglim, "--upper-limit=" . trim($limit[3]));
+		} else {
+			if(trim($rigid[3]) eq 2) {
+				push(@riglim, "--upper-limit=" . trim($limit[3]));
+				push(@riglim, "--rigid");
+			}
+		}
+		undef(@tmp);
+		undef(@tmpz);
+		undef(@CDEF);
+		for($n = 0; $n < 8; $n++) {
+			my $vm = trim($lvl[$n] || "");
+
+			if($vm) {
+				$str = trim((split(',', $libvirt->{desc}->{$vm} || ""))[0]);
+				push(@tmpz, "LINE2:net" . $n . $LC[$n] . ":$str");
+				$str = sprintf("%-20s", substr($str, 0, 20));
+				push(@tmp, "LINE2:net" . $n . $LC[$n] . ":$str");
+				push(@tmp, "GPRINT:k_net" . $n . ":LAST:Cur\\: %4.1lfK");
+				push(@tmp, "GPRINT:k_net" . $n . ":MIN:  Min\\: %4.1lfK");
+				push(@tmp, "GPRINT:k_net" . $n . ":MAX:  Max\\: %4.1lfK\\n");
+			}
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
+		($width, $height) = split('x', $config->{graph_size}->{medium});
+		if($silent =~ /imagetag/) {
+			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+			@tmp = @tmpz;
+			push(@tmp, "COMMENT: \\n");
+			push(@tmp, "COMMENT: \\n");
+			push(@tmp, "COMMENT: \\n");
+		}
+		RRDs::graph("$PNG_DIR" . "$PNG[$e * 4 + 3]",
+			"--title=$config->{graphs}->{_libvirt4}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=bytes/s",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			"--lower-limit=0",
+			$zoom,
+			@{$cgi->{version12}},
+			@{$colors->{graph_colors}},
+			"DEF:net0=$rrd:libv" . $e . "_net0:AVERAGE",
+			"DEF:net1=$rrd:libv" . $e . "_net1:AVERAGE",
+			"DEF:net2=$rrd:libv" . $e . "_net2:AVERAGE",
+			"DEF:net3=$rrd:libv" . $e . "_net3:AVERAGE",
+			"DEF:net4=$rrd:libv" . $e . "_net4:AVERAGE",
+			"DEF:net5=$rrd:libv" . $e . "_net5:AVERAGE",
+			"DEF:net6=$rrd:libv" . $e . "_net6:AVERAGE",
+			"DEF:net7=$rrd:libv" . $e . "_net7:AVERAGE",
+			"CDEF:allvalues=net0,net1,net2,net3,net4,net5,net6,net7,+,+,+,+,+,+,+",
+			"CDEF:k_net0=net0,1024,/",
+			"CDEF:k_net1=net1,1024,/",
+			"CDEF:k_net2=net2,1024,/",
+			"CDEF:k_net3=net3,1024,/",
+			"CDEF:k_net4=net4,1024,/",
+			"CDEF:k_net5=net5,1024,/",
+			"CDEF:k_net6=net6,1024,/",
+			"CDEF:k_net7=net7,1024,/",
+			@CDEF,
+			@tmp);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 4 + 3]: $err\n") if $err;
+		if(lc($config->{enable_zoom}) eq "y") {
+			($width, $height) = split('x', $config->{graph_size}->{zoom});
+			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 4 + 3]",
+				"--title=$config->{graphs}->{_libvirt4}  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=PNG",
+				"--vertical-label=bytes/s",
+				"--width=$width",
+				"--height=$height",
+				@riglim,
+				"--lower-limit=0",
+				@{$cgi->{version12}},
+				@{$colors->{graph_colors}},
+				"DEF:net0=$rrd:libv" . $e . "_net0:AVERAGE",
+				"DEF:net1=$rrd:libv" . $e . "_net1:AVERAGE",
+				"DEF:net2=$rrd:libv" . $e . "_net2:AVERAGE",
+				"DEF:net3=$rrd:libv" . $e . "_net3:AVERAGE",
+				"DEF:net4=$rrd:libv" . $e . "_net4:AVERAGE",
+				"DEF:net5=$rrd:libv" . $e . "_net5:AVERAGE",
+				"DEF:net6=$rrd:libv" . $e . "_net6:AVERAGE",
+				"DEF:net7=$rrd:libv" . $e . "_net7:AVERAGE",
+				"CDEF:allvalues=net0,net1,net2,net3,net4,net5,net6,net7,+,+,+,+,+,+,+",
+				"CDEF:k_net0=net0,1024,/",
+				"CDEF:k_net1=net1,1024,/",
+				"CDEF:k_net2=net2,1024,/",
+				"CDEF:k_net3=net3,1024,/",
+				"CDEF:k_net4=net4,1024,/",
+				"CDEF:k_net5=net5,1024,/",
+				"CDEF:k_net6=net6,1024,/",
+				"CDEF:k_net7=net7,1024,/",
+				@CDEF,
+				@tmpz);
+			$err = RRDs::error;
+			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 4 + 3]: $err\n") if $err;
+		}
+		$e2 = $e . "4";
+		if($title || ($silent =~ /imagetag/ && $graph =~ /libvirt$e2/)) {
+			if(lc($config->{enable_zoom}) eq "y") {
+				if(lc($config->{disable_javascript_void}) eq "y") {
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4 + 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 3] . "' border='0'></a>\n");
+				}
+				else {
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 4 + 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 3] . "' border='0'></a>\n");
+				}
+			} else {
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 4 + 3] . "'>\n");
+			}
+		}
+
+		if($title) {
+			print("    </td>\n");
+			print("    </tr>\n");
+			main::graph_footer();
+		}
+		$e++;
+	}
+	print("  <br>\n");
+	return;
+}
+
+1;
