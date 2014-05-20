@@ -963,6 +963,66 @@ This is where the network interface that acts as the gateway for this server is 
 This graph shows the state of the all network connections IPv4 and IPv6.
 .P
 Only the limit and rigid values may be set here.
+.SS Libvirt statistics (libvirt.rrd)
+This graph is able to monitor an unlimited number of virtual machines managed by Libvirt.
+.P
+.BI list
+.RS
+This is a list of groups of virtual machines that you want to monitor. Each group will become a graph and there may be an unlimited number of groups.
+.P
+WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIlibvirt.rrd\fP file accordingly, removing all historical data.
+.P
+An example would be:
+.P
+.RS
+<list>
+.br
+	0 = centos6, winxp
+.br
+</list>
+.RE
+.P
+The maximum number of virtual machines allowed per group is 8.
+.RE
+.P
+.BI desc
+.RS
+This list complements the \fBlist\fP option and is mandatory for every virtual machine listed. You must define the virtual block device and the MAC address of the virtual network device that you want to monitor for every virtual machine:
+.P
+.RS
+<desc>
+.br
+	centos6 = CentOS 6, vda, 52:54:00:45:d0:e7
+.br
+	winxp   = MS Windows XP, hda, 52:54:00:97:1c:e5
+.br
+</desc>
+.RE
+.P
+To obtain these values you might want to use the following commands:
+.P
+.br
+# virsh domblklist centos6 
+.br
+Target     Source
+.br
+------------------------------------------------
+.br
+vda        /home/jordi/kvm/centos6.img
+.br
+hdc        -
+.br
+.P
+# virsh domiflist centos6 
+.br
+Interface  Type       Source     Model       MAC
+.br
+-------------------------------------------------------
+.br
+vnet3      network    default    virtio      52:54:00:45:d0:e7
+.br
+.P
+This option also allows you to change the name that will appear in the graph, hiding the real name of the virtual machine. If no association is defined, then Monitorix will display the name specified in the \fBlist\fP option.
 .SS System services demand (serv.rrd)
 This graph requires either \fIMailScanner\fP or \fIamavisd-new\fP mail scanners in order to account spam and virus emails.
 .P
