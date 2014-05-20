@@ -882,8 +882,8 @@ sub fs_cgi {
 			foreach my $k (sort keys %{$fs->{list}}) {
 				my @f = split(',', $fs->{list}->{$k});
 				for($n2 = 0; $n2 < scalar(@f); $n2++) {
-					$from = ($e * 8 * 5) + ($n2 * 5);
-					$to = $from + 5;
+					$from = ($e * 8 * 8) + ($n2 * 8);
+					$to = $from + 8;
 					my ($use, $ioa, $tim, $ino) = @$line[$from..$to];
 					@row = ($use, $ioa, $tim, $ino);
 					printf(" %4.1f%% %7.1f %7.1f %4.1f%% ", @row);
