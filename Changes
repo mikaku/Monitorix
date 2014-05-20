@@ -10,6 +10,7 @@
   684. This happened if one of the filesystems defined is not a real mount
   point with an associated device name.
 	(thanks to Andreas Itzchak Rehberg, izzy AT qumran.org for pointing this out)
+- Fixed the values of the text table in the 'fs' graph.
 
 
 3.5.1  - 06-May-2014
