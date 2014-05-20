@@ -77,7 +77,13 @@ case "$1" in
 		fi
 		;;
 	status)
-        	status $PROG
+                if [ -f /var/lock/subsys/$PROG ] ; then
+                  status $PROG
+                  exit 0
+                else
+                  status $PROG
+                  exit 1
+                fi
 		;;
 	*)
 		echo $"Usage: $0 {start|stop|restart|condrestart|status}"
