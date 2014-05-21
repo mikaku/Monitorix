@@ -323,6 +323,8 @@ sub libvirt_cgi {
 	my @tmp;
 	my @tmpz;
 	my @CDEF;
+	my $T = "B";
+	my $vlabel = "bytes/s";
 	my @riglim;
 	my $n;
 	my $n2;
@@ -346,6 +348,11 @@ sub libvirt_cgi {
 	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
 
 	$title = !$silent ? $title : "";
+
+	if(lc($config->{netstats_in_bps}) eq "y") {
+		$T = "b";
+		$vlabel = "bits/s";
+	}
 
 
 	# text mode
@@ -397,6 +404,9 @@ sub libvirt_cgi {
 					$from = ($e * 8 * 8) + ($n2 * 8);
 					$to = $from + 8;
 					my ($cpu, $mem, $dsk, $net) = @$line[$from..$to];
+					if(lc($config->{netstats_in_bps}) eq "y") {
+						$net *= 8;
+					}
 					@row = ($cpu || 0, ($mem || 0) / 1024 / 1024, ($dsk || 0) / 1024, ($net || 0) / 1024);
 					printf(" %4.1f%% %6dM %6.1fM %6.1fM ", @row);
 				}
@@ -836,6 +846,25 @@ sub libvirt_cgi {
 				push(@tmp, "GPRINT:k_net" . $n . ":MAX:  Max\\: %4.1lfK\\n");
 			}
 		}
+		if(lc($config->{netstats_in_bps}) eq "y") {
+			push(@CDEF, "CDEF:k_net0=net0,1024,/,8,*");
+			push(@CDEF, "CDEF:k_net1=net1,1024,/,8,*");
+			push(@CDEF, "CDEF:k_net2=net2,1024,/,8,*");
+			push(@CDEF, "CDEF:k_net3=net3,1024,/,8,*");
+			push(@CDEF, "CDEF:k_net4=net4,1024,/,8,*");
+			push(@CDEF, "CDEF:k_net5=net5,1024,/,8,*");
+			push(@CDEF, "CDEF:k_net6=net6,1024,/,8,*");
+			push(@CDEF, "CDEF:k_net7=net7,1024,/,8,*");
+		} else {
+			push(@CDEF, "CDEF:k_net0=net0,1024,/");
+			push(@CDEF, "CDEF:k_net1=net1,1024,/");
+			push(@CDEF, "CDEF:k_net2=net2,1024,/");
+			push(@CDEF, "CDEF:k_net3=net3,1024,/");
+			push(@CDEF, "CDEF:k_net4=net4,1024,/");
+			push(@CDEF, "CDEF:k_net5=net5,1024,/");
+			push(@CDEF, "CDEF:k_net6=net6,1024,/");
+			push(@CDEF, "CDEF:k_net7=net7,1024,/");
+		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -854,7 +883,7 @@ sub libvirt_cgi {
 			"--title=$config->{graphs}->{_libvirt4}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=bytes/s",
+			"--vertical-label=$vlabel",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
@@ -871,14 +900,6 @@ sub libvirt_cgi {
 			"DEF:net6=$rrd:libv" . $e . "_net6:AVERAGE",
 			"DEF:net7=$rrd:libv" . $e . "_net7:AVERAGE",
 			"CDEF:allvalues=net0,net1,net2,net3,net4,net5,net6,net7,+,+,+,+,+,+,+",
-			"CDEF:k_net0=net0,1024,/",
-			"CDEF:k_net1=net1,1024,/",
-			"CDEF:k_net2=net2,1024,/",
-			"CDEF:k_net3=net3,1024,/",
-			"CDEF:k_net4=net4,1024,/",
-			"CDEF:k_net5=net5,1024,/",
-			"CDEF:k_net6=net6,1024,/",
-			"CDEF:k_net7=net7,1024,/",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -889,7 +910,7 @@ sub libvirt_cgi {
 				"--title=$config->{graphs}->{_libvirt4}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=bytes/s",
+				"--vertical-label=$vlabel",
 				"--width=$width",
 				"--height=$height",
 				@riglim,
@@ -905,14 +926,6 @@ sub libvirt_cgi {
 				"DEF:net6=$rrd:libv" . $e . "_net6:AVERAGE",
 				"DEF:net7=$rrd:libv" . $e . "_net7:AVERAGE",
 				"CDEF:allvalues=net0,net1,net2,net3,net4,net5,net6,net7,+,+,+,+,+,+,+",
-				"CDEF:k_net0=net0,1024,/",
-				"CDEF:k_net1=net1,1024,/",
-				"CDEF:k_net2=net2,1024,/",
-				"CDEF:k_net3=net3,1024,/",
-				"CDEF:k_net4=net4,1024,/",
-				"CDEF:k_net5=net5,1024,/",
-				"CDEF:k_net6=net6,1024,/",
-				"CDEF:k_net7=net7,1024,/",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
