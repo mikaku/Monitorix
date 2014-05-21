@@ -841,29 +841,29 @@ sub libvirt_cgi {
 				push(@tmpz, "LINE2:net" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:net" . $n . $LC[$n] . ":$str");
-				push(@tmp, "GPRINT:k_net" . $n . ":LAST:Cur\\: %4.1lfK");
-				push(@tmp, "GPRINT:k_net" . $n . ":MIN:  Min\\: %4.1lfK");
-				push(@tmp, "GPRINT:k_net" . $n . ":MAX:  Max\\: %4.1lfK\\n");
+				push(@tmp, "GPRINT:m_net" . $n . ":LAST:Cur\\: %4.1lfM");
+				push(@tmp, "GPRINT:m_net" . $n . ":MIN:  Min\\: %4.1lfM");
+				push(@tmp, "GPRINT:m_net" . $n . ":MAX:  Max\\: %4.1lfM\\n");
 			}
 		}
 		if(lc($config->{netstats_in_bps}) eq "y") {
-			push(@CDEF, "CDEF:k_net0=net0,1024,/,8,*");
-			push(@CDEF, "CDEF:k_net1=net1,1024,/,8,*");
-			push(@CDEF, "CDEF:k_net2=net2,1024,/,8,*");
-			push(@CDEF, "CDEF:k_net3=net3,1024,/,8,*");
-			push(@CDEF, "CDEF:k_net4=net4,1024,/,8,*");
-			push(@CDEF, "CDEF:k_net5=net5,1024,/,8,*");
-			push(@CDEF, "CDEF:k_net6=net6,1024,/,8,*");
-			push(@CDEF, "CDEF:k_net7=net7,1024,/,8,*");
+			push(@CDEF, "CDEF:m_net0=net0,1024,/,1024,/,8,*");
+			push(@CDEF, "CDEF:m_net1=net1,1024,/,1024,/,8,*");
+			push(@CDEF, "CDEF:m_net2=net2,1024,/,1024,/,8,*");
+			push(@CDEF, "CDEF:m_net3=net3,1024,/,1024,/,8,*");
+			push(@CDEF, "CDEF:m_net4=net4,1024,/,1024,/,8,*");
+			push(@CDEF, "CDEF:m_net5=net5,1024,/,1024,/,8,*");
+			push(@CDEF, "CDEF:m_net6=net6,1024,/,1024,/,8,*");
+			push(@CDEF, "CDEF:m_net7=net7,1024,/,1024,/,8,*");
 		} else {
-			push(@CDEF, "CDEF:k_net0=net0,1024,/");
-			push(@CDEF, "CDEF:k_net1=net1,1024,/");
-			push(@CDEF, "CDEF:k_net2=net2,1024,/");
-			push(@CDEF, "CDEF:k_net3=net3,1024,/");
-			push(@CDEF, "CDEF:k_net4=net4,1024,/");
-			push(@CDEF, "CDEF:k_net5=net5,1024,/");
-			push(@CDEF, "CDEF:k_net6=net6,1024,/");
-			push(@CDEF, "CDEF:k_net7=net7,1024,/");
+			push(@CDEF, "CDEF:m_net0=net0,1024,/,1024,/");
+			push(@CDEF, "CDEF:m_net1=net1,1024,/,1024,/");
+			push(@CDEF, "CDEF:m_net2=net2,1024,/,1024,/");
+			push(@CDEF, "CDEF:m_net3=net3,1024,/,1024,/");
+			push(@CDEF, "CDEF:m_net4=net4,1024,/,1024,/");
+			push(@CDEF, "CDEF:m_net5=net5,1024,/,1024,/");
+			push(@CDEF, "CDEF:m_net6=net6,1024,/,1024,/");
+			push(@CDEF, "CDEF:m_net7=net7,1024,/,1024,/");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
