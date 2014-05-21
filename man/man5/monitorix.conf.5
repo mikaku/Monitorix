@@ -1967,7 +1967,11 @@ Default value: \fIn\fP
 .P
 .BI url_prefix
 .RS
-This is the prefix of the same URL you use to connect to Monitorix. This is needed in order to get the graphs of the same machine.
+This is the prefix of the same URL you use to connect to Monitorix. Such URL is needed in order to get the graphs of that machine.
+.P
+This option supports sending the credentials in the standard HTTP "Authorization" header, just like this:
+.P
+http://username:password@localhost:8080
 .P
 Default value: \fIhttp://localhost:8080\fP
 .RE
