@@ -5,6 +5,7 @@
 - Added more verbosity during the startup.
 - Added support to include username and password in the 'url_prefix' option of
   the 'emailreports' module.
+	(suggested by V1ru535, admin AT mynet.fr)
 - Fixed regexp that prevented collecting LOADPCT and ITEMP values in 'apcupsd'
   module.
 	(thanks to Patrick Fallberg, patrick AT fallberg.net)
