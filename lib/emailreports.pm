@@ -40,7 +40,13 @@ sub emailreports_send {
 	logger("$myself: sending $report reports.");
 
 	my $uri = URI->new($emailreports->{url_prefix});
-	my $hostname = $uri->host;
+	my $scheme = $uri->scheme || "";
+	my $userinfo = $uri->userinfo || "";
+	$userinfo .= "@" unless !$userinfo;
+	my $hostname = $uri->host || "";
+	my $port = $uri->port || "";
+
+	my $prefix = "$scheme://$userinfo$hostname:$port";
 
 	my $html = <<"EOF";
 <html>
@@ -87,7 +93,7 @@ EOF
 			if lc($config->{accept_selfsigned_certs}) eq "y";
 
 		# generate the graphs and get the html source
-		my $url = $emailreports->{url_prefix} . $base_cgi . "/monitorix.cgi?mode=localhost&graph=_$g&when=$when&color=white";
+		my $url = $prefix . $base_cgi . "/monitorix.cgi?mode=localhost&graph=_$g&when=$when&color=white";
 		my $ua = LWP::UserAgent->new(timeout => 30, $ssl);
 
 		my $response = $ua->request(HTTP::Request->new('GET', $url));
@@ -124,7 +130,9 @@ EOF
 					$images->{"image_$g$n"} = "";
 
 					($url) = $_ =~ m/<img src='(.*?)' /;
-					$response = $ua->request(HTTP::Request->new('GET', $url));
+					my $uri = URI->new($url);
+					my $path = $uri->path || "";
+					$response = $ua->request(HTTP::Request->new('GET', "$prefix$path"));
 					$images->{"image_$g$e$n"} = $response->content;
 					$n++;
 				} else {

@@ -3,6 +3,8 @@
 - Added a complete statistical Libvirt (libvirt) graph.
 - Added Upstart job. [#46]
 - Added more verbosity during the startup.
+- Added support to include username and password in the 'url_prefix' option of
+  the 'emailreports' module.
 - Fixed regexp that prevented collecting LOADPCT and ITEMP values in 'apcupsd'
   module.
 	(thanks to Patrick Fallberg, patrick AT fallberg.net)
