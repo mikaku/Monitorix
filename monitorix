@@ -417,6 +417,7 @@ $0 = sprintf("%s %s%s%s%s",
 
 daemonize() unless $options{n};
 logger("Starting Monitorix version " . VERSION . " (pid $$).");
+logger("Loaded main configuration file '$options{c}'.");
 
 # save the pidfile
 if($options{p}) {
@@ -452,7 +453,7 @@ if($config{include_dir} && opendir(DIR, $config{include_dir})) {
 	foreach my $c (sort @files) {
 		next unless -f $config{include_dir} . "/$c";
 		next unless $c =~ m/\.conf$/;
-		logger("Loading configuration file '$config{include_dir}/$c'.") unless !$options{d};
+		logger("Loading extra configuration file '$config{include_dir}/$c'.");
 		my $conf_inc = new Config::General(
 			-ConfigFile => $config{include_dir} . "/$c",
 		);
@@ -500,7 +501,7 @@ if(open(OUT, "> " . $config{base_dir} . "/cgi/monitorix.conf.path")) {
 
 flush_accounting_rules(\%config, $options{d});
 
-logger("Initializing graphs.") unless !$options{d};
+logger("Initializing graphs.");
 foreach (split(',', $config{graph_name} . ", traffacct")) {
 	my $g = trim($_);
 	my $e = "n";
@@ -538,7 +539,7 @@ if(!scalar($config{func_update})) {
 	exit(0);
 }
 
-logger("Generating the 'index.html' file.") unless !$options{d};
+logger("Generating the 'index.html' file.");
 create_index();
 
 if(lc($config{httpd_builtin}->{enabled} eq "y")) {

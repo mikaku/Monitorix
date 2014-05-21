@@ -2,6 +2,7 @@
 ====================
 - Added a complete statistical Libvirt (libvirt) graph.
 - Added Upstart job. [#46]
+- Added more verbosity during the startup.
 - Fixed regexp that prevented collecting LOADPCT and ITEMP values in 'apcupsd'
   module.
 	(thanks to Patrick Fallberg, patrick AT fallberg.net)
@@ -11,7 +12,7 @@
   684. This happened if one of the filesystems defined is not a real mount
   point with an associated device name.
 	(thanks to Andreas Itzchak Rehberg, izzy AT qumran.org for pointing this out)
-- Fixed the values of the text table in the 'fs' graph.
+- Fixed the values in the text interface of the 'fs' graph.
 - Fixed init script to work with Chef properly. [#48]
 
 
