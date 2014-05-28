@@ -159,6 +159,11 @@ sub serv_update {
 	my $val04 = 0;
 	my $val05 = 0;
 
+	my $secure_seek_pos;
+	my $imap_seek_pos;
+	my $mail_seek_pos;
+	my $logsize;
+
 	my $date;
 	my $rrdata = "N";
 
@@ -166,9 +171,46 @@ sub serv_update {
 	my (undef, $min) = localtime(time);
 	return if($min % 5);
 
+	$ssh = $config->{serv_hist}->{'i_ssh'} || 0;
+	$ftp = $config->{serv_hist}->{'i_ftp'} || 0;
+	$telnet = $config->{serv_hist}->{'i_telnet'} || 0;
+	$imap = $config->{serv_hist}->{'i_imap'} || 0;
+	$smb = $config->{serv_hist}->{'i_smb'} || 0;
+	$fax = $config->{serv_hist}->{'i_fax'} || 0;
+	$cups = $config->{serv_hist}->{'i_cups'} || 0;
+	$pop3 = $config->{serv_hist}->{'i_pop3'} || 0;
+	$smtp = $config->{serv_hist}->{'i_smtp'} || 0;
+	$spam = $config->{serv_hist}->{'i_spam'} || 0;
+	$virus = $config->{serv_hist}->{'i_virus'} || 0;
+	$f2b = $config->{serv_hist}->{'i_f2b'} || 0;
+	$val02 = $config->{serv_hist}->{'i_val02'} || 0;
+	$val03 = $config->{serv_hist}->{'i_val03'} || 0;
+	$val04 = $config->{serv_hist}->{'i_val04'} || 0;
+	$val05 = $config->{serv_hist}->{'i_val05'} || 0;
+
 	if(-r $config->{secure_log}) {
 		$date = strftime("%b %e", localtime);
+		$config->{secure_log_date_format} = $config->{secure_log_date_format} || "%b %e";
+		my $date2 = strftime($config->{secure_log_date_format}, localtime);
+
+		$secure_seek_pos = $config->{serv_hist}->{'secure_seek_pos'} || 0;
+		$secure_seek_pos = defined($secure_seek_pos) ? int($secure_seek_pos) : 0;
 		open(IN, "$config->{secure_log}");
+		if(!seek(IN, 0, 2)) {
+			logger("Couldn't seek to the end of '$config->{secure_log}': $!");
+			close(IN);
+			return;
+		}
+		$logsize = tell(IN);
+		if($logsize < $secure_seek_pos) {
+			$secure_seek_pos = 0;
+		}
+		if(!seek(IN, $secure_seek_pos, 0)) {
+			logger("Couldn't seek to $secure_seek_pos in '$config->{secure_log}': $!");
+			close(IN);
+			return;
+		}
+
 		while(<IN>) {
 			if(/^$date/) {
 				if(/ sshd\[/ && /Accepted /) {
@@ -188,15 +230,51 @@ sub serv_update {
 					}
 				}
 			}
+			if(/$date2/) {
+				# ProFTPD log
+				if(/START: ftp/ || (/ proftpd\[/ && /Login successful./) || /\"PASS .*\" 230/) {
+					$ftp++;
+					next;
+				}
+				# vsftpd log
+				if(/OK LOGIN:/) {
+					$ftp++;
+					next;
+				}
+				# Pure-FTPd log
+				if(/ \[INFO\] .*? is now logged in/) {
+					$ftp++;
+					next;
+				}
+			}
 		}
 		close(IN);
+		$config->{serv_hist}->{'secure_seek_pos'} = $logsize;
 	}
 
 	if(-r $config->{imap_log}) {
 		$config->{imap_log_date_format} = $config->{imap_log_date_format} || "%b %d";
 		my $date_dovecot = strftime($config->{imap_log_date_format}, localtime);
 		my $date_uw = strftime("%b %e", localtime);
+
+		$imap_seek_pos = $config->{serv_hist}->{'imap_seek_pos'} || 0;
+		$imap_seek_pos = defined($imap_seek_pos) ? int($imap_seek_pos) : 0;
 		open(IN, "$config->{imap_log}");
+		if(!seek(IN, 0, 2)) {
+			logger("Couldn't seek to the end of '$config->{imap_log}': $!");
+			close(IN);
+			return;
+		}
+		$logsize = tell(IN);
+		if($logsize < $imap_seek_pos) {
+			$imap_seek_pos = 0;
+		}
+		if(!seek(IN, $imap_seek_pos, 0)) {
+			logger("Couldn't seek to $imap_seek_pos in '$config->{imap_log}': $!");
+			close(IN);
+			return;
+		}
+
 		while(<IN>) {
 			# UW-IMAP log
 			if(/$date_uw/) {
@@ -218,6 +296,7 @@ sub serv_update {
 			}
 		}
 		close(IN);
+		$config->{serv_hist}->{'imap_seek_pos'} = $logsize;
 	}
 
 	my $smb_L = 0;
@@ -270,32 +349,6 @@ sub serv_update {
 		close(IN);
 	}
 
-	if(-r $config->{secure_log}) {
-		$config->{secure_log_date_format} = $config->{secure_log_date_format} || "%b %e";
-		my $date = strftime($config->{secure_log_date_format}, localtime);
-		open(IN, "$config->{secure_log}");
-		while(<IN>) {
-			if(/$date/) {
-				# ProFTPD log
-				if(/START: ftp/ || (/ proftpd\[/ && /Login successful./) || /\"PASS .*\" 230/) {
-					$ftp++;
-					next;
-				}
-				# vsftpd log
-				if(/OK LOGIN:/) {
-					$ftp++;
-					next;
-				}
-				# Pure-FTPd log
-				if(/ \[INFO\] .*? is now logged in/) {
-					$ftp++;
-					next;
-				}
-			}
-		}
-		close(IN);
-	}
-
 	if(-r $config->{fail2ban_log}) {
 		$date = strftime("%Y-%m-%d", localtime);
 		open(IN, $config->{fail2ban_log});
@@ -309,7 +362,25 @@ sub serv_update {
 
 	if(-r $config->{mail_log}) {
 		$date = strftime("%b %e", localtime);
+
+		$mail_seek_pos = $config->{serv_hist}->{'mail_seek_pos'} || 0;
+		$mail_seek_pos = defined($mail_seek_pos) ? int($mail_seek_pos) :0;
 		open(IN, "$config->{mail_log}");
+		if(!seek(IN, 0, 2)) {
+			logger("Couldn't seek to the end of '$config->{mail_log}': $!");
+			close(IN);
+			return;
+		}
+		$logsize = tell(IN);
+		if($logsize < $mail_seek_pos) {
+			$mail_seek_pos = 0;
+		}
+		if(!seek(IN, $mail_seek_pos, 0)) {
+			logger("Couldn't seek to $mail_seek_pos in '$config->{mail_log}': $!");
+			close(IN);
+			return;
+		}
+
 		while(<IN>) {
 			if(/^$date/) {
 				if(/to=/ && /stat(us)?=sent/i) {
@@ -330,6 +401,7 @@ sub serv_update {
 			}
 		}
 		close(IN);
+		$config->{serv_hist}->{'mail_seek_pos'} = $logsize;
 	}
 
 	$date = strftime("%Y-%m-%d", localtime);
@@ -372,6 +444,22 @@ sub serv_update {
 	}
 
 	# I data (incremental)
+	$config->{serv_hist}->{'i_ssh'} = $ssh;
+	$config->{serv_hist}->{'i_ftp'} = $ftp;
+	$config->{serv_hist}->{'i_telnet'} = $telnet;
+	$config->{serv_hist}->{'i_imap'} = $imap;
+	$config->{serv_hist}->{'i_smb'} = $smb;
+	$config->{serv_hist}->{'i_fax'} = $fax;
+	$config->{serv_hist}->{'i_cups'} = $cups;
+	$config->{serv_hist}->{'i_pop3'} = $pop3;
+	$config->{serv_hist}->{'i_smtp'} = $smtp;
+	$config->{serv_hist}->{'i_spam'} = $spam;
+	$config->{serv_hist}->{'i_virus'} = $virus;
+	$config->{serv_hist}->{'i_f2b'} = $f2b;
+	$config->{serv_hist}->{'i_val02'} = $val02;
+	$config->{serv_hist}->{'i_val03'} = $val03;
+	$config->{serv_hist}->{'i_val04'} = $val04;
+	$config->{serv_hist}->{'i_val05'} = $val05;
 	$rrdata .= ":$ssh:$ftp:$telnet:$imap:$smb:$fax:$cups:$pop3:$smtp:$spam:$virus:$f2b:$val02:$val03:$val04:$val05";
 
 	# L data (load)
@@ -392,85 +480,85 @@ sub serv_update {
 	my $l_val04 = 0;
 	my $l_val05 = 0;
 
-	$l_ssh = $ssh - ($config->{serv_hist}->{'ssh'} || 0);
+	$l_ssh = $ssh - ($config->{serv_hist}->{'l_ssh'} || 0);
 	$l_ssh = 0 unless $l_ssh != $ssh;
 	$l_ssh /= 300;
-	$config->{serv_hist}->{'ssh'} = $ssh;
+	$config->{serv_hist}->{'l_ssh'} = $ssh;
 
-	$l_ftp = $ftp - ($config->{serv_hist}->{'ftp'} || 0);
+	$l_ftp = $ftp - ($config->{serv_hist}->{'l_ftp'} || 0);
 	$l_ftp = 0 unless $l_ftp != $ftp;
 	$l_ftp /= 300;
-	$config->{serv_hist}->{'ftp'} = $ftp;
+	$config->{serv_hist}->{'l_ftp'} = $ftp;
 
-	$l_telnet = $telnet - ($config->{serv_hist}->{'telnet'} || 0);
+	$l_telnet = $telnet - ($config->{serv_hist}->{'l_telnet'} || 0);
 	$l_telnet = 0 unless $l_telnet != $telnet;
 	$l_telnet /= 300;
-	$config->{serv_hist}->{'telnet'} = $telnet;
+	$config->{serv_hist}->{'l_telnet'} = $telnet;
 
-	$l_imap = $imap - ($config->{serv_hist}->{'imap'} || 0);
+	$l_imap = $imap - ($config->{serv_hist}->{'l_imap'} || 0);
 	$l_imap = 0 unless $l_imap != $imap;
 	$l_imap /= 300;
-	$config->{serv_hist}->{'imap'} = $imap;
+	$config->{serv_hist}->{'l_imap'} = $imap;
 
-	$l_smb = $smb - ($config->{serv_hist}->{'smb'} || 0);
+	$l_smb = $smb - ($config->{serv_hist}->{'l_smb'} || 0);
 	$l_smb = 0 unless $l_smb != $smb;
 	$l_smb /= 300;
-	$config->{serv_hist}->{'smb'} = $smb;
+	$config->{serv_hist}->{'l_smb'} = $smb;
 
-	$l_fax = $fax - ($config->{serv_hist}->{'fax'} || 0);
+	$l_fax = $fax - ($config->{serv_hist}->{'l_fax'} || 0);
 	$l_fax = 0 unless $l_fax != $fax;
 	$l_fax /= 300;
-	$config->{serv_hist}->{'fax'} = $fax;
+	$config->{serv_hist}->{'l_fax'} = $fax;
 
-	$l_cups = $cups - ($config->{serv_hist}->{'cups'} || 0);
+	$l_cups = $cups - ($config->{serv_hist}->{'l_cups'} || 0);
 	$l_cups = 0 unless $l_cups != $cups;
 	$l_cups /= 300;
-	$config->{serv_hist}->{'cups'} = $cups;
+	$config->{serv_hist}->{'l_cups'} = $cups;
 
-	$l_pop3 = $pop3 - ($config->{serv_hist}->{'pop3'} || 0);
+	$l_pop3 = $pop3 - ($config->{serv_hist}->{'l_pop3'} || 0);
 	$l_pop3 = 0 unless $l_pop3 != $pop3;
 	$l_pop3 /= 300;
-	$config->{serv_hist}->{'pop3'} = $pop3;
+	$config->{serv_hist}->{'l_pop3'} = $pop3;
 
-	$l_smtp = $smtp - ($config->{serv_hist}->{'smtp'} || 0);
+	$l_smtp = $smtp - ($config->{serv_hist}->{'l_smtp'} || 0);
 	$l_smtp = 0 unless $l_smtp != $smtp;
 	$l_smtp /= 300;
-	$config->{serv_hist}->{'smtp'} = $smtp;
+	$config->{serv_hist}->{'l_smtp'} = $smtp;
 
-	$l_spam = $spam - ($config->{serv_hist}->{'spam'} || 0);
+	$l_spam = $spam - ($config->{serv_hist}->{'l_spam'} || 0);
 	$l_spam = 0 unless $l_spam != $spam;
 	$l_spam /= 300;
-	$config->{serv_hist}->{'spam'} = $spam;
+	$config->{serv_hist}->{'l_spam'} = $spam;
 
-	$l_virus = $virus - ($config->{serv_hist}->{'virus'} || 0);
+	$l_virus = $virus - ($config->{serv_hist}->{'l_virus'} || 0);
 	$l_virus = 0 unless $l_virus != $virus;
 	$l_virus /= 300;
-	$config->{serv_hist}->{'virus'} = $virus;
+	$config->{serv_hist}->{'l_virus'} = $virus;
 
-	$l_f2b = $f2b - ($config->{serv_hist}->{'f2b'} || 0);
+	$l_f2b = $f2b - ($config->{serv_hist}->{'l_f2b'} || 0);
 	$l_f2b = 0 unless $l_f2b != $f2b;
 	$l_f2b /= 300;
-	$config->{serv_hist}->{'f2b'} = $f2b;
+	$config->{serv_hist}->{'l_f2b'} = $f2b;
 
-	$l_val02 = $val02 - ($config->{serv_hist}->{'val02'} || 0);
+	$l_val02 = $val02 - ($config->{serv_hist}->{'l_val02'} || 0);
 	$l_val02 = 0 unless $l_val02 != $val02;
 	$l_val02 /= 300;
-	$config->{serv_hist}->{'val02'} = $val02;
+	$config->{serv_hist}->{'l_val02'} = $val02;
 
-	$l_val03 = $val03 - ($config->{serv_hist}->{'val03'} || 0);
+	$l_val03 = $val03 - ($config->{serv_hist}->{'l_val03'} || 0);
 	$l_val03 = 0 unless $l_val03 != $val03;
 	$l_val03 /= 300;
-	$config->{serv_hist}->{'val03'} = $val03;
+	$config->{serv_hist}->{'l_val03'} = $val03;
 
-	$l_val04 = $val04 - ($config->{serv_hist}->{'val04'} || 0);
+	$l_val04 = $val04 - ($config->{serv_hist}->{'l_val04'} || 0);
 	$l_val04 = 0 unless $l_val04 != $val04;
 	$l_val04 /= 300;
-	$config->{serv_hist}->{'val04'} = $val04;
+	$config->{serv_hist}->{'l_val04'} = $val04;
 
-	$l_val05 = $val05 - ($config->{serv_hist}->{'val05'} || 0);
+	$l_val05 = $val05 - ($config->{serv_hist}->{'l_val05'} || 0);
 	$l_val05 = 0 unless $l_val05 != $val05;
 	$l_val05 /= 300;
-	$config->{serv_hist}->{'val05'} = $val05;
+	$config->{serv_hist}->{'l_val05'} = $val05;
 
 	$rrdata .= ":$l_ssh:$l_ftp:$l_telnet:$l_imap:$l_smb:$l_fax:$l_cups:$l_pop3:$l_smtp:$l_spam:$l_virus:$l_f2b:$l_val02:$l_val03:$l_val04:$l_val05";
 	RRDs::update($rrd, $rrdata);
