@@ -160,9 +160,6 @@ sub icecast_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $icecast = $config->{icecast};
 
-	my @ls;
-	my @br;
-
 	my $n;
 	my $rrdata = "N";
 
@@ -183,14 +180,23 @@ sub icecast_update {
 		}
 
 		$data =~ s/\n//g;
-		undef(@ls);
-		undef(@br);
+
+		my $iceold;
+		my $icenew;
+		my @bl_pairs;
+		my @ls;
+		my @br;
+
 		foreach my $i (split(',', $icecast->{desc}->{$ils})) {
-			my $m = "Mount Point " . trim($i);
-			my ($l) = ($data =~ m/$m.*?<tr><td>Current Listeners:<\/td><td class=\"streamdata\">(\d*?)<\/td>/g);
-			my ($b) = ($data =~ m/$m.*?<tr><td>Bitrate:<\/td><td class=\"streamdata\">(\d*?)<\/td><\/tr>/g);
-			$l = 0 unless defined($l);
-			$b = 0 unless defined($b);
+			$i = trim($i);
+			$i =~ s/\//\\\//g;
+			$iceold .= '<td><h3>Mount Point ' . $i . '<\/h3><\/td>.*?(?:<tr><td>Bitrate:<\/td><td class=\"streamdata\">(\d*?)<\/td><\/tr>)?<tr><td>Current Listeners:<\/td><td class=\"streamdata\">(\d*?)<\/td><\/tr>.*?<\/table>.*?';
+			$icenew .= '<h3 class=\"mount\">Mount Point ' . $i . '<\/h3>.*?(?:<tr><td>Bitrate:<\/td><td class=\"streamstats\">(\d*?)<\/td><\/tr>)?<tr><td>Listeners \(current\):<\/td><td class=\"streamstats\">(\d*?)<\/td><\/tr>.*?<\/table>.*?';
+		}
+		(@bl_pairs) = ($data =~ m/$iceold/);
+		(@bl_pairs) = ($data =~ m/$icenew/) if !scalar(@bl_pairs);
+
+		while(my ($b, $l) = splice(@bl_pairs, 0, 2)) {
 			push(@ls, $l);
 			push(@br, $b);
 		}
