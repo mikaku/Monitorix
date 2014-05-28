@@ -162,6 +162,8 @@ sub serv_update {
 	my $secure_seek_pos;
 	my $imap_seek_pos;
 	my $mail_seek_pos;
+	my $sa_seek_pos;
+	my $clamav_seek_pos;
 	my $logsize;
 
 	my $date;
@@ -175,18 +177,10 @@ sub serv_update {
 	$ftp = $config->{serv_hist}->{'i_ftp'} || 0;
 	$telnet = $config->{serv_hist}->{'i_telnet'} || 0;
 	$imap = $config->{serv_hist}->{'i_imap'} || 0;
-	$smb = $config->{serv_hist}->{'i_smb'} || 0;
-	$fax = $config->{serv_hist}->{'i_fax'} || 0;
-	$cups = $config->{serv_hist}->{'i_cups'} || 0;
 	$pop3 = $config->{serv_hist}->{'i_pop3'} || 0;
 	$smtp = $config->{serv_hist}->{'i_smtp'} || 0;
 	$spam = $config->{serv_hist}->{'i_spam'} || 0;
 	$virus = $config->{serv_hist}->{'i_virus'} || 0;
-	$f2b = $config->{serv_hist}->{'i_f2b'} || 0;
-	$val02 = $config->{serv_hist}->{'i_val02'} || 0;
-	$val03 = $config->{serv_hist}->{'i_val03'} || 0;
-	$val04 = $config->{serv_hist}->{'i_val04'} || 0;
-	$val05 = $config->{serv_hist}->{'i_val05'} || 0;
 
 	if(-r $config->{secure_log}) {
 		$date = strftime("%b %e", localtime);
@@ -195,6 +189,7 @@ sub serv_update {
 
 		$secure_seek_pos = $config->{serv_hist}->{'secure_seek_pos'} || 0;
 		$secure_seek_pos = defined($secure_seek_pos) ? int($secure_seek_pos) : 0;
+
 		open(IN, "$config->{secure_log}");
 		if(!seek(IN, 0, 2)) {
 			logger("Couldn't seek to the end of '$config->{secure_log}': $!");
@@ -423,24 +418,62 @@ sub serv_update {
 
 	if(-r $config->{spamassassin_log}) {
 		$date = strftime("%b %e", localtime);
-		open(IN, $config->{spamassassin_log});
+
+		$sa_seek_pos = $config->{serv_hist}->{'sa_seek_pos'} || 0;
+		$sa_seek_pos = defined($sa_seek_pos) ? int($sa_seek_pos) :0;
+		open(IN, "$config->{spamassassin_log}");
+		if(!seek(IN, 0, 2)) {
+			logger("Couldn't seek to the end of '$config->{spamassassin_log}': $!");
+			close(IN);
+			return;
+		}
+		$logsize = tell(IN);
+		if($logsize < $sa_seek_pos) {
+			$sa_seek_pos = 0;
+		}
+		if(!seek(IN, $sa_seek_pos, 0)) {
+			logger("Couldn't seek to $sa_seek_pos in '$config->{spamassassin_log}': $!");
+			close(IN);
+			return;
+		}
+
 		while(<IN>) {
 			if(/^$date/ && /spamd: identified spam/) {
 				$spam++;
 			}
 		}
 		close(IN);
+		$config->{serv_hist}->{'sa_seek_pos'} = $logsize;
 	}
 
 	if(-r $config->{clamav_log}) {
 		$date = strftime("%a %b %e", localtime);
-		open(IN, $config->{clamav_log});
+
+		$clamav_seek_pos = $config->{serv_hist}->{'clamav_seek_pos'} || 0;
+		$clamav_seek_pos = defined($clamav_seek_pos) ? int($clamav_seek_pos) :0;
+		open(IN, "$config->{clamav_log}");
+		if(!seek(IN, 0, 2)) {
+			logger("Couldn't seek to the end of '$config->{clamav_log}': $!");
+			close(IN);
+			return;
+		}
+		$logsize = tell(IN);
+		if($logsize < $clamav_seek_pos) {
+			$clamav_seek_pos = 0;
+		}
+		if(!seek(IN, $clamav_seek_pos, 0)) {
+			logger("Couldn't seek to $clamav_seek_pos in '$config->{clamav_log}': $!");
+			close(IN);
+			return;
+		}
+
 		while(<IN>) {
 			if(/^$date/ && / FOUND/) {
 				$virus++;
 			}
 		}
 		close(IN);
+		$config->{serv_hist}->{'clamav_seek_pos'} = $logsize;
 	}
 
 	# I data (incremental)
