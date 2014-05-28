@@ -6,6 +6,7 @@
 - Added support to include username and password in the 'url_prefix' option of
   the 'emailreports' module.
 	(suggested by V1ru535, admin AT mynet.fr)
+- Optimized the 'serv' graph to not overload servers with big log files.
 - Fixed regexp that prevented collecting LOADPCT and ITEMP values in 'apcupsd'
   module.
 	(thanks to Patrick Fallberg, patrick AT fallberg.net)
@@ -17,6 +18,7 @@
 	(thanks to Andreas Itzchak Rehberg, izzy AT qumran.org for pointing this out)
 - Fixed the values in the text interface of the 'fs' graph.
 - Fixed init script to work with Chef properly. [#48]
+- Fixed a line that forced updates on every minute in the 'serv' graph.
 
 
 3.5.1  - 06-May-2014
