@@ -164,7 +164,7 @@ sub serv_update {
 
 	# This graph is refreshed only every 5 minutes
 	my (undef, $min) = localtime(time);
-#	return if($min % 5);
+	return if($min % 5);
 
 	if(-r $config->{secure_log}) {
 		$date = strftime("%b %e", localtime);
