@@ -78,70 +78,17 @@ sub libvirt_init {
 			push(@last, "RRA:LAST:0.5:1440:" . (365 * $n));
 		}
 		for($n = 0; $n < keys(%{$libvirt->{list}}); $n++) {
-			push(@tmp, "DS:libv" . $n . "_cpu0:GAUGE:120:0:100");
-			push(@tmp, "DS:libv" . $n . "_mem0:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_dsk0:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_net0:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va10:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va20:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va30:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va40:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_cpu1:GAUGE:120:0:100");
-			push(@tmp, "DS:libv" . $n . "_mem1:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_dsk1:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_net1:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va11:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va21:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va31:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va41:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_cpu2:GAUGE:120:0:100");
-			push(@tmp, "DS:libv" . $n . "_mem2:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_dsk2:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_net2:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va12:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va22:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va32:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va42:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_cpu3:GAUGE:120:0:100");
-			push(@tmp, "DS:libv" . $n . "_mem3:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_dsk3:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_net3:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va13:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va23:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va33:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va43:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_cpu4:GAUGE:120:0:100");
-			push(@tmp, "DS:libv" . $n . "_mem4:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_dsk4:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_net4:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va14:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va24:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va34:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va44:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_cpu5:GAUGE:120:0:100");
-			push(@tmp, "DS:libv" . $n . "_mem5:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_dsk5:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_net5:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va15:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va25:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va35:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va45:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_cpu6:GAUGE:120:0:100");
-			push(@tmp, "DS:libv" . $n . "_mem6:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_dsk6:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_net6:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va16:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va26:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va36:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va46:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_cpu7:GAUGE:120:0:100");
-			push(@tmp, "DS:libv" . $n . "_mem7:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_dsk7:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_net7:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va17:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va27:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va37:GAUGE:120:0:U");
-			push(@tmp, "DS:libv" . $n . "_va47:GAUGE:120:0:U");
+			my $n2;
+			for($n2 = 0; $n2 < 8; $n2++) {
+				push(@tmp, "DS:libv" . $n . "_cpu" . $n2 . ":GAUGE:120:0:100");
+				push(@tmp, "DS:libv" . $n . "_mem" . $n2 . ":GAUGE:120:0:U");
+				push(@tmp, "DS:libv" . $n . "_dsk" . $n2 . ":GAUGE:120:0:U");
+				push(@tmp, "DS:libv" . $n . "_net" . $n2 . ":GAUGE:120:0:U");
+				push(@tmp, "DS:libv" . $n . "_va1" . $n2 . ":GAUGE:120:0:U");
+				push(@tmp, "DS:libv" . $n . "_va2" . $n2 . ":GAUGE:120:0:U");
+				push(@tmp, "DS:libv" . $n . "_va3" . $n2 . ":GAUGE:120:0:U");
+				push(@tmp, "DS:libv" . $n . "_va4" . $n2 . ":GAUGE:120:0:U");
+			}
 		}
 		eval {
 			RRDs::create($rrd,
@@ -615,7 +562,7 @@ sub libvirt_cgi {
 			"--title=$config->{graphs}->{_libvirt2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=bytes",
+			"--vertical-label=Bytes",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
@@ -650,7 +597,7 @@ sub libvirt_cgi {
 				"--title=$config->{graphs}->{_libvirt2}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=bytes",
+				"--vertical-label=Bytes",
 				"--width=$width",
 				"--height=$height",
 				@riglim,
