@@ -167,9 +167,10 @@ sub serv_update {
 	my $logsize;
 
 	my $date;
+	my $hour;
 	my $rrdata = "N";
 
-	# This graph is refreshed only every 5 minutes
+	# this graph is refreshed only every 5 minutes
 	my (undef, $min) = localtime(time);
 	return if($min % 5);
 
@@ -181,6 +182,32 @@ sub serv_update {
 	$smtp = $config->{serv_hist}->{'i_smtp'} || 0;
 	$spam = $config->{serv_hist}->{'i_spam'} || 0;
 	$virus = $config->{serv_hist}->{'i_virus'} || 0;
+
+	# zero all values on every new day
+	$hour = strftime("%H", localtime);
+	if(!defined($config->{serv_hist}->{'hour'})) {
+		$config->{serv_hist}->{'hour'} = $hour;
+	} else {
+		if($hour < $config->{serv_hist}->{'hour'}) {
+			$config->{serv_hist}->{'hour'} = $hour;
+			$ssh = 0;
+			$ftp = 0;
+			$telnet = 0;
+			$imap = 0;
+			$smb = 0;
+			$fax = 0;
+			$cups = 0;
+			$pop3 = 0;
+			$smtp = 0;
+			$spam = 0;
+			$virus = 0;
+			$f2b = 0;
+			$val02 = 0;
+			$val03 = 0;
+			$val04 = 0;
+			$val05 = 0;
+		}
+	}
 
 	if(-r $config->{secure_log}) {
 		$date = strftime("%b %e", localtime);
