@@ -7,6 +7,8 @@
   the 'emailreports' module.
 	(suggested by V1ru535, admin AT mynet.fr)
 - Optimized the 'serv' graph to not overload servers with big log files.
+- Added support to include Piwik tracking code.
+	(suggested by V1ru535, admin AT mynet.fr)
 - Fixed regexp that prevented collecting LOADPCT and ITEMP values in 'apcupsd'
   module.
 	(thanks to Patrick Fallberg, patrick AT fallberg.net)
@@ -19,6 +21,8 @@
 - Fixed the values in the text interface of the 'fs' graph.
 - Fixed init script to work with Chef properly. [#48]
 - Fixed a line that forced updates on every minute in the 'serv' graph.
+- Fixed 'icecast' graph to support newer statistics page format.
+- Small fixes and typos.
 
 
 3.5.1  - 06-May-2014
