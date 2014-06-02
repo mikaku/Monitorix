@@ -378,6 +378,37 @@ if(!$silent) {
 	my $title;
 	my $str;
 
+	my $piwik_code = "";
+	my ($piwik_url, $piwik_sid, $piwik_img);
+
+	# Piwik tracking code
+	if(lc($config{piwik_tracking}->{enabled} eq "y")) {
+		$piwik_url = $config{piwik_tracking}->{url} || "";
+	        $piwik_sid = $config{piwik_tracking}->{sid} || "";
+		$piwik_img = $config{piwik_tracking}->{img} || "";
+		$piwik_code = <<"EOF";
+
+<!-- Piwik -->
+  <script type="text/javascript">
+     var _paq = _paq || [];
+     _paq.push(['trackPageView']);
+     _paq.push(['enableLinkTracking']);
+     (function() {
+       var u=(("https:" == document.location.protocol) ? "https" : "http") + "$piwik_url";
+       _paq.push(['setTrackerUrl', u+'piwik.php']);
+       _paq.push(['setSiteId', $piwik_sid]);
+       var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0]; g.type='text/javascript';
+       g.defer=true; g.async=true; g.src=u+'piwik.js';
+       s.parentNode.insertBefore(g,s);
+     })();
+  </script>
+  <noscript>
+    <p><img src="$piwik_img" style="border:0;" alt=""/></p>
+  </noscript>
+<!-- End Piwik Code -->
+EOF
+	}
+
 	print("<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 3.2 Final//EN'>\n");
 	print("<html>\n");
 	print("  <head>\n");
@@ -388,6 +419,7 @@ if(!$silent) {
 	}
 	print("  </head>\n");
 	print("  <body bgcolor='" . $colors{bg_color} . "' vlink='#888888' link='#888888'>\n");
+	print("  $piwik_code\n");
 	print("  <center>\n");
 	print("  <table cellspacing='5' cellpadding='0' bgcolor='" . $colors{graph_bg_color} . "' border='1'>\n");
 	print("  <tr>\n");

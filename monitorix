@@ -117,6 +117,8 @@ sub create_index {
 	my $table_back_color;
 	my $title_back_color;
 	my $title_fore_color;
+	my $piwik_code = "";
+	my ($piwik_url, $piwik_sid, $piwik_img);
 
 	# keep backwards compatibility for v3.2.1 and less
 	if(ref($config{theme}) ne "HASH") {
@@ -143,6 +145,34 @@ sub create_index {
 		$title_fore_color = $config{theme}->{$theme}->{title_fg};
 	}
 
+	# Piwik tracking code
+	if(lc($config{piwik_tracking}->{enabled} eq "y")) {
+		$piwik_url = $config{piwik_tracking}->{url} || "";
+		$piwik_sid = $config{piwik_tracking}->{sid} || "";
+		$piwik_img = $config{piwik_tracking}->{img} || "";
+		$piwik_code = <<"EOF";
+
+<!-- Piwik -->
+ <script type="text/javascript">
+    var _paq = _paq || [];
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u=(("https:" == document.location.protocol) ? "https" : "http") + "$piwik_url";
+      _paq.push(['setTrackerUrl', u+'piwik.php']);
+      _paq.push(['setSiteId', $piwik_sid]);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0]; g.type='text/javascript';
+      g.defer=true; g.async=true; g.src=u+'piwik.js';
+      s.parentNode.insertBefore(g,s);
+    })();
+ </script>
+ <noscript>
+   <p><img src="$piwik_img" style="border:0;" alt=""/></p>
+ </noscript>
+<!-- End Piwik Code -->
+EOF
+	}
+
 	# force to only one trailing slash
 	(my $base_url = $config{base_url}) =~ s/\/*$/\//;
 	(my $base_cgi = $config{base_cgi}) =~ s/\/*$/\//;
@@ -158,6 +188,7 @@ sub create_index {
   <link rel="shortcut icon" href="$base_url$config{favicon}">
  </head>
  <body bgcolor="$bgcolor" text="#888888" vlink="#888888" link="#888888">
+  $piwik_code
   <center>
   <p>
   <br>
