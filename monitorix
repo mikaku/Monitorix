@@ -480,7 +480,7 @@ if($options{d}) {
 # load additional configuration files
 if($config{include_dir} && opendir(DIR, $config{include_dir})) {
 	my @files = grep { !/^[.]/ } readdir(DIR);
-	close(DIR);
+	closedir(DIR);
 	foreach my $c (sort @files) {
 		next unless -f $config{include_dir} . "/$c";
 		next unless $c =~ m/\.conf$/;
