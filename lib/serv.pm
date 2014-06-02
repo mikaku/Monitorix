@@ -184,12 +184,11 @@ sub serv_update {
 	$virus = $config->{serv_hist}->{'i_virus'} || 0;
 
 	# zero all values on every new day
-	$hour = strftime("%H", localtime);
+	$hour = int(strftime("%H", localtime));
 	if(!defined($config->{serv_hist}->{'hour'})) {
 		$config->{serv_hist}->{'hour'} = $hour;
 	} else {
 		if($hour < $config->{serv_hist}->{'hour'}) {
-			$config->{serv_hist}->{'hour'} = $hour;
 			$ssh = 0;
 			$ftp = 0;
 			$telnet = 0;
@@ -207,6 +206,7 @@ sub serv_update {
 			$val04 = 0;
 			$val05 = 0;
 		}
+		$config->{serv_hist}->{'hour'} = $hour;
 	}
 
 	if(-r $config->{secure_log}) {
