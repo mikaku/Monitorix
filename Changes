@@ -1,6 +1,7 @@
 3.N.N  - DD-MMM-2014
 ====================
 - Added a complete statistical Libvirt (libvirt) graph.
+- Added a complete graph of processes statistics.
 - Added Upstart job. [#46]
 - Added more verbosity during the startup.
 - Added support to include username and password in the 'url_prefix' option of
