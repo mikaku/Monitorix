@@ -10,6 +10,8 @@
 - Optimized the 'serv' graph to not overload servers with big log files.
 - Added support to include Piwik tracking code.
 	(suggested by V1ru535, admin AT mynet.fr)
+- Added support for relay-only MTA (for example Nullmailer) in 'emailreports'.
+  [#49]
 - Fixed regexp that prevented collecting LOADPCT and ITEMP values in 'apcupsd'
   module.
 	(thanks to Patrick Fallberg, patrick AT fallberg.net)
