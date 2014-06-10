@@ -26,6 +26,7 @@ use Monitorix;
 use MIME::Lite;
 use LWP::UserAgent;
 use Exporter 'import';
+use Switch;
 our @EXPORT = qw(emailreports_send);
 
 sub emailreports_send {
@@ -200,7 +201,15 @@ EOF
 			);
 		}
 
-		$msg->send('smtp', $emailreports->{smtp_hostname}, Timeout => 60);
+		switch ($config->{method}) {
+			case "smtp" {
+				$msg->send('smtp', $emailreports->{smtp_hostname},
+					Timeout => 60);
+			}
+			case "relay" {
+				$msg->send();
+			}
+		}
 		logger("\t$myself: to: $to") if $debug;
 	}
 }
