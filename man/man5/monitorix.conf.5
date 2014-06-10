@@ -1981,6 +1981,13 @@ Default value: \fIhttp://localhost:8080\fP
 This is the hostname that will be used as a SMTP relay to deliver the automatic email reports.
 .RE
 .P
+.BI method
+.RS
+This option specifies the method of sending emails. The current valid options are \fIsmtp\fP and \fIrelay\fP. By default this option is not defined which is the same as if \fIsmtp\fP option was defined.
+.P
+Default value:
+.RE
+.P
 .BI from_address
 .RS
 This is the address that will be used as remitent for all the monthly report emails.
@@ -2044,7 +2051,7 @@ This is a comma-separated list of recipient email addresses.
 .RS
 This is the full path name of an external script that will be executed during the creation of the report, and its output will be appended to the mail. This is useful for system administrators that want to add extra system information to the reports.
 .P
-Default value: \fInone\fP
+Default value:
 .RE
 .SS rigid and limit values
 .BI rigid
