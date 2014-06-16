@@ -157,24 +157,22 @@ sub process_update {
 			my $ics = 0;
 
 			my $str;
-			my $state = 0;
-			my $pid;
+			my @pid;
 			my $p = trim($lp[$n] || "");
 			my $val;
+			my $s_usage = 0;
 
-			# check first if that process is running
+			# check if that process is running
 			if(open(IN, "ps -eo pid,comm,command |")) {
 				while(<IN>) {
 					if(m/^\s*(\d+)\s+(\S+)\s+(\S+)\s+/) {
 						if($p eq trim($2)) {
-							$state = 1;
-							$pid = $1;
+							push(@pid, $1);
 							$pro++;
 							next;
 						}
 						if($p eq trim($3)) {
-							$state = 1;
-							$pid = $1;
+							push(@pid, $1);
 							$pro++;
 							next;
 						}
@@ -183,35 +181,41 @@ sub process_update {
 				close(IN);
 			}
 
-			if($state) {
-				if(open(IN, "/proc/$pid/stat")) {
+			if(open(IN, "/proc/stat")) {
+				while(<IN>) {
+					if(/^cpu /) {
+						my (undef, $user, $nice, $sys, $idle, $iow, $irq, $sirq, $steal, $guest) = split(' ', $_);
+						$s_usage = $user + $nice + $sys + $idle + $iow + $irq + $sirq + $steal + $guest;
+						last;
+					}
+				}
+				close(IN);
+			}
+
+			my $p_usage = 0;
+			foreach my $p (@pid) {
+				if(open(IN, "/proc/$p/stat")) {
 					my $utime = 0;
 					my $stime = 0;
-					my $p_usage = 0;
-					my $s_usage = 0;
+					my $v_nth = 0;
+					my $v_mem = 0;
 
-					(undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, $utime, $stime, undef, undef, undef, undef, $nth, undef, undef, undef, $mem) = split(' ', <IN>);
+					(undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, $utime, $stime, undef, undef, undef, undef, $v_nth, undef, undef, undef, $v_mem) = split(' ', <IN>);
 					close(IN);
-					$mem *= 4096;
-
-					$p_usage = $utime + $stime;
-					if(open(IN, "/proc/stat")) {
-						while(<IN>) {
-							if(/^cpu /) {
-								my (undef, $user, $nice, $sys, $idle, $iow, $irq, $sirq, $steal, $guest) = split(' ', $_);
-								$s_usage = $user + $nice + $sys + $idle + $iow + $irq + $sirq + $steal + $guest;
-								last;
-							}
-						}
-						close(IN);
-					}
-					$str = $e . "_cpu" . $n;
-					$cpu = 100 * ($p_usage - ($config->{process_hist}->{$str}->{pusage} || 0)) / ($s_usage - ($config->{process_hist}->{$str}->{susage} || 0));
-					$config->{process_hist}->{$str}->{pusage} = $p_usage;
-					$config->{process_hist}->{$str}->{susage} = $s_usage;
+					$mem += ($v_mem *= 4096);
+					$nth += ($v_nth - 1);
+					$p_usage += $utime + $stime;
 				}
+			}
+			$str = $e . "_cpu" . $n;
+			$cpu += 100 * ($p_usage - ($config->{process_hist}->{$str}->{pusage} || 0)) / ($s_usage - ($config->{process_hist}->{$str}->{susage} || 0));
+			$config->{process_hist}->{$str}->{pusage} = $p_usage;
+			$config->{process_hist}->{$str}->{susage} = $s_usage;
 
-				if(open(IN, "/proc/$pid/io")) {
+			my $v_dsk = 0;
+			my $v_net = 0;
+			foreach my $p (@pid) {
+				if(open(IN, "/proc/$p/io")) {
 					my $rchar = 0;
 					my $wchar = 0;
 					my $readb = 0;
@@ -223,47 +227,53 @@ sub process_update {
 						$writb = $1 if /^write_bytes:\s+(\d+)$/;
 					}
 					close(IN);
-					my $v_dsk = $readb + $writb;
-					my $v_net = ($rchar + $wchar) - $v_dsk;
-
-					$str = $e . "_dsk" . $n;
-					$dsk = $v_dsk - ($config->{process_hist}->{$str} || 0);
-					$dsk = 0 unless $v_dsk != $dsk;
-					$dsk /= 60;
-					$config->{process_hist}->{$str} = $v_dsk;
-					$str = $e . "_net" . $n;
-					$net = $v_net - ($config->{process_hist}->{$str} || 0);
-					$net = 0 unless $v_net != $net;
-					$net /= 60;
-					$config->{process_hist}->{$str} = $v_net;
+					$v_dsk += $readb + $writb;
+					$v_net += ($rchar + $wchar) - $v_dsk;
 				}
+			}
+			$str = $e . "_dsk" . $n;
+			$dsk = $v_dsk - ($config->{process_hist}->{$str} || 0);
+			$dsk = 0 unless $v_dsk != $dsk;
+			$dsk /= 60;
+			$config->{process_hist}->{$str} = $v_dsk;
+			$str = $e . "_net" . $n;
+			$net = $v_net - ($config->{process_hist}->{$str} || 0);
+			$net = 0 unless $v_net != $net;
+			$net /= 60;
+			$config->{process_hist}->{$str} = $v_net;
 
-				if(opendir(DIR, "/proc/$pid/fdinfo")) {
+			my $v_vcs = 0;
+			my $v_ics = 0;
+			foreach my $p (@pid) {
+				if(opendir(DIR, "/proc/$p/fdinfo")) {
 					my @files = grep { !/^[.]/ } readdir(DIR);
-					$nof = scalar(@files);
+					$nof += scalar(@files);
 					closedir(DIR);
 				}
 
-				if(open(IN, "/proc/$pid/status")) {
+				if(open(IN, "/proc/$p/status")) {
 					while(<IN>) {
 						if(/^voluntary_ctxt_switches:\s+(\d+)$/) {
-							$str = $e . "_vcs" . $n;
-							$vcs = $1 - ($config->{process_hist}->{$str} || 0);
-							$vcs = 0 unless $1 != $vcs;
-							$vcs /= 60;
-							$config->{process_hist}->{$str} = $1;
+							$v_vcs += $1;
 						}
 						if(/^nonvoluntary_ctxt_switches:\s+(\d+)$/) {
-							$str = $e . "_ics" . $n;
-							$ics = $1 - ($config->{process_hist}->{$str} || 0);
-							$ics = 0 unless $1 != $ics;
-							$ics /= 60;
-							$config->{process_hist}->{$str} = $1;
+							$v_ics += $1;
 						}
 					}
 					close(IN);
 				}
 			}
+			$str = $e . "_vcs" . $n;
+			$vcs = $v_vcs - ($config->{process_hist}->{$str} || 0);
+			$vcs = 0 unless $v_vcs != $vcs;
+			$vcs /= 60;
+			$config->{process_hist}->{$str} = $v_vcs;
+			$str = $e . "_ics" . $n;
+			$ics = $v_ics - ($config->{process_hist}->{$str} || 0);
+			$ics = 0 unless $v_ics != $ics;
+			$ics /= 60;
+			$config->{process_hist}->{$str} = $v_ics;
+
 			$rrdata .= ":$cpu:$mem:$dsk:$net:$nof:$pro:$nth:$vcs:$ics:0:0";
 		}
 		$e++;
