@@ -228,7 +228,7 @@ sub process_update {
 					}
 					close(IN);
 					$v_dsk += $readb + $writb;
-					$v_net += ($rchar + $wchar) - $v_dsk;
+					$v_net += ($rchar + $wchar) - ($readb + $writb);
 				}
 			}
 			$str = $e . "_dsk" . $n;
