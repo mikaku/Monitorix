@@ -449,14 +449,7 @@ sub system_cgi {
 	if($title) {
 		main::graph_header($title, 2);
 	}
-	if(trim($rigid[0]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[0]));
-	} else {
-		if(trim($rigid[0]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	my $uptimeline;
 	if($RRDs::VERSION > 1.2) {
 		$uptimeline = "COMMENT:system uptime\\: " . get_uptime($config) . "\\c";
@@ -511,7 +504,6 @@ sub system_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
@@ -535,7 +527,6 @@ sub system_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:load1=$rrd:system_load1:AVERAGE",
@@ -564,15 +555,7 @@ sub system_cgi {
 		print("    </td>\n");
 		print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-	undef(@riglim);
-	if(trim($rigid[1]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[1]));
-	} else {
-		if(trim($rigid[1]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[1]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[1], $limit[1])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -600,7 +583,6 @@ sub system_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -624,7 +606,6 @@ sub system_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
