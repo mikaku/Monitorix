@@ -25,7 +25,7 @@ use warnings;
 use Exporter 'import';
 use POSIX qw(setuid setgid setsid);
 use Socket;
-our @EXPORT = qw(logger trim min max celsius_to uptime2str httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
+our @EXPORT = qw(logger trim min max celsius_to uptime2str setup_riglim httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
 
 sub logger {
 	my ($msg) = @_;
@@ -83,6 +83,25 @@ sub uptime2str {
 	my $m_string = $h ? sprintf("%sh %dm", $h, $m) : sprintf("%d min", $m);
 
 	return "$d_string $m_string";
+}
+
+sub setup_riglim {
+	my $myself = (caller(0))[3];
+	my ($rigid, $limit) = @_;
+	my @riglim;
+
+	my ($upper, $lower) = split(':', trim($limit));
+	if(trim($rigid) eq 1) {
+		push(@riglim, "--upper-limit=" . ($upper || 0));
+		push(@riglim, "--lower-limit=" . ($lower || 0));
+	} else {
+		if(trim($rigid) eq 2) {
+			push(@riglim, "--upper-limit=" . ($upper || 0));
+			push(@riglim, "--lower-limit=" . ($lower || 0));
+			push(@riglim, "--rigid");
+		}
+	}
+	return \@riglim;
 }
 
 sub httpd_setup {
