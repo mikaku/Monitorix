@@ -591,7 +591,7 @@ if($config{max_historic_years} > 5) {
 	exit(0);
 }
 
-logger("Ok, done.") unless !$options{d};
+logger("Ok, ready.");
 
 while(1) {
 	local $SIG{'ALRM'} = sub { };
