@@ -962,7 +962,7 @@ This is where the network interface that acts as the gateway for this server is 
 .SS Netstat statistics (netstat.rrd)
 This graph shows the state of the all network connections IPv4 and IPv6.
 .P
-Only the limit and rigid values may be set here.
+Only the limit and rigid values can be set here.
 .SS Libvirt statistics (libvirt.rrd)
 This graph is able to monitor an unlimited number of virtual machines managed by Libvirt.
 .P
@@ -1023,6 +1023,45 @@ vnet3      network    default    virtio      52:54:00:45:d0:e7
 .br
 .P
 This option also allows you to change the name that will appear in the graph, hiding the real name of the virtual machine. If no association is defined, then Monitorix will display the name specified in the \fBlist\fP option.
+.SS Processes statistics (processes.rrd)
+This graph is able to monitor an unlimited number of processes.
+.P
+.BI list
+.RS
+This is a list of groups of processes that you want to monitor. Each group will become a graph and there may be an unlimited number of groups.
+.P
+WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIprocesses.rrd\fP file accordingly, removing all historical data.
+.P
+An example would be:
+.P
+.RS
+<list>
+.br
+	0 = httpd, sshd, ntpd, mysqld, proftpd, clamd, imap, sendmail, named, bash
+.br
+</list>
+.RE
+.P
+The maximum number of processes allowed per group is 10.
+.RE
+.P
+.BI desc
+.RS
+This list complements the \fBlist\fP option. It basically allows you to change the name that will appear in the graph, hiding the real name of the process. If no association is defined, then Monitorix will display the name specified in the \fBlist\fP option.
+.P
+.RS
+<desc>
+.br
+	httpd = Apache
+.br
+	imap = Dovecot
+.br
+	named = Bind
+.br
+</desc>
+.RE
+.P
+You can define as much entries as you want.
 .SS System services demand (serv.rrd)
 This graph requires either \fIMailScanner\fP or \fIamavisd-new\fP mail scanners in order to account spam and virus emails.
 .P
@@ -1199,7 +1238,7 @@ This is the number of graphs that will be put in a row. Consider the interaction
 Default value: \fI3\fP
 .RE
 .SS Users using the system (user.rrd)
-Only the limit and rigid values may be set here.
+Only the limit and rigid values can be set here.
 .SS FTP statistics (ftp.rrd)
 This graph supports currently ProFTPD, vsftpd and Pure-FTPd log file formats.
 .P
@@ -1760,7 +1799,7 @@ This is a comma-separated list of applications configured for every URL specifie
 The maximum number of applications allowed for each URL is 8.
 .RE
 .SS Devices interrupt activity (int.rrd)
-Only the limit and rigid values may be set here.
+Only the limit and rigid values can be set here.
 .SS Monitoring the Internet traffic of your LAN (traffacct.rrd)
 If your server acts as the gateway for a group of PCs, devices or even whole networks in your local LAN, you may want to know how much Internet traffic each one is generating.
 .P
