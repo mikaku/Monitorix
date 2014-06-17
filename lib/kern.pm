@@ -473,14 +473,7 @@ sub kern_cgi {
 		main::graph_header($title, 2);
 	}
 
-	if(trim($rigid[0]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[0]));
-	} else {
-		if(trim($rigid[0]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	if(lc($kern->{graph_mode}) eq "r") {
 		$vlabel = "Percent (%)";
 		if(lc($kern->{list}->{user}) eq "y") {
@@ -700,7 +693,6 @@ sub kern_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
@@ -727,7 +719,6 @@ sub kern_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:user=$rrd:kern_user:AVERAGE",
@@ -761,6 +752,7 @@ sub kern_cgi {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
+	@riglim = @{setup_riglim($rigid[1], $limit[1])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -803,7 +795,7 @@ sub kern_cgi {
 		"--vertical-label=CS & forks/s",
 		"--width=$width",
 		"--height=$height",
-		"--lower-limit=0",
+		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -825,7 +817,7 @@ sub kern_cgi {
 			"--vertical-label=CS & forks/s",
 			"--width=$width",
 			"--height=$height",
-			"--lower-limit=0",
+			@riglim,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -851,6 +843,7 @@ sub kern_cgi {
 		}
 	}
 
+	@riglim = @{setup_riglim($rigid[2], $limit[2])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -894,9 +887,7 @@ sub kern_cgi {
 		"--vertical-label=Percent (%)",
 		"--width=$width",
 		"--height=$height",
-		"--upper-limit=100",
-		"--lower-limit=0",
-		"--rigid",
+		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -918,9 +909,7 @@ sub kern_cgi {
 			"--vertical-label=Percent (%)",
 			"--width=$width",
 			"--height=$height",
-			"--upper-limit=100",
-			"--lower-limit=0",
-			"--rigid",
+			@riglim,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
