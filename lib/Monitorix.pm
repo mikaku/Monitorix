@@ -90,12 +90,12 @@ sub setup_riglim {
 	my ($rigid, $limit) = @_;
 	my @riglim;
 
-	my ($upper, $lower) = split(':', trim($limit));
-	if(trim($rigid) eq 1) {
+	my ($upper, $lower) = split(':', trim($limit) || "0:0");
+	if(trim($rigid || 0) eq 1) {
 		push(@riglim, "--upper-limit=" . ($upper || 0));
 		push(@riglim, "--lower-limit=" . ($lower || 0));
 	} else {
-		if(trim($rigid) eq 2) {
+		if(trim($rigid || 0) eq 2) {
 			push(@riglim, "--upper-limit=" . ($upper || 0));
 			push(@riglim, "--lower-limit=" . ($lower || 0));
 			push(@riglim, "--rigid");
