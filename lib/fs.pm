@@ -793,8 +793,8 @@ sub fs_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $fs = $config->{fs};
-	my @rigid = split(',', $fs->{rigid});
-	my @limit = split(',', $fs->{limit});
+	my @rigid = split(',', ($fs->{rigid} || ""));
+	my @limit = split(',', ($fs->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -938,15 +938,7 @@ sub fs_cgi {
 			main::graph_header($title, 2);
 		}
 
-		undef(@riglim);
-		if(trim($rigid[0]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-		} else {
-			if(trim($rigid[0]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[0]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[0], $limit[0])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -995,9 +987,7 @@ sub fs_cgi {
 			"--vertical-label=Percent (%)",
 			"--width=$width",
 			"--height=$height",
-			"--upper-limit=100",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -1023,9 +1013,7 @@ sub fs_cgi {
 				"--vertical-label=Percent (%)",
 				"--width=$width",
 				"--height=$height",
-				"--upper-limit=100",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:fs0=$rrd:fs" . $e . "_use0:AVERAGE",
@@ -1060,15 +1048,7 @@ sub fs_cgi {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-		undef(@riglim);
-		if(trim($rigid[1]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[1]));
-		} else {
-			if(trim($rigid[1]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[1]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[1], $limit[1])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -1117,7 +1097,6 @@ sub fs_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -1144,7 +1123,6 @@ sub fs_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:ioa0=$rrd:fs" . $e . "_ioa0:AVERAGE",
@@ -1175,15 +1153,7 @@ sub fs_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[2]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[2]));
-		} else {
-			if(trim($rigid[2]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[2]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[2], $limit[2])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -1232,9 +1202,7 @@ sub fs_cgi {
 			"--vertical-label=Percent (%)",
 			"--width=$width",
 			"--height=$height",
-			"--upper-limit=100",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -1260,9 +1228,7 @@ sub fs_cgi {
 				"--vertical-label=Percent (%)",
 				"--width=$width",
 				"--height=$height",
-				"--upper-limit=100",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:fs0=$rrd:fs" . $e . "_ino0:AVERAGE",
@@ -1297,15 +1263,7 @@ sub fs_cgi {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-		undef(@riglim);
-		if(trim($rigid[3]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[3]));
-		} else {
-			if(trim($rigid[3]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[3]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[3], $limit[3])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -1389,7 +1347,6 @@ sub fs_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -1424,7 +1381,6 @@ sub fs_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:tim0=$rrd:fs" . $e . "_tim0:AVERAGE",
