@@ -253,8 +253,8 @@ sub libvirt_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $libvirt = $config->{libvirt};
-	my @rigid = split(',', $libvirt->{rigid});
-	my @limit = split(',', $libvirt->{limit});
+	my @rigid = split(',', ($libvirt->{rigid} || ""));
+	my @limit = split(',', ($libvirt->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -407,15 +407,7 @@ sub libvirt_cgi {
 			main::graph_header($title, 2);
 		}
 
-		undef(@riglim);
-		if(trim($rigid[0]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-		} else {
-			if(trim($rigid[0]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[0]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[0], $limit[0])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -454,9 +446,7 @@ sub libvirt_cgi {
 			"--vertical-label=Percent (%)",
 			"--width=$width",
 			"--height=$height",
-			"--upper-limit=100",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -482,9 +472,7 @@ sub libvirt_cgi {
 				"--vertical-label=Percent (%)",
 				"--width=$width",
 				"--height=$height",
-				"--upper-limit=100",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:cpu0=$rrd:libv" . $e . "_cpu0:AVERAGE",
@@ -519,15 +507,7 @@ sub libvirt_cgi {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-		undef(@riglim);
-		if(trim($rigid[1]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[1]));
-		} else {
-			if(trim($rigid[1]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[1]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[1], $limit[1])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -566,7 +546,6 @@ sub libvirt_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -601,7 +580,6 @@ sub libvirt_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:mem0=$rrd:libv" . $e . "_mem0:AVERAGE",
@@ -640,15 +618,7 @@ sub libvirt_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[2]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[2]));
-		} else {
-			if(trim($rigid[2]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[2]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[2], $limit[2])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -687,9 +657,7 @@ sub libvirt_cgi {
 			"--vertical-label=bytes/s",
 			"--width=$width",
 			"--height=$height",
-			"--upper-limit=100",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -723,9 +691,7 @@ sub libvirt_cgi {
 				"--vertical-label=bytes/s",
 				"--width=$width",
 				"--height=$height",
-				"--upper-limit=100",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:dsk0=$rrd:libv" . $e . "_dsk0:AVERAGE",
@@ -768,15 +734,7 @@ sub libvirt_cgi {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-		undef(@riglim);
-		if(trim($rigid[3]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[3]));
-		} else {
-			if(trim($rigid[3]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[3]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[3], $limit[3])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -834,7 +792,6 @@ sub libvirt_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -861,7 +818,6 @@ sub libvirt_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:net0=$rrd:libv" . $e . "_net0:AVERAGE",
