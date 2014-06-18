@@ -44,6 +44,11 @@ sub process_init {
 	my @max;
 	my @last;
 
+	if(!grep {$_ eq $config->{os}} ("Linux")) {
+		logger("$myself is not supported yet by your operating system ($config->{os}).");
+		return;
+	}
+
 	if(-e $rrd) {
 		$info = RRDs::info($rrd);
 		for my $key (keys %$info) {
@@ -185,7 +190,7 @@ sub process_update {
 				while(<IN>) {
 					if(/^cpu /) {
 						my (undef, $user, $nice, $sys, $idle, $iow, $irq, $sirq, $steal, $guest) = split(' ', $_);
-						$s_usage = $user + $nice + $sys + $idle + $iow + $irq + $sirq + $steal + $guest;
+						$s_usage = $user + $nice + $sys + $idle + $iow + $irq + $sirq + $steal + ($guest || 0);
 						last;
 					}
 				}
