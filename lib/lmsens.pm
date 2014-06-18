@@ -335,6 +335,8 @@ sub lmsens_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $lmsens = $config->{lmsens};
+	my @rigid = split(',', ($lmsens->{rigid} || ""));
+	my @limit = split(',', ($lmsens->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -344,6 +346,7 @@ sub lmsens_cgi {
 	my $u = "";
 	my $width;
 	my $height;
+	my @riglim;
 	my $temp_scale = "Celsius";
 	my @tmp;
 	my @tmpz;
@@ -563,6 +566,7 @@ sub lmsens_cgi {
 	if($title) {
 		main::graph_header($title, 2);
 	}
+	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	for($n = 0; $n < 4; $n++) {
 		for($n2 = $n; $n2 < 16; $n2 += 4) {
 			$str = "core" . $n2;
@@ -647,7 +651,7 @@ sub lmsens_cgi {
 		"--vertical-label=$temp_scale",
 		"--width=$width",
 		"--height=$height",
-		"--lower-limit=0",
+		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
@@ -681,7 +685,7 @@ sub lmsens_cgi {
 			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
-			"--lower-limit=0",
+			@riglim,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:core0=$rrd:lmsens_core0:AVERAGE",
@@ -719,6 +723,7 @@ sub lmsens_cgi {
 		}
 	}
 
+	@riglim = @{setup_riglim($rigid[1], $limit[1])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -808,6 +813,7 @@ sub lmsens_cgi {
 		"--vertical-label=Volts",
 		"--width=$width",
 		"--height=$height",
+		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
@@ -837,6 +843,7 @@ sub lmsens_cgi {
 			"--vertical-label=Volts",
 			"--width=$width",
 			"--height=$height",
+			@riglim,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:volt0=$rrd:lmsens_volt0:AVERAGE",
@@ -874,6 +881,7 @@ sub lmsens_cgi {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
+	@riglim = @{setup_riglim($rigid[2], $limit[2])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -926,7 +934,7 @@ sub lmsens_cgi {
 		"--vertical-label=$temp_scale",
 		"--width=$width",
 		"--height=$height",
-		"--lower-limit=0",
+		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -952,7 +960,7 @@ sub lmsens_cgi {
 			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
-			"--lower-limit=0",
+			@riglim,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -981,6 +989,7 @@ sub lmsens_cgi {
 		}
 	}
 
+	@riglim = @{setup_riglim($rigid[3], $limit[3])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -1025,7 +1034,7 @@ sub lmsens_cgi {
 		"--vertical-label=RPM",
 		"--width=$width",
 		"--height=$height",
-		"--lower-limit=0",
+		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -1054,7 +1063,7 @@ sub lmsens_cgi {
 			"--vertical-label=RPM",
 			"--width=$width",
 			"--height=$height",
-			"--lower-limit=0",
+			@riglim,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -1086,6 +1095,7 @@ sub lmsens_cgi {
 		}
 	}
 
+	@riglim = @{setup_riglim($rigid[4], $limit[4])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -1153,7 +1163,7 @@ sub lmsens_cgi {
 		"--vertical-label=$temp_scale",
 		"--width=$width",
 		"--height=$height",
-		"--lower-limit=0",
+		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -1182,7 +1192,7 @@ sub lmsens_cgi {
 			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
-			"--lower-limit=0",
+			@riglim,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
