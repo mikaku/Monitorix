@@ -485,6 +485,7 @@ sub hptemp_cgi {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
+	@riglim = @{setup_riglim($rigid[1], $limit[1])};
 	if(scalar(my @hptemp1 = split(',', ($hptemp->{graph_1} || "")))) {
 		undef(@CDEF);
 		undef(@tmp);
@@ -600,6 +601,7 @@ sub hptemp_cgi {
 		}
 	}
 
+	@riglim = @{setup_riglim($rigid[2], $limit[2])};
 	if(scalar(my @hptemp2 = split(',', ($hptemp->{graph_2} || "")))) {
 		undef(@CDEF);
 		undef(@tmp);
