@@ -395,15 +395,7 @@ sub net_cgi {
 			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 		}
 
-		undef(@riglim);
-		if(trim($rigid) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit));
-		} else {
-			if(trim($rigid) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid, $limit)};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -454,7 +446,6 @@ sub net_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -481,7 +472,6 @@ sub net_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:in=$rrd:net" . $n . "_bytes_in:AVERAGE",
@@ -510,15 +500,7 @@ sub net_cgi {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-		undef(@riglim);
-		if(trim($rigid) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit));
-		} else {
-			if(trim($rigid) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid, $limit)};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -556,7 +538,6 @@ sub net_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -578,7 +559,6 @@ sub net_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
@@ -604,15 +584,7 @@ sub net_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit));
-		} else {
-			if(trim($rigid) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid, $limit)};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -650,7 +622,6 @@ sub net_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -672,7 +643,6 @@ sub net_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
