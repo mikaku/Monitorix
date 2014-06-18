@@ -297,8 +297,8 @@ sub netstat_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $netstat = $config->{netstat};
-	my @rigid = split(',', $netstat->{rigid});
-	my @limit = split(',', $netstat->{limit});
+	my @rigid = split(',', ($netstat->{rigid} || ""));
+	my @limit = split(',', ($netstat->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -401,14 +401,7 @@ sub netstat_cgi {
 		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 	}
 
-	if(trim($rigid[0]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[0]));
-	} else {
-		if(trim($rigid[0]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	push(@tmp, "LINE2:i4_closed#FFA500:CLOSED");
 	push(@tmp, "GPRINT:i4_closed:LAST:        Current\\: %3.0lf");
 	push(@tmp, "GPRINT:i4_closed:AVERAGE:    Average\\: %3.0lf");
@@ -470,7 +463,6 @@ sub netstat_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
@@ -496,7 +488,6 @@ sub netstat_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:i4_closed=$rrd:nstat4_closed:AVERAGE",
@@ -525,15 +516,7 @@ sub netstat_cgi {
 		}
 	}
 
-	undef(@riglim);
-	if(trim($rigid[1]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[1]));
-	} else {
-		if(trim($rigid[1]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[1]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[1], $limit[1])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -598,7 +581,6 @@ sub netstat_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
@@ -624,7 +606,6 @@ sub netstat_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:i6_closed=$rrd:nstat6_closed:AVERAGE",
@@ -658,15 +639,7 @@ sub netstat_cgi {
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
 
-	undef(@riglim);
-	if(trim($rigid[2]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[2]));
-	} else {
-		if(trim($rigid[2]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[2]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[2], $limit[2])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -705,7 +678,6 @@ sub netstat_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -730,7 +702,6 @@ sub netstat_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -757,15 +728,7 @@ sub netstat_cgi {
 		}
 	}
 
-	undef(@riglim);
-	if(trim($rigid[3]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[3]));
-	} else {
-		if(trim($rigid[3]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[3]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[3], $limit[3])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -811,7 +774,6 @@ sub netstat_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -838,7 +800,6 @@ sub netstat_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -867,15 +828,7 @@ sub netstat_cgi {
 		}
 	}
 
-	undef(@riglim);
-	if(trim($rigid[4]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[4]));
-	} else {
-		if(trim($rigid[4]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[4]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[4], $limit[4])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -907,7 +860,6 @@ sub netstat_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -930,7 +882,6 @@ sub netstat_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
