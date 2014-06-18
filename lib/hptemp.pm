@@ -206,6 +206,8 @@ sub hptemp_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $hptemp = $config->{hptemp};
+	my @rigid = split(',', ($hptemp->{rigid} || ""));
+	my @limit = split(',', ($hptemp->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -215,6 +217,7 @@ sub hptemp_cgi {
 	my $u = "";
 	my $width;
 	my $height;
+	my @riglim;
 	my $temp_scale = "Celsius";
 	my @tmp;
 	my @tmpz;
@@ -357,6 +360,7 @@ sub hptemp_cgi {
 		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 	}
 
+	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	if(scalar(my @hptemp0 = split(',', ($hptemp->{graph_0} || "")))) {
 		undef(@CDEF);
 		undef(@tmp);
@@ -419,7 +423,7 @@ sub hptemp_cgi {
 			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
-			"--lower-limit=0",
+			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -446,7 +450,7 @@ sub hptemp_cgi {
 				"--vertical-label=$temp_scale",
 				"--width=$width",
 				"--height=$height",
-				"--lower-limit=0",
+				@riglim,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:temp0=$rrd:hptemp1_1:AVERAGE",
