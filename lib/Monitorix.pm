@@ -91,7 +91,9 @@ sub setup_riglim {
 	my @riglim;
 
 	my ($upper, $lower) = split(':', trim($limit) || "0:0");
-	if(trim($rigid || 0) gt 0) {
+	if(trim($rigid || 0) eq 0) {
+		push(@riglim, "--lower-limit=$lower") if defined($lower);
+	} else {
 		push(@riglim, "--upper-limit=" . ($upper || 0));
 		push(@riglim, "--lower-limit=" . ($lower || 0));
 		push(@riglim, "--rigid") if trim($rigid || 0) eq 2;
