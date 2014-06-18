@@ -2097,14 +2097,20 @@ Default value:
 .RS
 This value defines how the graph must be scaled. Its possible values are:
 .P
-\fI0\fP   No rigid. The graph will be scaled automatically.
+\fI0\fP   No rigid, the graph will be scaled automatically. Only the lower-limit value will be used if it's defined.
 .br
-\fI2\fP   The graph will be scaled using the \fBlimit\fP value as its upper-limit value.
+\fI1\fP   The graph will be scaled by default according the values in \fBlimit\fP but without rigidness.
+.br
+\fI2\fP   The graph will be forced to scale using the contents of \fBlimit\fP as its upper-limit and lower-limit values.
 .RE
 .P
 .BI limit
 .RS
-This is where you can enter the upper-limit value for a graph.
+This is where you can enter the upper-limit and lower-limit values (separated by a colon) for a graph. The lower-limit value is optional. Some examples would be:
+.P
+\fI100:0\fP   \fI100\fP as the upper-limit value and \fI0\fP for the lower-limit value. This is commonly used for percentage values.
+.br
+\fI1000\fP   \fI1000\fP as the upper-limit value and undefined lower-limit value. This can also be written as \fI1000:\fP.
 .RE
 .SH AUTHOR
 Monitorix is written by Jordi Sanfeliu <jordi@fibranet.cat>
