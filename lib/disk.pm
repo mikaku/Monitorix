@@ -286,6 +286,8 @@ sub disk_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $disk = $config->{disk};
+	my @rigid = split(',', ($disk->{rigid} || ""));
+	my @limit = split(',', ($disk->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -295,6 +297,7 @@ sub disk_cgi {
 	my $u = "";
 	my $width;
 	my $height;
+	my @riglim;
 	my @PNG;
 	my @PNGz;
 	my $temp_scale = "Celsius";
@@ -432,6 +435,7 @@ sub disk_cgi {
 			main::graph_header($title, 2);
 		}
 
+		@riglim = @{setup_riglim($rigid[0], $limit[0])};
 		undef(@CDEF);
 		undef(@tmp);
 		undef(@tmpz);
@@ -508,7 +512,7 @@ sub disk_cgi {
 			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
-			"--lower-limit=0",
+			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -534,7 +538,7 @@ sub disk_cgi {
 				"--vertical-label=$temp_scale",
 				"--width=$width",
 				"--height=$height",
-				"--lower-limit=0",
+				@riglim,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:temp0=$rrd:disk" . $e ."_hd0_temp:AVERAGE",
@@ -569,6 +573,7 @@ sub disk_cgi {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
+		@riglim = @{setup_riglim($rigid[1], $limit[1])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -629,7 +634,7 @@ sub disk_cgi {
 			"--vertical-label=Sectors",
 			"--width=$width",
 			"--height=$height",
-			"--lower-limit=0",
+			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -656,7 +661,7 @@ sub disk_cgi {
 				"--vertical-label=Sectors",
 				"--width=$width",
 				"--height=$height",
-				"--lower-limit=0",
+				@riglim,
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
@@ -688,6 +693,7 @@ sub disk_cgi {
 			}
 		}
 
+		@riglim = @{setup_riglim($rigid[2], $limit[2])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -748,7 +754,7 @@ sub disk_cgi {
 			"--vertical-label=Sectors",
 			"--width=$width",
 			"--height=$height",
-			"--lower-limit=0",
+			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -775,7 +781,7 @@ sub disk_cgi {
 				"--vertical-label=Sectors",
 				"--width=$width",
 				"--height=$height",
-				"--lower-limit=0",
+				@riglim,
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
