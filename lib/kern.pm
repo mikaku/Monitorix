@@ -378,8 +378,8 @@ sub kern_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $kern = $config->{kern};
-	my @rigid = split(',', $kern->{rigid});
-	my @limit = split(',', $kern->{limit});
+	my @rigid = split(',', ($kern->{rigid} || ""));
+	my @limit = split(',', ($kern->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};

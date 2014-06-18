@@ -247,8 +247,8 @@ sub proc_cgi {
 
 	my $proc = $config->{proc};
 	my $kern = $config->{kern};
-	my @rigid = split(',', $proc->{rigid});
-	my @limit = split(',', $proc->{limit});
+	my @rigid = split(',', ($proc->{rigid} || ""));
+	my @limit = split(',', ($proc->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};

@@ -339,8 +339,8 @@ sub system_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $system = $config->{system};
-	my @rigid = split(',', $system->{rigid});
-	my @limit = split(',', $system->{limit});
+	my @rigid = split(',', ($system->{rigid} || ""));
+	my @limit = split(',', ($system->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
