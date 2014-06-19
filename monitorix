@@ -575,7 +575,7 @@ create_index();
 
 if(lc($config{httpd_builtin}->{enabled} eq "y")) {
 	httpd_setup(\%config, $options{d});
-	logger("Built-in HTTP server pid is '$config{httpd_pid}'.") if (defined($config{httpd_pid}));
+	logger("Started built-in HTTP server (pid $config{httpd_pid}).") if (defined($config{httpd_pid}));
 }
 
 if(!$config{global_zoom}) {
