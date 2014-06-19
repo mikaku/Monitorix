@@ -294,8 +294,8 @@ sub process_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $process = $config->{process};
-	my @rigid = split(',', $process->{rigid});
-	my @limit = split(',', $process->{limit});
+	my @rigid = split(',', ($process->{rigid} || ""));
+	my @limit = split(',', ($process->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -457,15 +457,7 @@ sub process_cgi {
 			main::graph_header($title, 2);
 		}
 
-		undef(@riglim);
-		if(trim($rigid[0]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-		} else {
-			if(trim($rigid[0]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[0]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[0], $limit[0])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -504,9 +496,7 @@ sub process_cgi {
 			"--vertical-label=Percent (%)",
 			"--width=$width",
 			"--height=$height",
-			"--upper-limit=100",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -534,9 +524,7 @@ sub process_cgi {
 				"--vertical-label=Percent (%)",
 				"--width=$width",
 				"--height=$height",
-				"--upper-limit=100",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:cpu0=$rrd:proc" . $e . "_cpu0:AVERAGE",
@@ -573,15 +561,7 @@ sub process_cgi {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-		undef(@riglim);
-		if(trim($rigid[1]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[1]));
-		} else {
-			if(trim($rigid[1]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[1]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[1], $limit[1])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -620,7 +600,6 @@ sub process_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -659,7 +638,6 @@ sub process_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:mem0=$rrd:proc" . $e . "_mem0:AVERAGE",
@@ -702,15 +680,7 @@ sub process_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[2]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[2]));
-		} else {
-			if(trim($rigid[2]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[2]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[2], $limit[2])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -749,9 +719,7 @@ sub process_cgi {
 			"--vertical-label=bytes/s",
 			"--width=$width",
 			"--height=$height",
-			"--upper-limit=100",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -789,9 +757,7 @@ sub process_cgi {
 				"--vertical-label=bytes/s",
 				"--width=$width",
 				"--height=$height",
-				"--upper-limit=100",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:dsk0=$rrd:proc" . $e . "_dsk0:AVERAGE",
@@ -838,15 +804,7 @@ sub process_cgi {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-		undef(@riglim);
-		if(trim($rigid[3]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[3]));
-		} else {
-			if(trim($rigid[3]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[3]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[3], $limit[3])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -908,7 +866,6 @@ sub process_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -937,7 +894,6 @@ sub process_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:net0=$rrd:proc" . $e . "_net0:AVERAGE",
@@ -970,15 +926,7 @@ sub process_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[4]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[4]));
-		} else {
-			if(trim($rigid[4]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[4]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[4], $limit[4])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -1017,9 +965,7 @@ sub process_cgi {
 			"--vertical-label=Files",
 			"--width=$width",
 			"--height=$height",
-			"--upper-limit=100",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -1047,9 +993,7 @@ sub process_cgi {
 				"--vertical-label=Files",
 				"--width=$width",
 				"--height=$height",
-				"--upper-limit=100",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:nof0=$rrd:proc" . $e . "_nof0:AVERAGE",
@@ -1085,15 +1029,7 @@ sub process_cgi {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-		undef(@riglim);
-		if(trim($rigid[5]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[5]));
-		} else {
-			if(trim($rigid[5]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[5]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[5], $limit[5])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -1132,7 +1068,6 @@ sub process_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -1161,7 +1096,6 @@ sub process_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:nth0=$rrd:proc" . $e . "_nth0:AVERAGE",
@@ -1194,15 +1128,7 @@ sub process_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[6]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[6]));
-		} else {
-			if(trim($rigid[6]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[6]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[6], $limit[6])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -1246,9 +1172,7 @@ sub process_cgi {
 			"--vertical-label=Nonvoluntary & voluntary/s",
 			"--width=$width",
 			"--height=$height",
-			"--upper-limit=100",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -1307,9 +1231,7 @@ sub process_cgi {
 				"--vertical-label=Nonvoluntary & voluntary/s",
 				"--width=$width",
 				"--height=$height",
-				"--upper-limit=100",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:vcs0=$rrd:proc" . $e . "_vcs0:AVERAGE",
@@ -1377,15 +1299,7 @@ sub process_cgi {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-		undef(@riglim);
-		if(trim($rigid[7]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[7]));
-		} else {
-			if(trim($rigid[7]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[7]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[7], $limit[7])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -1424,7 +1338,6 @@ sub process_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -1453,7 +1366,6 @@ sub process_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:pro0=$rrd:proc" . $e . "_pro0:AVERAGE",
