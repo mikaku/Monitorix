@@ -465,15 +465,7 @@ sub port_cgi {
 			my $pp = trim((split(',', $port->{desc}->{$pl[$n]}))[1]);
 			my $prig = trim((split(',', $port->{desc}->{$pl[$n]}))[3]);
 			my $plim = trim((split(',', $port->{desc}->{$pl[$n]}))[4]);
-			undef(@riglim);
-			if(trim($prig) eq 1) {
-				push(@riglim, "--upper-limit=" . trim($plim));
-			} else {
-				if(trim($prig) eq 2) {
-					push(@riglim, "--upper-limit=" . trim($plim));
-					push(@riglim, "--rigid");
-				}
-			}
+			@riglim = @{setup_riglim($prig, $plim)};
 			undef(@warning);
 			if($config->{os} eq "Linux") {
 				open(IN, "netstat -nl --$pp |");
@@ -575,7 +567,6 @@ sub port_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				$zoom,
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
@@ -600,7 +591,6 @@ sub port_cgi {
 					"--width=$width",
 					"--height=$height",
 					@riglim,
-					"--lower-limit=0",
 					@{$cgi->{version12}},
 					@{$cgi->{version12_small}},
 					@{$colors->{graph_colors}},
