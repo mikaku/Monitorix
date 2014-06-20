@@ -221,8 +221,8 @@ sub icecast_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $icecast = $config->{icecast};
-	my @rigid = split(',', $icecast->{rigid});
-	my @limit = split(',', $icecast->{limit});
+	my @rigid = split(',', ($icecast->{rigid} || ""));
+	my @limit = split(',', ($icecast->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -388,15 +388,7 @@ sub icecast_cgi {
 		if($title) {
 			main::graph_header($title, 2);
 		}
-		undef(@riglim);
-		if(trim($rigid[0]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-		} else {
-			if(trim($rigid[0]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[0]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[0], $limit[0])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -441,7 +433,6 @@ sub icecast_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -469,7 +460,6 @@ sub icecast_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:ice" . $e . "_mp0=$rrd:icecast" . $e . "_mp0_ls:AVERAGE",
@@ -503,15 +493,7 @@ sub icecast_cgi {
 			print("    </td>\n");
 		}
 
-		undef(@riglim);
-		if(trim($rigid[1]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[1]));
-		} else {
-			if(trim($rigid[1]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[1]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[1], $limit[1])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -545,7 +527,6 @@ sub icecast_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -573,7 +554,6 @@ sub icecast_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:ice" . $e . "_mp0=$rrd:icecast" . $e . "_mp0_br:AVERAGE",
