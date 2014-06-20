@@ -377,8 +377,8 @@ sub wowza_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $wowza = $config->{wowza};
-	my @rigid = split(',', $wowza->{rigid});
-	my @limit = split(',', $wowza->{limit});
+	my @rigid = split(',', ($wowza->{rigid} || ""));
+	my @limit = split(',', ($wowza->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -546,16 +546,8 @@ sub wowza_cgi {
 		if($title) {
 			main::graph_header($title, 2);
 		}
-		undef(@riglim);
-		if(trim($rigid[0]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-		} else {
-			if(trim($rigid[0]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[0]));
-				push(@riglim, "--rigid");
-			}
-		}
 
+		@riglim = @{setup_riglim($rigid[0], $limit[0])};
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
 			"--start=-1min",
 			"AVERAGE",
@@ -603,7 +595,6 @@ sub wowza_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -632,7 +623,6 @@ sub wowza_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:wms" . $e . "_a0=$rrd:wms" . $e . "_a0_conncur:AVERAGE",
@@ -663,15 +653,7 @@ sub wowza_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[1]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[1]));
-		} else {
-			if(trim($rigid[1]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[1]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[1], $limit[1])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -709,7 +691,6 @@ sub wowza_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -744,7 +725,6 @@ sub wowza_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:wms" . $e . "_a0i=$rrd:wms" . $e . "_a0_minbrt:AVERAGE",
@@ -788,15 +768,7 @@ sub wowza_cgi {
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
 
-		undef(@riglim);
-		if(trim($rigid[2]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[2]));
-		} else {
-			if(trim($rigid[2]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[2]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[2], $limit[2])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -823,7 +795,6 @@ sub wowza_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -851,7 +822,6 @@ sub wowza_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
@@ -883,15 +853,7 @@ sub wowza_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[3]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[3]));
-		} else {
-			if(trim($rigid[3]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[3]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[3], $limit[3])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -918,7 +880,6 @@ sub wowza_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -946,7 +907,6 @@ sub wowza_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
@@ -978,15 +938,7 @@ sub wowza_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[4]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[4]));
-		} else {
-			if(trim($rigid[4]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[4]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[4], $limit[4])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -1013,7 +965,6 @@ sub wowza_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -1041,7 +992,6 @@ sub wowza_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
