@@ -159,15 +159,15 @@ sub phpapc_update {
 		}
 
 		$data =~ s/\n//g;
-		my ($msize, $msize_suffix) = ($data =~ m/<td class=td-0>apc.shm_size<\/td><td>(\d+)([MG])<\/td>/);
+		my ($msize, $msize_suffix) = ($data =~ m/<td class=td-0>apc.shm_size<\/td><td>(\d+)([MG])<\/td>/) && ($1 || 0);
 		# convert msize to KB
-		$msize *= 1024*1024 if $msize_suffix eq "GBytes";
-		$msize *= 1024 if $msize_suffix eq "MBytes";
+		$msize *= 1024 * 1024 if ($msize_suffix || "") eq "GBytes";
+		$msize *= 1024 if ($msize_suffix || "") eq "MBytes";
 
-		my ($free) = ($data =~ m/<\/span>Free:\s+.*?\((\d+\.\d+)%\)<\/td>/);
-		my ($hits) = ($data =~ m/<\/span>Hits:\s+.*?\((\d+\.\d+)%\)<\/td>/);
-		my ($used) = ($data =~ m/<\/span>Used:\s+.*?\((\d+\.\d+)%\)<\/td>/);
-		my ($missed) = ($data =~ m/<\/span>Misses:\s+.*?\((\d+\.\d+)%\)<\/td>/);
+		my ($free) = ($data =~ m/<\/span>Free:\s+.*?\((\d+\.\d+)%\)<\/td>/) && ($1 || 0);
+		my ($hits) = ($data =~ m/<\/span>Hits:\s+.*?\((\d+\.\d+)%\)<\/td>/) && ($1 || 0);
+		my ($used) = ($data =~ m/<\/span>Used:\s+.*?\((\d+\.\d+)%\)<\/td>/) && ($1 || 0);
+		my ($missed) = ($data =~ m/<\/span>Misses:\s+.*?\((\d+\.\d+)%\)<\/td>/) && ($1 || 0);
 
 		my (undef, $cachf, $cachs, $cache_suffix) = ($data =~ m/<h2>.*?Cache Information<\/h2>.*?Cached (Files|Variables)<\/td><td>(\d+)\s+\(\s*(\d+\.\d+)\s+(\S*Bytes)\)/);
 		my $str = $e . "cachf";
@@ -177,10 +177,10 @@ sub phpapc_update {
 		$config->{phpapc_hist}->{$str} = $cachf;
 
 		# convert cache size to KB
-		$cachs *= 1024*1024 if $cache_suffix eq "GBytes";
-		$cachs *= 1024 if $cache_suffix eq "MBytes";
+		$cachs *= 1024 * 1024 if ($cache_suffix || "") eq "GBytes";
+		$cachs *= 1024 if ($cache_suffix || "") eq "MBytes";
 
-		my ($frag) = ($data =~ m/<\/br>Fragmentation:\s+(\d+\.*\d*?)%/);
+		my ($frag) = ($data =~ m/<\/br>Fragmentation:\s+(\d+\.*\d*?)%/) && ($1 || 0);
 
 		$rrdata .= ":$msize:$free:$used:$hits:$missed:$cachf:$cachs:$cachfps:$frag:0:0:0:0:0";
 		$e++;
@@ -326,10 +326,10 @@ sub phpapc_cgi {
 		}
 		$data =~ s/\n//g;
 
-		my ($msize, $msize_suffix) = ($data =~ m/<td class=td-0>apc.shm_size<\/td><td>(\d+)([MG])<\/td>/);
-		$msize .= $msize_suffix . "B";
+		my ($msize, $msize_suffix) = ($data =~ m/<td class=td-0>apc.shm_size<\/td><td>(\d+)([MG])<\/td>/) && ($1 || 0);
+		$msize .= ($msize_suffix || "") . "B";
 
-		my ($uptimeline) = ($data =~ m/Uptime<\/td><td>(.*?)<\/td>/);
+		my ($uptimeline) = ($data =~ m/Uptime<\/td><td>(.*?)<\/td>/) && ($1 || 0);
 		if($RRDs::VERSION > 1.2) {
 			$uptimeline = "COMMENT:uptime\\: " . trim($uptimeline) . "\\c";
 		} else {
