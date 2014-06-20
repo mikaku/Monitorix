@@ -430,8 +430,8 @@ sub int_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $int = $config->{int};
-	my @rigid = split(',', $int->{rigid});
-	my @limit = split(',', $int->{limit});
+	my @rigid = split(',', ($int->{rigid} || ""));
+	my @limit = split(',', ($int->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -983,14 +983,7 @@ sub int_cgi {
 	if($title) {
 		main::graph_header($title, 2);
 	}
-	if(trim($rigid[0]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[0]));
-	} else {
-		if(trim($rigid[0]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	if($title) {
 		print("    <tr>\n");
 		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
@@ -1057,7 +1050,6 @@ sub int_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
@@ -1077,7 +1069,6 @@ sub int_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			@DEF1,
@@ -1105,16 +1096,8 @@ sub int_cgi {
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
 
+	@riglim = @{setup_riglim($rigid[1], $limit[1])};
 	undef(@CDEF);
-	undef(@riglim);
-	if(trim($rigid[1]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[1]));
-	} else {
-		if(trim($rigid[1]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[1]));
-			push(@riglim, "--rigid");
-		}
-	}
 	pop(@allsigns2);
 	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues2, @allsigns2))
 		if(scalar(@allvalues2));
@@ -1135,7 +1118,6 @@ sub int_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -1156,7 +1138,6 @@ sub int_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -1180,16 +1161,8 @@ sub int_cgi {
 		}
 	}
 
+	@riglim = @{setup_riglim($rigid[2], $limit[2])};
 	undef(@CDEF);
-	undef(@riglim);
-	if(trim($rigid[2]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[2]));
-	} else {
-		if(trim($rigid[2]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[2]));
-			push(@riglim, "--rigid");
-		}
-	}
 	pop(@allsigns3);
 	push(@CDEF, "CDEF:allvalues=" . join(',', @allvalues3, @allsigns3))
 		if(scalar(@allvalues3));
@@ -1211,7 +1184,6 @@ sub int_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -1232,7 +1204,6 @@ sub int_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
