@@ -180,7 +180,7 @@ sub apcupsd_update {
 		}
 
 		if(!$data) {
-			logger("$myself: unable to execute '" . $apcupsd->{cmd} . "' command.");
+			logger("$myself: unable to execute '" . $apcupsd->{cmd} . "' command or invalid connection.");
 			$rrdata .= ":$linev:$loadc:$bchar:$timel:$mbatc:$ovolt:$ltran:$htran:$itemp:$battv:$linef:$nxfer:$nomov:$minti:$nomba:$humid:$atemp:0:0:0:0:0";
 			next;
 		}
@@ -253,8 +253,8 @@ sub apcupsd_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $apcupsd = $config->{apcupsd};
-	my @rigid = split(',', $apcupsd->{rigid});
-	my @limit = split(',', $apcupsd->{limit});
+	my @rigid = split(',', ($apcupsd->{rigid} || ""));
+	my @limit = split(',', ($apcupsd->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -425,15 +425,7 @@ sub apcupsd_cgi {
 		if($title) {
 			main::graph_header($title, 2);
 		}
-		undef(@riglim);
-		if(trim($rigid[0]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-		} else {
-			if(trim($rigid[0]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[0]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[0], $limit[0])};
 		if($title) {
 			print("    <tr>\n");
 			print("    <td valign='top' bgcolor='$colors->{title_bg_color}'>\n");
@@ -485,7 +477,6 @@ sub apcupsd_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -511,7 +502,6 @@ sub apcupsd_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:htran=$rrd:apcupsd" . $e . "_htran:AVERAGE",
@@ -538,15 +528,7 @@ sub apcupsd_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[1]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[1]));
-		} else {
-			if(trim($rigid[1]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[1]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[1], $limit[1])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -590,7 +572,6 @@ sub apcupsd_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -616,7 +597,6 @@ sub apcupsd_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:bchar=$rrd:apcupsd" . $e . "_bchar:AVERAGE",
@@ -647,15 +627,7 @@ sub apcupsd_cgi {
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
 
-		undef(@riglim);
-		if(trim($rigid[2]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[2]));
-		} else {
-			if(trim($rigid[2]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[2]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[2], $limit[2])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -695,7 +667,6 @@ sub apcupsd_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -718,7 +689,6 @@ sub apcupsd_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
@@ -745,15 +715,7 @@ sub apcupsd_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[3]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[3]));
-		} else {
-			if(trim($rigid[3]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[3]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[3], $limit[3])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -785,7 +747,6 @@ sub apcupsd_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -807,7 +768,6 @@ sub apcupsd_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
@@ -833,15 +793,7 @@ sub apcupsd_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[4]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[4]));
-		} else {
-			if(trim($rigid[4]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[4]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[4], $limit[4])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -873,7 +825,6 @@ sub apcupsd_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -895,7 +846,6 @@ sub apcupsd_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
@@ -921,15 +871,7 @@ sub apcupsd_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[5]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[5]));
-		} else {
-			if(trim($rigid[5]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[5]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[5], $limit[5])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -958,7 +900,6 @@ sub apcupsd_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -979,7 +920,6 @@ sub apcupsd_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
