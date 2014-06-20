@@ -1030,14 +1030,14 @@ vnet3      network    default    virtio      52:54:00:45:d0:e7
 .br
 .P
 This option also allows you to change the name that will appear in the graph, hiding the real name of the virtual machine. If no association is defined, then Monitorix will display the name specified in the \fBlist\fP option.
-.SS Processes statistics (processes.rrd)
+.SS Process statistics (process.rrd)
 This graph is able to monitor an unlimited number of processes. This graph requires a Linux kernel version 2.6.20 at least to support process I/O accounting. Some systems with older kernels might also have been ported it though.
 .P
 .BI list
 .RS
 This is a list of groups of processes that you want to monitor. Each group will become a graph and there may be an unlimited number of groups.
 .P
-WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIprocesses.rrd\fP file accordingly, removing all historical data.
+WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIprocess.rrd\fP file accordingly, removing all historical data.
 .P
 An example would be:
 .P
