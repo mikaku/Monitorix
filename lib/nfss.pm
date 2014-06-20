@@ -276,8 +276,8 @@ sub nfss_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $nfss = $config->{nfss};
-	my @rigid = split(',', $nfss->{rigid});
-	my @limit = split(',', $nfss->{limit});
+	my @rigid = split(',', ($nfss->{rigid} || ""));
+	my @limit = split(',', ($nfss->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -472,14 +472,7 @@ sub nfss_cgi {
 	if($title) {
 		main::graph_header($title, 2);
 	}
-	if(trim($rigid[0]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[0]));
-	} else {
-		if(trim($rigid[0]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	if($title) {
 		print("    <tr>\n");
 		print("    <td valign='top' bgcolor='$colors->{title_bg_color}'>\n");
@@ -524,7 +517,6 @@ sub nfss_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
@@ -544,7 +536,6 @@ sub nfss_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			@DEF,
@@ -566,15 +557,7 @@ sub nfss_cgi {
 		}
 	}
 
-	undef(@riglim);
-	if(trim($rigid[1]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[1]));
-	} else {
-		if(trim($rigid[1]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[1]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[1], $limit[1])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@DEF);
@@ -621,7 +604,6 @@ sub nfss_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
@@ -640,7 +622,6 @@ sub nfss_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			@DEF,
@@ -662,15 +643,7 @@ sub nfss_cgi {
 		}
 	}
 
-	undef(@riglim);
-	if(trim($rigid[2]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[2]));
-	} else {
-		if(trim($rigid[2]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[2]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[2], $limit[2])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@DEF);
@@ -717,7 +690,6 @@ sub nfss_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
@@ -736,7 +708,6 @@ sub nfss_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			@DEF,
@@ -762,15 +733,7 @@ sub nfss_cgi {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-	undef(@riglim);
-	if(trim($rigid[3]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[3]));
-	} else {
-		if(trim($rigid[3]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[3]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[3], $limit[3])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -808,7 +771,6 @@ sub nfss_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -830,7 +792,6 @@ sub nfss_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -855,15 +816,7 @@ sub nfss_cgi {
 		}
 	}
 
-	undef(@riglim);
-	if(trim($rigid[4]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[4]));
-	} else {
-		if(trim($rigid[4]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[4]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[4], $limit[4])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -904,7 +857,6 @@ sub nfss_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -928,7 +880,6 @@ sub nfss_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -955,15 +906,7 @@ sub nfss_cgi {
 		}
 	}
 
-	undef(@riglim);
-	if(trim($rigid[5]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[5]));
-	} else {
-		if(trim($rigid[5]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[5]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[5], $limit[5])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -1004,7 +947,6 @@ sub nfss_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -1029,7 +971,6 @@ sub nfss_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -1057,15 +998,7 @@ sub nfss_cgi {
 		}
 	}
 
-	undef(@riglim);
-	if(trim($rigid[6]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[6]));
-	} else {
-		if(trim($rigid[6]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[6]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[6], $limit[6])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -1124,7 +1057,6 @@ sub nfss_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -1155,7 +1087,6 @@ sub nfss_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -1189,15 +1120,7 @@ sub nfss_cgi {
 		}
 	}
 
-	undef(@riglim);
-	if(trim($rigid[7]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[7]));
-	} else {
-		if(trim($rigid[7]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[7]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[7], $limit[7])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -1238,7 +1161,6 @@ sub nfss_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -1261,7 +1183,6 @@ sub nfss_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -1287,15 +1208,7 @@ sub nfss_cgi {
 		}
 	}
 
-	undef(@riglim);
-	if(trim($rigid[8]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[8]));
-	} else {
-		if(trim($rigid[8]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[8]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[8], $limit[8])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -1336,7 +1249,6 @@ sub nfss_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -1361,7 +1273,6 @@ sub nfss_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
