@@ -206,8 +206,8 @@ sub raspberrypi_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $raspberrypi = $config->{raspberrypi};
-	my @rigid = split(',', $raspberrypi->{rigid});
-	my @limit = split(',', $raspberrypi->{limit});
+	my @rigid = split(',', ($raspberrypi->{rigid} || ""));
+	my @limit = split(',', ($raspberrypi->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -353,14 +353,7 @@ sub raspberrypi_cgi {
 		main::graph_header($title, 2);
 	}
 
-	if(trim($rigid[0]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[0]));
-	} else {
-		if(trim($rigid[0]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	$n = 0;
 	foreach my $c (split(',', ($raspberrypi->{clocks} || ""))) {
 		$c = trim($c);
@@ -406,7 +399,6 @@ sub raspberrypi_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
@@ -434,7 +426,6 @@ sub raspberrypi_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:clock0=$rrd:rpi_clock0:AVERAGE",
@@ -469,15 +460,7 @@ sub raspberrypi_cgi {
 		print("    </td>\n");
 		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
-	undef(@riglim);
-	if(trim($rigid[1]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[0]));
-	} else {
-		if(trim($rigid[1]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[1], $limit[1])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -512,7 +495,6 @@ sub raspberrypi_cgi {
 		"--width=$width",
 		"--height=$height",
 		@riglim,
-		"--lower-limit=0",
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -533,7 +515,6 @@ sub raspberrypi_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -557,15 +538,7 @@ sub raspberrypi_cgi {
 		}
 	}
 
-	undef(@riglim);
-	if(trim($rigid[2]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[0]));
-	} else {
-		if(trim($rigid[2]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[2], $limit[2])};
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
