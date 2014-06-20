@@ -415,8 +415,8 @@ sub traffacct_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $traffacct = $config->{traffacct};
-	my @rigid = split(',', $traffacct->{rigid});
-	my @limit = split(',', $traffacct->{limit});
+	my @rigid = split(',', ($traffacct->{rigid} || ""));
+	my @limit = split(',', ($traffacct->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -470,14 +470,7 @@ sub traffacct_cgi {
 			unlink("$PNG_DIR" . $str);
 		}
 	}
-	if(trim($rigid[0]) eq 1) {
-		push(@riglim, "--upper-limit=" . trim($limit[0]));
-	} else {
-		if(trim($rigid[0]) eq 2) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-			push(@riglim, "--rigid");
-		}
-	}
+	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 
 	$traffacct->{graphs_per_row} = 1 unless $traffacct->{graphs_per_row} > 1;
 	my @tal = split(',', $traffacct->{list});
@@ -536,7 +529,6 @@ sub traffacct_cgi {
 					"--width=$width",
 					"--height=$height",
 					@riglim,
-					"--lower-limit=0",
 					$zoom,
 					@{$cgi->{version12}},
 					@{$cgi->{version12_small}},
@@ -558,7 +550,6 @@ sub traffacct_cgi {
 						"--width=$width",
 						"--height=$height",
 						@riglim,
-						"--lower-limit=0",
 						@{$cgi->{version12}},
 						@{$cgi->{version12_small}},
 						@{$colors->{graph_colors}},
@@ -644,7 +635,6 @@ sub traffacct_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -667,7 +657,6 @@ sub traffacct_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:in=$rrd:traffacct" . $cgi->{val} . "_in:AVERAGE",
