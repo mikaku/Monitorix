@@ -197,8 +197,8 @@ sub phpapc_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $phpapc = $config->{phpapc};
-	my @rigid = split(',', $phpapc->{rigid});
-	my @limit = split(',', $phpapc->{limit});
+	my @rigid = split(',', ($phpapc->{rigid} || ""));
+	my @limit = split(',', ($phpapc->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -342,15 +342,7 @@ sub phpapc_cgi {
 		if($title) {
 			main::graph_header($title, 2);
 		}
-		undef(@riglim);
-		if(trim($rigid[0]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-		} else {
-			if(trim($rigid[0]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[0]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[0], $limit[0])};
 		if($title) {
 			print("    <tr>\n");
 			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
@@ -404,7 +396,6 @@ sub phpapc_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -429,7 +420,6 @@ sub phpapc_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:phpapc" . $e . "_free=$rrd:phpapc" . $e . "_free:AVERAGE",
@@ -459,15 +449,7 @@ sub phpapc_cgi {
 			print("    </td>\n");
 			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
-		undef(@riglim);
-		if(trim($rigid[1]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[1]));
-		} else {
-			if(trim($rigid[1]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[1]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[1], $limit[1])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -503,7 +485,6 @@ sub phpapc_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -525,7 +506,6 @@ sub phpapc_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
@@ -551,15 +531,7 @@ sub phpapc_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[2]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[2]));
-		} else {
-			if(trim($rigid[2]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[2]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[2], $limit[2])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -590,7 +562,6 @@ sub phpapc_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -613,7 +584,6 @@ sub phpapc_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
