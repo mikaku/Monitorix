@@ -528,8 +528,8 @@ sub bind_cgi {
 	my ($package, $config, $cgi) = @_;
 
 	my $bind = $config->{bind};
-	my @rigid = split(',', $bind->{rigid});
-	my @limit = split(',', $bind->{limit});
+	my @rigid = split(',', ($bind->{rigid} || ""));
+	my @limit = split(',', ($bind->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -771,15 +771,7 @@ sub bind_cgi {
 		if($title) {
 			main::graph_header($title, 2);
 		}
-		undef(@riglim);
-		if(trim($rigid[0]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[0]));
-		} else {
-			if(trim($rigid[0]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[0]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[0], $limit[0])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -816,7 +808,6 @@ sub bind_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -855,7 +846,6 @@ sub bind_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:inq0=$rrd:bind" . $e . "_inq01:AVERAGE",
@@ -900,15 +890,7 @@ sub bind_cgi {
 			print("    </td>\n");
 		}
 
-		undef(@riglim);
-		if(trim($rigid[1]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[1]));
-		} else {
-			if(trim($rigid[1]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[1]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[1], $limit[1])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -943,7 +925,6 @@ sub bind_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -982,7 +963,6 @@ sub bind_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:ouq0=$rrd:bind" . $e . "_ouq01:AVERAGE",
@@ -1024,15 +1004,7 @@ sub bind_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[2]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[2]));
-		} else {
-			if(trim($rigid[2]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[2]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[2], $limit[2])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -1068,7 +1040,6 @@ sub bind_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -1107,7 +1078,6 @@ sub bind_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:ss0=$rrd:bind" . $e . "_ss01:AVERAGE",
@@ -1152,15 +1122,7 @@ sub bind_cgi {
 			print("    </td>\n");
 		}
 
-		undef(@riglim);
-		if(trim($rigid[3]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[3]));
-		} else {
-			if(trim($rigid[3]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[3]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[3], $limit[3])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -1195,7 +1157,6 @@ sub bind_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -1234,7 +1195,6 @@ sub bind_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:rs0=$rrd:bind" . $e . "_rs01:AVERAGE",
@@ -1276,15 +1236,7 @@ sub bind_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[4]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[4]));
-		} else {
-			if(trim($rigid[4]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[4]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[4], $limit[4])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -1320,7 +1272,6 @@ sub bind_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
@@ -1359,7 +1310,6 @@ sub bind_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:crr0=$rrd:bind" . $e . "_crr01:AVERAGE",
@@ -1404,15 +1354,7 @@ sub bind_cgi {
 			print("    </td>\n");
 		}
 
-		undef(@riglim);
-		if(trim($rigid[5]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[5]));
-		} else {
-			if(trim($rigid[5]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[5]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[5], $limit[5])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -1448,7 +1390,6 @@ sub bind_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -1478,7 +1419,6 @@ sub bind_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
-				"--lower-limit=0",
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
@@ -1506,15 +1446,7 @@ sub bind_cgi {
 			}
 		}
 
-		undef(@riglim);
-		if(trim($rigid[6]) eq 1) {
-			push(@riglim, "--upper-limit=" . trim($limit[6]));
-		} else {
-			if(trim($rigid[6]) eq 2) {
-				push(@riglim, "--upper-limit=" . trim($limit[6]));
-				push(@riglim, "--rigid");
-			}
-		}
+		@riglim = @{setup_riglim($rigid[6], $limit[6])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
@@ -1541,7 +1473,6 @@ sub bind_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
-			"--lower-limit=0",
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -1563,7 +1494,7 @@ sub bind_cgi {
 				"--vertical-label=Tasks",
 				"--width=$width",
 				"--height=$height",
-				"--lower-limit=0",
+				@riglim,
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
