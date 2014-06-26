@@ -68,66 +68,66 @@ sub net_init {
 		eval {
 			RRDs::create($rrd,
 				"--step=60",
-				"DS:net0_bytes_in:COUNTER:120:0:U",
-				"DS:net0_bytes_out:COUNTER:120:0:U",
-				"DS:net0_packs_in:COUNTER:120:0:U",
-				"DS:net0_packs_out:COUNTER:120:0:U",
-				"DS:net0_error_in:COUNTER:120:0:U",
-				"DS:net0_error_out:COUNTER:120:0:U",
-				"DS:net1_bytes_in:COUNTER:120:0:U",
-				"DS:net1_bytes_out:COUNTER:120:0:U",
-				"DS:net1_packs_in:COUNTER:120:0:U",
-				"DS:net1_packs_out:COUNTER:120:0:U",
-				"DS:net1_error_in:COUNTER:120:0:U",
-				"DS:net1_error_out:COUNTER:120:0:U",
-				"DS:net2_bytes_in:COUNTER:120:0:U",
-				"DS:net2_bytes_out:COUNTER:120:0:U",
-				"DS:net2_packs_in:COUNTER:120:0:U",
-				"DS:net2_packs_out:COUNTER:120:0:U",
-				"DS:net2_error_in:COUNTER:120:0:U",
-				"DS:net2_error_out:COUNTER:120:0:U",
-				"DS:net3_bytes_in:COUNTER:120:0:U",
-				"DS:net3_bytes_out:COUNTER:120:0:U",
-				"DS:net3_packs_in:COUNTER:120:0:U",
-				"DS:net3_packs_out:COUNTER:120:0:U",
-				"DS:net3_error_in:COUNTER:120:0:U",
-				"DS:net3_error_out:COUNTER:120:0:U",
-				"DS:net4_bytes_in:COUNTER:120:0:U",
-				"DS:net4_bytes_out:COUNTER:120:0:U",
-				"DS:net4_packs_in:COUNTER:120:0:U",
-				"DS:net4_packs_out:COUNTER:120:0:U",
-				"DS:net4_error_in:COUNTER:120:0:U",
-				"DS:net4_error_out:COUNTER:120:0:U",
-				"DS:net5_bytes_in:COUNTER:120:0:U",
-				"DS:net5_bytes_out:COUNTER:120:0:U",
-				"DS:net5_packs_in:COUNTER:120:0:U",
-				"DS:net5_packs_out:COUNTER:120:0:U",
-				"DS:net5_error_in:COUNTER:120:0:U",
-				"DS:net5_error_out:COUNTER:120:0:U",
-				"DS:net6_bytes_in:COUNTER:120:0:U",
-				"DS:net6_bytes_out:COUNTER:120:0:U",
-				"DS:net6_packs_in:COUNTER:120:0:U",
-				"DS:net6_packs_out:COUNTER:120:0:U",
-				"DS:net6_error_in:COUNTER:120:0:U",
-				"DS:net6_error_out:COUNTER:120:0:U",
-				"DS:net7_bytes_in:COUNTER:120:0:U",
-				"DS:net7_bytes_out:COUNTER:120:0:U",
-				"DS:net7_packs_in:COUNTER:120:0:U",
-				"DS:net7_packs_out:COUNTER:120:0:U",
-				"DS:net7_error_in:COUNTER:120:0:U",
-				"DS:net7_error_out:COUNTER:120:0:U",
-				"DS:net8_bytes_in:COUNTER:120:0:U",
-				"DS:net8_bytes_out:COUNTER:120:0:U",
-				"DS:net8_packs_in:COUNTER:120:0:U",
-				"DS:net8_packs_out:COUNTER:120:0:U",
-				"DS:net8_error_in:COUNTER:120:0:U",
-				"DS:net8_error_out:COUNTER:120:0:U",
-				"DS:net9_bytes_in:COUNTER:120:0:U",
-				"DS:net9_bytes_out:COUNTER:120:0:U",
-				"DS:net9_packs_in:COUNTER:120:0:U",
-				"DS:net9_packs_out:COUNTER:120:0:U",
-				"DS:net9_error_in:COUNTER:120:0:U",
-				"DS:net9_error_out:COUNTER:120:0:U",
+				"DS:net0_bytes_in:GAUGE:120:0:U",
+				"DS:net0_bytes_out:GAUGE:120:0:U",
+				"DS:net0_packs_in:GAUGE:120:0:U",
+				"DS:net0_packs_out:GAUGE:120:0:U",
+				"DS:net0_error_in:GAUGE:120:0:U",
+				"DS:net0_error_out:GAUGE:120:0:U",
+				"DS:net1_bytes_in:GAUGE:120:0:U",
+				"DS:net1_bytes_out:GAUGE:120:0:U",
+				"DS:net1_packs_in:GAUGE:120:0:U",
+				"DS:net1_packs_out:GAUGE:120:0:U",
+				"DS:net1_error_in:GAUGE:120:0:U",
+				"DS:net1_error_out:GAUGE:120:0:U",
+				"DS:net2_bytes_in:GAUGE:120:0:U",
+				"DS:net2_bytes_out:GAUGE:120:0:U",
+				"DS:net2_packs_in:GAUGE:120:0:U",
+				"DS:net2_packs_out:GAUGE:120:0:U",
+				"DS:net2_error_in:GAUGE:120:0:U",
+				"DS:net2_error_out:GAUGE:120:0:U",
+				"DS:net3_bytes_in:GAUGE:120:0:U",
+				"DS:net3_bytes_out:GAUGE:120:0:U",
+				"DS:net3_packs_in:GAUGE:120:0:U",
+				"DS:net3_packs_out:GAUGE:120:0:U",
+				"DS:net3_error_in:GAUGE:120:0:U",
+				"DS:net3_error_out:GAUGE:120:0:U",
+				"DS:net4_bytes_in:GAUGE:120:0:U",
+				"DS:net4_bytes_out:GAUGE:120:0:U",
+				"DS:net4_packs_in:GAUGE:120:0:U",
+				"DS:net4_packs_out:GAUGE:120:0:U",
+				"DS:net4_error_in:GAUGE:120:0:U",
+				"DS:net4_error_out:GAUGE:120:0:U",
+				"DS:net5_bytes_in:GAUGE:120:0:U",
+				"DS:net5_bytes_out:GAUGE:120:0:U",
+				"DS:net5_packs_in:GAUGE:120:0:U",
+				"DS:net5_packs_out:GAUGE:120:0:U",
+				"DS:net5_error_in:GAUGE:120:0:U",
+				"DS:net5_error_out:GAUGE:120:0:U",
+				"DS:net6_bytes_in:GAUGE:120:0:U",
+				"DS:net6_bytes_out:GAUGE:120:0:U",
+				"DS:net6_packs_in:GAUGE:120:0:U",
+				"DS:net6_packs_out:GAUGE:120:0:U",
+				"DS:net6_error_in:GAUGE:120:0:U",
+				"DS:net6_error_out:GAUGE:120:0:U",
+				"DS:net7_bytes_in:GAUGE:120:0:U",
+				"DS:net7_bytes_out:GAUGE:120:0:U",
+				"DS:net7_packs_in:GAUGE:120:0:U",
+				"DS:net7_packs_out:GAUGE:120:0:U",
+				"DS:net7_error_in:GAUGE:120:0:U",
+				"DS:net7_error_out:GAUGE:120:0:U",
+				"DS:net8_bytes_in:GAUGE:120:0:U",
+				"DS:net8_bytes_out:GAUGE:120:0:U",
+				"DS:net8_packs_in:GAUGE:120:0:U",
+				"DS:net8_packs_out:GAUGE:120:0:U",
+				"DS:net8_error_in:GAUGE:120:0:U",
+				"DS:net8_error_out:GAUGE:120:0:U",
+				"DS:net9_bytes_in:GAUGE:120:0:U",
+				"DS:net9_bytes_out:GAUGE:120:0:U",
+				"DS:net9_packs_in:GAUGE:120:0:U",
+				"DS:net9_packs_out:GAUGE:120:0:U",
+				"DS:net9_error_in:GAUGE:120:0:U",
+				"DS:net9_error_out:GAUGE:120:0:U",
 				"RRA:AVERAGE:0.5:1:1440",
 				"RRA:AVERAGE:0.5:30:336",
 				"RRA:AVERAGE:0.5:60:744",
@@ -159,6 +159,19 @@ sub net_init {
 		}
 	}
 
+	# Since 3.6.0 all DS changed from COUNTER to GAUGE
+	for($n = 0; $n < 10; $n++) {
+		RRDs::tune($rrd,
+			"--data-source-type=net" . $n . "_bytes_in:GAUGE",
+			"--data-source-type=net" . $n . "_bytes_out:GAUGE",
+			"--data-source-type=net" . $n . "_packs_in:GAUGE",
+			"--data-source-type=net" . $n . "_packs_out:GAUGE",
+			"--data-source-type=net" . $n . "_error_in:GAUGE",
+			"--data-source-type=net" . $n . "_error_out:GAUGE",
+		);
+	}
+
+	$config->{net_hist} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
 }
@@ -169,23 +182,18 @@ sub net_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $net = $config->{net};
 
-	my @net_bytes_in = (0) x 10;
-	my @net_bytes_out = (0) x 10;
-	my @net_packs_in = (0) x 10;
-	my @net_packs_out = (0) x 10;
-	my @net_error_in = (0) x 10;
-	my @net_error_out = (0) x 10;
-
 	my $n;
 	my $rrdata = "N";
 
 	for($n = 0; $n < 10 ; $n++) {
-		$net_bytes_in[$n] = 0;
-		$net_bytes_out[$n] = 0;
-		$net_packs_in[$n] = 0;
-		$net_packs_out[$n] = 0;
-		$net_error_in[$n] = 0;
-		$net_error_out[$n] = 0;
+		my ($bytes_in, $bi) = (0, 0);
+		my ($bytes_out, $bo) = (0, 0);
+		my ($packs_in, $pi) = (0, 0);
+		my ($packs_out, $po) = (0, 0);
+		my ($error_in, $ei) = (0, 0);
+		my ($error_out, $eo) = (0, 0);
+		my $str;
+
 		if($n < scalar(my @nl = split(',', $net->{list}))) {
 			$nl[$n] = trim($nl[$n]);
 			if($config->{os} eq "Linux") {
@@ -193,7 +201,7 @@ sub net_update {
 				while(<IN>) {
 					my ($dev, $data) = split(':', $_);
 					if(trim($dev) eq $nl[$n]) {
-						($net_bytes_in[$n], $net_packs_in[$n], $net_error_in[$n], undef, undef, undef, undef, undef, $net_bytes_out[$n], $net_packs_out[$n], $net_error_out[$n]) = split(' ', $data);
+						($bi, $pi, $ei, undef, undef, undef, undef, undef, $bo, $po, $eo) = split(' ', $data);
 						last;
 					}
 				}
@@ -204,9 +212,9 @@ sub net_update {
 					if(/Link/ && /$nl[$n]/) {
 						# Idrop column added in 8.0
 						if($config->{kernel} gt "7.2") {
-							(undef, undef, undef, undef, $net_packs_in[$n], $net_error_in[$n], undef, $net_bytes_in[$n], $net_packs_out[$n], $net_error_out[$n], $net_bytes_out[$n]) = split(' ', $_);
+							(undef, undef, undef, undef, $pi, $ei, undef, $bi, $po, $eo, $bo) = split(' ', $_);
 						} else {
-							(undef, undef, undef, undef, $net_packs_in[$n], $net_error_in[$n], $net_bytes_in[$n], $net_packs_out[$n], $net_error_out[$n], $net_bytes_out[$n]) = split(' ', $_);
+							(undef, undef, undef, undef, $pi, $ei, $bi, $po, $eo, $bo) = split(' ', $_);
 						}
 						last;
 					}
@@ -216,24 +224,57 @@ sub net_update {
 				open(IN, "netstat -nibd |");
 				while(<IN>) {
 					if(/Link/ && /^$nl[$n]/) {
-						(undef, undef, undef, undef, $net_bytes_in[$n], $net_bytes_out[$n]) = split(' ', $_);
-						$net_packs_in[$n] = 0;
-						$net_error_in[$n] = 0;
-						$net_packs_out[$n] = 0;
-						$net_error_out[$n] = 0;
+						(undef, undef, undef, undef, $bi, $bo) = split(' ', $_);
+						$pi = 0;
+						$ei = 0;
+						$po = 0;
+						$eo = 0;
 						last;
 					}
 				}
 				close(IN);
 			}
 		}
-		chomp($net_bytes_in[$n],
-			$net_bytes_out[$n],
-			$net_packs_in[$n],
-			$net_packs_out[$n],
-			$net_error_in[$n],
-			$net_error_out[$n]);
-		$rrdata .= ":$net_bytes_in[$n]:$net_bytes_out[$n]:$net_packs_in[$n]:$net_packs_out[$n]:$net_error_in[$n]:$net_error_out[$n]";
+		chomp($bi, $bo, $pi, $po, $ei, $eo);
+
+		$str = $n . "_bytes_in";
+		$bytes_in = $bi - ($config->{net_hist}->{$str} || 0);
+		$bytes_in = 0 unless $bytes_in != $bi;
+		$config->{net_hist}->{$str} = $bi;
+		$bytes_in /= 60;
+
+		$str = $n . "_bytes_out";
+		$bytes_out = $bo - ($config->{net_hist}->{$str} || 0);
+		$bytes_out = 0 unless $bytes_out != $bo;
+		$config->{net_hist}->{$str} = $bo;
+		$bytes_out /= 60;
+
+		$str = $n . "_packs_in";
+		$packs_in = $pi - ($config->{net_hist}->{$str} || 0);
+		$packs_in = 0 unless $packs_in != $pi;
+		$config->{net_hist}->{$str} = $pi;
+		$packs_in /= 60;
+
+		$str = $n . "_packs_out";
+		$packs_out = $po - ($config->{net_hist}->{$str} || 0);
+		$packs_out = 0 unless $packs_out != $po;
+		$config->{net_hist}->{$str} = $po;
+		$packs_out /= 60;
+
+		$str = $n . "_error_in";
+		$error_in = $ei - ($config->{net_hist}->{$str} || 0);
+		$error_in = 0 unless $error_in != $ei;
+		$config->{net_hist}->{$str} = $ei;
+		$error_in /= 60;
+
+		$str = $n . "_error_out";
+		$error_out = $eo - ($config->{net_hist}->{$str} || 0);
+		$error_out = 0 unless $error_out != $eo;
+		$config->{net_hist}->{$str} = $eo;
+		$error_out /= 60;
+
+
+		$rrdata .= ":$bytes_in:$bytes_out:$packs_in:$packs_out:$error_in:$error_out";
 	}
 
 	RRDs::update($rrd, $rrdata);
