@@ -147,6 +147,15 @@ All the configuration files in there will be loaded in alphabetic order, so the 
 Default value: \fI/etc/monitorix/conf.d\fP
 .RE
 .P
+.BI ip_default_table
+.RS
+This option will define in which table Monitorix will put all \fIiptables\fP rules for network traffic accounting monitoring. It only works on Linux.
+.P
+Only the graphs \fIport\fP, \fInginx\fP and \fItraffacct\fP are affected by this option.
+.P
+Default value: \fIfilter\fP
+.RE
+.P
 .BI base_dir
 .RS
 This is the absolute path to the directory where all the web elements are located:
