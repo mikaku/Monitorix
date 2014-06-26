@@ -342,7 +342,7 @@ sub flush_accounting_rules {
 				}
 			}
 			foreach(@names) {
-				system("iptables -X $_");
+				system("iptables -t $table -X $_");
 			}
 		}
 		if(open(IN, "iptables -t $table -nxvL FORWARD --line-numbers |")) {
