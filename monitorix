@@ -530,6 +530,7 @@ if(open(OUT, "> " . $config{base_dir} . "/cgi/monitorix.conf.path")) {
 	logger("Unable to create the file '$config{base_dir}/cgi/monitorix.conf.path'. $!");
 }
 
+$config{ip_default_table} = "filter" if !$config{ip_default_table};
 flush_accounting_rules(\%config, $options{d});
 
 logger("Initializing graphs.");

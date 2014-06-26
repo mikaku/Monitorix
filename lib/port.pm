@@ -45,6 +45,8 @@ sub port_init {
 	my @max;
 	my @last;
 
+	my $table = $config->{ip_default_table};
+
 	if(-e $rrd) {
 		$info = RRDs::info($rrd);
 		for my $key (keys %$info) {
@@ -140,14 +142,14 @@ sub port_init {
 				my $p = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[1])) || "all";
 				my $conn = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[2]));
 				if($conn eq "in" || $conn eq "in/out") {
-					system("iptables -N monitorix_IN_$n 2>/dev/null");
-					system("iptables -I INPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
-					system("iptables -I OUTPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
+					system("iptables -t $table -N monitorix_IN_$n 2>/dev/null");
+					system("iptables -t $table -I INPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
+					system("iptables -t $table -I OUTPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
 				}
 				if($conn eq "out" || $conn eq "in/out") {
-					system("iptables -N monitorix_OUT_$n 2>/dev/null");
-					system("iptables -I INPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
-					system("iptables -I OUTPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
+					system("iptables -t $table -N monitorix_OUT_$n 2>/dev/null");
+					system("iptables -t $table -I INPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
+					system("iptables -t $table -I OUTPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
 				}
 				if($conn ne "in" && $conn ne "out" && $conn ne "in/out") {
 					logger("$myself: Invalid connection type '$conn'; must be 'in', 'out' or 'in/out'.");
@@ -186,12 +188,13 @@ sub port_update {
 	my @i_out;
 	my @o_in;
 	my @o_out;
+	my $table = $config->{ip_default_table};
 
 	my $n;
 	my $rrdata = "N";
 
 	if($config->{os} eq "Linux") {
-		open(IN, "iptables -nxvL INPUT |");
+		open(IN, "iptables -t $table -nxvL INPUT |");
 		while(<IN>) {
 			for($n = 0; $n < $port->{max}; $n++) {
 				$i_in[$n] = 0 unless $i_in[$n];
@@ -215,7 +218,7 @@ sub port_update {
 			}
 		}
 		close(IN);
-		open(IN, "iptables -nxvL OUTPUT |");
+		open(IN, "iptables -t $table -nxvL OUTPUT |");
 		while(<IN>) {
 			for($n = 0; $n < $port->{max}; $n++) {
 				$o_out[$n] = 0 unless $o_out[$n];

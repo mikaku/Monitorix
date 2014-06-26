@@ -47,6 +47,8 @@ sub traffacct_init {
 	my @max;
 	my @last;
 
+	my $table = $config->{ip_default_table};
+
 	if(!grep {$_ eq $config->{os}} ("Linux")) {
 		logger("$myself is not supported yet by your operating system ($config->{os}.");
 		return;
@@ -144,14 +146,14 @@ sub traffacct_init {
 					$ip = inet_ntoa((gethostbyname($name))[4]);
 					$ip = $ip . "/32";
 				}
-				open(IN, "iptables -nxvL monitorix_daily_$name 2>/dev/null |");
+				open(IN, "iptables -t $table -nxvL monitorix_daily_$name 2>/dev/null |");
 				my @data = <IN>;
 				close(IN);
 				if(!scalar(@data)) {
-					system("iptables -N monitorix_daily_$name");
-					system("iptables -I FORWARD -j monitorix_daily_$name");
-					system("iptables -A monitorix_daily_$name -s $ip -d 0/0 -o $config->{net}->{gateway}");
-					system("iptables -A monitorix_daily_$name -s 0/0 -d $ip -i $config->{net}->{gateway}");
+					system("iptables -t $table -N monitorix_daily_$name");
+					system("iptables -t $table -I FORWARD -j monitorix_daily_$name");
+					system("iptables -t $table -A monitorix_daily_$name -s $ip -d 0/0 -o $config->{net}->{gateway}");
+					system("iptables -t $table -A monitorix_daily_$name -s 0/0 -d $ip -i $config->{net}->{gateway}");
 				}
 			}
 		}
@@ -177,6 +179,7 @@ sub traffacct_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $traffacct = $config->{traffacct};
 
+	my $table = $config->{ip_default_table};
 	my @in;
 	my @out;
 
@@ -198,7 +201,7 @@ sub traffacct_update {
 				$ip = inet_ntoa((gethostbyname($name))[4]);
 			}
 			$ip =~ s/\/\d+//;
-			open(IN, "iptables -nxvL monitorix_daily_$name |");
+			open(IN, "iptables -t $table -nxvL monitorix_daily_$name |");
 			$in[$n] = 0 unless $in[$n];
 			$out[$n] = 0 unless $out[$n];
 			while(<IN>) {

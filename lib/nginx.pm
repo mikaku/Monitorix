@@ -44,6 +44,8 @@ sub nginx_init {
 	my @max;
 	my @last;
 
+	my $table = $config->{ip_default_table};
+
 	if(-e $rrd) {
 		$info = RRDs::info($rrd);
 		for my $key (keys %$info) {
@@ -114,9 +116,9 @@ sub nginx_init {
 	}
 
 	if($config->{os} eq "Linux") {
-		system("iptables -N monitorix_nginx_IN 2>/dev/null");
-		system("iptables -I INPUT -p tcp --sport 1024:65535 --dport $nginx->{port} -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_nginx_IN -c 0 0");
-		system("iptables -I OUTPUT -p tcp --sport $nginx->{port} --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_nginx_IN -c 0 0");
+		system("iptables -t $table -N monitorix_nginx_IN 2>/dev/null");
+		system("iptables -t $table -I INPUT -p tcp --sport 1024:65535 --dport $nginx->{port} -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_nginx_IN -c 0 0");
+		system("iptables -t $table -I OUTPUT -p tcp --sport $nginx->{port} --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_nginx_IN -c 0 0");
 	}
 	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 		system("ipfw delete $nginx->{rule} 2>/dev/null");
@@ -135,6 +137,7 @@ sub nginx_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $nginx = $config->{nginx};
 
+	my $table = $config->{ip_default_table};
 	my $reqs = 0;
 	my $tot = 0;
 	my $reads = 0;
@@ -182,7 +185,7 @@ sub nginx_update {
 
 	if($config->{os} eq "Linux") {
 		my $val;
-		open(IN, "iptables -nxvL INPUT |");
+		open(IN, "iptables -t $table -nxvL INPUT |");
 		while(<IN>) {
 			if(/ monitorix_nginx_IN /) {
 				(undef, $val) = split(' ', $_);
@@ -195,7 +198,7 @@ sub nginx_update {
 			}
 		}
 		close(IN);
-		open(IN, "iptables -nxvL OUTPUT |");
+		open(IN, "iptables -t $table -nxvL OUTPUT |");
 		while(<IN>) {
 			if(/ monitorix_nginx_IN /) {
 				(undef, $val) = split(' ', $_);

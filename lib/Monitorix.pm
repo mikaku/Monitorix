@@ -302,6 +302,7 @@ sub get_ati_data {
 # flushes out all Monitorix iptables/ipfw rules
 sub flush_accounting_rules {
 	my ($config, $debug) = @_;
+	my $table = $config->{ip_default_table};
 
 	if($config->{os} eq "Linux") {
 		my $num = 0;
@@ -309,7 +310,7 @@ sub flush_accounting_rules {
 		logger("Flushing out iptables rules.") if $debug;
 		{
 			my @names;
-			if(open(IN, "iptables -nxvL INPUT --line-numbers |")) {
+			if(open(IN, "iptables -t $table -nxvL INPUT --line-numbers |")) {
 				my @rules;
 				while(<IN>) {
 					my ($rule, undef, undef, $name) = split(' ', $_);
@@ -321,11 +322,11 @@ sub flush_accounting_rules {
 				close(IN);
 				@rules = reverse(@rules);
 				foreach(@rules) {
-					system("iptables -D INPUT $_");
+					system("iptables -t $table -D INPUT $_");
 					$num++;
 				}
 			}
-			if(open(IN, "iptables -nxvL OUTPUT --line-numbers |")) {
+			if(open(IN, "iptables -t $table -nxvL OUTPUT --line-numbers |")) {
 				my @rules;
 				while(<IN>) {
 					my ($rule, undef, undef, $name) = split(' ', $_);
@@ -336,7 +337,7 @@ sub flush_accounting_rules {
 				close(IN);
 				@rules = reverse(@rules);
 				foreach(@rules) {
-					system("iptables -D OUTPUT $_");
+					system("iptables -t $table -D OUTPUT $_");
 					$num++;
 				}
 			}
@@ -344,7 +345,7 @@ sub flush_accounting_rules {
 				system("iptables -X $_");
 			}
 		}
-		if(open(IN, "iptables -nxvL FORWARD --line-numbers |")) {
+		if(open(IN, "iptables -t $table -nxvL FORWARD --line-numbers |")) {
 			my @rules;
 			my @names;
 			while(<IN>) {
@@ -357,12 +358,12 @@ sub flush_accounting_rules {
 			close(IN);
 			@rules = reverse(@rules);
 			foreach(@rules) {
-				system("iptables -D FORWARD $_");
+				system("iptables -t $table -D FORWARD $_");
 				$num++;
 			}
 			foreach(@names) {
-				system("iptables -F $_");
-				system("iptables -X $_");
+				system("iptables -t $table -F $_");
+				system("iptables -t $table -X $_");
 			}
 		}
 		logger("$num iptables rules have been flushed.") if $debug;
