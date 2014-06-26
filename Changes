@@ -14,6 +14,8 @@
   [#49]
 - Improved in all graphs the 'limit' and 'rigid' functionality and reduced a lot
   of redundant code.
+- Changed all DST from COUNTER to GAUGE in 'net' module to avoid unexpected huge
+  peaks.
 - Fixed regexp that prevented collecting LOADPCT and ITEMP values in 'apcupsd'
   module.
 	(thanks to Patrick Fallberg, patrick AT fallberg.net)
