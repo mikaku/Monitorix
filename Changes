@@ -12,6 +12,9 @@
 	(suggested by V1ru535, admin AT mynet.fr)
 - Added support for relay-only MTA (for example Nullmailer) in 'emailreports'.
   [#49]
+- Added the new option 'ip_default_table' to define in which table Monitorix
+  will put all iptables rules for network traffic accounting monitoring.
+	(suggested by Russell Morris, rmorris AT rkmorris.us)
 - Improved in all graphs the 'limit' and 'rigid' functionality and reduced a lot
   of redundant code.
 - Changed all DST from COUNTER to GAUGE in 'net' module to avoid unexpected huge
