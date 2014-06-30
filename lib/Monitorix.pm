@@ -146,6 +146,11 @@ sub httpd_setup {
 		if(! -r ($config->{httpd_builtin}->{auth}->{htpasswd} || "")) {
 			logger("$myself: '$config->{httpd_builtin}->{auth}->{htpasswd}' $!");
 		}
+	} else {
+		if(!grep {$_ eq $config->{httpd_builtin}->{host}}
+			("localhost", "127.0.0.1")) {
+			logger("WARNING: the built-in HTTP server has Authentication disabled.");
+		}
 	}
 
 	my $server = HTTPServer->new();
