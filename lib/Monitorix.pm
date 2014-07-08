@@ -149,7 +149,7 @@ sub httpd_setup {
 	} else {
 		if(!grep {$_ eq $config->{httpd_builtin}->{host}}
 			("localhost", "127.0.0.1")) {
-			logger("WARNING: the built-in HTTP server has Authentication disabled.");
+			logger("WARNING: the built-in HTTP server has authentication disabled.");
 		}
 	}
 
