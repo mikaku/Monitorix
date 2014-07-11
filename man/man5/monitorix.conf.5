@@ -1050,7 +1050,15 @@ This is a list of groups of processes that you want to monitor. Each group will 
 .P
 WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIprocess.rrd\fP file accordingly, removing all historical data.
 .P
-An example would be:
+Monitorix uses the following command to find the processes listed in this option:
+.P
+.RS
+# ps -eo pid,comm,command
+.P
+.RE
+So please, use also the same command to discover the exact names of the processes you want to monitor.
+.P
+An example of this option would be:
 .P
 .RS
 <list>
