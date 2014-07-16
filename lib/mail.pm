@@ -86,11 +86,11 @@ sub mail_init {
 				"DS:mail_held:GAUGE:120:0:U",
 				"DS:mail_forwrd:GAUGE:120:0:U",
 				"DS:mail_queues:GAUGE:120:0:U",
-				"DS:mail_val01:COUNTER:120:0:U",
-				"DS:mail_val02:COUNTER:120:0:U",
-				"DS:mail_val03:COUNTER:120:0:U",
-				"DS:mail_val04:COUNTER:120:0:U",
-				"DS:mail_val05:COUNTER:120:0:U",
+				"DS:mail_val01:GAUGE:120:0:U",
+				"DS:mail_val02:GAUGE:120:0:U",
+				"DS:mail_val03:GAUGE:120:0:U",
+				"DS:mail_val04:GAUGE:120:0:U",
+				"DS:mail_val05:GAUGE:120:0:U",
 				"DS:mail_val06:GAUGE:120:0:U",
 				"DS:mail_val07:GAUGE:120:0:U",
 				"DS:mail_val08:GAUGE:120:0:U",
@@ -139,6 +139,15 @@ sub mail_init {
 		}
 	}
 
+	# Since 3.6.0 all DS changed from COUNTER to GAUGE
+	RRDs::tune($rrd,
+		"--data-source-type=mail_val01:GAUGE",
+		"--data-source-type=mail_val02:GAUGE",
+		"--data-source-type=mail_val03:GAUGE",
+		"--data-source-type=mail_val04:GAUGE",
+		"--data-source-type=mail_val05:GAUGE",
+	);
+
 	$config->{mail_hist} = 0;
 	$config->{mail_hist_alert1} = 0;
 	$config->{mail_hist_alert2} = 0;
@@ -167,12 +176,17 @@ sub mail_update {
 	my $held;
 	my $forwrd;
 	my $queues;
+	my $spf_none;
+	my $spf_pass;
+	my $spf_softfail;
+	my $spf_fail;
 	my $gl_records;
 	my $gl_greylisted;
 	my $gl_whitelisted;
-	my @mta_h = (0) x 15;
 	my @mta = (0) x 15;
 	my @gen = (0) x 10;
+	my @mta_h = (0) x 15;
+	my @gen_h = (0) x 10;
 
 	my $n;
 	my $mail_log_seekpos;
@@ -184,7 +198,7 @@ sub mail_update {
 	my $rrdata = "N";
 
 	# Read last MAIL data from historic
-	($mail_log_seekpos, $sa_log_seekpos, $clamav_log_seekpos, @mta_h[0..15-1], @gen[0..10-1]) = split(';', $config->{mail_hist});
+	($mail_log_seekpos, $sa_log_seekpos, $clamav_log_seekpos, @mta_h[0..15-1], @gen_h[0..10-1]) = split(';', $config->{mail_hist});
 	$mail_log_seekpos = defined($mail_log_seekpos) ? int($mail_log_seekpos) : 0;
 	$sa_log_seekpos = defined($sa_log_seekpos) ? int($sa_log_seekpos) : 0;
 	$clamav_log_seekpos = defined($clamav_log_seekpos) ? int($clamav_log_seekpos) : 0;
@@ -323,6 +337,7 @@ sub mail_update {
 	}
 
 	$spam = $virus = 0;
+	$spf_none = $spf_pass = $spf_softfail = $spf_fail = 0;
 	if(-r $config->{mail_log}) {
 		my $date = strftime("%b %e", localtime);
 		open(IN, $config->{mail_log});
@@ -353,6 +368,18 @@ sub mail_update {
 			}
 			if(/^$date/ && /amavis\[.* INFECTED|amavis\[.* BANNED/) {
 				$virus++;
+			}
+			if(/^$date/ && / SPF none/) {
+				$spf_none++;
+			}
+			if(/^$date/ && / SPF pass/) {
+				$spf_pass++;
+			}
+			if(/^$date/ && / SPF softfail/) {
+				$spf_softfail++;
+			}
+			if(/^$date/ && / SPF fail/) {
+				$spf_fail++;
 			}
 		}
 		close(IN);
@@ -475,18 +502,30 @@ sub mail_update {
 	$mta[14] = int($queues) || 0;
 	$mta_h[14] = 0;
 
-	$gen[0] = 0;
-	$gen[1] = 0;
-	$gen[2] = 0;
-	$gen[3] = 0;
-	$gen[4] = 0;
-	$gen[5] = 0;
-	$gen[6] = int($gl_records) || 0;
-	$gen[7] = int($gl_greylisted) || 0;
-	$gen[8] = int($gl_whitelisted) || 0;
-	$gen[9] = 0;
+	# avoid initial peak
+	$gen[0] = int($spf_none) unless !$gen_h[0];
+	$gen_h[0] = int($spf_none) unless $gen_h[0];
 
-	$config->{mail_hist} = join(";", $mail_log_size, $sa_log_size, $clamav_log_size, @mta_h, @gen);
+	# avoid initial peak
+	$gen[1] = int($spf_pass) unless !$gen_h[1];
+	$gen_h[1] = int($spf_pass) unless $gen_h[1];
+
+	# avoid initial peak
+	$gen[2] = int($spf_softfail) unless !$gen_h[2];
+	$gen_h[2] = int($spf_softfail) unless $gen_h[2];
+
+	# avoid initial peak
+	$gen[3] = int($spf_fail) unless !$gen_h[3];
+	$gen_h[3] = int($spf_fail) unless $gen_h[3];
+
+	$gen_h[4] = $gen[4] = 0;
+	$gen_h[5] = $gen[5] = 0;
+	$gen_h[6] = $gen[6] = int($gl_records) || 0;
+	$gen_h[7] = $gen[7] = int($gl_greylisted) || 0;
+	$gen_h[8] = $gen[8] = int($gl_whitelisted) || 0;
+	$gen_h[9] = $gen[9] = 0;
+
+	$config->{mail_hist} = join(";", $mail_log_size, $sa_log_size, $clamav_log_size, @mta_h, @gen_h);
 	for($n = 0; $n < 15; $n++) {
 		$rrdata .= ":" . $mta[$n];
 	}
@@ -631,22 +670,26 @@ sub mail_cgi {
 	my $PNG3 = $u . $package . "3." . $tf->{when} . ".png";
 	my $PNG4 = $u . $package . "4." . $tf->{when} . ".png";
 	my $PNG5 = $u . $package . "5." . $tf->{when} . ".png";
+	my $PNG6 = $u . $package . "6." . $tf->{when} . ".png";
 	my $PNG1z = $u . $package . "1z." . $tf->{when} . ".png";
 	my $PNG2z = $u . $package . "2z." . $tf->{when} . ".png";
 	my $PNG3z = $u . $package . "3z." . $tf->{when} . ".png";
 	my $PNG4z = $u . $package . "4z." . $tf->{when} . ".png";
 	my $PNG5z = $u . $package . "5z." . $tf->{when} . ".png";
+	my $PNG6z = $u . $package . "6z." . $tf->{when} . ".png";
 	unlink ("$PNG_DIR" . "$PNG1",
 		"$PNG_DIR" . "$PNG2",
 		"$PNG_DIR" . "$PNG3",
 		"$PNG_DIR" . "$PNG4",
-		"$PNG_DIR" . "$PNG5");
+		"$PNG_DIR" . "$PNG5",
+		"$PNG_DIR" . "$PNG6");
 	if(lc($config->{enable_zoom}) eq "y") {
 		unlink ("$PNG_DIR" . "$PNG1z",
 			"$PNG_DIR" . "$PNG2z",
 			"$PNG_DIR" . "$PNG3z",
 			"$PNG_DIR" . "$PNG4z",
-			"$PNG_DIR" . "$PNG5z");
+			"$PNG_DIR" . "$PNG5z",
+			"$PNG_DIR" . "$PNG6z");
 	}
 
 	if($title) {
@@ -696,6 +739,9 @@ sub mail_cgi {
 		push(@tmp, "LINE1:virus#EE00EE");
 		push(@tmp, "LINE1:n_delvd#0000EE");
 		push(@tmp, "LINE1:n_out#00EEEE");
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
 
 		push(@tmpz, "AREA:in#44EE44:In Connections");
 		push(@tmpz, "AREA:rejtd#EE4444:Rejected");
@@ -766,6 +812,7 @@ sub mail_cgi {
 		push(@tmp, "LINE1:held#00EE00");
 		push(@tmp, "LINE1:n_forwrd#00EEEE");
 		push(@tmp, "LINE1:n_delvd#0000EE");
+		push(@tmp, "COMMENT: \\n");
 
 		push(@tmpz, "AREA:rejtd#EE4444:Rejected");
 		push(@tmpz, "AREA:recvd#448844:Received");
@@ -835,6 +882,7 @@ sub mail_cgi {
 		"CDEF:n_forwrd=forwrd,-1,*",
 		"CDEF:n_delvd=delvd,-1,*",
 		"CDEF:n_out=out,-1,*",
+		"COMMENT: \\n",
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG1: $err\n") if $err;
@@ -945,7 +993,9 @@ sub mail_cgi {
 		@CDEF,
 		"CDEF:K_in=B_in,1024,/",
 		"CDEF:K_out=B_out,1024,/",
-		@tmp);
+		"COMMENT: \\n",
+		@tmp,
+		"COMMENT: \\n");
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
@@ -1025,10 +1075,7 @@ sub mail_cgi {
 		"DEF:queued=$rrd:mail_queued:AVERAGE",
 		"CDEF:allvalues=queued",
 		@CDEF,
-		"COMMENT: \\n",
-		@tmp,
-		"COMMENT: \\n",
-		"COMMENT: \\n");
+		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
@@ -1103,10 +1150,7 @@ sub mail_cgi {
 		"CDEF:allvalues=queues",
 		@CDEF,
 		"CDEF:K_queues=queues,1024,/",
-		"COMMENT: \\n",
-		@tmp,
-		"COMMENT: \\n",
-		"COMMENT: \\n");
+		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG4: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
@@ -1146,27 +1190,22 @@ sub mail_cgi {
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
-	push(@tmp, "AREA:greylisted#4444EE:Greylisted");
-	push(@tmp, "GPRINT:greylisted:LAST:           Current\\: %5.0lf\\n");
-	push(@tmp, "AREA:whitelisted#44EEEE:Whitelisted");
-	push(@tmp, "GPRINT:whitelisted:LAST:          Current\\: %5.0lf\\n");
-	push(@tmp, "LINE1:greylisted#0000EE");
-	push(@tmp, "LINE1:whitelisted#00EEEE");
-	push(@tmp, "LINE1:records#EE0000:Records");
-	push(@tmp, "GPRINT:records:LAST:              Current\\: %5.0lf\\n");
-	push(@tmpz, "AREA:greylisted#4444EE:Greylisted");
-	push(@tmpz, "AREA:whitelisted#44EEEE:Whitelisted");
-	push(@tmpz, "LINE2:greylisted#0000EE");
-	push(@tmpz, "LINE2:whitelisted#00EEEE");
-	push(@tmpz, "LINE2:records#EE0000:Records");
+	push(@tmp, "LINE2:none#4444EE:None");
+	push(@tmp, "GPRINT:none:LAST:                 Current\\: %5.0lf\\n");
+	push(@tmp, "LINE2:pass#44EE44:Pass");
+	push(@tmp, "GPRINT:pass:LAST:                 Current\\: %5.0lf\\n");
+	push(@tmp, "LINE2:softfail#EEEE44:SoftFail");
+	push(@tmp, "GPRINT:softfail:LAST:             Current\\: %5.0lf\\n");
+	push(@tmp, "LINE2:fail#EE4444:Fail");
+	push(@tmp, "GPRINT:fail:LAST:                 Current\\: %5.0lf\\n");
+	push(@tmpz, "LINE2:none#4444EE:None");
+	push(@tmpz, "LINE2:pass#44EE44:Pass");
+	push(@tmpz, "LINE2:softfail#EEEE44:SoftFail");
+	push(@tmpz, "LINE2:fail#EE4444:Fail");
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
 		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
-	}
-	if(lc($mail->{mta}) eq "postfix") {
-		push(@tmp, "COMMENT: \\n");
-		push(@tmp, "COMMENT: \\n");
 	}
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
@@ -1189,13 +1228,12 @@ sub mail_cgi {
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
-		"DEF:records=$rrd:mail_val07:AVERAGE",
-		"DEF:greylisted=$rrd:mail_val08:AVERAGE",
-		"DEF:whitelisted=$rrd:mail_val09:AVERAGE",
-		"CDEF:allvalues=records,greylisted,whitelisted,+,+",
+		"DEF:none=$rrd:mail_val01:AVERAGE",
+		"DEF:pass=$rrd:mail_val02:AVERAGE",
+		"DEF:softfail=$rrd:mail_val03:AVERAGE",
+		"DEF:fail=$rrd:mail_val04:AVERAGE",
+		"CDEF:allvalues=none,pass,softfail,fail,+,+,+",
 		@CDEF,
-		"COMMENT: \\n",
-		"COMMENT: \\n",
 		@tmp);
 	$err = RRDs::error;
 	print("ERROR: while graphing $PNG_DIR" . "$PNG5: $err\n") if $err;
@@ -1212,10 +1250,11 @@ sub mail_cgi {
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
-			"DEF:records=$rrd:mail_val07:AVERAGE",
-			"DEF:greylisted=$rrd:mail_val08:AVERAGE",
-			"DEF:whitelisted=$rrd:mail_val09:AVERAGE",
-			"CDEF:allvalues=records,greylisted,whitelisted,+,+",
+			"DEF:none=$rrd:mail_val01:AVERAGE",
+			"DEF:pass=$rrd:mail_val02:AVERAGE",
+			"DEF:softfail=$rrd:mail_val03:AVERAGE",
+			"DEF:fail=$rrd:mail_val04:AVERAGE",
+			"CDEF:allvalues=none,pass,softfail,fail,+,+,+",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
@@ -1231,6 +1270,92 @@ sub mail_cgi {
 			}
 		} else {
 			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5 . "'>\n");
+		}
+	}
+
+	@riglim = @{setup_riglim($rigid[5], $limit[5])};
+	undef(@tmp);
+	undef(@tmpz);
+	undef(@CDEF);
+	push(@tmp, "AREA:greylisted#4444EE:Greylisted");
+	push(@tmp, "GPRINT:greylisted:LAST:           Current\\: %5.0lf\\n");
+	push(@tmp, "AREA:whitelisted#44EEEE:Whitelisted");
+	push(@tmp, "GPRINT:whitelisted:LAST:          Current\\: %5.0lf\\n");
+	push(@tmp, "LINE1:greylisted#0000EE");
+	push(@tmp, "LINE1:whitelisted#00EEEE");
+	push(@tmp, "LINE1:records#EE0000:Records");
+	push(@tmp, "GPRINT:records:LAST:              Current\\: %5.0lf\\n");
+	push(@tmpz, "AREA:greylisted#4444EE:Greylisted");
+	push(@tmpz, "AREA:whitelisted#44EEEE:Whitelisted");
+	push(@tmpz, "LINE2:greylisted#0000EE");
+	push(@tmpz, "LINE2:whitelisted#00EEEE");
+	push(@tmpz, "LINE2:records#EE0000:Records");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
+	($width, $height) = split('x', $config->{graph_size}->{small});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		@tmp = @tmpz;
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+	}
+	RRDs::graph("$PNG_DIR" . "$PNG6",
+		"--title=$config->{graphs}->{_mail6}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=PNG",
+		"--vertical-label=Messages",
+		"--width=$width",
+		"--height=$height",
+		@riglim,
+		$zoom,
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
+		@{$colors->{graph_colors}},
+		"DEF:records=$rrd:mail_val07:AVERAGE",
+		"DEF:greylisted=$rrd:mail_val08:AVERAGE",
+		"DEF:whitelisted=$rrd:mail_val09:AVERAGE",
+		"CDEF:allvalues=records,greylisted,whitelisted,+,+",
+		@CDEF,
+		@tmp);
+	$err = RRDs::error;
+	print("ERROR: while graphing $PNG_DIR" . "$PNG6: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		RRDs::graph("$PNG_DIR" . "$PNG6z",
+			"--title=$config->{graphs}->{_mail6}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Messages",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:records=$rrd:mail_val07:AVERAGE",
+			"DEF:greylisted=$rrd:mail_val08:AVERAGE",
+			"DEF:whitelisted=$rrd:mail_val09:AVERAGE",
+			"CDEF:allvalues=records,greylisted,whitelisted,+,+",
+			@CDEF,
+			@tmpz);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG6z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /mail6/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG6z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG6 . "' border='0'></a>\n");
+			}
+			else {
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG6z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG6 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG6 . "'>\n");
 		}
 	}
 
