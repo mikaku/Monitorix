@@ -34,6 +34,8 @@
 - Fixed a line that forced updates on every minute in the 'serv' graph.
 - Fixed 'icecast' graph to support newer statistics page format.
 - Fixed the use of uninitialized variables in 'phpapc' module.
+- Fixed to correctly sanitize the comma-separated values in the 'list' option of
+  the 'mysql' module.
 - Small fixes and typos.
 
 
