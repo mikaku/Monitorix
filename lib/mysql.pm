@@ -187,7 +187,7 @@ sub mysql_update {
 	$print_error = 1 if $debug;
 
 	for($n = 0; $n < scalar(my @ml = split(',', $mysql->{list})); $n++) {
-		$ml[$n] = trim($ml[$n];
+		$ml[$n] = trim($ml[$n]);
 		my $host = $ml[$n];
 		my $sock = $ml[$n];
 		my $port = trim((split(',', $mysql->{desc}->{$ml[$n]}))[0]);
