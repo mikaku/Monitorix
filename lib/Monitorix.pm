@@ -182,8 +182,10 @@ sub get_nvidia_data {
 	}
 	for($l = 0; $l < scalar(@data); $l++) {
 		if($data[$l] =~ /Memory Usage/) {
-			$check_mem = 1;
-			next;
+			if($data[$l] !~ /BAR1 Memory Usage/) {
+				$check_mem = 1;
+				next;
+			}
 		}
 		if($check_mem) {	
 			if($data[$l] =~ /Total/) {
@@ -257,7 +259,7 @@ sub get_nvidia_data {
 			next;
 		}
 		if($check_temp) {	
-			if($data[$l] =~ /Gpu/) {
+			if($data[$l] =~ /Gpu.*?(?:Current Temp)?/i) {
 				my (undef, $tmp) = split(':', $data[$l]);
 				if($tmp eq "\n") {
 					$l++;
