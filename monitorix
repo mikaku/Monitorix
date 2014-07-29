@@ -534,6 +534,16 @@ $config{ip_default_table} = "filter" if !$config{ip_default_table};
 flush_accounting_rules(\%config, $options{d});
 
 logger("Initializing graphs.");
+
+# check for inconsistencies between enabled graphs and defined graphs
+foreach my $g (sort keys %{$config{graph_enable}}) {
+	if(lc($config{graph_enable}->{$g}) eq "y") {
+		if(!grep {trim($_) eq $g} (split(',', $config{graph_name}))) {
+			logger("WARNING: inconsitency between '<graph_enable>' and 'graph_name' options; '$g' doesn't exist.");
+		}
+	}
+}
+
 foreach (split(',', $config{graph_name} . ", traffacct")) {
 	my $g = trim($_);
 	my $e = "n";
