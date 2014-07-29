@@ -58,7 +58,7 @@ sub INT_handler {
 
 	logger("SIG$signal caught.");
 	flush_accounting_rules(\%config, $options{d});
-	if(lc($config{httpd_builtin}->{enabled} eq "y")) {
+	if(lc($config{httpd_builtin}->{enabled}) eq "y") {
 		kill(15, $config{httpd_pid});
 	}
 	logger("Exiting.");
@@ -146,7 +146,7 @@ sub create_index {
 	}
 
 	# Piwik tracking code
-	if(lc($config{piwik_tracking}->{enabled} eq "y")) {
+	if(lc($config{piwik_tracking}->{enabled}) eq "y") {
 		$piwik_url = $config{piwik_tracking}->{url} || "";
 		$piwik_sid = $config{piwik_tracking}->{sid} || "";
 		$piwik_img = $config{piwik_tracking}->{img} || "";
@@ -584,7 +584,7 @@ if(!scalar($config{func_update})) {
 logger("Generating the 'index.html' file.");
 create_index();
 
-if(lc($config{httpd_builtin}->{enabled} eq "y")) {
+if(lc($config{httpd_builtin}->{enabled}) eq "y") {
 	httpd_setup(\%config, $options{d});
 	logger("Started built-in HTTP server (pid $config{httpd_pid}).") if (defined($config{httpd_pid}));
 }
