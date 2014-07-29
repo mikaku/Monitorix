@@ -276,7 +276,7 @@ if($mode ne "localhost") {
 }
 
 
-if(lc($config{httpd_builtin}->{enabled} ne "y")) {
+if(lc($config{httpd_builtin}->{enabled}) ne "y") {
 	print("Content-Type: text/html\n");
 	print("\n");
 }
@@ -382,7 +382,7 @@ if(!$silent) {
 	my ($piwik_url, $piwik_sid, $piwik_img);
 
 	# Piwik tracking code
-	if(lc($config{piwik_tracking}->{enabled} eq "y")) {
+	if(lc($config{piwik_tracking}->{enabled}) eq "y") {
 		$piwik_url = $config{piwik_tracking}->{url} || "";
 	        $piwik_sid = $config{piwik_tracking}->{sid} || "";
 		$piwik_img = $config{piwik_tracking}->{img} || "";
