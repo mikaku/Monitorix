@@ -142,7 +142,7 @@ sub httpd_setup {
 	chdir($config->{base_dir});
 
 	# check if 'htpasswd' file does exists and it's accessible
-	if(lc($config->{httpd_builtin}->{auth}->{enabled} eq "y")) {
+	if(lc($config->{httpd_builtin}->{auth}->{enabled}) eq "y") {
 		if(! -r ($config->{httpd_builtin}->{auth}->{htpasswd} || "")) {
 			logger("$myself: '$config->{httpd_builtin}->{auth}->{htpasswd}' $!");
 		}
