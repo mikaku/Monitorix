@@ -21,6 +21,8 @@
   of redundant code.
 - Changed all DST from COUNTER to GAUGE in 'net' module to avoid unexpected huge
   peaks.
+- Added a check for inconsistencies between enabled graphs and defined graphs
+  during initialization.
 - Fixed regexp that prevented collecting LOADPCT and ITEMP values in 'apcupsd'
   module.
 	(thanks to Patrick Fallberg, patrick AT fallberg.net)
