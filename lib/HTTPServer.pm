@@ -127,6 +127,8 @@ sub http_header {
 
 	if($mimetype =~ m/(html|cgi)/) {
 		print "Content-Type: text/html; charset=UTF-8\r\n";
+	} elsif($mimetype eq "css") {
+		print "Content-Type: text/css; charset=UTF-8\r\n";
 	} else {
 		print "Content-Type: image/$mimetype;\r\n";
 	}
@@ -203,7 +205,7 @@ sub handle_request {
 	if(!$target || $target eq $base_url) {
 		$target = "index.html" unless $target;
 	}
-	($mimetype) = ($target =~ m/.*\.(html|cgi|png)$/);
+	($mimetype) = ($target =~ m/.*\.(html|cgi|css|png)$/);
 
 	$target =~ s/^\/*//;		# removes leading slashes
 	$target_cgi =~ s/^\/*//;	# removes leading slashes
