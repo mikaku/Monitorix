@@ -39,6 +39,8 @@
 - Fixed the use of uninitialized variables in 'phpapc' module.
 - Fixed to correctly sanitize the comma-separated values in the 'list' option of
   the 'mysql' module.
+- Fixed the built-in HTTP server to return a correct Content-Type header for
+  '.css' files.
 - Small fixes and typos.
 
 
