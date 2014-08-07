@@ -1,7 +1,7 @@
 3.N.N  - DD-MMM-2014
 ====================
 - Added a complete statistical Libvirt (libvirt) graph.
-- Added a complete graph of processes statistics.
+- Added a complete processes statistics (process) graph.
 - Added Upstart job. [#46]
 - Added more verbosity during the startup.
 - Added support to include username and password in the 'url_prefix' option of
@@ -21,8 +21,8 @@
   of redundant code.
 - Changed all DST from COUNTER to GAUGE in 'net' module to avoid unexpected huge
   peaks.
-- Added a check for inconsistencies between enabled graphs and defined graphs
-  during initialization.
+- Added a check to detect inconsistencies between enabled graphs and defined
+  graphs during initialization.
 - Fixed regexp that prevented collecting LOADPCT and ITEMP values in 'apcupsd'
   module.
 	(thanks to Patrick Fallberg, patrick AT fallberg.net)
