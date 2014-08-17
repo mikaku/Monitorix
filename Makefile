@@ -7,7 +7,7 @@ CONFDIR = /etc
 BASEDIR = /var/lib/monitorix/www
 LIBDIR = /var/lib/monitorix
 INITDIR_SYSTEMD = $(PREFIX)/lib/systemd/system
-INITDIR_UPSTART = $(PREFIX)/init.d
+INITDIR_OTHER = $(CONFDIR)/init.d
 BINDIR = $(PREFIX)/bin
 DOCDIR = $(PREFIX)/share/doc/$(PN)
 MAN5DIR = $(PREFIX)/share/man/man5
@@ -132,21 +132,33 @@ install-man:
 	$(INSTALL_DATA) man/man8/$(PN).8 "$(DESTDIR)$(MAN8DIR)/$(PN).8"
 
 install-systemd:
-	$(Q)echo -e '\033[1;32mInstalling systemd files...\033[0m'
+	$(Q)echo -e '\033[1;32mInstalling systemd service...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)"
 	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_SYSTEMD)"
 	$(INSTALL_DATA) docs/$(PN).service "$(DESTDIR)$(INITDIR_SYSTEMD)/$(PN).service"
 
 install-upstart:
-	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)"
-	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_UPSTART)"
-	$(INSTALL_DATA) docs/$(PN).upstart "$(DESTDIR)$(INITDIR_UPSTART)/$(PN)"
+	$(Q)echo -e '\033[1;32mInstalling upstart service...\033[0m'
+	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_OTHER)"
+	$(INSTALL_PROGRAM) docs/$(PN).upstart "$(DESTDIR)$(INITDIR_UPSTART)/$(PN)"
 
-## TODO: add target for other init systems
+install-debian:
+	$(Q)echo -e '\033[1;32mInstalling debian sysv service...\033[0m'
+	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_OTHER)"
+	$(INSTALL_PROGRAM) docs/$(PN)-deb.init "$(DESTDIR)$(INITDIR_OTHER)/$(PN)"
 
-install-systemd-all: install-bin install-man install-systemd install-docs
+install-redhat:
+	$(Q)echo -e '\033[1;32mInstalling redhat sysv service...\033[0m'
+	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_OTHER)"
+	$(INSTALL_PROGRAM) docs/$(PN).init "$(DESTDIR)$(INITDIR_OTHER)/$(PN)"
 
-install-upstart-all: install-bin install-man install-upstart install-docs
+install-systemd-all: install-bin install-man install-docs install-systemd
+
+install-upstart-all: install-bin install-man install-docs install-upstart
+
+install-debian-all: install-bin install-man install-docs install-debian
+
+install-redhat-all: install-bin install-man install-docs install-redhat
 
 uninstall-bin:
 	$(RM) "$(DESTDIR)$(BINDIR)/$(PN)"
@@ -179,11 +191,21 @@ uninstall-systemd:
 	$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/$(PN).service"
 
 uninstall-upstart:
-	$(RM) "$(DESTDIR)$(INITDIR_UPSTART)/$(PN)"
+	$(RM) "$(DESTDIR)$(INITDIR_OTHER)/$(PN)"
+
+uninstall-debian:
+	$(RM) "$(DESTDIR)$(INITDIR_OTHER)/$(PN)"
+
+uninstall-redhat:
+	$(RM) "$(DESTDIR)$(INITDIR_OTHER)/$(PN)"
 
 uninstall-systemd-all: uninstall-bin uninstall-man uninstall-docs uninstall-systemd
 
 uninstall-upstart-all: uninstall-bin uninstall-man uninstall-docs uninstall-upstart
+
+uninstall-debian-all: uninstall-bin uninstall-man uninstall-docs uninstall-debian
+
+uninstall-redhat-all: uninstall-bin uninstall-man uninstall-docs uninstall-redhat
 
 uninstall:
 	$(Q)echo "run one of the following:"
