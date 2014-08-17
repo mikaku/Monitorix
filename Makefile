@@ -35,6 +35,8 @@ install:
 	$(Q)echo "Run one of the following:"
 	$(Q)echo "  make install-systemd-all (systemd based systems)"
 	$(Q)echo "  make install-upstart-all (upstart based systems)"
+	$(Q)echo "  make install-debian-all (debian sysv based systems)"
+	$(Q)echo "  make install-redhat-all (redhat sysv based systems)"
 	$(Q)echo
 	$(Q)echo "Default targets may be overridden on the shell so"
 	$(Q)echo "check out the Makefile for specific rules."
@@ -217,4 +219,4 @@ uninstall:
 clean:
 	$(RM) $(PN)
 
-.PHONY: help install-bin install-man install-docs install-systemd install-upstart install-systemd-all install-upstart-all install uninstall-bin uninstall-man uninstall-docs uninstall-systemd uninstall-upstart uninstall-systemd-all uninstall-upstart-all uninstall clean
+.PHONY: help install-bin install-docs install-man install-systemd install-upstart install-debian install-redhat install-systemd-all install-upstart-all install-debian-all install-redhat-all install uninstall-bin uninstall-docs uninstall-man uninstall-systemd uninstall-upstart uninstall-debian uinstall-redhat uninstall-systemd-all uninstall-upstart-all uninstall-debian-all uninstall-redhat-all uninstall clean
