@@ -1,20 +1,20 @@
+VERSION = 3.5.2
+RELEASEDATE = 20-Aug-2014
 PN = monitorix
 
 PREFIX ?= /usr
 CONFDIR = /etc
 BASEDIR = /var/lib/monitorix/www
 LIBDIR = /var/lib/monitorix
-INITDIR_SYSTEMD = /usr/lib/systemd/system
-INITDIR_OPENRC = /etc/init.d
-INITDIR_UPSTART = /etc/init.d
-APACHEDIR = /etc/httpd/conf.d
-LIGHTTPD = /etc/lighttpd
+INITDIR_SYSTEMD = $(PREFIX)/lib/systemd/system
+INITDIR_UPSTART = $(PREFIX)/init.d
 BINDIR = $(PREFIX)/bin
 DOCDIR = $(PREFIX)/share/doc/$(PN)
 MAN5DIR = $(PREFIX)/share/man/man5
 MAN8DIR = $(PREFIX)/share/man/man8
 
-RM = rm
+RM = rm -f
+RMD = rmdir
 SED = sed
 INSTALL = install -p
 INSTALL_PROGRAM = $(INSTALL) -m755
@@ -24,20 +24,23 @@ INSTALL_DIR = $(INSTALL) -d
 
 Q = @
 
+$(PN): $(PN).in
+	$(Q)echo -e '\033[1;32mSetting version info\033[0m'
+	$(Q)$(SED) -e 's/@VERSION@/'$(VERSION)'/' $(PN).in \
+		-e 's/@RELEASEDATE@/'$(RELEASEDATE)'/' > $(PN)
+
+help: install
+
 install:
 	$(Q)echo "Run one of the following:"
 	$(Q)echo "  make install-systemd-all (systemd based systems)"
 	$(Q)echo "  make install-upstart-all (upstart based systems)"
 	$(Q)echo
-	$(Q)echo "For an apache config"
-	$(Q)echo "  make install-apache"
-	$(Q)echo "For a lighttpd config"
-	$(Q)echo "  make install-lighttpd"
-	$(Q)echo
-	$(Q)echo "or check out the Makefile for specific rules"
+	$(Q)echo "Default targets may be overridden on the shell so"
+	$(Q)echo "check out the Makefile for specific rules."
 
 install-bin:
-	# script and configs
+	$(Q)echo -e '\033[1;32mInstalling script and modules...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(BINDIR)"
 	$(INSTALL_PROGRAM) $(PN) "$(DESTDIR)$(BINDIR)/$(PN)"
 	
@@ -57,7 +60,6 @@ install-bin:
 	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)/sysconfig"
 	$(INSTALL_DATA) docs/$(PN).sysconfig "$(DESTDIR)$(CONFDIR)/sysconfig//$(PN).sysconfig"
 	
-	# perl modules
 	$(INSTALL_DIR) "$(DESTDIR)$(LIBDIR)"
 	$(INSTALL_DATA) lib/apache.pm "$(DESTDIR)$(LIBDIR)/apache.pm"
 	$(INSTALL_DATA) lib/apcupsd.pm "$(DESTDIR)$(LIBDIR)/apcupsd.pm"
@@ -98,7 +100,6 @@ install-bin:
 	$(INSTALL_DATA) lib/user.pm "$(DESTDIR)$(LIBDIR)/user.pm"
 	$(INSTALL_DATA) lib/wowza.pm "$(DESTDIR)$(LIBDIR)/wowza.pm"
 
-	# reports
 	$(INSTALL_DIR) "$(DESTDIR)$(LIBDIR)/reports"
 	$(INSTALL_DATA) reports/ca.html "$(DESTDIR)$(LIBDIR)/reports/ca.html"
 	$(INSTALL_DATA) reports/de.html "$(DESTDIR)$(LIBDIR)/reports/de.html"
@@ -108,8 +109,8 @@ install-bin:
 
 	$(INSTALL_DIR) "$(DESTDIR)$(LIBDIR)/usage"
 
-install-man:
-	# docs
+install-docs:
+	$(Q)echo -e '\033[1;32mInstalling docs...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(DOCDIR)"
 	$(INSTALL_PROGRAM) docs/$(PN)-alert.sh "$(DESTDIR)$(DOCDIR)/$(PN)-alert.sh"
 	$(INSTALL_PROGRAM) docs/htpasswd.pl "$(DESTDIR)$(DOCDIR)/htpasswd.pl"
@@ -119,24 +120,19 @@ install-man:
 	$(INSTALL_DATA) README.nginx "$(DESTDIR)$(DOCDIR)/README.nginx"
 	$(INSTALL_DATA) README.OpenBSD "$(DESTDIR)$(DOCDIR)/README.OpenBSD"
 	$(INSTALL_DATA) README.NetBSD "$(DESTDIR)$(DOCDIR)/README.NetBSD"
-	
+	$(INSTALL_DATA) docs/$(PN)-lighttpd.conf "$(DESTDIR)$(DOCDIR)/$(PN)-lighttpd.conf"
+	$(INSTALL_DATA) docs/$(PN)-apache.conf "$(DESTDIR)$(DOCDIR)/$(PN)-apache.conf"
+
+install-man:
+	$(Q)echo -e '\033[1;32mInstalling manpages...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(MAN5DIR)"
 	$(INSTALL_DATA) man/man5/$(PN).conf.5 "$(DESTDIR)$(MAN5DIR)/$(PN).conf.5"
 
 	$(INSTALL_DIR) "$(DESTDIR)$(MAN8DIR)"
 	$(INSTALL_DATA) man/man8/$(PN).8 "$(DESTDIR)$(MAN8DIR)/$(PN).8"
 
-install-apache:
-	$(INSTALL_DIR) "$(DESTDIR)/$(APACHEDIR)"
-	$(INSTALL_DATA) docs/$(PN)-apache.conf "$(DESTDIR$(APACHEDIR)/$(PN).conf"
-
-install-lighttpd:
-	$(INSTALL_DIR) "$(DESTDIR)/$(LIGHTTPDEDIR)"
-	$(INSTALL_DATA) docs/$(PN).lighttpd.conf "$(DESTDIR)$(LIGHTTPDDIR)/$(PN).conf"
-
-help: install
-
 install-systemd:
+	$(Q)echo -e '\033[1;32mInstalling systemd files...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)"
 	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_SYSTEMD)"
 	$(INSTALL_DATA) docs/$(PN).service "$(DESTDIR)$(INITDIR_SYSTEMD)/$(PN).service"
@@ -146,41 +142,48 @@ install-upstart:
 	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_UPSTART)"
 	$(INSTALL_DATA) docs/$(PN).upstart "$(DESTDIR)$(INITDIR_UPSTART)/$(PN)"
 
-install-systemd-all: install-bin install-man install-systemd
+## TODO: add target for other init systems
 
-install-upstart-all: install-bin install-man install-upstart
+install-systemd-all: install-bin install-man install-systemd install-docs
+
+install-upstart-all: install-bin install-man install-upstart install-docs
 
 uninstall-bin:
 	$(RM) "$(DESTDIR)$(BINDIR)/$(PN)"
-	$(RM) "$(DESTDIR)$(BINDIR)/psd"
+	$(RM) "$(DESTDIR)$(BASEDIR)/cgi/$(PN).cgi"
+	$(RM) "$(DESTDIR)$(BASEDIR)/logo_bot.png"
+	$(RM) "$(DESTDIR)$(BASEDIR)/logo_top.png"
+	$(RM) "$(DESTDIR)$(BASEDIR)/monitorixico.png"
+	$(RM) "$(DESTDIR)$(CONFDIR)/$(PN)/$(PN).conf"
+	$(RM) "$(DESTDIR)$(CONFDIR)/logrotate.d/$(PN).logrotate"
+	$(RM) "$(DESTDIR)$(CONFDIR)/sysconfig//$(PN).sysconfig"
+	$(RM) "$(DESTDIR)$(LIBDIR)/"*.pm
+	$(RM) "$(DESTDIR)$(LIBDIR)/reports/"*.html
+	$(RMD) "$(DESTDIR)$(LIBDIR)/reports"
+	$(RMD) "$(DESTDIR)$(LIBDIR)/usage"
+	$(RMD) "$(DESTDIR)$(LIBDIR)/"
+	$(RMD) "$(DESTDIR)$(BASEDIR)/cgi"
+
+uninstall-docs:
+	$(RM) "$(DESTDIR)$(DOCDIR)/$(PN)-alert.sh"
+	$(RM) "$(DESTDIR)$(DOCDIR)/htpasswd.pl"
+	$(RM) "$(DESTDIR)$(DOCDIR)/Changes"
+	$(RM) "$(DESTDIR)$(DOCDIR)/"README*
+	$(RM) "$(DESTDIR)$(DOCDIR)/"*.conf
 
 uninstall-man:
-	$(RM) -f "$(DESTDIR)$(MANDIR)/$(PN).1.gz"
-	$(RM) -f "$(DESTDIR)$(MANDIR)/psd.1.gz"
-	$(RM) -f "$(DESTDIR)$(MANDIR)/$(PN).1"
-	$(RM) -f "$(DESTDIR)$(MANDIR)/psd.1"
-
-uninstall-cron:
-	$(RM) "$(DESTDIR)$(CRONDIR)/psd-update"
-
-uninstall-openrc:
-	$(RM) "$(DESTDIR)$(INITDIR_OPENRC)/psd"
+	$(RM) "$(DESTDIR)$(MAN5DIR)/$(PN).conf.5"
+	$(RM) "$(DESTDIR)$(MAN8DIR)/$(PN).8"
 
 uninstall-systemd:
-	$(RM) "$(DESTDIR)$(CONFDIR)/psd.conf"
-	$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/psd.service"
-	$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/psd-resync.service"
-	$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/psd-resync.timer"
+	$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/$(PN).service"
 
 uninstall-upstart:
-	$(RM) "$(DESTDIR)$(CONFDIR)/psd.conf"
-	$(RM) "$(DESTDIR)$(INITDIR_UPSTART)/psd"
+	$(RM) "$(DESTDIR)$(INITDIR_UPSTART)/$(PN)"
 
-uninstall-openrc-all: uninstall-bin uninstall-man uninstall-cron uninstall-openrc
+uninstall-systemd-all: uninstall-bin uninstall-man uninstall-docs uninstall-systemd
 
-uninstall-systemd-all: uninstall-bin uninstall-man uninstall-systemd
-
-uninstall-upstart-all: uninstall-bin uninstall-man uninstall-cron uninstall-upstart
+uninstall-upstart-all: uninstall-bin uninstall-man uninstall-docs uninstall-upstart
 
 uninstall:
 	$(Q)echo "run one of the following:"
@@ -190,6 +193,6 @@ uninstall:
 	$(Q)echo "or check out the Makefile for specific rules"
 
 clean:
-	$(RM) -f common/$(PN)
+	$(RM) $(PN)
 
-.PHONY: help install-bin install-man install-cron install-openrc install-systemd install-upstart install-openrc-all install-systemd-all install-upstart-all install uninstall-bin uninstall-man uninstall-cron uninstall-openrc uninstall-systemd uninstall-upstart uninstall-openrc-all uninstall-systemd-all uninstall-upstart-all uninstall clean
+.PHONY: help install-bin install-man install-docs install-systemd install-upstart install-systemd-all install-upstart-all install uninstall-bin uninstall-man uninstall-docs uninstall-systemd uninstall-upstart uninstall-systemd-all uninstall-upstart-all uninstall clean
