@@ -41,6 +41,7 @@
   the 'mysql' module.
 - Fixed the built-in HTTP server to return a correct Content-Type header for
   '.css' files.
+	(thanks to Liang Zhang, liangz AT fnal.gov for pointing this out)
 - Small fixes and typos.
 
 
