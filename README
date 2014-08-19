@@ -91,8 +91,6 @@ You can download RRDtool from different places:
 
 INSTALLATION
 ===============================================================================
-Setup the via a make.
-
 Running a `make install-xxx` as root will distribute the files to the file 
 system. Most users will want to select from three options depending on target 
 init system (do not run all four)!
@@ -105,6 +103,39 @@ init system (do not run all four)!
 Alternatively, users may override any of the in make targets.  For example:
 
 	$ make DESTDIR=~/pub BASEDIR=/srv/http/monitorix install-systemd-all
+
+The file tree for the Monitorix application is:
+
+File                        Recommended location		Description
+-------------------------------------------------------------------------------
+monitorix                   /usr/bin/			main program (daemon)
+monitorix.cgi               <base_dir>/cgi/		CGI (viewer)
+monitorix.conf              /etc/monitorix/		configuration file
+lib/*.pm                    /usr/lib/monitorix/		modules
+Changes                     /usr/share/doc/monitorix/	changes log file
+COPYING                     /usr/share/doc/monitorix/	license
+logo_bot.png                <base_dir>			bottom logo
+logo_top.png                <base_dir>			top logo
+monitorixico.png            <base_dir>			favicon
+monitorix-alert.sh          /usr/share/doc/monitorix/	alert example script
+monitorix-apache.conf       /etc/httpd/conf.d/		apache configuration
+monitorix.service           /usr/lib/systemd/system/	systemd service template
+monitorix.init              /etc/init.d/		redhat SysV init script
+monitorix-deb.init          /etc/init.d/		debian SysV init script
+monitorix.logrotate         /etc/logrotate.d/		logrotate script
+monitorix.spec              /usr/share/doc/monitorix/	RPM spec file
+monitorix.sysconfig         /etc/sysconfig/		pre-run config file
+monitorix.lighttpd.conf     /etc/lighttpd/		lighttpd configuration
+htpasswd.pl                 /usr/share/doc/monitorix/	documentation
+README                      /usr/share/doc/monitorix/	documentation
+README.FreeBSD              /usr/share/doc/monitorix/	documentation
+README.nginx                /usr/share/doc/monitorix/	documentation
+README.OpenBSD              /usr/share/doc/monitorix/	documentation
+README.NetBSD               /usr/share/doc/monitorix/	documentation
+man/man5/monitorix.conf.5   /usr/share/man/man5/	monitorix.conf manpage
+man/man8/monitorix.8        /usr/share/man/man8/	monitorix manpage
+reports/*.html              <base_lib>/reports/		traffacct reports i18n
+usage/                      <base_lib>/usage/		traffacct usage data
 
 Once succesfully installed, please take a look into the configuration file to
 setup the options according your system and enable or disable graphs.

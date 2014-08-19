@@ -1,5 +1,3 @@
-VERSION = 3.5.2
-RELEASEDATE = 20-Aug-2014
 PN = monitorix
 
 PREFIX ?= /usr
@@ -23,11 +21,6 @@ INSTALL_DATA = $(INSTALL) -m644
 INSTALL_DIR = $(INSTALL) -d
 
 Q = @
-
-$(PN): $(PN).in
-	$(Q)echo -e '\033[1;32mSetting version info\033[0m'
-	$(Q)$(SED) -e 's/@VERSION@/'$(VERSION)'/' $(PN).in \
-		-e 's/@RELEASEDATE@/'$(RELEASEDATE)'/' > $(PN)
 
 help: install
 
@@ -216,7 +209,4 @@ uninstall:
 	$(Q)echo
 	$(Q)echo "or check out the Makefile for specific rules"
 
-clean:
-	$(RM) $(PN)
-
-.PHONY: help install-bin install-docs install-man install-systemd install-upstart install-debian install-redhat install-systemd-all install-upstart-all install-debian-all install-redhat-all install uninstall-bin uninstall-docs uninstall-man uninstall-systemd uninstall-upstart uninstall-debian uinstall-redhat uninstall-systemd-all uninstall-upstart-all uninstall-debian-all uninstall-redhat-all uninstall clean
+.PHONY: help install-bin install-docs install-man install-systemd install-upstart install-debian install-redhat install-systemd-all install-upstart-all install-debian-all install-redhat-all install uninstall-bin uninstall-docs uninstall-man uninstall-systemd uninstall-upstart uninstall-debian uinstall-redhat uninstall-systemd-all uninstall-upstart-all uninstall-debian-all uninstall-redhat-all uninstall
