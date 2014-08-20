@@ -19,6 +19,7 @@
 - Added support for newest NVidia driver 340.24. [#54]
 - Added the new 'url_prefix_proxy' option to bypass the URL building in the CGI.
   Usefull when Monitorix is used behind a reverse proxy. [#58]
+- Added a 'Makefile' to provide more flexibility for users and packagers. [#62]
 - Improved in all graphs the 'limit' and 'rigid' functionality and reduced a lot
   of redundant code.
 - Changed all DST from COUNTER to GAUGE in 'net' module to avoid unexpected huge
