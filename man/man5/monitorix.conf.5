@@ -156,6 +156,15 @@ Although this is a global option, only the graphs \fIport\fP, \fInginx\fP and \f
 Default value: \fIfilter\fP
 .RE
 .P
+.BI url_prefix_proxy
+.RS
+This option forces \fImonitorix.cgi\fP to bypass the URL building. This is specially usefull when Monitorix is used behind a reverse proxy.
+.P
+An example would be: \fIhttp://myexternalwebsite.com/\fP
+.P
+Default value:
+.RE
+.P
 .BI base_dir
 .RS
 This is the absolute path to the directory where all the web elements are located:

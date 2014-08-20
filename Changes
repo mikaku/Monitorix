@@ -1,4 +1,4 @@
-3.N.N  - DD-MMM-2014
+3.N.N  - DD-Aug-2014
 ====================
 - Added a complete statistical Libvirt (libvirt) graph.
 - Added a complete processes statistics (process) graph.
@@ -17,6 +17,8 @@
 	(suggested by Russell Morris, rmorris AT rkmorris.us)
 - Added SPF statistics in the 'mail' graph.
 - Added support for newest NVidia driver 340.24. [#54]
+- Added the new 'url_prefix_proxy' option to bypass the URL building in the CGI.
+  Usefull when Monitorix is used behind a reverse proxy. [#58]
 - Improved in all graphs the 'limit' and 'rigid' functionality and reduced a lot
   of redundant code.
 - Changed all DST from COUNTER to GAUGE in 'net' module to avoid unexpected huge
