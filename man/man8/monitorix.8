@@ -3,7 +3,7 @@
 .\"
 .\" This is the man page for the monitorix collector daemon.
 .\"
-.TH monitorix 8 "May 2014" 3.5.1 "Monitorix collector daemon"
+.TH monitorix 8 "Aug 2014" 3.6.0 "Monitorix collector daemon"
 .SH NAME
 monitorix - a lightweight system monitoring tool
 .SH SYNOPSIS
@@ -13,13 +13,14 @@ This Perl daemon starts the main Monitorix process, which gathers statistics abo
 .SH OPTIONS
 .TP
 \fB\-c\fR \fIconfigfile\fR
-The default location of the configuration file varies depending on the operating system:
+The default location of the main configuration file varies depending on the operating system:
 .P
 .RS
-Linux:        \fI/etc/monitorix.conf\fP
+Linux:        \fI/etc/monitorix/monitorix.conf\fP
 .br
 FreeBSD:      \fI/usr/local/etc/monitorix.conf\fP
 .P
+Extra configuration files can be placed in \fI/etc/monitorix/conf.d\fP, they will be loaded right after the main configuration file (overriding previous options).
 .RE
 .TP
 \fB\-p\fR \fIpidfile\fR
@@ -34,7 +35,7 @@ For a reference of all graph names check the option \fBgraph_name\fP in the \fIm
 Displays version information.
 .TP
 \fB\-n\fR
-This argument will prevent Monitorix from daemonizing and force it to run in the foreground.
+This argument will prevent Monitorix from daemonizing, and hence, forcing it to run in foreground. This is specially usefull for debugging purposes.
 .SH SIGNALS
 On receipt of a SIGHUP, \fBmonitorix\fP will close and reopen its log file. This is useful in scripts which rotate and age log files.
 .P
