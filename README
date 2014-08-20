@@ -91,6 +91,19 @@ You can download RRDtool from different places:
 
 INSTALLATION
 ===============================================================================
+Running a `make install-xxx` as root will distribute the files to the file 
+system. Most users will want to select from three options depending on target 
+init system (do not run all four)!
+
+	# make install-systemd-all
+	# make install-upstart-all
+	# make install-debian-all
+	# make install-redhat-all
+
+Alternatively, users may override any of the in make targets.  For example:
+
+	$ make DESTDIR=~/pub BASEDIR=/srv/http/monitorix install-systemd-all
+
 The file tree for the Monitorix application is:
 
 File                        Recommended location		Description
@@ -123,7 +136,6 @@ man/man5/monitorix.conf.5   /usr/share/man/man5/	monitorix.conf manpage
 man/man8/monitorix.8        /usr/share/man/man8/	monitorix manpage
 reports/*.html              <base_lib>/reports/		traffacct reports i18n
 usage/                      <base_lib>/usage/		traffacct usage data
-
 
 Once succesfully installed, please take a look into the configuration file to
 setup the options according your system and enable or disable graphs.
