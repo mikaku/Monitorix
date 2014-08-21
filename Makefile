@@ -3,7 +3,7 @@ PN = monitorix
 PREFIX ?= /usr
 CONFDIR = /etc
 BASEDIR = /var/lib/monitorix/www
-LIBDIR = /var/lib/monitorix
+LIBDIR = /usr/lib/monitorix
 INITDIR_SYSTEMD = $(PREFIX)/lib/systemd/system
 INITDIR_OTHER = $(CONFDIR)/init.d
 BINDIR = $(PREFIX)/bin
@@ -95,14 +95,14 @@ install-bin:
 	$(INSTALL_DATA) lib/user.pm "$(DESTDIR)$(LIBDIR)/user.pm"
 	$(INSTALL_DATA) lib/wowza.pm "$(DESTDIR)$(LIBDIR)/wowza.pm"
 
-	$(INSTALL_DIR) "$(DESTDIR)$(LIBDIR)/reports"
-	$(INSTALL_DATA) reports/ca.html "$(DESTDIR)$(LIBDIR)/reports/ca.html"
-	$(INSTALL_DATA) reports/de.html "$(DESTDIR)$(LIBDIR)/reports/de.html"
-	$(INSTALL_DATA) reports/en.html "$(DESTDIR)$(LIBDIR)/reports/en.html"
-	$(INSTALL_DATA) reports/it.html "$(DESTDIR)$(LIBDIR)/reports/it.html"
-	$(INSTALL_DATA) reports/zh_CN.html "$(DESTDIR)$(LIBDIR)/reports/zh_CN.html"
+	$(INSTALL_DIR) "$(DESTDIR)$(BASEDIR)/reports"
+	$(INSTALL_DATA) reports/ca.html "$(DESTDIR)$(BASEDIR)/reports/ca.html"
+	$(INSTALL_DATA) reports/de.html "$(DESTDIR)$(BASEDIR)/reports/de.html"
+	$(INSTALL_DATA) reports/en.html "$(DESTDIR)$(BASEDIR)/reports/en.html"
+	$(INSTALL_DATA) reports/it.html "$(DESTDIR)$(BASEDIR)/reports/it.html"
+	$(INSTALL_DATA) reports/zh_CN.html "$(DESTDIR)$(BASEDIR)/reports/zh_CN.html"
 
-	$(INSTALL_DIR) "$(DESTDIR)$(LIBDIR)/usage"
+	$(INSTALL_DIR) "$(DESTDIR)$(BASEDIR)/usage"
 
 install-docs:
 	$(Q)echo -e '\033[1;32mInstalling docs...\033[0m'
@@ -110,6 +110,7 @@ install-docs:
 	$(INSTALL_PROGRAM) docs/$(PN)-alert.sh "$(DESTDIR)$(DOCDIR)/$(PN)-alert.sh"
 	$(INSTALL_PROGRAM) docs/htpasswd.pl "$(DESTDIR)$(DOCDIR)/htpasswd.pl"
 	$(INSTALL_DATA) Changes "$(DESTDIR)$(DOCDIR)/Changes"
+	$(INSTALL_DATA) COPYING "$(DESTDIR)$(DOCDIR)/COPYING"
 	$(INSTALL_DATA) README "$(DESTDIR)$(DOCDIR)/README"
 	$(INSTALL_DATA) README.FreeBSD "$(DESTDIR)$(DOCDIR)/README.FreeBSD"
 	$(INSTALL_DATA) README.nginx "$(DESTDIR)$(DOCDIR)/README.nginx"
@@ -165,15 +166,14 @@ uninstall-bin:
 	$(RM) "$(DESTDIR)$(CONFDIR)/logrotate.d/$(PN).logrotate"
 	$(RM) "$(DESTDIR)$(CONFDIR)/sysconfig//$(PN).sysconfig"
 	$(RM) "$(DESTDIR)$(LIBDIR)/"*.pm
-	$(RM) "$(DESTDIR)$(LIBDIR)/reports/"*.html
-	$(RMD) "$(DESTDIR)$(LIBDIR)/reports"
-	$(RMD) "$(DESTDIR)$(LIBDIR)/usage"
+	$(RM) "$(DESTDIR)$(BASEDIR)/reports/"*.html
 	$(RMD) "$(DESTDIR)$(LIBDIR)/"
 	$(RMD) "$(DESTDIR)$(BASEDIR)/cgi"
 
 uninstall-docs:
 	$(RM) "$(DESTDIR)$(DOCDIR)/$(PN)-alert.sh"
 	$(RM) "$(DESTDIR)$(DOCDIR)/htpasswd.pl"
+	$(RM) "$(DESTDIR)$(DOCDIR)/COPYING"
 	$(RM) "$(DESTDIR)$(DOCDIR)/Changes"
 	$(RM) "$(DESTDIR)$(DOCDIR)/"README*
 	$(RM) "$(DESTDIR)$(DOCDIR)/"*.conf
