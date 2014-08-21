@@ -1,3 +1,8 @@
+3.N.N  - DD-MMM-2014
+====================
+- Fixed some bugs in the new Makefile. [#63]
+
+
 3.6.0  - 20-Aug-2014
 ====================
 - Added a complete statistical Libvirt (libvirt) graph.
