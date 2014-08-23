@@ -7,6 +7,7 @@ WWWDIR = $(BASEDIR)/www
 DBDIR = /var/lib/monitorix
 LIBDIR = /usr/lib/monitorix
 INITDIR_SYSTEMD = $(PREFIX)/lib/systemd/system
+INITDIR_RHEL = $(CONFDIR)/rc.d/init.d
 INITDIR_OTHER = $(CONFDIR)/init.d
 BINDIR = $(PREFIX)/bin
 DOCDIR = $(PREFIX)/share/doc/$(PN)
@@ -133,7 +134,9 @@ install-man:
 	$(INSTALL_DATA) man/man5/$(PN).conf.5 "$(DESTDIR)$(MAN5DIR)/$(PN).conf.5"
 
 	$(INSTALL_DIR) "$(DESTDIR)$(MAN8DIR)"
+	gzip -9 "$(DESTDIR)$(MAN5DIR)/$(PN).conf.5"
 	$(INSTALL_DATA) man/man8/$(PN).8 "$(DESTDIR)$(MAN8DIR)/$(PN).8"
+	gzip -9 "$(DESTDIR)$(MAN8DIR)/$(PN).8"
 
 install-systemd:
 	$(Q)echo -e '\033[1;32mInstalling systemd service...\033[0m'
@@ -153,9 +156,8 @@ install-debian:
 
 install-redhat:
 	$(Q)echo -e '\033[1;32mInstalling redhat sysv service...\033[0m'
-	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_OTHER)"
-	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_OTHER)/rc.d"
-	$(INSTALL_PROGRAM) docs/$(PN).init "$(DESTDIR)$(INITDIR_OTHER)/rc.d/$(PN)"
+	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_RHEL)"
+	$(INSTALL_PROGRAM) docs/$(PN).init "$(DESTDIR)$(INITDIR_RHEL)/$(PN)"
 
 install-systemd-all: install-bin install-man install-docs install-systemd
 
@@ -188,8 +190,8 @@ uninstall-docs:
 	$(RM) "$(DESTDIR)$(DOCDIR)/"*.conf
 
 uninstall-man:
-	$(RM) "$(DESTDIR)$(MAN5DIR)/$(PN).conf.5"
-	$(RM) "$(DESTDIR)$(MAN8DIR)/$(PN).8"
+	$(RM) "$(DESTDIR)$(MAN5DIR)/$(PN).conf.5.gz"
+	$(RM) "$(DESTDIR)$(MAN8DIR)/$(PN).8.gz"
 
 uninstall-systemd:
 	$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/$(PN).service"
@@ -201,7 +203,7 @@ uninstall-debian:
 	$(RM) "$(DESTDIR)$(INITDIR_OTHER)/$(PN)"
 
 uninstall-redhat:
-	$(RM) "$(DESTDIR)$(INITDIR_OTHER)/rc.d/$(PN)"
+	$(RM) "$(DESTDIR)$(INITDIR_RHEL)/$(PN)"
 
 uninstall-systemd-all: uninstall-bin uninstall-man uninstall-docs uninstall-systemd
 
