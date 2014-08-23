@@ -2,7 +2,9 @@ PN = monitorix
 
 PREFIX ?= /usr
 CONFDIR = /etc
-BASEDIR = /var/lib/monitorix/www
+BASEDIR = /var/lib/monitorix
+WWWDIR = $(BASEDIR)/www
+DBDIR = /var/lib/monitorix
 LIBDIR = /usr/lib/monitorix
 INITDIR_SYSTEMD = $(PREFIX)/lib/systemd/system
 INITDIR_OTHER = $(CONFDIR)/init.d
@@ -16,9 +18,9 @@ RMD = rmdir
 SED = sed
 INSTALL = install -p
 INSTALL_PROGRAM = $(INSTALL) -m755
-INSTALL_SCRIPT = $(INSTALL) -m755
 INSTALL_DATA = $(INSTALL) -m644
 INSTALL_DIR = $(INSTALL) -d
+INSTALL_WORLDDIR = $(INSTALL) -dm777
 
 Q = @
 
@@ -39,21 +41,26 @@ install-bin:
 	$(INSTALL_DIR) "$(DESTDIR)$(BINDIR)"
 	$(INSTALL_PROGRAM) $(PN) "$(DESTDIR)$(BINDIR)/$(PN)"
 	
-	$(INSTALL_DIR) "$(DESTDIR)$(BASEDIR)/cgi"
-	$(INSTALL_DIR) "$(DESTDIR)$(BASEDIR)/imgs"
-	$(INSTALL_PROGRAM) $(PN).cgi "$(DESTDIR)$(BASEDIR)/cgi/$(PN).cgi"
-	$(INSTALL_DATA) logo_bot.png "$(DESTDIR)$(BASEDIR)/logo_bot.png"
-	$(INSTALL_DATA) logo_top.png "$(DESTDIR)$(BASEDIR)/logo_top.png"
-	$(INSTALL_DATA) monitorixico.png "$(DESTDIR)$(BASEDIR)/monitorixico.png"
+	$(INSTALL_DIR) "$(DESTDIR)$(DBDIR)"
+	
+	$(INSTALL_DIR) "$(DESTDIR)$(BASEDIR)"
+	$(INSTALL_DIR) "$(DESTDIR)$(WWWDIR)"
+	$(INSTALL_DIR) "$(DESTDIR)$(WWWDIR)/cgi"
+	$(INSTALL_WORLDDIR) "$(DESTDIR)$(WWWDIR)/imgs"
+	$(INSTALL_PROGRAM) $(PN).cgi "$(DESTDIR)$(WWWDIR)/cgi/$(PN).cgi"
+	$(INSTALL_DATA) logo_bot.png "$(DESTDIR)$(WWWDIR)/logo_bot.png"
+	$(INSTALL_DATA) logo_top.png "$(DESTDIR)$(WWWDIR)/logo_top.png"
+	$(INSTALL_DATA) monitorixico.png "$(DESTDIR)$(WWWDIR)/monitorixico.png"
 
 	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)/$(PN)"
 	$(INSTALL_DATA) $(PN).conf "$(DESTDIR)$(CONFDIR)/$(PN)/$(PN).conf"
+	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)/$(PN)/conf.d"
 
 	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)/logrotate.d/"
-	$(INSTALL_DATA) docs/$(PN).logrotate "$(DESTDIR)$(CONFDIR)/logrotate.d/$(PN).logrotate"
+	$(INSTALL_DATA) docs/$(PN).logrotate "$(DESTDIR)$(CONFDIR)/logrotate.d/$(PN)"
 	
 	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)/sysconfig"
-	$(INSTALL_DATA) docs/$(PN).sysconfig "$(DESTDIR)$(CONFDIR)/sysconfig//$(PN).sysconfig"
+	$(INSTALL_DATA) docs/$(PN).sysconfig "$(DESTDIR)$(CONFDIR)/sysconfig/$(PN)"
 	
 	$(INSTALL_DIR) "$(DESTDIR)$(LIBDIR)"
 	$(INSTALL_DATA) lib/apache.pm "$(DESTDIR)$(LIBDIR)/apache.pm"
@@ -100,6 +107,7 @@ install-bin:
 	$(INSTALL_DATA) reports/de.html "$(DESTDIR)$(BASEDIR)/reports/de.html"
 	$(INSTALL_DATA) reports/en.html "$(DESTDIR)$(BASEDIR)/reports/en.html"
 	$(INSTALL_DATA) reports/it.html "$(DESTDIR)$(BASEDIR)/reports/it.html"
+	$(INSTALL_DATA) reports/pl.html "$(DESTDIR)$(BASEDIR)/reports/pl.html"
 	$(INSTALL_DATA) reports/zh_CN.html "$(DESTDIR)$(BASEDIR)/reports/zh_CN.html"
 
 	$(INSTALL_DIR) "$(DESTDIR)$(BASEDIR)/usage"
@@ -136,7 +144,7 @@ install-systemd:
 install-upstart:
 	$(Q)echo -e '\033[1;32mInstalling upstart service...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_OTHER)"
-	$(INSTALL_PROGRAM) docs/$(PN).upstart "$(DESTDIR)$(INITDIR_UPSTART)/$(PN)"
+	$(INSTALL_PROGRAM) docs/$(PN).upstart "$(DESTDIR)$(INITDIR_OTHER)/$(PN)"
 
 install-debian:
 	$(Q)echo -e '\033[1;32mInstalling debian sysv service...\033[0m'
@@ -146,7 +154,8 @@ install-debian:
 install-redhat:
 	$(Q)echo -e '\033[1;32mInstalling redhat sysv service...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_OTHER)"
-	$(INSTALL_PROGRAM) docs/$(PN).init "$(DESTDIR)$(INITDIR_OTHER)/$(PN)"
+	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_OTHER)/rc.d"
+	$(INSTALL_PROGRAM) docs/$(PN).init "$(DESTDIR)$(INITDIR_OTHER)/rc.d/$(PN)"
 
 install-systemd-all: install-bin install-man install-docs install-systemd
 
@@ -158,17 +167,17 @@ install-redhat-all: install-bin install-man install-docs install-redhat
 
 uninstall-bin:
 	$(RM) "$(DESTDIR)$(BINDIR)/$(PN)"
-	$(RM) "$(DESTDIR)$(BASEDIR)/cgi/$(PN).cgi"
-	$(RM) "$(DESTDIR)$(BASEDIR)/logo_bot.png"
-	$(RM) "$(DESTDIR)$(BASEDIR)/logo_top.png"
-	$(RM) "$(DESTDIR)$(BASEDIR)/monitorixico.png"
+	$(RM) "$(DESTDIR)$(WWWDIR)/cgi/$(PN).cgi"
+	$(RM) "$(DESTDIR)$(WWWDIR)/logo_bot.png"
+	$(RM) "$(DESTDIR)$(WWWDIR)/logo_top.png"
+	$(RM) "$(DESTDIR)$(WWWDIR)/monitorixico.png"
 	$(RM) "$(DESTDIR)$(CONFDIR)/$(PN)/$(PN).conf"
-	$(RM) "$(DESTDIR)$(CONFDIR)/logrotate.d/$(PN).logrotate"
-	$(RM) "$(DESTDIR)$(CONFDIR)/sysconfig//$(PN).sysconfig"
+	$(RM) "$(DESTDIR)$(CONFDIR)/logrotate.d/$(PN)"
+	$(RM) "$(DESTDIR)$(CONFDIR)/sysconfig/$(PN)"
 	$(RM) "$(DESTDIR)$(LIBDIR)/"*.pm
 	$(RM) "$(DESTDIR)$(BASEDIR)/reports/"*.html
 	$(RMD) "$(DESTDIR)$(LIBDIR)/"
-	$(RMD) "$(DESTDIR)$(BASEDIR)/cgi"
+	$(RMD) "$(DESTDIR)$(WWWDIR)/cgi"
 
 uninstall-docs:
 	$(RM) "$(DESTDIR)$(DOCDIR)/$(PN)-alert.sh"
@@ -192,7 +201,7 @@ uninstall-debian:
 	$(RM) "$(DESTDIR)$(INITDIR_OTHER)/$(PN)"
 
 uninstall-redhat:
-	$(RM) "$(DESTDIR)$(INITDIR_OTHER)/$(PN)"
+	$(RM) "$(DESTDIR)$(INITDIR_OTHER)/rc.d/$(PN)"
 
 uninstall-systemd-all: uninstall-bin uninstall-man uninstall-docs uninstall-systemd
 
@@ -206,6 +215,8 @@ uninstall:
 	$(Q)echo "run one of the following:"
 	$(Q)echo "  make uninstall-systemd-all (systemd based systems)"
 	$(Q)echo "  make uninstall-upstart-all (upstart based systems)"
+	$(Q)echo "  make uninstall-debian-all (debian sysv based systems)"
+	$(Q)echo "  make uninstall-redhat-all (redhat sysv based systems)"
 	$(Q)echo
 	$(Q)echo "or check out the Makefile for specific rules"
 
