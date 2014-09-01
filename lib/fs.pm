@@ -713,14 +713,15 @@ sub fs_update {
 			if($d) {
 				if($config->{os} eq "Linux") {
 					if($config->{kernel} gt "2.4") {
-						open(IN, "/proc/diskstats");
-						while(<IN>) {
-							if(/ $d /) {
-								@tmp = split(' ', $_);
-								last;
+						if(open(IN, "/proc/diskstat")) {
+							while(<IN>) {
+								if(/ $d /) {
+									@tmp = split(' ', $_);
+									last;
+								}
 							}
+							close(IN);
 						}
-						close(IN);
 						(undef, undef, undef, $read_cnt, undef, undef, $read_sec, $write_cnt, undef, undef, $write_sec) = @tmp;
 					} else {
 						my $io;
@@ -761,8 +762,8 @@ sub fs_update {
 				}
 			}
 
-			$ioa = $read_cnt + $write_cnt;
-			$tim = $read_sec + $write_sec;
+			$ioa = ($read_cnt || 0) + ($write_cnt || 0);
+			$tim = ($read_sec || 0) + ($write_sec || 0);
 
 			$str = $e . "_ioa" . $n;
 			$val = $ioa;
