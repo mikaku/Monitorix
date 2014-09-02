@@ -882,11 +882,11 @@ This list complements the \fBlist\fP option. It basically allows you to change t
 .RS
 <desc>
 .br
-	/            = Root FS
+	/ = Root FS
 .br
-	/home        = My Home
+	/home = My Home
 .br
-	/mnt/backup  = Backups
+	/mnt/backup = Backups
 .br
 </desc>
 .RE
@@ -901,7 +901,9 @@ This list complements the \fBlist\fP option. When Monitorix is started it tries 
 .RS
 <devmap>
 .br
-	/mnt/backup  = /dev/cciss/c0d2p6
+	/mnt/home = dm-1
+.br
+	/mnt/backup = cciss/c0d2p6
 .br
 </devmap>
 .RE
