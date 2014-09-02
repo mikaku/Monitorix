@@ -4,6 +4,10 @@
 - Fixed more messages of use of uninitialized values at fs.pm in lines 765 and
   766. This mainly happens in OpenVZ VPS where '/proc/diskstats' file does not
   exist.
+- Fixed the example of '<devmap>' block in the monitorix.conf(5) man page to
+  avoid confusion. The values set there must be the same ones that in the
+  '/proc/diskstats' file.
+	(thanks to Claude Nadon, claude AT ws01.info for pointing this out)
 
 
 3.6.0  - 20-Aug-2014
