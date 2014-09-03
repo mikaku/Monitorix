@@ -530,7 +530,10 @@ if(open(OUT, "> " . $config{base_dir} . "/cgi/monitorix.conf.path")) {
 	logger("Unable to create the file '$config{base_dir}/cgi/monitorix.conf.path'. $!");
 }
 
+# make sure that 'ip_default_table' option has a consistent value
 $config{ip_default_table} = "filter" if !$config{ip_default_table};
+
+# make sure that there aren't residual Monitorix iptables rules
 flush_accounting_rules(\%config, $options{d});
 
 logger("Initializing graphs.");
@@ -544,6 +547,7 @@ foreach my $g (sort keys %{$config{graph_enable}}) {
 	}
 }
 
+# initialize all enabled graphs
 foreach (split(',', $config{graph_name} . ", traffacct")) {
 	my $g = trim($_);
 	my $e = "n";
@@ -584,11 +588,13 @@ if(!scalar($config{func_update})) {
 logger("Generating the 'index.html' file.");
 create_index();
 
+# start the HTTP built-in (if enabled)
 if(lc($config{httpd_builtin}->{enabled}) eq "y") {
 	httpd_setup(\%config, $options{d});
 	logger("Started built-in HTTP server (pid $config{httpd_pid}).") if (defined($config{httpd_pid}));
 }
 
+# make sure that some options are correctly defined
 if(!$config{global_zoom}) {
 	logger("WARNING: the 'global_zoom' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
 	$config{global_zoom} = 1;
@@ -604,6 +610,7 @@ if($config{max_historic_years} > 5) {
 
 logger("Ok, ready.");
 
+# main loop
 while(1) {
 	local $SIG{'ALRM'} = sub { };
 	alarm(1);
