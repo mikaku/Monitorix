@@ -1332,7 +1332,7 @@ Default value: \fIhttp://localhost/nginx_status\fP
 .P
 .BI port
 .RS
-This is the network port the Nginx web server is listening on.
+This is the network port the Nginx web server is listening on. It will be used for traffic (with \fIiptables\fP), and for nginx_status if \fBurl\fP is not specified. If port of nginx_status is different from \fBport\fP then specify it in the \fBurl\fP (http://host:port/nginx_status) 
 .P
 Default value: \fI80\fP
 .RE
