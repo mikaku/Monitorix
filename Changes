@@ -1,6 +1,9 @@
 3.N.N  - DD-MMM-2014
 ====================
-- Improved 'port' option description of the Nginx graph in the man page of
+- Improved 'port' option documentation of the Nginx graph in the man page of
+  monitorix.conf.
+	(thanks to Claude Nadon, claude AT ws01.info)
+- Improved '<devmap>' option documentation of the FS graph in the man page of
   monitorix.conf.
 	(thanks to Claude Nadon, claude AT ws01.info)
 - Fixed some bugs in the new Makefile. [#63]
