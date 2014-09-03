@@ -896,8 +896,37 @@ You can define as much entries as you want.
 .P
 .BI devmap
 .RS
-This list complements the \fBlist\fP option. When Monitorix is started it tries to detect automatically the device name associated to each filesystem defined in the \fBlist\fP option in order to be able to show its I/O activity. If for any reason Monitorix failed to detect it, then you can help it using this option.
+This optional list complements the \fBlist\fP option. When Monitorix is started, and in order to be able to show I/O activity, it attempts to detect the mapping of devices specified in \fBlist\fP, as defined in the \fIdf\fP command output column "Mounted on". In the event that devices are not detected by Monitorix, the \fBdevmap\fP option shall be used to manually define them, according to the underlying OS:
 .P
+.RS
+Linux (kernel > 2.4)
+.RS
+<devmap> device must match a device listed in the "/proc/diskstats" file.
+.RE
+.RE
+.P
+.RS
+Linux (kernel <= 2.4)
+.RS
+<devmap> is not used, but because something is defined in <devmap>, Monitorix will extract "disk_io" lines from the "/proc/stat" file.
+.RE
+.RE
+.P
+.RS
+FreeBSD
+.RS
+<devmap> device recognized by the output of "iostat -xI <dev>" command.
+.RE
+.RE
+.P
+.RS
+OpenBSD and NetBSD
+.RS
+<devmap> is not used, but because something is defined in <devmap>, Monitorix will use the output of "iostat -DI" command.
+.RE
+.RE
+.P
+Just an example:
 .RS
 <devmap>
 .br
