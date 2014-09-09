@@ -211,7 +211,7 @@ sub net_update {
 				while(<IN>) {
 					if(/Link/ && /$nl[$n]/) {
 						# Idrop column added in 8.0
-						if($config->{kernel} gt "7.2") {
+						if($config->{kernel} > "7.2") {
 							(undef, undef, undef, undef, $pi, $ei, undef, $bi, $po, $eo, $bo) = split(' ', $_);
 						} else {
 							(undef, undef, undef, undef, $pi, $ei, $bi, $po, $eo, $bo) = split(' ', $_);
