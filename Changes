@@ -16,7 +16,7 @@
 	(thanks to Claude Nadon, claude AT ws01.info for pointing this out)
 - Fixed kernel version detection in FreeBSD 10.x which affected the Network
   graph.
-	(thanks to Sergey Andreyev, sandreyev AT gmail.com for pointing this out)
+	(thanks to Sergey Andreyev, sandreyev AT gmail.com)
 
 
 3.6.0  - 20-Aug-2014
