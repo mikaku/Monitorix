@@ -17,6 +17,7 @@
 - Fixed kernel version detection in FreeBSD 10.x which affected the Network
   graph.
 	(thanks to Sergey Andreyev, sandreyev AT gmail.com)
+- Fixed missing HTML tag terminations in several modules.
 
 
 3.6.0  - 20-Aug-2014
