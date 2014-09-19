@@ -18,6 +18,7 @@
   graph.
 	(thanks to Sergey Andreyev, sandreyev AT gmail.com)
 - Fixed missing HTML tag terminations in several modules.
+- Fixed the color in the footer URLs in Multihost mode.
 
 
 3.6.0  - 20-Aug-2014
