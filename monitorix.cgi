@@ -125,7 +125,7 @@ sub multihost {
 					print "  <td bgcolor='$colors->{title_bg_color}'>\n";
 					print "   <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
 					print "   <font size='-1'>\n";
-					print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$n] . "' style='{color: " . $colors->{title_fg_color} . "}'>$foot_url[$n]</a></b>\n";
+					print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$n] . "' style='color: " . $colors->{title_fg_color} . ";'>$foot_url[$n]</a></b>\n";
 					print "   </font></font>\n";
 					print "  </td>\n";
 				}
@@ -156,7 +156,7 @@ sub multihost {
 			print "   <td bgcolor='$colors->{title_bg_color}'>\n";
 			print "    <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
 			print "    <font size='-1'>\n";
-			print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$cgi->{val}] . "' style='{color: " . $colors->{title_fg_color} . "}'>$foot_url[$cgi->{val}]</a></b>\n";
+			print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$cgi->{val}] . "' style='color: " . $colors->{title_fg_color} . ";'>$foot_url[$cgi->{val}]</a></b>\n";
 			print "    </font></font>\n";
 			print "   </td>\n";
 		}
