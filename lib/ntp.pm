@@ -619,7 +619,7 @@ sub ntp_cgi {
 			print "      <td bgcolor='$colors->{title_bg_color}' colspan='2'>\n";
 			print "       <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
 			print "       <font size='-1'>\n";
-			print "        <b style='{color: " . $colors->{title_fg_color} . "}'>&nbsp;&nbsp;$host<b>\n";
+			print "        <b style='{color: " . $colors->{title_fg_color} . "}'>&nbsp;&nbsp;$host</b>\n";
 			print "       </font></font>\n";
 			print "      </td>\n";
 			print("    </tr>\n");
