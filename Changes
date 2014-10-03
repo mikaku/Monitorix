@@ -25,6 +25,7 @@
   correctly the opened connections either in IPv4 and IPv6. [#66]
 - Fixed a missing CDEF that prevented creating the 'process05z.png' graph when
   the option 'show_gaps' was enabled. [#70]
+- Small cosmetic changes.
 
 
 3.6.0  - 20-Aug-2014
