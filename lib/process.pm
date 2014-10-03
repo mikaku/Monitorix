@@ -1007,6 +1007,7 @@ sub process_cgi {
 				"DEF:nof8=$rrd:proc" . $e . "_nof8:AVERAGE",
 				"DEF:nof9=$rrd:proc" . $e . "_nof9:AVERAGE",
 				"CDEF:allvalues=nof0,nof1,nof2,nof3,nof4,nof5,nof6,nof7,nof8,nof9,+,+,+,+,+,+,+,+,+",
+				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
 			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 10 + 4]: $err\n") if $err;
