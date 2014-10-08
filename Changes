@@ -6,6 +6,9 @@
 - Improved '<devmap>' option documentation of the FS graph in the man page of
   monitorix.conf.
 	(thanks to Claude Nadon, claude AT ws01.info)
+- Improved the way how are detected the process names in Process.pm module. Now
+  the output of the 'command' parameter in the 'ps' command is used to match
+  the process names.
 - Fixed some bugs in the new Makefile. [#63]
 - Fixed more messages of use of uninitialized values at fs.pm in lines 765 and
   766. This mainly happens in OpenVZ VPS where '/proc/diskstats' file does not
