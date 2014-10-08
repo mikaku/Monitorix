@@ -235,7 +235,7 @@ sub netstat_update {
 		}
 		if(open(IN, "netstat -lun -A inet6 |")) {
 			while(<IN>) {
-				$i6_udp++ if /^udp\s+/;
+				$i6_udp++ if /^udp[ 6]\s+/;
 			}
 			close(IN);
 		}
