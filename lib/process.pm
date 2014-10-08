@@ -170,7 +170,7 @@ sub process_update {
 			# check if that process is running
 			if(open(IN, "ps -eo pid,comm,command |")) {
 				while(<IN>) {
-					if(m/^\s*(\d+)\s+(\S+)\s+(\S+)\s+/) {
+					if(m/^\s*(\d+)\s+(\S+)\s+(.*?)$/) {
 						if($p eq trim($2)) {
 							push(@pid, $1);
 							$pro++;
