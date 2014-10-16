@@ -31,6 +31,7 @@
   the option 'show_gaps' was enabled. [#70]
 - Fixed a bug in 'squid.pm' module that prevented from seeing values in the
   network protocols usage graph.
+	(thanks to Claude Andriampanala, claude AT 2mi.mg for pointing this out)
 - Small cosmetic changes.
 
 
