@@ -29,6 +29,8 @@
   correctly the opened connections either in IPv4 and IPv6. [#66]
 - Fixed a missing CDEF that prevented creating the 'process05z.png' graph when
   the option 'show_gaps' was enabled. [#70]
+- Fixed a bug in 'squid.pm' module that prevented from seeing values in the
+  network protocols usage graph.
 - Small cosmetic changes.
 
 
