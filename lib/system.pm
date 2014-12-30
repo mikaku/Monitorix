@@ -336,6 +336,8 @@ sub system_update {
 }
 
 sub system_cgi {
+	no strict "refs";
+
 	my ($package, $config, $cgi) = @_;
 
 	my $system = $config->{system};
@@ -346,6 +348,13 @@ sub system_cgi {
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
 	my $zoom = "--zoom=" . $config->{global_zoom};
+	my %rrd = (
+		'new' => \&RRDs::graphv,
+		'old' => \&RRDs::graph,
+	);
+	my $version = "new";
+	my $pic;
+	my $picz;
 
 	my $u = "";
 	my $width;
@@ -357,9 +366,11 @@ sub system_cgi {
 	my $n;
 	my $err;
 
+	$version = "old" if $RRDs::VERSION < 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
 	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
+
 
 	$title = !$silent ? $title : "";
 
@@ -496,7 +507,7 @@ sub system_cgi {
 		@tmp = @tmpz;
 		push(@tmp, "COMMENT: \\n");
 	}
-	RRDs::graph("$PNG_DIR" . "$PNG1",
+	$pic = $rrd{$version}->("$PNG_DIR" . "$PNG1",
 		"--title=$config->{graphs}->{_system1}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
@@ -519,7 +530,7 @@ sub system_cgi {
 	print("ERROR: while graphing $PNG_DIR" . "$PNG1: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		RRDs::graph("$PNG_DIR" . "$PNG1z",
+		$picz = $rrd{$version}->("$PNG_DIR" . "$PNG1z",
 			"--title=$config->{graphs}->{_system1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -527,6 +538,7 @@ sub system_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
+			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:load1=$rrd:system_load1:AVERAGE",
@@ -544,7 +556,7 @@ sub system_cgi {
 				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "','','width=" . ($picz->{image_width} * $config->{global_zoom}) . ",height=" . ($picz->{image_height} * $config->{global_zoom}) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 		} else {
 			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "'>\n");
