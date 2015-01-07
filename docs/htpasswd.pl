@@ -8,6 +8,9 @@
 # If the argument is an encrypted password it will ask the password and will
 # verify if it's valid.
 #
+# WARNING: don't use the character colon ':' as part of your name or password
+# since this character is used as field separator.
+#
 
 use strict;
 use warnings;
