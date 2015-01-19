@@ -791,8 +791,6 @@ sub fs_update {
 }
 
 sub fs_cgi {
-	no strict "refs";
-
 	my ($package, $config, $cgi) = @_;
 
 	my $fs = $config->{fs};

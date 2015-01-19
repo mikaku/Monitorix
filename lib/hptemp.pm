@@ -203,8 +203,6 @@ sub hptemp_update {
 }
 
 sub hptemp_cgi {
-	no strict "refs";
-
 	my ($package, $config, $cgi) = @_;
 
 	my $hptemp = $config->{hptemp};

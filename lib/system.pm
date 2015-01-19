@@ -336,8 +336,6 @@ sub system_update {
 }
 
 sub system_cgi {
-	no strict "refs";
-
 	my ($package, $config, $cgi) = @_;
 
 	my $system = $config->{system};

@@ -375,8 +375,6 @@ sub kern_update {
 }
 
 sub kern_cgi {
-	no strict "refs";
-
 	my ($package, $config, $cgi) = @_;
 
 	my $kern = $config->{kern};

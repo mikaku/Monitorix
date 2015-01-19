@@ -284,8 +284,6 @@ sub net_update {
 }
 
 sub net_cgi {
-	no strict "refs";
-
 	my ($package, $config, $cgi) = @_;
 
 	my $net = $config->{net};

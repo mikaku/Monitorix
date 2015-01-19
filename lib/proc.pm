@@ -243,8 +243,6 @@ sub proc_update {
 }
 
 sub proc_cgi {
-	no strict "refs";
-
 	my ($package, $config, $cgi) = @_;
 
 	my $proc = $config->{proc};

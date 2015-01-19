@@ -332,8 +332,6 @@ sub lmsens_update {
 }
 
 sub lmsens_cgi {
-	no strict "refs";
-
 	my ($package, $config, $cgi) = @_;
 
 	my $lmsens = $config->{lmsens};

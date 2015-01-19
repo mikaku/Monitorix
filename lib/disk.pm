@@ -283,8 +283,6 @@ sub disk_update {
 }
 
 sub disk_cgi {
-	no strict "refs";
-
 	my ($package, $config, $cgi) = @_;
 
 	my $disk = $config->{disk};

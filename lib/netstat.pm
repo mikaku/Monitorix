@@ -298,8 +298,6 @@ sub netstat_update {
 }
 
 sub netstat_cgi {
-	no strict "refs";
-
 	my ($package, $config, $cgi) = @_;
 
 	my $netstat = $config->{netstat};

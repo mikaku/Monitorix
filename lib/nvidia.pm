@@ -232,8 +232,6 @@ sub nvidia_update {
 }
 
 sub nvidia_cgi {
-	no strict "refs";
-
 	my ($package, $config, $cgi) = @_;
 
 	my $nvidia = $config->{nvidia};
