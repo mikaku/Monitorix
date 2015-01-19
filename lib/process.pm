@@ -301,6 +301,15 @@ sub process_cgi {
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
 	my $zoom = "--zoom=" . $config->{global_zoom};
+	my %rrd = (
+		'new' => \&RRDs::graphv,
+		'old' => \&RRDs::graph,
+	);
+	my $version = "new";
+	my $pic;
+	my $picz;
+	my $picz_width;
+	my $picz_height;
 
 	my $u = "";
 	my $width;
@@ -333,6 +342,7 @@ sub process_cgi {
 		"#DDAE8C",
 	);
 
+	$version = "old" if $RRDs::VERSION < 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
 	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
@@ -489,7 +499,7 @@ sub process_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 10]",
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 10]",
 			"--title=$config->{graphs}->{_process1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -517,7 +527,7 @@ sub process_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 10]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 10]",
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 10]",
 				"--title=$config->{graphs}->{_process1}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -525,6 +535,7 @@ sub process_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
+				$zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:cpu0=$rrd:proc" . $e . "_cpu0:AVERAGE",
@@ -550,7 +561,14 @@ sub process_cgi {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10] . "' border='0'></a>\n");
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10] . "' border='0'></a>\n");
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10] . "'>\n");
@@ -592,7 +610,7 @@ sub process_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 10 + 1]",
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 10 + 1]",
 			"--title=$config->{graphs}->{_process2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -630,7 +648,7 @@ sub process_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 10 + 1]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 10 + 1]",
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 10 + 1]",
 				"--title=$config->{graphs}->{_process2}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -638,6 +656,7 @@ sub process_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
+				$zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:mem0=$rrd:proc" . $e . "_mem0:AVERAGE",
@@ -673,7 +692,14 @@ sub process_cgi {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 1] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 1] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 1] . "' border='0'></a>\n");
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 1] . "' border='0'></a>\n");
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 1] . "'>\n");
@@ -712,7 +738,7 @@ sub process_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 10 + 2]",
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 10 + 2]",
 			"--title=$config->{graphs}->{_process3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -750,7 +776,7 @@ sub process_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 10 + 2]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 10 + 2]",
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 10 + 2]",
 				"--title=$config->{graphs}->{_process3}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -758,6 +784,7 @@ sub process_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
+				$zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:dsk0=$rrd:proc" . $e . "_dsk0:AVERAGE",
@@ -793,7 +820,14 @@ sub process_cgi {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 2] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 2] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 2] . "' border='0'></a>\n");
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 2] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 2] . "' border='0'></a>\n");
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 2] . "'>\n");
@@ -858,7 +892,7 @@ sub process_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 10 + 3]",
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 10 + 3]",
 			"--title=$config->{graphs}->{_process4}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -886,7 +920,7 @@ sub process_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 10 + 3]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 10 + 3]",
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 10 + 3]",
 				"--title=$config->{graphs}->{_process4}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -894,6 +928,7 @@ sub process_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
+				$zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:net0=$rrd:proc" . $e . "_net0:AVERAGE",
@@ -919,7 +954,14 @@ sub process_cgi {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 3] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 3] . "' border='0'></a>\n");
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 3] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 3] . "' border='0'></a>\n");
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 3] . "'>\n");
@@ -958,7 +1000,7 @@ sub process_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 10 + 4]",
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 10 + 4]",
 			"--title=$config->{graphs}->{_process5}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -986,7 +1028,7 @@ sub process_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 10 + 4]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 10 + 4]",
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 10 + 4]",
 				"--title=$config->{graphs}->{_process5}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -994,6 +1036,7 @@ sub process_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
+				$zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:nof0=$rrd:proc" . $e . "_nof0:AVERAGE",
@@ -1019,7 +1062,14 @@ sub process_cgi {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 4] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 4] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 4] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 4] . "' border='0'></a>\n");
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 4] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 4] . "' border='0'></a>\n");
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 4] . "'>\n");
@@ -1061,7 +1111,7 @@ sub process_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 10 + 5]",
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 10 + 5]",
 			"--title=$config->{graphs}->{_process6}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -1089,7 +1139,7 @@ sub process_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 10 + 5]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 10 + 5]",
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 10 + 5]",
 				"--title=$config->{graphs}->{_process6}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -1097,6 +1147,7 @@ sub process_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
+				$zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:nth0=$rrd:proc" . $e . "_nth0:AVERAGE",
@@ -1122,7 +1173,14 @@ sub process_cgi {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 5] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 5] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 5] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 5] . "' border='0'></a>\n");
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 5] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 5] . "' border='0'></a>\n");
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 5] . "'>\n");
@@ -1166,7 +1224,7 @@ sub process_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 10 + 6]",
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 10 + 6]",
 			"--title=$config->{graphs}->{_process7}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -1225,7 +1283,7 @@ sub process_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 10 + 6]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 10 + 6]",
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 10 + 6]",
 				"--title=$config->{graphs}->{_process7}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -1233,6 +1291,7 @@ sub process_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
+				$zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:vcs0=$rrd:proc" . $e . "_vcs0:AVERAGE",
@@ -1289,7 +1348,14 @@ sub process_cgi {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 6] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 6] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 6] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 6] . "' border='0'></a>\n");
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 6] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 6] . "' border='0'></a>\n");
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 6] . "'>\n");
@@ -1331,7 +1397,7 @@ sub process_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 10 + 7]",
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 10 + 7]",
 			"--title=$config->{graphs}->{_process8}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -1359,7 +1425,7 @@ sub process_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 10 + 7]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 10 + 7]",
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 10 + 7]",
 				"--title=$config->{graphs}->{_process8}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -1367,6 +1433,7 @@ sub process_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
+				$zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:pro0=$rrd:proc" . $e . "_pro0:AVERAGE",
@@ -1392,7 +1459,14 @@ sub process_cgi {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 7] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 7] . "' border='0'></a>\n");
 				}
 				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 7] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 7] . "' border='0'></a>\n");
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 7] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 7] . "' border='0'></a>\n");
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 7] . "'>\n");
