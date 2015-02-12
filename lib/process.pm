@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2014 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2015 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -559,8 +559,7 @@ sub process_cgi {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10] . "' border='0'></a>\n");
-				}
-				else {
+				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
 						$picz_height = $picz->{image_height} * $config->{global_zoom};
@@ -690,8 +689,7 @@ sub process_cgi {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 1] . "' border='0'></a>\n");
-				}
-				else {
+				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
 						$picz_height = $picz->{image_height} * $config->{global_zoom};
@@ -818,8 +816,7 @@ sub process_cgi {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 2] . "' border='0'></a>\n");
-				}
-				else {
+				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
 						$picz_height = $picz->{image_height} * $config->{global_zoom};
@@ -952,8 +949,7 @@ sub process_cgi {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 3] . "' border='0'></a>\n");
-				}
-				else {
+				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
 						$picz_height = $picz->{image_height} * $config->{global_zoom};
@@ -1060,8 +1056,7 @@ sub process_cgi {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 4] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 4] . "' border='0'></a>\n");
-				}
-				else {
+				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
 						$picz_height = $picz->{image_height} * $config->{global_zoom};
@@ -1171,8 +1166,7 @@ sub process_cgi {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 5] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 5] . "' border='0'></a>\n");
-				}
-				else {
+				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
 						$picz_height = $picz->{image_height} * $config->{global_zoom};
@@ -1346,8 +1340,7 @@ sub process_cgi {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 6] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 6] . "' border='0'></a>\n");
-				}
-				else {
+				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
 						$picz_height = $picz->{image_height} * $config->{global_zoom};
@@ -1457,8 +1450,7 @@ sub process_cgi {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 10 + 7] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 10 + 7] . "' border='0'></a>\n");
-				}
-				else {
+				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
 						$picz_height = $picz->{image_height} * $config->{global_zoom};
