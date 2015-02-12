@@ -11,6 +11,10 @@
   the output of the 'command' parameter in the 'ps' command is used to match
   the process names.
 	(suggested by Julien Flatrès, julien_flatres AT yahoo.fr)
+- Zoomed graphs now honour the 'global_zoom' option, and also use the function
+  RRDs::graphv to fit better in the browser pop up window. This is a feature
+  only visible with RRDtool v1.3 or more.
+	(suggested by Alexander Görtz, alex AT nyloc.de)
 - Added an advice in 'htpasswd.pl' and 'monitorix.conf(5)' to not use the
   character colon ':' as part of the name or password since this character is
   used as field separator.
