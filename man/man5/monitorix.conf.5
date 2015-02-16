@@ -1258,7 +1258,7 @@ It will receive the following three parameters:
 Default value: \fI/path/to/script.sh\fP
 .RE
 .SS Network port traffic (port.rrd)
-This graph requires the \fIiptables\fP(8) command on Linux systems and the \fIipfw\fP command on *BSD systems.
+This graph requires the \fIiptables\fP(8) command and optionally the \fIip6tables\fP(8) command on Linux systems and the \fIipfw\fP command on *BSD systems.
 .P
 .BI max
 .RS
@@ -1283,13 +1283,17 @@ If you see a red color in the background of a network port graph, it means that 
 .P
 .BI desc
 .RS
-This is the option where each network port specified in \fBlist\fP is described. Each port definition consists of five parameters separated by comma: the port description, the network protocol, the connection type (\fIin\fP, \fIout\fP or \fIin/out\fP) and the rigid and limit values.
+This is the option where each network port specified in \fBlist\fP is described. Each port definition consists of five parameters separated by comma: the port description, the network protocol (\fItcp\fP, \fIudp\fP or \fIall\fP for all protocols), the connection type (\fIin\fP, \fIout\fP or \fIin/out\fP) and the rigid and limit values.
+.P
+There is also support (Linux only) for IPv6 network ports activity by using protocol names as \fItcp6\fP, \fIudp6\fP and \fIall6\fP.
 .P
 An example would be:
 .RS
 <desc>
 .br
 	25 = SMTP, tcp, in/out, 0, 1000
+.br
+	25 = SMTP, tcp6, in/out, 0, 1000
 .br
 	80 = HTTP, tcp, in, 0, 1000
 .br

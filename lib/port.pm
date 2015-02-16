@@ -33,6 +33,7 @@ sub port_init {
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $port = $config->{port};
+	my $cmd;
 
 	my $info;
 	my @ds;
@@ -140,16 +141,21 @@ sub port_init {
 			}
 			if($pl[$n] && $np) {
 				my $p = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[1])) || "all";
+				$cmd = "iptables";
+				if(grep {$_ eq $p} ("tcp6", "udp6", "all6")) {
+					$cmd = "ip6tables";
+					$p =~ s/6//;
+				}
 				my $conn = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[2]));
 				if($conn eq "in" || $conn eq "in/out") {
-					system("iptables -t $table -N monitorix_IN_$n 2>/dev/null");
-					system("iptables -t $table -I INPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
-					system("iptables -t $table -I OUTPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
+					system("$cmd -t $table -N monitorix_IN_$n 2>/dev/null");
+					system("$cmd -t $table -I INPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
+					system("$cmd -t $table -I OUTPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
 				}
 				if($conn eq "out" || $conn eq "in/out") {
-					system("iptables -t $table -N monitorix_OUT_$n 2>/dev/null");
-					system("iptables -t $table -I INPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
-					system("iptables -t $table -I OUTPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
+					system("$cmd -t $table -N monitorix_OUT_$n 2>/dev/null");
+					system("$cmd -t $table -I INPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
+					system("$cmd -t $table -I OUTPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
 				}
 				if($conn ne "in" && $conn ne "out" && $conn ne "in/out") {
 					logger("$myself: Invalid connection type '$conn'; must be 'in', 'out' or 'in/out'.");
@@ -166,6 +172,7 @@ sub port_init {
 			if($pl[$n] && $np) {
 				my $p = lc((split(',', $port->{desc}->{$pl[$n]}))[1]) || "all";
 				# in/out not supported yet  FIXME
+				$p =~ s/6//;	# tcp6, udp6, ... not supported
 				system("ipfw -q add $port->{rule} count $p from me $np to any");
 				system("ipfw -q add $port->{rule} count $p from any to me $np");
 			}
@@ -194,21 +201,29 @@ sub port_update {
 	my $rrdata = "N";
 
 	if($config->{os} eq "Linux") {
+		my @data;
+		my $l;
+
 		open(IN, "iptables -t $table -nxvL INPUT |");
-		while(<IN>) {
+		@data = <IN>;
+		close(IN);
+		open(IN, "ip6tables -t $table -nxvL INPUT |");
+		push(@data, <IN>);
+		close(IN);
+		for($l = 0; $l < scalar(@data); $l++) {
 			for($n = 0; $n < $port->{max}; $n++) {
 				$i_in[$n] = 0 unless $i_in[$n];
 				$o_in[$n] = 0 unless $o_in[$n];
-				if(/ monitorix_IN_$n /) {
-					my (undef, $bytes) = split(' ', $_);
+				if($data[$l] =~ / monitorix_IN_$n /) {
+					my (undef, $bytes) = split(' ', $data[$l]);
 					chomp($bytes);
 					$i_in[$n] = $bytes - ($config->{port_hist_i_in}[$n] || 0);
 					$i_in[$n] = 0 unless $i_in[$n] != $bytes;
 					$config->{port_hist_i_in}[$n] = $bytes;
 					$i_in[$n] /= 60;
 				}
-				if(/ monitorix_OUT_$n /) {
-					my (undef, $bytes) = split(' ', $_);
+				if($data[$l] =~ / monitorix_OUT_$n /) {
+					my (undef, $bytes) = split(' ', $data[$l]);
 					chomp($bytes);
 					$o_in[$n] = $bytes - ($config->{port_hist_o_in}[$n] || 0);
 					$o_in[$n] = 0 unless $o_in[$n] != $bytes;
@@ -217,22 +232,26 @@ sub port_update {
 				}
 			}
 		}
-		close(IN);
 		open(IN, "iptables -t $table -nxvL OUTPUT |");
-		while(<IN>) {
+		@data = <IN>;
+		close(IN);
+		open(IN, "ip6tables -t $table -nxvL OUTPUT |");
+		push(@data, <IN>);
+		close(IN);
+		for($l = 0; $l < scalar(@data); $l++) {
 			for($n = 0; $n < $port->{max}; $n++) {
 				$o_out[$n] = 0 unless $o_out[$n];
 				$i_out[$n] = 0 unless $i_out[$n];
-				if(/ monitorix_OUT_$n /) {
-					my (undef, $bytes) = split(' ', $_);
+				if($data[$l] =~ / monitorix_OUT_$n /) {
+					my (undef, $bytes) = split(' ', $data[$l]);
 					chomp($bytes);
 					$o_out[$n] = $bytes - ($config->{port_hist_o_out}[$n] || 0);
 					$o_out[$n] = 0 unless $o_out[$n] != $bytes;
 					$config->{port_hist_o_out}[$n] = $bytes;
 					$o_out[$n] /= 60;
 				}
-				if(/ monitorix_IN_$n /) {
-					my (undef, $bytes) = split(' ', $_);
+				if($data[$l] =~ / monitorix_IN_$n /) {
+					my (undef, $bytes) = split(' ', $data[$l]);
 					chomp($bytes);
 					$i_out[$n] = $bytes - ($config->{port_hist_i_out}[$n] || 0);
 					$i_out[$n] = 0 unless $i_out[$n] != $bytes;
@@ -241,7 +260,6 @@ sub port_update {
 				}
 			}
 		}
-		close(IN);
 	}
 	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 		my @pl = split(',', $port->{list});
@@ -476,6 +494,7 @@ sub port_cgi {
 			$pl[$n] = trim($pl[$n]);
 			my $pn = trim((split(',', $port->{desc}->{$pl[$n]}))[0]);
 			my $pp = trim((split(',', $port->{desc}->{$pl[$n]}))[1]);
+			$pp =~ s/6//;
 			my $prig = trim((split(',', $port->{desc}->{$pl[$n]}))[3]);
 			my $plim = trim((split(',', $port->{desc}->{$pl[$n]}))[4]);
 			@riglim = @{setup_riglim($prig, $plim)};

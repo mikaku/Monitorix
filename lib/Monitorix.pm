@@ -317,6 +317,8 @@ sub flush_accounting_rules {
 		logger("Flushing out iptables rules.") if $debug;
 		{
 			my @names;
+
+			# IPv4
 			if(open(IN, "iptables -t $table -nxvL INPUT --line-numbers |")) {
 				my @rules;
 				while(<IN>) {
@@ -350,6 +352,43 @@ sub flush_accounting_rules {
 			}
 			foreach(@names) {
 				system("iptables -t $table -X $_");
+			}
+
+			# IPv6
+			undef(@names);
+			if(open(IN, "ip6tables -t $table -nxvL INPUT --line-numbers |")) {
+				my @rules;
+				while(<IN>) {
+					my ($rule, undef, undef, $name) = split(' ', $_);
+					if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
+						push(@rules, $rule);
+						push(@names, $name);
+					}
+				}
+				close(IN);
+				@rules = reverse(@rules);
+				foreach(@rules) {
+					system("ip6tables -t $table -D INPUT $_");
+					$num++;
+				}
+			}
+			if(open(IN, "ip6tables -t $table -nxvL OUTPUT --line-numbers |")) {
+				my @rules;
+				while(<IN>) {
+					my ($rule, undef, undef, $name) = split(' ', $_);
+					if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
+						push(@rules, $rule);
+					}
+				}
+				close(IN);
+				@rules = reverse(@rules);
+				foreach(@rules) {
+					system("ip6tables -t $table -D OUTPUT $_");
+					$num++;
+				}
+			}
+			foreach(@names) {
+				system("ip6tables -t $table -X $_");
 			}
 		}
 		if(open(IN, "iptables -t $table -nxvL FORWARD --line-numbers |")) {
