@@ -141,9 +141,9 @@ sub port_init {
 			}
 			if($pl[$n] && $np) {
 				my $p = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[1])) || "all";
-				$cmd = "iptables";
+				$cmd = "iptables" . $config->{iptables_wait_lock};
 				if(grep {$_ eq $p} ("tcp6", "udp6", "all6")) {
-					$cmd = "ip6tables";
+					$cmd = "ip6tables" . $config->{iptables_wait_lock};
 					$p =~ s/6//;
 				}
 				my $conn = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[2]));
@@ -203,11 +203,15 @@ sub port_update {
 	if($config->{os} eq "Linux") {
 		my @data;
 		my $l;
+		my $cmd;
+		my $cmd6;
 
-		open(IN, "iptables -t $table -nxvL INPUT |");
+		$cmd = "iptables" . $config->{iptables_wait_lock};
+		$cmd6 = "ip6tables" . $config->{iptables_wait_lock};
+		open(IN, "$cmd -t $table -nxvL INPUT |");
 		@data = <IN>;
 		close(IN);
-		open(IN, "ip6tables -t $table -nxvL INPUT |");
+		open(IN, "$cmd6 -t $table -nxvL INPUT |");
 		push(@data, <IN>);
 		close(IN);
 		for($l = 0; $l < scalar(@data); $l++) {
@@ -232,10 +236,10 @@ sub port_update {
 				}
 			}
 		}
-		open(IN, "iptables -t $table -nxvL OUTPUT |");
+		open(IN, "$cmd -t $table -nxvL OUTPUT |");
 		@data = <IN>;
 		close(IN);
-		open(IN, "ip6tables -t $table -nxvL OUTPUT |");
+		open(IN, "$cmd6 -t $table -nxvL OUTPUT |");
 		push(@data, <IN>);
 		close(IN);
 		for($l = 0; $l < scalar(@data); $l++) {
