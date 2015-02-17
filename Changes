@@ -1,4 +1,4 @@
-3.N.N  - DD-MMM-2014
+3.N.N  - DD-MMM-2015
 ====================
 - Added a complete statistical VerliHub (verlihub) graph. [#72]
 - Improved 'port' option documentation of the Nginx graph in the man page of
