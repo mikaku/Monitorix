@@ -163,6 +163,7 @@ sub hptemp_update {
 			if($data[$l] =~ m/^$str  /) {
 				my $temp = trim(substr($data[$l], 47, 3));
 				chomp($temp);
+				$temp =~ s/C//;
 				push(@hptemp1, map {$_ eq "---" ? 0 : $_} ($temp));
 			}
 		}
@@ -171,6 +172,7 @@ sub hptemp_update {
 			if($data[$l] =~ m/^$str  /) {
 				my $temp = trim(substr($data[$l], 47, 3));
 				chomp($temp);
+				$temp =~ s/C//;
 				push(@hptemp2, map {$_ eq "---" ? 0 : $_} ($temp));
 			}
 		}
@@ -179,6 +181,7 @@ sub hptemp_update {
 			if($data[$l] =~ m/^$str  /) {
 				my $temp = trim(substr($data[$l], 47, 3));
 				chomp($temp);
+				$temp =~ s/C//;
 				push(@hptemp3, map {$_ eq "---" ? 0 : $_} ($temp));
 			}
 		}
