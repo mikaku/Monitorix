@@ -49,6 +49,7 @@
 	(thanks to Claude Andriampanala, claude AT 2mi.mg for pointing this out)
 - Fixes a character shifted to the left in certain 'hplog' outputs. [#78]
 - Fixed the 'process' graph in Multihost mode.
+	(thanks to Jeff Hendricks, jeffrey_hendricks AT hotmail.com for pointing this out)
 - Small cosmetic changes.
 
 
