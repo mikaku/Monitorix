@@ -196,7 +196,7 @@ close(IN);
 if(! -f $config_path) {
 	print(<< "EOF");
 Content-Type: text/plain
-
+<pre>
 FATAL: Monitorix is unable to continue!
 =======================================
 
