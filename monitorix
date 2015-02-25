@@ -275,7 +275,7 @@ EOF
 				}
 				next;
 			}
-			if($g eq "fs") {
+			if($g eq "fs" || $g eq "process") {
 				$n = 0;
 				foreach my $k (sort keys %{$config{graphs}}) {
 					if($k =~ m/$g/) {
