@@ -1,6 +1,8 @@
 3.N.N  - DD-MMM-2015
 ====================
 - Added a complete statistical VerliHub (verlihub) graph. [#72]
+- Added a complete graph for Varnish proxy cache.
+	(suggested by Dan Criel, dancriel AT gmail.com)
 - Improved 'port' option documentation of the Nginx graph in the man page of
   monitorix.conf.
 	(thanks to Claude Nadon, claude AT ws01.info)
