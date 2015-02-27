@@ -1503,6 +1503,10 @@ Note that if you modify the value of \fItmp_table_size\fP in the MySQL configura
 Therefore this value helps to know how many tmp tables go to the disk instead than to the memory. Keep in mind that some large queries, involving TEXT and BLOB columns, are directly written to the disk instead than to the memory, because they would be too big. So you probably will want to avoid having a high % of tmp tables written to the disk, but you will never reach 0% on a big site, and this is fine.
 .br
 Lower is better ... but 0% is not reachable and you should not try to reach it, usually.
+.SS Varnish cache statistics (varnish.rrd)
+This graph monitors a local installation of the Varnish HTTP accelerator.
+.P
+Only the limit and rigid values can be set here.
 .SS Squid Proxy Web Cache (squid.rrd)
 .P
 .BI cmd
@@ -1872,6 +1876,8 @@ The maximum number of applications allowed for each URL is 8.
 .RE
 .SS Devices interrupt activity (int.rrd)
 Only the limit and rigid values can be set here.
+.SS Verlihub statistics (verlihub.rrd)
+This graph monitors the Verlihub software for DC++ network.
 .SS Monitoring the Internet traffic of your LAN (traffacct.rrd)
 If your server acts as the gateway for a group of PCs, devices or even whole networks in your local LAN, you may want to know how much Internet traffic each one is generating.
 .P
