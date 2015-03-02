@@ -52,6 +52,8 @@
 - Fixes a character shifted to the left in certain 'hplog' outputs. [#78]
 - Fixed the 'process' graph in Multihost mode.
 	(thanks to Jeff Hendricks, jeffrey_hendricks AT hotmail.com for pointing this out)
+- Fixed the 'Makefile' to install 'docs/debian.conf' as 'conf.d/00-debian.conf'.
+  [#79]
 - Small cosmetic changes.
 
 
