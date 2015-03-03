@@ -713,7 +713,7 @@ sub fs_update {
 			if($d) {
 				if($config->{os} eq "Linux") {
 					if($config->{kernel} gt "2.4") {
-						if(open(IN, "/proc/diskstat")) {
+						if(open(IN, "/proc/diskstats")) {
 							while(<IN>) {
 								if(/ $d /) {
 									@tmp = split(' ', $_);
