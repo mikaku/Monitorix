@@ -140,9 +140,13 @@ sub port_init {
 				next;
 			}
 			if($pl[$n] && $np) {
-				my $p = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[1])) || "all";
+				my $p = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[1])) || "";
+				if(! grep {$_ eq $p} ("tcp", "udp", "tcp6", "udp6")) {
+					logger("$myself: Invalid protocol name '$p' in port '$pl[$n]'.");
+					next;
+				}
 				$cmd = "iptables" . $config->{iptables_wait_lock};
-				if(grep {$_ eq $p} ("tcp6", "udp6", "all6")) {
+				if(grep {$_ eq $p} ("tcp6", "udp6")) {
 					$cmd = "ip6tables" . $config->{iptables_wait_lock};
 					$p =~ s/6//;
 				}
