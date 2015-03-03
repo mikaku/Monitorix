@@ -212,10 +212,10 @@ sub port_update {
 
 		$cmd = "iptables" . $config->{iptables_wait_lock};
 		$cmd6 = "ip6tables" . $config->{iptables_wait_lock};
-		open(IN, "$cmd -t $table -nxvL INPUT |");
+		open(IN, "$cmd -t $table -nxvL INPUT 2>/dev/null |");
 		@data = <IN>;
 		close(IN);
-		open(IN, "$cmd6 -t $table -nxvL INPUT |");
+		open(IN, "$cmd6 -t $table -nxvL INPUT 2>/dev/null |");
 		push(@data, <IN>);
 		close(IN);
 		for($l = 0; $l < scalar(@data); $l++) {
@@ -240,10 +240,10 @@ sub port_update {
 				}
 			}
 		}
-		open(IN, "$cmd -t $table -nxvL OUTPUT |");
+		open(IN, "$cmd -t $table -nxvL OUTPUT 2>/dev/null |");
 		@data = <IN>;
 		close(IN);
-		open(IN, "$cmd6 -t $table -nxvL OUTPUT |");
+		open(IN, "$cmd6 -t $table -nxvL OUTPUT 2>/dev/null |");
 		push(@data, <IN>);
 		close(IN);
 		for($l = 0; $l < scalar(@data); $l++) {
