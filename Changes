@@ -1,4 +1,4 @@
-3.N.N  - DD-MMM-2015
+3.N.N  - DD-Mar-2015
 ====================
 - Added a complete statistical VerliHub (verlihub) graph. [#72]
 - Added a complete graph for Varnish proxy cache.
@@ -27,6 +27,7 @@
   versions. [#73]
 - Added Dutch translation to monthly reports.
 	(thanks to Jeroen Kik, monitorix AT steelyard.nl)
+- Removed the option 'all' as network protocol in the 'port' graph. [#67]
 - Fixed some bugs in the new Makefile. [#63]
 - Fixed more messages of use of uninitialized values at fs.pm in lines 765 and
   766. This mainly happens in OpenVZ VPS where '/proc/diskstats' file does not
