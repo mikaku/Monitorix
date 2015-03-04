@@ -55,6 +55,8 @@
 	(thanks to Jeff Hendricks, jeffrey_hendricks AT hotmail.com for pointing this out)
 - Fixed the 'Makefile' to install 'docs/debian.conf' as 'conf.d/00-debian.conf'.
   [#79]
+- Fixed to remove red background color in 'port' graph when the network port is
+  for outgoing connections.
 - Small cosmetic changes.
 
 

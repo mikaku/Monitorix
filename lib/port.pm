@@ -536,7 +536,7 @@ sub port_cgi {
 				}
 				close(IN);
 			}
-			if($pnum ne $pl[$n]) {
+			if(lc($pcon) ne "out" && $pnum ne $pl[$n]) {
 				push(@warning, $colors->{warning_color});
 			}
 
