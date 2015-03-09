@@ -880,7 +880,7 @@ sub apcupsd_cgi {
 				"--title=$config->{graphs}->{_apcupsd5}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=Volts",
+				"--vertical-label=Minutes",
 				"--width=$width",
 				"--height=$height",
 				@riglim,

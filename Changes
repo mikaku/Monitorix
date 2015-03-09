@@ -57,6 +57,7 @@
   [#79]
 - Fixed to remove red background color in 'port' graph when the network port is
   for outgoing connections.
+- Fixed a typo in the y axis title on 'apcupsd' Time left graph. [#82]
 - Small cosmetic changes.
 
 
