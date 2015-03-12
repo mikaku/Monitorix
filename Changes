@@ -1,4 +1,4 @@
-3.N.N  - DD-Mar-2015
+3.7.0  - 12-Mar-2015
 ====================
 - Added a complete statistical VerliHub (verlihub) graph. [#72]
 - Added a complete graph for Varnish proxy cache.
@@ -21,8 +21,8 @@
   character colon ':' as part of the name or password since this character is
   used as field separator.
 	(thanks to Dave Banthorpe, dave.banthorpe AT gmail.com for pointing this out)
-- Added support for IPv6 in 'ports' graph using protocols 'tcp6', 'upd6' and/or
-  'all6'. Note that 'ip6tables' command line is needed. [#67]
+- Added support for IPv6 in 'ports' graph using protocols 'tcp6' and 'upd6'.
+  Note that 'ip6tables' command line is needed. [#67]
 - Port graph now uses the wait lock option ('--wait') in newer 'iptables'
   versions. [#73]
 - Added Dutch translation to monthly reports.
@@ -58,6 +58,7 @@
 - Fixed to remove red background color in 'port' graph when the network port is
   for outgoing connections.
 - Fixed a typo in the y axis title on 'apcupsd' Time left graph. [#82]
+- Fixed to increase the timeout in 'emailreports' from 30 to 120 seconds.
 - Small cosmetic changes.
 
 
