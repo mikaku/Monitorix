@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2014 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2015 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ EOF
   <a href='http://www.monitorix.org'><img src='cid:image_logo' border='0'></a>
   <br>
   <font face='Verdana, sans-serif' color='000000' size='-2'>
-Copyright &copy; 2005-2014 Jordi Sanfeliu
+Copyright &copy; 2005-2015 Jordi Sanfeliu
   </font>
   </body>
 </html>
@@ -94,7 +94,7 @@ EOF
 
 		# generate the graphs and get the html source
 		my $url = $prefix . $base_cgi . "/monitorix.cgi?mode=localhost&graph=_$g&when=$when&color=white";
-		my $ua = LWP::UserAgent->new(timeout => 30, $ssl);
+		my $ua = LWP::UserAgent->new(timeout => 120, $ssl);
 
 		my $response = $ua->request(HTTP::Request->new('GET', $url));
 
