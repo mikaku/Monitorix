@@ -18,16 +18,17 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-package user;
+package verlihub;
 
 use strict;
 use warnings;
 use Monitorix;
 use RRDs;
+use DBI;
 use Exporter 'import';
-our @EXPORT = qw(user_init user_update user_cgi);
+our @EXPORT = qw(verlihub_init verlihub_update verlihub_cgi);
 
-sub user_init {
+sub verlihub_init {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
@@ -68,14 +69,9 @@ sub user_init {
 		eval {
 			RRDs::create($rrd,
 				"--step=60",
-				"DS:user_sys:GAUGE:120:0:U",
-				"DS:user_smb:GAUGE:120:0:U",
-				"DS:user_mac:GAUGE:120:0:U",
-				"DS:user_val1:GAUGE:120:0:U",
-				"DS:user_val2:GAUGE:120:0:U",
-				"DS:user_val3:GAUGE:120:0:U",
-				"DS:user_val4:GAUGE:120:0:U",
-				"DS:user_val5:GAUGE:120:0:U",
+				"DS:users_total:GAUGE:120:0:U",
+				"DS:upload_total:GAUGE:120:0:U",
+				"DS:share_total:GAUGE:120:0:U",
 				"RRA:AVERAGE:0.5:1:1440",
 				"RRA:AVERAGE:0.5:30:336",
 				"RRA:AVERAGE:0.5:60:744",
@@ -111,60 +107,65 @@ sub user_init {
 	logger("$myself: Ok") if $debug;
 }
 
-sub user_update {
+sub verlihub_update {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
+	my $verlihub = $config->{verlihub};
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 
-	my $sys;
-	my $smb;
-	my $mac;
+	my $users_total;
+	my $upload_total;
+	my $share_total;
 
 	my @data;
 	my $rrdata = "N";
 
-	open(IN, "who -q |");
-	while(<IN>) {
-		if(/^#\s+users\s?=\s?(\d+)/) {
-			$sys = $1;
-			last;
-		}
+	my $print_error = 0;
+	$print_error = 1 if $debug;
+
+	my $dbh;
+	my $sth;
+	
+	my $host = $verlihub->{host};
+	my $port = $verlihub->{port};
+	my $user = $verlihub->{user};
+	my $pass = $verlihub->{password};
+	my $db   = $verlihub->{database};
+	my $sql = "SELECT users_total,upload_total,share_total_gb FROM pi_stats ORDER BY realtime DESC LIMIT 0, 1";
+	
+	# Connect to the database.
+	$dbh = DBI->connect("DBI:mysql:host=$host;port=$port;database=$db",$user,$pass, { PrintError => $print_error })
+		or logger("$myself: Cannot connect to MySQL '$host:$port'.");
+
+	if($dbh) {
+		# Now retrieve data from the table.
+		$sth = $dbh->prepare($sql);
+        	$sth->execute;
+		my $row = $sth->fetchrow_hashref();
+	
+        	$users_total = int($row->{users_total});
+        	$upload_total = int($row->{upload_total});
+        	$share_total = int($row->{share_total_gb});
+	
+		$sth->finish;
+        	$dbh->disconnect;
+	
+		$rrdata .= ":$users_total:$upload_total:$share_total";
+		RRDs::update($rrd, $rrdata);
+		logger("$myself: $rrdata") if $debug;
+		my $err = RRDs::error;
+		logger("ERROR: while updating $rrd: $err") if $err;
+	} else {
+		logger("$myself: Skipping update $rrd");
 	}
-	close(IN);
-
-	$smb = 0;
-	open(IN, "smbstatus -b 2>/dev/null |");
-	while(<IN>) {
-		if(/^----------/) {
-			$smb++;
-			next;
-		}
-		if($smb) {
-			$smb++ unless !$_;
-		}
-	}
-	close(IN);
-	$smb--;
-
-	open(IN, "macusers 2>/dev/null |");
-	@data = <IN>;
-	close(IN);
-	$mac = scalar(@data) - 1;
-	$mac = 0 unless @data;
-
-	$rrdata .= ":$sys:$smb:$mac:0:0:0:0:0";
-	RRDs::update($rrd, $rrdata);
-	logger("$myself: $rrdata") if $debug;
-	my $err = RRDs::error;
-	logger("ERROR: while updating $rrd: $err") if $err;
 }
 
-sub user_cgi {
+sub verlihub_cgi {
 	my ($package, $config, $cgi) = @_;
 
-	my $user = $config->{user};
-	my @rigid = split(',', ($user->{rigid} || ""));
-	my @limit = split(',', ($user->{limit} || ""));
+	my $verlihub = $config->{verlihub};
+	my @rigid = split(',', ($verlihub->{rigid} || ""));
+	my @limit = split(',', ($verlihub->{limit} || ""));
 	my $tf = $cgi->{tf};
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
@@ -206,24 +207,22 @@ sub user_cgi {
 			print("    <tr>\n");
 			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 		}
-		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
-			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"AVERAGE",
-			"-r $tf->{res}");
+		my (undef, undef, undef, $data) = RRDs::fetch("$rrd","--start=-$tf->{nwhen}$tf->{twhen}","AVERAGE","-r $tf->{res}");
 		$err = RRDs::error;
 		print("ERROR: while fetching $rrd: $err\n") if $err;
 		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
-		print("Time    Logged In     Samba  Netatalk\n");
-		print("------------------------------------- \n");
+		print("Time       Users    Upload (GB)    Share (GB)\n");
+		print("---------------------------------------------\n");
 		my $line;
 		my @row;
 		my $time;
+		
 		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
 			$line = @$data[$n];
-			my ($sys, $smb, $mac) = @$line;
-			@row = ($sys, $smb, $mac);
+			my ($users_total, $upload_total, $share_total) = @$line;
+			@row = ($users_total, $upload_total, $share_total);
 			$time = $time - (1 / $tf->{ts});
-			printf(" %2d$tf->{tc}       %6d    %6d    %6d\n", $time, @row);
+			printf(" %2d$tf->{tc}      %6d         %6d       %6d\n", $time, @row);
 		}
 		print("    </pre>\n");
 		if($title) {
@@ -270,14 +269,14 @@ sub user_cgi {
 		print("    <tr>\n");
 		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 	}
-	push(@tmp, "AREA:sys#44EE44:Logged In");
-	push(@tmp, "GPRINT:sys:LAST:        Current\\: %3.0lf");
-	push(@tmp, "GPRINT:sys:AVERAGE:   Average\\: %3.0lf");
-	push(@tmp, "GPRINT:sys:MIN:   Min\\: %3.0lf");
-	push(@tmp, "GPRINT:sys:MAX:   Max\\: %3.0lf\\n");
-	push(@tmp, "LINE1:sys#00EE00");
-	push(@tmpz, "AREA:sys#44EE44:Logged In");
-	push(@tmpz, "LINE1:sys#00EE00");
+	push(@tmp, "AREA:users_total#2258FF:Connected Users");
+	push(@tmp, "GPRINT:users_total:LAST:      Current\\: %3.0lf");
+	push(@tmp, "GPRINT:users_total:AVERAGE:   Average\\: %3.0lf");
+	push(@tmp, "GPRINT:users_total:MIN:   Min\\: %3.0lf");
+	push(@tmp, "GPRINT:users_total:MAX:   Max\\: %3.0lf\\n");
+	push(@tmp, "LINE1:users_total#000BFF");
+	push(@tmpz, "AREA:users_total#2258FF:Connected users");
+	push(@tmpz, "LINE1:users_total#000BFF");
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -290,7 +289,7 @@ sub user_cgi {
 		@tmp = @tmpz;
 	}
 	$pic = $rrd{$version}->("$PNG_DIR" . "$PNG1",
-		"--title=$config->{graphs}->{_user1}  ($tf->{nwhen}$tf->{twhen})",
+		"--title=$config->{graphs}->{_verlihub1}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
 		"--vertical-label=Users",
@@ -300,8 +299,8 @@ sub user_cgi {
 		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
-		"DEF:sys=$rrd:user_sys:AVERAGE",
-		"CDEF:allvalues=sys",
+		"DEF:users_total=$rrd:users_total:AVERAGE",
+		"CDEF:allvalues=users_total",
 		@CDEF,
 		"COMMENT: \\n",
 		@tmp,
@@ -313,7 +312,7 @@ sub user_cgi {
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		$picz = $rrd{$version}->("$PNG_DIR" . "$PNG1z",
-			"--title=$config->{graphs}->{_user1}  ($tf->{nwhen}$tf->{twhen})",
+			"--title=$config->{graphs}->{_verlihub1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
 			"--vertical-label=Users",
@@ -323,14 +322,14 @@ sub user_cgi {
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
-			"DEF:sys=$rrd:user_sys:AVERAGE",
-			"CDEF:allvalues=sys",
+			"DEF:users_total=$rrd:users_total:AVERAGE",
+			"CDEF:allvalues=users_total",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
 	}
-	if($title || ($silent =~ /imagetag/ && $graph =~ /user1/)) {
+	if($title || ($silent =~ /imagetag/ && $graph =~ /_verlihub1/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
 				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
@@ -357,16 +356,18 @@ sub user_cgi {
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
-	push(@tmp, "AREA:smb#EEEE44:Samba");
-	push(@tmp, "GPRINT:smb:LAST:                Current\\: %3.0lf\\n");
-	push(@tmp, "LINE1:smb#EEEE00");
-	push(@tmpz, "AREA:smb#EEEE44:Samba");
-	push(@tmpz, "LINE2:smb#EEEE00");
+	push(@tmp, "AREA:upload_total#CC9055:Upload");
+	push(@tmp, "GPRINT:upload_total:LAST:                Current\\: %3.0lf\\n");
+	push(@tmp, "LINE1:upload_total#EE7907");
+	push(@tmpz, "AREA:upload_total#CC9055:Upload");
+	push(@tmpz, "LINE2:upload_total#EE7907");
+
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
 		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 	}
+
 	($width, $height) = split('x', $config->{graph_size}->{small});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
@@ -377,19 +378,20 @@ sub user_cgi {
 		push(@tmp, "COMMENT: \\n");
 	}
 	$pic = $rrd{$version}->("$PNG_DIR" . "$PNG2",
-		"--title=$config->{graphs}->{_user2}  ($tf->{nwhen}$tf->{twhen})",
+		"--title=$config->{graphs}->{_verlihub2}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
-		"--vertical-label=Users",
+		"--vertical-label=Upload (GB)",
 		"--width=$width",
 		"--height=$height",
+		"--units-exponent=0",
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
-		"DEF:smb=$rrd:user_smb:AVERAGE",
-		"CDEF:allvalues=smb",
+		"DEF:upload_total=$rrd:upload_total:AVERAGE",
+		"CDEF:allvalues=upload_total",
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
@@ -397,25 +399,26 @@ sub user_cgi {
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		$picz = $rrd{$version}->("$PNG_DIR" . "$PNG2z",
-			"--title=$config->{graphs}->{_user2}  ($tf->{nwhen}$tf->{twhen})",
+			"--title=$config->{graphs}->{_verlihub2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Users",
+			"--vertical-label=Upload (GB)",
 			"--width=$width",
 			"--height=$height",
+			"--units-exponent=0",
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
-			"DEF:smb=$rrd:user_smb:AVERAGE",
-			"CDEF:allvalues=smb",
+			"DEF:upload_total=$rrd:upload_total:AVERAGE",
+			"CDEF:allvalues=upload_total",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
 	}
-	if($title || ($silent =~ /imagetag/ && $graph =~ /user2/)) {
+	if($title || ($silent =~ /imagetag/ && $graph =~ /_verlihub2/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
 				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
@@ -438,11 +441,11 @@ sub user_cgi {
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
-	push(@tmp, "AREA:mac#EE4444:Netatalk");
-	push(@tmp, "GPRINT:mac:LAST:             Current\\: %3.0lf\\n");
-	push(@tmp, "LINE1:mac#EE0000");
-	push(@tmpz, "AREA:mac#EE4444:Netatalk");
-	push(@tmpz, "LINE2:mac#EE0000");
+	push(@tmp, "AREA:share_total#52B444:Share");
+	push(@tmp, "GPRINT:share_total:LAST:             Current\\: %3.0lf\\n");
+	push(@tmp, "LINE1:share_total#15A500");
+	push(@tmpz, "AREA:share_total#52B444:Share");
+	push(@tmpz, "LINE2:share_total#15A500");
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -458,19 +461,20 @@ sub user_cgi {
 		push(@tmp, "COMMENT: \\n");
 	}
 	$pic = $rrd{$version}->("$PNG_DIR" . "$PNG3",
-		"--title=$config->{graphs}->{_user3}  ($tf->{nwhen}$tf->{twhen})",
+		"--title=$config->{graphs}->{_verlihub3}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
-		"--vertical-label=Users",
+		"--vertical-label=Share (GB)",
 		"--width=$width",
 		"--height=$height",
+		"--units-exponent=0",
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
-		"DEF:mac=$rrd:user_mac:AVERAGE",
-		"CDEF:allvalues=mac",
+		"DEF:share_total=$rrd:share_total:AVERAGE",
+		"CDEF:allvalues=share_total",
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
@@ -478,25 +482,26 @@ sub user_cgi {
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		$picz = $rrd{$version}->("$PNG_DIR" . "$PNG3z",
-			"--title=$config->{graphs}->{_user3}  ($tf->{nwhen}$tf->{twhen})",
+			"--title=$config->{graphs}->{_verlihub3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Users",
+			"--vertical-label=Share (GB)",
 			"--width=$width",
 			"--height=$height",
+			"--units-exponent=0",
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
-			"DEF:mac=$rrd:user_mac:AVERAGE",
-			"CDEF:allvalues=mac",
+			"DEF:share_total=$rrd:share_total:AVERAGE",
+			"CDEF:allvalues=share_total",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
 	}
-	if($title || ($silent =~ /imagetag/ && $graph =~ /user3/)) {
+	if($title || ($silent =~ /imagetag/ && $graph =~ /_verlihub3/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
 				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");

@@ -1,9 +1,9 @@
 .\" Monitorix manpage.
-.\" Copyright (C) 2005-2014 by Jordi Sanfeliu <jordi@fibranet.cat>
+.\" Copyright (C) 2005-2015 by Jordi Sanfeliu <jordi@fibranet.cat>
 .\"
 .\" This is the man page for the monitorix.conf configuration file.
 .\"
-.TH monitorix.conf 5 "Aug 2014" 3.6.0 "Monitorix configuration file"
+.TH monitorix.conf 5 "Mar 2015" 3.7.0 "Monitorix configuration file"
 .SH NAME
 monitorix.conf \- Configuration file for Monitorix.
 .SH DESCRIPTION
@@ -316,6 +316,8 @@ paul:oGkEsQK6RYIII
 peter:HF1r7qRL4Kg6E
 .P
 Since the script uses the crypt() algorithm, only the first 8 characters of the password are used to form the password. If the supplied password is longer, the extra characters will be silently discarded.
+.P
+WARNING: don't use the character colon ':' as part of your name or password since this character is used as field separator.
 .P
 Default value: \fI/var/lib/monitorix/htpasswd\fP
 .RE
@@ -882,11 +884,11 @@ This list complements the \fBlist\fP option. It basically allows you to change t
 .RS
 <desc>
 .br
-	/            = Root FS
+	/ = Root FS
 .br
-	/home        = My Home
+	/home = My Home
 .br
-	/mnt/backup  = Backups
+	/mnt/backup = Backups
 .br
 </desc>
 .RE
@@ -896,12 +898,43 @@ You can define as much entries as you want.
 .P
 .BI devmap
 .RS
-This list complements the \fBlist\fP option. When Monitorix is started it tries to detect automatically the device name associated to each filesystem defined in the \fBlist\fP option in order to be able to show its I/O activity. If for any reason Monitorix failed to detect it, then you can help it using this option.
+This optional list complements the \fBlist\fP option. When Monitorix is started, and in order to be able to show I/O activity, it attempts to detect the mapping of devices specified in \fBlist\fP, as defined in the \fIdf\fP command output column "Mounted on". In the event that devices are not detected by Monitorix, the \fBdevmap\fP option shall be used to manually define them, according to the underlying OS:
 .P
+.RS
+Linux (kernel > 2.4)
+.RS
+<devmap> device must match a device listed in the "/proc/diskstats" file.
+.RE
+.RE
+.P
+.RS
+Linux (kernel <= 2.4)
+.RS
+<devmap> is not used, but because something is defined in <devmap>, Monitorix will extract "disk_io" lines from the "/proc/stat" file.
+.RE
+.RE
+.P
+.RS
+FreeBSD
+.RS
+<devmap> device recognized by the output of "iostat -xI <dev>" command.
+.RE
+.RE
+.P
+.RS
+OpenBSD and NetBSD
+.RS
+<devmap> is not used, but because something is defined in <devmap>, Monitorix will use the output of "iostat -DI" command.
+.RE
+.RE
+.P
+Just an example:
 .RS
 <devmap>
 .br
-	/mnt/backup  = /dev/cciss/c0d2p6
+	/mnt/home = dm-1
+.br
+	/mnt/backup = cciss/c0d2p6
 .br
 </devmap>
 .RE
@@ -1225,7 +1258,7 @@ It will receive the following three parameters:
 Default value: \fI/path/to/script.sh\fP
 .RE
 .SS Network port traffic (port.rrd)
-This graph requires the \fIiptables\fP(8) command on Linux systems and the \fIipfw\fP command on *BSD systems.
+This graph requires the \fIiptables\fP(8) command and optionally the \fIip6tables\fP(8) command on Linux systems and the \fIipfw\fP command on *BSD systems.
 .P
 .BI max
 .RS
@@ -1250,13 +1283,17 @@ If you see a red color in the background of a network port graph, it means that 
 .P
 .BI desc
 .RS
-This is the option where each network port specified in \fBlist\fP is described. Each port definition consists of five parameters separated by comma: the port description, the network protocol, the connection type (\fIin\fP, \fIout\fP or \fIin/out\fP) and the rigid and limit values.
+This is the option where each network port specified in \fBlist\fP is described. Each port definition consists of five parameters separated by comma: the port description, the network protocol (\fItcp\fP or \fIudp\fP), the connection type (\fIin\fP, \fIout\fP or \fIin/out\fP) and the rigid and limit values.
+.P
+There is also support (Linux only) for IPv6 network ports activity by using protocol names as \fItcp6\fP or \fIudp6\fP.
 .P
 An example would be:
 .RS
 <desc>
 .br
 	25 = SMTP, tcp, in/out, 0, 1000
+.br
+	25 = SMTP, tcp6, in/out, 0, 1000
 .br
 	80 = HTTP, tcp, in, 0, 1000
 .br
@@ -1330,7 +1367,7 @@ Default value: \fIhttp://localhost/nginx_status\fP
 .P
 .BI port
 .RS
-This is the network port the Nginx web server is listening on.
+This is the network port the Nginx web server is listening on. It will be used for traffic (with \fIiptables\fP), and for nginx_status if \fBurl\fP is not specified. If port of nginx_status is different from \fBport\fP then specify it in the \fBurl\fP (http://host:port/nginx_status) 
 .P
 Default value: \fI80\fP
 .RE
@@ -1466,6 +1503,10 @@ Note that if you modify the value of \fItmp_table_size\fP in the MySQL configura
 Therefore this value helps to know how many tmp tables go to the disk instead than to the memory. Keep in mind that some large queries, involving TEXT and BLOB columns, are directly written to the disk instead than to the memory, because they would be too big. So you probably will want to avoid having a high % of tmp tables written to the disk, but you will never reach 0% on a big site, and this is fine.
 .br
 Lower is better ... but 0% is not reachable and you should not try to reach it, usually.
+.SS Varnish cache statistics (varnish.rrd)
+This graph monitors a local installation of the Varnish HTTP accelerator.
+.P
+Only the limit and rigid values can be set here.
 .SS Squid Proxy Web Cache (squid.rrd)
 .P
 .BI cmd
@@ -1835,6 +1876,8 @@ The maximum number of applications allowed for each URL is 8.
 .RE
 .SS Devices interrupt activity (int.rrd)
 Only the limit and rigid values can be set here.
+.SS Verlihub statistics (verlihub.rrd)
+This graph monitors the Verlihub software for DC++ network.
 .SS Monitoring the Internet traffic of your LAN (traffacct.rrd)
 If your server acts as the gateway for a group of PCs, devices or even whole networks in your local LAN, you may want to know how much Internet traffic each one is generating.
 .P
@@ -1908,7 +1951,7 @@ Default value: \fIn\fP
 .RS
 Define here the language used in the monthly report.
 .P
-The possible values are: \fIca\fP, \fIde\fP, \fIen\fP, \fIit\fP, \fIpl\fP and \fIzh_CN\fP.
+The current possible values are: \fIca\fP, \fIde\fP, \fIen\fP, \fIit\fP, \fInl_NL\fP, \fIpl\fP and \fIzh_CN\fP.
 .P
 Default value: \fIen\fP
 .RE
@@ -2150,7 +2193,7 @@ This is where you can enter the upper-limit and lower-limit values (separated by
 .SH AUTHOR
 Monitorix is written by Jordi Sanfeliu <jordi@fibranet.cat>
 .SH COPYRIGHT
-Copyright \(co 2005-2014 Jordi Sanfeliu
+Copyright \(co 2005-2015 Jordi Sanfeliu
 .br
 Licensed under the GNU General Public License version 2 (GPLv2).
 .SH SEE ALSO

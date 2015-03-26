@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2014 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2015 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -179,111 +179,115 @@ sub netstat_update {
 	my $rrdata = "N";
 
 	if($config->{os} eq "Linux") {
-		open(IN, "netstat -tn -A inet |");
-		while(<IN>) {
-			if(/^.*?\s\s\s\s\s(\S+)\s*$/) {
-				$i4_closed++ if trim($1) eq "CLOSED";
-				$i4_synsent++ if trim($1) eq "SYN_SENT";
-				$i4_synrecv++ if trim($1) eq "SYN_RECV";
-				$i4_estblshd++ if trim($1) eq "ESTABLISHED";
-				$i4_finwait1++ if trim($1) eq "FIN_WAIT1";
-				$i4_finwait2++ if trim($1) eq "FIN_WAIT2";
-				$i4_closing++ if trim($1) eq "CLOSING";
-				$i4_timewait++ if trim($1) eq "TIME_WAIT";
-				$i4_closewait++ if trim($1) eq "CLOSE_WAIT";
-				$i4_lastack++ if trim($1) eq "LAST_ACK";
-				$i4_unknown++ if trim($1) eq "UNKNOWN";
+		if(open(IN, "netstat -tn -A inet |")) {
+			while(<IN>) {
+				my $last = (split(' ', $_))[-1];
+				$i4_closed++ if trim($last) eq "CLOSED";
+				$i4_synsent++ if trim($last) eq "SYN_SENT";
+				$i4_synrecv++ if trim($last) eq "SYN_RECV";
+				$i4_estblshd++ if trim($last) eq "ESTABLISHED";
+				$i4_finwait1++ if trim($last) eq "FIN_WAIT1";
+				$i4_finwait2++ if trim($last) eq "FIN_WAIT2";
+				$i4_closing++ if trim($last) eq "CLOSING";
+				$i4_timewait++ if trim($last) eq "TIME_WAIT";
+				$i4_closewait++ if trim($last) eq "CLOSE_WAIT";
+				$i4_lastack++ if trim($last) eq "LAST_ACK";
+				$i4_unknown++ if trim($last) eq "UNKNOWN";
 			}
+			close(IN);
 		}
-		close(IN);
-		open(IN, "netstat -ltn -A inet |");
-		while(<IN>) {
-			if(/^.*?\s\s\s\s\s(\S+)\s*$/) {
-				$i4_listen++ if trim($1) eq "LISTEN";
+		if(open(IN, "netstat -ltn -A inet |")) {
+			while(<IN>) {
+				my $last = (split(' ', $_))[-1];
+				$i4_listen++ if trim($last) eq "LISTEN";
 			}
+			close(IN);
 		}
-		close(IN);
-		open(IN, "netstat -lun -A inet |");
-		while(<IN>) {
-			$i4_udp++ if /^udp\s+/;
-		}
-		close(IN);
-		open(IN, "netstat -tn -A inet6 |");
-		while(<IN>) {
-			if(/^.*?\s\s\s\s\s(\S+)\s*$/) {
-				$i6_closed++ if trim($1) eq "CLOSED";
-				$i6_synsent++ if trim($1) eq "SYN_SENT";
-				$i6_synrecv++ if trim($1) eq "SYN_RECV";
-				$i6_estblshd++ if trim($1) eq "ESTABLISHED";
-				$i6_finwait1++ if trim($1) eq "FIN_WAIT1";
-				$i6_finwait2++ if trim($1) eq "FIN_WAIT2";
-				$i6_closing++ if trim($1) eq "CLOSING";
-				$i6_timewait++ if trim($1) eq "TIME_WAIT";
-				$i6_closewait++ if trim($1) eq "CLOSE_WAIT";
-				$i6_lastack++ if trim($1) eq "LAST_ACK";
-				$i6_unknown++ if trim($1) eq "UNKNOWN";
+		if(open(IN, "netstat -lun -A inet |")) {
+			while(<IN>) {
+				$i4_udp++ if /^udp\s+/;
 			}
+			close(IN);
 		}
-		close(IN);
-		open(IN, "netstat -ltn -A inet6 |");
-		while(<IN>) {
-			if(/^.*?\s\s\s\s\s(\S+)\s*$/) {
-				$i6_listen++ if trim($1) eq "LISTEN";
+		if(open(IN, "netstat -tn -A inet6 |")) {
+			while(<IN>) {
+				my $last = (split(' ', $_))[-1];
+				$i6_closed++ if trim($last) eq "CLOSED";
+				$i6_synsent++ if trim($last) eq "SYN_SENT";
+				$i6_synrecv++ if trim($last) eq "SYN_RECV";
+				$i6_estblshd++ if trim($last) eq "ESTABLISHED";
+				$i6_finwait1++ if trim($last) eq "FIN_WAIT1";
+				$i6_finwait2++ if trim($last) eq "FIN_WAIT2";
+				$i6_closing++ if trim($last) eq "CLOSING";
+				$i6_timewait++ if trim($last) eq "TIME_WAIT";
+				$i6_closewait++ if trim($last) eq "CLOSE_WAIT";
+				$i6_lastack++ if trim($last) eq "LAST_ACK";
+				$i6_unknown++ if trim($last) eq "UNKNOWN";
 			}
+			close(IN);
 		}
-		close(IN);
-		open(IN, "netstat -lun -A inet6 |");
-		while(<IN>) {
-			$i6_udp++ if /^udp\s+/;
+		if(open(IN, "netstat -ltn -A inet6 |")) {
+			while(<IN>) {
+				my $last = (split(' ', $_))[-1];
+				$i6_listen++ if trim($last) eq "LISTEN";
+			}
+			close(IN);
 		}
-		close(IN);
+		if(open(IN, "netstat -lun -A inet6 |")) {
+			while(<IN>) {
+				$i6_udp++ if /^udp[ 6]\s+/;
+			}
+			close(IN);
+		}
 	} elsif(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD")) {
-		open(IN, "netstat -na -p tcp -f inet |");
-		while(<IN>) {
-			if(/^.*?\s\s\s\s\s(\S+)\s*$/) {
-				$i4_closed++ if trim($1) eq "CLOSED";
-				$i4_listen++ if trim($1) eq "LISTEN";
-				$i4_synsent++ if trim($1) eq "SYN_SENT";
-				$i4_synrecv++ if trim($1) eq "SYN_RCVD";
-				$i4_estblshd++ if trim($1) eq "ESTABLISHED";
-				$i4_finwait1++ if trim($1) eq "FIN_WAIT_1";
-				$i4_finwait2++ if trim($1) eq "FIN_WAIT_2";
-				$i4_closing++ if trim($1) eq "CLOSING";
-				$i4_timewait++ if trim($1) eq "TIME_WAIT";
-				$i4_closewait++ if trim($1) eq "CLOSE_WAIT";
-				$i4_lastack++ if trim($1) eq "LAST_ACK";
-				$i4_unknown++ if trim($1) eq "UNKNOWN";
+		if(open(IN, "netstat -na -p tcp -f inet |")) {
+			while(<IN>) {
+				my $last = (split(' ', $_))[-1];
+				$i4_closed++ if trim($last) eq "CLOSED";
+				$i4_listen++ if trim($last) eq "LISTEN";
+				$i4_synsent++ if trim($last) eq "SYN_SENT";
+				$i4_synrecv++ if trim($last) eq "SYN_RCVD";
+				$i4_estblshd++ if trim($last) eq "ESTABLISHED";
+				$i4_finwait1++ if trim($last) eq "FIN_WAIT_1";
+				$i4_finwait2++ if trim($last) eq "FIN_WAIT_2";
+				$i4_closing++ if trim($last) eq "CLOSING";
+				$i4_timewait++ if trim($last) eq "TIME_WAIT";
+				$i4_closewait++ if trim($last) eq "CLOSE_WAIT";
+				$i4_lastack++ if trim($last) eq "LAST_ACK";
+				$i4_unknown++ if trim($last) eq "UNKNOWN";
 			}
+			close(IN);
 		}
-		close(IN);
-		open(IN, "netstat -na -p udp -f inet |");
-		while(<IN>) {
-			$i4_udp++ if /^udp.\s+/;
-		}
-		close(IN);
-		open(IN, "netstat -na -p tcp -f inet6 |");
-		while(<IN>) {
-			if(/^.*?\s\s\s\s\s(\S+)\s*$/) {
-				$i6_closed++ if trim($1) eq "CLOSED";
-				$i6_listen++ if trim($1) eq "LISTEN";
-				$i6_synsent++ if trim($1) eq "SYN_SENT";
-				$i6_synrecv++ if trim($1) eq "SYN_RCVD";
-				$i6_estblshd++ if trim($1) eq "ESTABLISHED";
-				$i6_finwait1++ if trim($1) eq "FIN_WAIT_1";
-				$i6_finwait2++ if trim($1) eq "FIN_WAIT_2";
-				$i6_closing++ if trim($1) eq "CLOSING";
-				$i6_timewait++ if trim($1) eq "TIME_WAIT";
-				$i6_closewait++ if trim($1) eq "CLOSE_WAIT";
-				$i6_lastack++ if trim($1) eq "LAST_ACK";
-				$i6_unknown++ if trim($1) eq "UNKNOWN";
+		if(open(IN, "netstat -na -p udp -f inet |")) {
+			while(<IN>) {
+				$i4_udp++ if /^udp.\s+/;
 			}
+			close(IN);
 		}
-		close(IN);
-		open(IN, "netstat -na -p udp -f inet6 |");
-		while(<IN>) {
-			$i6_udp++ if /^udp.\s+/;
+		if(open(IN, "netstat -na -p tcp -f inet6 |")) {
+			while(<IN>) {
+				my $last = (split(' ', $_))[-1];
+				$i6_closed++ if trim($last) eq "CLOSED";
+				$i6_listen++ if trim($last) eq "LISTEN";
+				$i6_synsent++ if trim($last) eq "SYN_SENT";
+				$i6_synrecv++ if trim($last) eq "SYN_RCVD";
+				$i6_estblshd++ if trim($last) eq "ESTABLISHED";
+				$i6_finwait1++ if trim($last) eq "FIN_WAIT_1";
+				$i6_finwait2++ if trim($last) eq "FIN_WAIT_2";
+				$i6_closing++ if trim($last) eq "CLOSING";
+				$i6_timewait++ if trim($last) eq "TIME_WAIT";
+				$i6_closewait++ if trim($last) eq "CLOSE_WAIT";
+				$i6_lastack++ if trim($last) eq "LAST_ACK";
+				$i6_unknown++ if trim($last) eq "UNKNOWN";
+			}
+			close(IN);
 		}
-		close(IN);
+		if(open(IN, "netstat -na -p udp -f inet6 |")) {
+			while(<IN>) {
+				$i6_udp++ if /^udp.\s+/;
+			}
+			close(IN);
+		}
 	}
 
 	$rrdata .= ":$i4_closed:$i4_listen:$i4_synsent:$i4_synrecv:$i4_estblshd:$i4_finwait1:$i4_finwait2:$i4_closing:$i4_timewait:$i4_closewait:$i4_lastack:$i4_unknown:$i4_udp:0:0:0:0:0:$i6_closed:$i6_listen:$i6_synsent:$i6_synrecv:$i6_estblshd:$i6_finwait1:$i6_finwait2:$i6_closing:$i6_timewait:$i6_closewait:$i6_lastack:$i6_unknown:$i6_udp:0:0:0:0:0";
@@ -304,6 +308,15 @@ sub netstat_cgi {
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
 	my $zoom = "--zoom=" . $config->{global_zoom};
+	my %rrd = (
+		'new' => \&RRDs::graphv,
+		'old' => \&RRDs::graph,
+	);
+	my $version = "new";
+	my $pic;
+	my $picz;
+	my $picz_width;
+	my $picz_height;
 
 	my $u = "";
 	my $width;
@@ -315,6 +328,7 @@ sub netstat_cgi {
 	my $n;
 	my $err;
 
+	$version = "old" if $RRDs::VERSION < 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
 	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
@@ -455,7 +469,7 @@ sub netstat_cgi {
 		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 		@tmp = @tmpz;
 	}
-	RRDs::graph("$PNG_DIR" . "$PNG1",
+	$pic = $rrd{$version}->("$PNG_DIR" . "$PNG1",
 		"--title=$config->{graphs}->{_netstat1}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
@@ -480,7 +494,7 @@ sub netstat_cgi {
 	print("ERROR: while graphing $PNG_DIR" . "$PNG1: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		RRDs::graph("$PNG_DIR" . "$PNG1z",
+		$picz = $rrd{$version}->("$PNG_DIR" . "$PNG1z",
 			"--title=$config->{graphs}->{_netstat1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -488,6 +502,7 @@ sub netstat_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
+			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:i4_closed=$rrd:nstat4_closed:AVERAGE",
@@ -507,9 +522,15 @@ sub netstat_cgi {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
 				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
-			}
-			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+			} else {
+				if($version eq "new") {
+					$picz_width = $picz->{image_width} * $config->{global_zoom};
+					$picz_height = $picz->{image_height} * $config->{global_zoom};
+				} else {
+					$picz_width = $width + 115;
+					$picz_height = $height + 100;
+				}
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
 			}
 		} else {
 			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "'>\n");
@@ -573,7 +594,7 @@ sub netstat_cgi {
 		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 		@tmp = @tmpz;
 	}
-	RRDs::graph("$PNG_DIR" . "$PNG2",
+	$pic = $rrd{$version}->("$PNG_DIR" . "$PNG2",
 		"--title=$config->{graphs}->{_netstat2}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
@@ -598,7 +619,7 @@ sub netstat_cgi {
 	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		RRDs::graph("$PNG_DIR" . "$PNG2z",
+		$picz = $rrd{$version}->("$PNG_DIR" . "$PNG2z",
 			"--title=$config->{graphs}->{_netstat2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -606,6 +627,7 @@ sub netstat_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
+			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:i6_closed=$rrd:nstat6_closed:AVERAGE",
@@ -625,9 +647,15 @@ sub netstat_cgi {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
 				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
-			}
-			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+			} else {
+				if($version eq "new") {
+					$picz_width = $picz->{image_width} * $config->{global_zoom};
+					$picz_height = $picz->{image_height} * $config->{global_zoom};
+				} else {
+					$picz_width = $width + 115;
+					$picz_height = $height + 100;
+				}
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
 			}
 		} else {
 			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "'>\n");
@@ -670,7 +698,7 @@ sub netstat_cgi {
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 	}
-	RRDs::graph("$PNG_DIR" . "$PNG3",
+	$pic = $rrd{$version}->("$PNG_DIR" . "$PNG3",
 		"--title=$config->{graphs}->{_netstat3}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
@@ -694,7 +722,7 @@ sub netstat_cgi {
 	print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		RRDs::graph("$PNG_DIR" . "$PNG3z",
+		$picz = $rrd{$version}->("$PNG_DIR" . "$PNG3z",
 			"--title=$config->{graphs}->{_netstat3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -702,6 +730,7 @@ sub netstat_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
+			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -719,9 +748,15 @@ sub netstat_cgi {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
 				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
-			}
-			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+			} else {
+				if($version eq "new") {
+					$picz_width = $picz->{image_width} * $config->{global_zoom};
+					$picz_height = $picz->{image_height} * $config->{global_zoom};
+				} else {
+					$picz_width = $width + 115;
+					$picz_height = $height + 100;
+				}
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
 			}
 		} else {
 			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "'>\n");
@@ -766,7 +801,7 @@ sub netstat_cgi {
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 	}
-	RRDs::graph("$PNG_DIR" . "$PNG4",
+	$pic = $rrd{$version}->("$PNG_DIR" . "$PNG4",
 		"--title=$config->{graphs}->{_netstat4}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
@@ -792,7 +827,7 @@ sub netstat_cgi {
 	print("ERROR: while graphing $PNG_DIR" . "$PNG4: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		RRDs::graph("$PNG_DIR" . "$PNG4z",
+		$picz = $rrd{$version}->("$PNG_DIR" . "$PNG4z",
 			"--title=$config->{graphs}->{_netstat4}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -800,6 +835,7 @@ sub netstat_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
+			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -819,9 +855,15 @@ sub netstat_cgi {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
 				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
-			}
-			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
+			} else {
+				if($version eq "new") {
+					$picz_width = $picz->{image_width} * $config->{global_zoom};
+					$picz_height = $picz->{image_height} * $config->{global_zoom};
+				} else {
+					$picz_width = $width + 115;
+					$picz_height = $height + 100;
+				}
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4 . "' border='0'></a>\n");
 			}
 		} else {
 			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG4 . "'>\n");
@@ -852,7 +894,7 @@ sub netstat_cgi {
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 	}
-	RRDs::graph("$PNG_DIR" . "$PNG5",
+	$pic = $rrd{$version}->("$PNG_DIR" . "$PNG5",
 		"--title=$config->{graphs}->{_netstat5}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=PNG",
@@ -874,7 +916,7 @@ sub netstat_cgi {
 	print("ERROR: while graphing $PNG_DIR" . "$PNG5: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		RRDs::graph("$PNG_DIR" . "$PNG5z",
+		$picz = $rrd{$version}->("$PNG_DIR" . "$PNG5z",
 			"--title=$config->{graphs}->{_netstat5}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -882,6 +924,7 @@ sub netstat_cgi {
 			"--width=$width",
 			"--height=$height",
 			@riglim,
+			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
@@ -897,9 +940,15 @@ sub netstat_cgi {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
 				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
-			}
-			else {
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5z . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
+			} else {
+				if($version eq "new") {
+					$picz_width = $picz->{image_width} * $config->{global_zoom};
+					$picz_height = $picz->{image_height} * $config->{global_zoom};
+				} else {
+					$picz_width = $width + 115;
+					$picz_height = $height + 100;
+				}
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5 . "' border='0'></a>\n");
 			}
 		} else {
 			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG5 . "'>\n");

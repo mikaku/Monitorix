@@ -153,6 +153,8 @@ install-debian:
 	$(Q)echo -e '\033[1;32mInstalling debian sysv service...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_OTHER)"
 	$(INSTALL_PROGRAM) docs/$(PN)-deb.init "$(DESTDIR)$(INITDIR_OTHER)/$(PN)"
+	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)/$(PN)/conf.d"
+	$(INSTALL_DATA) docs/debian.conf "$(DESTDIR)$(CONFDIR)/$(PN)/conf.d/00-debian.conf"
 
 install-redhat:
 	$(Q)echo -e '\033[1;32mInstalling redhat sysv service...\033[0m'
@@ -201,6 +203,7 @@ uninstall-upstart:
 
 uninstall-debian:
 	$(RM) "$(DESTDIR)$(INITDIR_OTHER)/$(PN)"
+	$(RM) "$(DESTDIR)$(CONFDIR)/$(PN)/conf.d/00-debian.conf"
 
 uninstall-redhat:
 	$(RM) "$(DESTDIR)$(INITDIR_RHEL)/$(PN)"

@@ -2,7 +2,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2014 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2015 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -46,8 +46,8 @@ $SIG{'TERM'} = 'INT_handler';
 $SIG{'CHLD'} = 'CHLD_handler';
 $SIG{'HUP' } = 'HUP_handler';
 
-use constant VERSION	=> "3.6.0";
-use constant RELDATE	=> "20-Aug-2014";
+use constant VERSION	=> "3.7.0";
+use constant RELDATE	=> "12-Mar-2015";
 
 my @suppsys = ("Linux", "FreeBSD", "OpenBSD", "NetBSD");
 our %config;
@@ -275,7 +275,7 @@ EOF
 				}
 				next;
 			}
-			if($g eq "fs") {
+			if($g eq "fs" || $g eq "process") {
 				$n = 0;
 				foreach my $k (sort keys %{$config{graphs}}) {
 					if($k =~ m/$g/) {
@@ -530,7 +530,21 @@ if(open(OUT, "> " . $config{base_dir} . "/cgi/monitorix.conf.path")) {
 	logger("Unable to create the file '$config{base_dir}/cgi/monitorix.conf.path'. $!");
 }
 
+# make sure that 'ip_default_table' option has a consistent value
 $config{ip_default_table} = "filter" if !$config{ip_default_table};
+
+# check 'iptables' version to include the new wait lock option '--wait'
+my $ipv = `iptables --version`;
+chomp($ipv);
+$ipv =~ s/^iptables v//;
+$ipv = sprintf("%03s.%03s.%03s", split('\.', $ipv));
+if($ipv gt "001.004.020") {       # 1.4.20
+	$config{iptables_wait_lock} = " --wait ";
+} else {
+	$config{iptables_wait_lock} = "";
+}
+
+# make sure that there aren't residual Monitorix iptables rules
 flush_accounting_rules(\%config, $options{d});
 
 logger("Initializing graphs.");
@@ -544,6 +558,7 @@ foreach my $g (sort keys %{$config{graph_enable}}) {
 	}
 }
 
+# initialize all enabled graphs
 foreach (split(',', $config{graph_name} . ", traffacct")) {
 	my $g = trim($_);
 	my $e = "n";
@@ -584,11 +599,13 @@ if(!scalar($config{func_update})) {
 logger("Generating the 'index.html' file.");
 create_index();
 
+# start the HTTP built-in (if enabled)
 if(lc($config{httpd_builtin}->{enabled}) eq "y") {
 	httpd_setup(\%config, $options{d});
 	logger("Started built-in HTTP server (pid $config{httpd_pid}).") if (defined($config{httpd_pid}));
 }
 
+# make sure that some options are correctly defined
 if(!$config{global_zoom}) {
 	logger("WARNING: the 'global_zoom' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
 	$config{global_zoom} = 1;
@@ -602,8 +619,10 @@ if($config{max_historic_years} > 5) {
 	exit(0);
 }
 
+
 logger("Ok, ready.");
 
+# main loop
 while(1) {
 	local $SIG{'ALRM'} = sub { };
 	alarm(1);

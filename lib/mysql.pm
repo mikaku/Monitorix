@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2014 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2015 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -494,6 +494,15 @@ sub mysql_cgi {
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
 	my $zoom = "--zoom=" . $config->{global_zoom};
+	my %rrd = (
+		'new' => \&RRDs::graphv,
+		'old' => \&RRDs::graph,
+	);
+	my $version = "new";
+	my $pic;
+	my $picz;
+	my $picz_width;
+	my $picz_height;
 
 	my $u = "";
 	my $width;
@@ -512,6 +521,7 @@ sub mysql_cgi {
 	my $n2;
 	my $err;
 
+	$version = "old" if $RRDs::VERSION < 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
 	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
@@ -638,52 +648,52 @@ sub mysql_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
-		push(@tmp, "LINE1:com_select#FFA500:Select");
+		push(@tmp, "LINE2:com_select#FFA500:Select");
 		push(@tmp, "GPRINT:com_select:LAST:         Cur\\: %6.1lf");
 		push(@tmp, "GPRINT:com_select:AVERAGE:    Avg\\: %6.1lf");
 		push(@tmp, "GPRINT:com_select:MIN:    Min\\: %6.1lf");
 		push(@tmp, "GPRINT:com_select:MAX:    Max\\: %6.1lf\\n");
-		push(@tmp, "LINE1:com_commit#EEEE44:Commit");
+		push(@tmp, "LINE2:com_commit#EEEE44:Commit");
 		push(@tmp, "GPRINT:com_commit:LAST:         Cur\\: %6.1lf");
 		push(@tmp, "GPRINT:com_commit:AVERAGE:    Avg\\: %6.1lf");
 		push(@tmp, "GPRINT:com_commit:MIN:    Min\\: %6.1lf");
 		push(@tmp, "GPRINT:com_commit:MAX:    Max\\: %6.1lf\\n");
-		push(@tmp, "LINE1:com_delete#EE4444:Delete");
+		push(@tmp, "LINE2:com_delete#EE4444:Delete");
 		push(@tmp, "GPRINT:com_delete:LAST:         Cur\\: %6.1lf");
 		push(@tmp, "GPRINT:com_delete:AVERAGE:    Avg\\: %6.1lf");
 		push(@tmp, "GPRINT:com_delete:MIN:    Min\\: %6.1lf");
 		push(@tmp, "GPRINT:com_delete:MAX:    Max\\: %6.1lf\\n");
-		push(@tmp, "LINE1:com_insert#44EE44:Insert");
+		push(@tmp, "LINE2:com_insert#44EE44:Insert");
 		push(@tmp, "GPRINT:com_insert:LAST:         Cur\\: %6.1lf");
 		push(@tmp, "GPRINT:com_insert:AVERAGE:    Avg\\: %6.1lf");
 		push(@tmp, "GPRINT:com_insert:MIN:    Min\\: %6.1lf");
 		push(@tmp, "GPRINT:com_insert:MAX:    Max\\: %6.1lf\\n");
-		push(@tmp, "LINE1:com_insert_s#448844:Insert Select");
+		push(@tmp, "LINE2:com_insert_s#448844:Insert Select");
 		push(@tmp, "GPRINT:com_insert_s:LAST:  Cur\\: %6.1lf");
 		push(@tmp, "GPRINT:com_insert_s:AVERAGE:    Avg\\: %6.1lf");
 		push(@tmp, "GPRINT:com_insert_s:MIN:    Min\\: %6.1lf");
 		push(@tmp, "GPRINT:com_insert_s:MAX:    Max\\: %6.1lf\\n");
-		push(@tmp, "LINE1:com_update#EE44EE:Update");
+		push(@tmp, "LINE2:com_update#EE44EE:Update");
 		push(@tmp, "GPRINT:com_update:LAST:         Cur\\: %6.1lf");
 		push(@tmp, "GPRINT:com_update:AVERAGE:    Avg\\: %6.1lf");
 		push(@tmp, "GPRINT:com_update:MIN:    Min\\: %6.1lf");
 		push(@tmp, "GPRINT:com_update:MAX:    Max\\: %6.1lf\\n");
-		push(@tmp, "LINE1:com_replace#44EEEE:Replace");
+		push(@tmp, "LINE2:com_replace#44EEEE:Replace");
 		push(@tmp, "GPRINT:com_replace:LAST:        Cur\\: %6.1lf");
 		push(@tmp, "GPRINT:com_replace:AVERAGE:    Avg\\: %6.1lf");
 		push(@tmp, "GPRINT:com_replace:MIN:    Min\\: %6.1lf");
 		push(@tmp, "GPRINT:com_replace:MAX:    Max\\: %6.1lf\\n");
-		push(@tmp, "LINE1:com_replace_s#4444EE:Replace Select");
+		push(@tmp, "LINE2:com_replace_s#4444EE:Replace Select");
 		push(@tmp, "GPRINT:com_replace_s:LAST: Cur\\: %6.1lf");
 		push(@tmp, "GPRINT:com_replace_s:AVERAGE:    Avg\\: %6.1lf");
 		push(@tmp, "GPRINT:com_replace_s:MIN:    Min\\: %6.1lf");
 		push(@tmp, "GPRINT:com_replace_s:MAX:    Max\\: %6.1lf\\n");
-		push(@tmp, "LINE1:com_rollback#444444:Rollback");
+		push(@tmp, "LINE2:com_rollback#444444:Rollback");
 		push(@tmp, "GPRINT:com_rollback:LAST:       Cur\\: %6.1lf");
 		push(@tmp, "GPRINT:com_rollback:AVERAGE:    Avg\\: %6.1lf");
 		push(@tmp, "GPRINT:com_rollback:MIN:    Min\\: %6.1lf");
 		push(@tmp, "GPRINT:com_rollback:MAX:    Max\\: %6.1lf\\n");
-		push(@tmp, "LINE1:com_stmtex#888888:Prep.Stmt.Exec");
+		push(@tmp, "LINE2:com_stmtex#888888:Prep.Stmt.Exec");
 		push(@tmp, "GPRINT:com_stmtex:LAST: Cur\\: %6.1lf");
 		push(@tmp, "GPRINT:com_stmtex:AVERAGE:    Avg\\: %6.1lf");
 		push(@tmp, "GPRINT:com_stmtex:MIN:    Min\\: %6.1lf");
@@ -711,7 +721,7 @@ sub mysql_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 6]",
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 6]",
 			"--title=$config->{graphs}->{_mysql1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -739,7 +749,7 @@ sub mysql_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 6]",
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 6]",
 				"--title=$config->{graphs}->{_mysql1}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -747,6 +757,7 @@ sub mysql_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
+				$zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:com_select=$rrd:mysql" . $e . "_csel:AVERAGE",
@@ -770,9 +781,15 @@ sub mysql_cgi {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6] . "' border='0'></a>\n");
-				}
-				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6] . "' border='0'></a>\n");
+				} else {
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6] . "' border='0'></a>\n");
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6] . "'>\n");
@@ -783,37 +800,37 @@ sub mysql_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
-		push(@tmp, "LINE1:tcache_hit_r#FFA500:Thread Cache Hit Rate");
+		push(@tmp, "LINE2:tcache_hit_r#FFA500:Thread Cache Hit Rate");
 		push(@tmp, "GPRINT:tcache_hit_r:LAST:  Cur\\: %4.1lf%%");
 		push(@tmp, "GPRINT:tcache_hit_r:AVERAGE:  Avg\\: %4.1lf%%");
 		push(@tmp, "GPRINT:tcache_hit_r:MIN:  Min\\: %4.1lf%%");
 		push(@tmp, "GPRINT:tcache_hit_r:MAX:  Max\\: %4.1lf%%\\n");
-		push(@tmp, "LINE1:qcache_hitr#4444EE:Query Cache Hit Rate");
+		push(@tmp, "LINE2:qcache_hitr#4444EE:Query Cache Hit Rate");
 		push(@tmp, "GPRINT:qcache_hitr:LAST:   Cur\\: %4.1lf%%");
 		push(@tmp, "GPRINT:qcache_hitr:AVERAGE:  Avg\\: %4.1lf%%");
 		push(@tmp, "GPRINT:qcache_hitr:MIN:  Min\\: %4.1lf%%");
 		push(@tmp, "GPRINT:qcache_hitr:MAX:  Max\\: %4.1lf%%\\n");
-		push(@tmp, "LINE1:qcache_usage#44EEEE:Query Cache Usage");
+		push(@tmp, "LINE2:qcache_usage#44EEEE:Query Cache Usage");
 		push(@tmp, "GPRINT:qcache_usage:LAST:      Cur\\: %4.1lf%%");
 		push(@tmp, "GPRINT:qcache_usage:AVERAGE:  Avg\\: %4.1lf%%");
 		push(@tmp, "GPRINT:qcache_usage:MIN:  Min\\: %4.1lf%%");
 		push(@tmp, "GPRINT:qcache_usage:MAX:  Max\\: %4.1lf%%\\n");
-		push(@tmp, "LINE1:conns_u#44EE44:Connections Usage");
+		push(@tmp, "LINE2:conns_u#44EE44:Connections Usage");
 		push(@tmp, "GPRINT:conns_u:LAST:      Cur\\: %4.1lf%%");
 		push(@tmp, "GPRINT:conns_u:AVERAGE:  Avg\\: %4.1lf%%");
 		push(@tmp, "GPRINT:conns_u:MIN:  Min\\: %4.1lf%%");
 		push(@tmp, "GPRINT:conns_u:MAX:  Max\\: %4.1lf%%\\n");
-		push(@tmp, "LINE1:key_buf_u#EE4444:Key Buffer Usage");
+		push(@tmp, "LINE2:key_buf_u#EE4444:Key Buffer Usage");
 		push(@tmp, "GPRINT:key_buf_u:LAST:       Cur\\: %4.1lf%%");
 		push(@tmp, "GPRINT:key_buf_u:AVERAGE:  Avg\\: %4.1lf%%");
 		push(@tmp, "GPRINT:key_buf_u:MIN:  Min\\: %4.1lf%%");
 		push(@tmp, "GPRINT:key_buf_u:MAX:  Max\\: %4.1lf%%\\n");
-		push(@tmp, "LINE1:innodb_buf_u#EE44EE:InnoDB Buffer P. Usage");
+		push(@tmp, "LINE2:innodb_buf_u#EE44EE:InnoDB Buffer P. Usage");
 		push(@tmp, "GPRINT:innodb_buf_u:LAST: Cur\\: %4.1lf%%");
 		push(@tmp, "GPRINT:innodb_buf_u:AVERAGE:  Avg\\: %4.1lf%%");
 		push(@tmp, "GPRINT:innodb_buf_u:MIN:  Min\\: %4.1lf%%");
 		push(@tmp, "GPRINT:innodb_buf_u:MAX:  Max\\: %4.1lf%%\\n");
-		push(@tmp, "LINE1:tmptbltodsk#888888:Temp. Tables to Disk");
+		push(@tmp, "LINE2:tmptbltodsk#888888:Temp. Tables to Disk");
 		push(@tmp, "GPRINT:tmptbltodsk:LAST:   Cur\\: %4.1lf%%");
 		push(@tmp, "GPRINT:tmptbltodsk:AVERAGE:  Avg\\: %4.1lf%%");
 		push(@tmp, "GPRINT:tmptbltodsk:MIN:  Min\\: %4.1lf%%");
@@ -838,7 +855,7 @@ sub mysql_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 6 + 1]",
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 6 + 1]",
 			"--title=$config->{graphs}->{_mysql2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -863,7 +880,7 @@ sub mysql_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 1]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 6 + 1]",
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 6 + 1]",
 				"--title=$config->{graphs}->{_mysql2}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -871,6 +888,7 @@ sub mysql_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
+				$zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:tcache_hit_r=$rrd:mysql" . $e . "_tchr:AVERAGE",
@@ -891,9 +909,15 @@ sub mysql_cgi {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 1] . "' border='0'></a>\n");
-				}
-				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 1] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 1] . "' border='0'></a>\n");
+				} else {
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 1] . "' border='0'></a>\n");
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 1] . "'>\n");
@@ -933,7 +957,7 @@ sub mysql_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 6 + 2]",
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 6 + 2]",
 			"--title=$config->{graphs}->{_mysql3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -954,7 +978,7 @@ sub mysql_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 2]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 6 + 2]",
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 6 + 2]",
 				"--title=$config->{graphs}->{_mysql3}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -962,6 +986,7 @@ sub mysql_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
+				$zoom,
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
@@ -978,9 +1003,15 @@ sub mysql_cgi {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 2] . "' border='0'></a>\n");
-				}
-				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 2] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 2] . "' border='0'></a>\n");
+				} else {
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 2] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 2] . "' border='0'></a>\n");
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 2] . "'>\n");
@@ -1016,7 +1047,7 @@ sub mysql_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 6 + 3]",
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 6 + 3]",
 			"--title=$config->{graphs}->{_mysql4}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -1037,7 +1068,7 @@ sub mysql_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 3]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 6 + 3]",
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 6 + 3]",
 				"--title=$config->{graphs}->{_mysql4}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -1045,6 +1076,7 @@ sub mysql_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
+				$zoom,
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
@@ -1061,9 +1093,15 @@ sub mysql_cgi {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 3] . "' border='0'></a>\n");
-				}
-				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 3] . "' border='0'></a>\n");
+				} else {
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 3] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 3] . "' border='0'></a>\n");
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 3] . "'>\n");
@@ -1104,7 +1142,7 @@ sub mysql_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 6 + 4]",
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 6 + 4]",
 			"--title=$config->{graphs}->{_mysql5}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -1126,7 +1164,7 @@ sub mysql_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 4]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 6 + 4]",
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 6 + 4]",
 				"--title=$config->{graphs}->{_mysql5}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -1134,6 +1172,7 @@ sub mysql_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
+				$zoom,
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
@@ -1151,9 +1190,15 @@ sub mysql_cgi {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 4] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 4] . "' border='0'></a>\n");
-				}
-				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 4] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 4] . "' border='0'></a>\n");
+				} else {
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 4] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 4] . "' border='0'></a>\n");
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 4] . "'>\n");
@@ -1197,7 +1242,7 @@ sub mysql_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		RRDs::graph("$PNG_DIR" . "$PNG[$e * 6 + 5]",
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 6 + 5]",
 			"--title=$config->{graphs}->{_mysql6}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
@@ -1218,7 +1263,7 @@ sub mysql_cgi {
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 5]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			RRDs::graph("$PNG_DIR" . "$PNGz[$e * 6 + 5]",
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 6 + 5]",
 				"--title=$config->{graphs}->{_mysql6}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -1226,6 +1271,7 @@ sub mysql_cgi {
 				"--width=$width",
 				"--height=$height",
 				@riglim,
+				$zoom,
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
@@ -1242,9 +1288,15 @@ sub mysql_cgi {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
 					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 5] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 5] . "' border='0'></a>\n");
-				}
-				else {
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 5] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 5] . "' border='0'></a>\n");
+				} else {
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 5] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 5] . "' border='0'></a>\n");
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 5] . "'>\n");
@@ -1259,7 +1311,7 @@ sub mysql_cgi {
 			print "      <td bgcolor='$colors->{title_bg_color}' colspan='2'>\n";
 			print "       <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
 			print "       <font size='-1'>\n";
-			print "        <b style='{color: " . $colors->{title_fg_color} . "}'>&nbsp;&nbsp;$uri<b>\n";
+			print "        <b style='{color: " . $colors->{title_fg_color} . "}'>&nbsp;&nbsp;$uri</b>\n";
 			print "       </font></font>\n";
 			print "      </td>\n";
 			print("    </tr>\n");

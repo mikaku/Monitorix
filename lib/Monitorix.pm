@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2014 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2015 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -313,11 +313,16 @@ sub flush_accounting_rules {
 
 	if($config->{os} eq "Linux") {
 		my $num = 0;
+		my $num6 = 0;
+		my $cmd = "iptables" . $config->{iptables_wait_lock};
+		my $cmd6 = "ip6tables" . $config->{iptables_wait_lock};
 
 		logger("Flushing out iptables rules.") if $debug;
 		{
 			my @names;
-			if(open(IN, "iptables -t $table -nxvL INPUT --line-numbers |")) {
+
+			# IPv4
+			if(open(IN, "$cmd -t $table -nxvL INPUT --line-numbers |")) {
 				my @rules;
 				while(<IN>) {
 					my ($rule, undef, undef, $name) = split(' ', $_);
@@ -329,11 +334,11 @@ sub flush_accounting_rules {
 				close(IN);
 				@rules = reverse(@rules);
 				foreach(@rules) {
-					system("iptables -t $table -D INPUT $_");
+					system("$cmd -t $table -D INPUT $_");
 					$num++;
 				}
 			}
-			if(open(IN, "iptables -t $table -nxvL OUTPUT --line-numbers |")) {
+			if(open(IN, "$cmd -t $table -nxvL OUTPUT --line-numbers |")) {
 				my @rules;
 				while(<IN>) {
 					my ($rule, undef, undef, $name) = split(' ', $_);
@@ -344,15 +349,52 @@ sub flush_accounting_rules {
 				close(IN);
 				@rules = reverse(@rules);
 				foreach(@rules) {
-					system("iptables -t $table -D OUTPUT $_");
+					system("$cmd -t $table -D OUTPUT $_");
 					$num++;
 				}
 			}
 			foreach(@names) {
-				system("iptables -t $table -X $_");
+				system("$cmd -t $table -X $_");
+			}
+
+			# IPv6
+			undef(@names);
+			if(open(IN, "$cmd6 -t $table -nxvL INPUT --line-numbers |")) {
+				my @rules;
+				while(<IN>) {
+					my ($rule, undef, undef, $name) = split(' ', $_);
+					if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
+						push(@rules, $rule);
+						push(@names, $name);
+					}
+				}
+				close(IN);
+				@rules = reverse(@rules);
+				foreach(@rules) {
+					system("$cmd6 -t $table -D INPUT $_");
+					$num6++;
+				}
+			}
+			if(open(IN, "$cmd6 -t $table -nxvL OUTPUT --line-numbers |")) {
+				my @rules;
+				while(<IN>) {
+					my ($rule, undef, undef, $name) = split(' ', $_);
+					if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
+						push(@rules, $rule);
+					}
+				}
+				close(IN);
+				@rules = reverse(@rules);
+				foreach(@rules) {
+					system("$cmd6 -t $table -D OUTPUT $_");
+					$num6++;
+				}
+			}
+			foreach(@names) {
+				system("$cmd6 -t $table -X $_");
 			}
 		}
-		if(open(IN, "iptables -t $table -nxvL FORWARD --line-numbers |")) {
+		if(open(IN, "$cmd -t $table -nxvL FORWARD --line-numbers |")) {
 			my @rules;
 			my @names;
 			while(<IN>) {
@@ -365,15 +407,37 @@ sub flush_accounting_rules {
 			close(IN);
 			@rules = reverse(@rules);
 			foreach(@rules) {
-				system("iptables -t $table -D FORWARD $_");
+				system("$cmd -t $table -D FORWARD $_");
 				$num++;
 			}
 			foreach(@names) {
-				system("iptables -t $table -F $_");
-				system("iptables -t $table -X $_");
+				system("$cmd -t $table -F $_");
+				system("$cmd -t $table -X $_");
+			}
+		}
+		if(open(IN, "$cmd6 -t $table -nxvL FORWARD --line-numbers |")) {
+			my @rules;
+			my @names;
+			while(<IN>) {
+				my ($rule, undef, undef, $name) = split(' ', $_);
+				if($name =~ /monitorix_daily_/ || /monitorix_total_/) {
+					push(@rules, $rule);
+					push(@names, $name);
+				}
+			}
+			close(IN);
+			@rules = reverse(@rules);
+			foreach(@rules) {
+				system("$cmd6 -t $table -D FORWARD $_");
+				$num6++;
+			}
+			foreach(@names) {
+				system("$cmd6 -t $table -F $_");
+				system("$cmd6 -t $table -X $_");
 			}
 		}
 		logger("$num iptables rules have been flushed.") if $debug;
+		logger("$num6 ip6tables rules have been flushed.") if $debug;
 	}
 	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 		logger("Flushing out ipfw rules.") if $debug;

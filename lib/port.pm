@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2014 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2015 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ sub port_init {
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $port = $config->{port};
+	my $cmd;
 
 	my $info;
 	my @ds;
@@ -139,17 +140,26 @@ sub port_init {
 				next;
 			}
 			if($pl[$n] && $np) {
-				my $p = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[1])) || "all";
+				my $p = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[1])) || "";
+				if(! grep {$_ eq $p} ("tcp", "udp", "tcp6", "udp6")) {
+					logger("$myself: Invalid protocol name '$p' in port '$pl[$n]'.");
+					next;
+				}
+				$cmd = "iptables" . $config->{iptables_wait_lock};
+				if(grep {$_ eq $p} ("tcp6", "udp6")) {
+					$cmd = "ip6tables" . $config->{iptables_wait_lock};
+					$p =~ s/6//;
+				}
 				my $conn = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[2]));
 				if($conn eq "in" || $conn eq "in/out") {
-					system("iptables -t $table -N monitorix_IN_$n 2>/dev/null");
-					system("iptables -t $table -I INPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
-					system("iptables -t $table -I OUTPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
+					system("$cmd -t $table -N monitorix_IN_$n 2>/dev/null");
+					system("$cmd -t $table -I INPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
+					system("$cmd -t $table -I OUTPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
 				}
 				if($conn eq "out" || $conn eq "in/out") {
-					system("iptables -t $table -N monitorix_OUT_$n 2>/dev/null");
-					system("iptables -t $table -I INPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
-					system("iptables -t $table -I OUTPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
+					system("$cmd -t $table -N monitorix_OUT_$n 2>/dev/null");
+					system("$cmd -t $table -I INPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
+					system("$cmd -t $table -I OUTPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
 				}
 				if($conn ne "in" && $conn ne "out" && $conn ne "in/out") {
 					logger("$myself: Invalid connection type '$conn'; must be 'in', 'out' or 'in/out'.");
@@ -166,6 +176,7 @@ sub port_init {
 			if($pl[$n] && $np) {
 				my $p = lc((split(',', $port->{desc}->{$pl[$n]}))[1]) || "all";
 				# in/out not supported yet  FIXME
+				$p =~ s/6//;	# tcp6, udp6, ... not supported
 				system("ipfw -q add $port->{rule} count $p from me $np to any");
 				system("ipfw -q add $port->{rule} count $p from any to me $np");
 			}
@@ -194,21 +205,33 @@ sub port_update {
 	my $rrdata = "N";
 
 	if($config->{os} eq "Linux") {
-		open(IN, "iptables -t $table -nxvL INPUT |");
-		while(<IN>) {
+		my @data;
+		my $l;
+		my $cmd;
+		my $cmd6;
+
+		$cmd = "iptables" . $config->{iptables_wait_lock};
+		$cmd6 = "ip6tables" . $config->{iptables_wait_lock};
+		open(IN, "$cmd -t $table -nxvL INPUT 2>/dev/null |");
+		@data = <IN>;
+		close(IN);
+		open(IN, "$cmd6 -t $table -nxvL INPUT 2>/dev/null |");
+		push(@data, <IN>);
+		close(IN);
+		for($l = 0; $l < scalar(@data); $l++) {
 			for($n = 0; $n < $port->{max}; $n++) {
 				$i_in[$n] = 0 unless $i_in[$n];
 				$o_in[$n] = 0 unless $o_in[$n];
-				if(/ monitorix_IN_$n /) {
-					my (undef, $bytes) = split(' ', $_);
+				if($data[$l] =~ / monitorix_IN_$n /) {
+					my (undef, $bytes) = split(' ', $data[$l]);
 					chomp($bytes);
 					$i_in[$n] = $bytes - ($config->{port_hist_i_in}[$n] || 0);
 					$i_in[$n] = 0 unless $i_in[$n] != $bytes;
 					$config->{port_hist_i_in}[$n] = $bytes;
 					$i_in[$n] /= 60;
 				}
-				if(/ monitorix_OUT_$n /) {
-					my (undef, $bytes) = split(' ', $_);
+				if($data[$l] =~ / monitorix_OUT_$n /) {
+					my (undef, $bytes) = split(' ', $data[$l]);
 					chomp($bytes);
 					$o_in[$n] = $bytes - ($config->{port_hist_o_in}[$n] || 0);
 					$o_in[$n] = 0 unless $o_in[$n] != $bytes;
@@ -217,22 +240,26 @@ sub port_update {
 				}
 			}
 		}
+		open(IN, "$cmd -t $table -nxvL OUTPUT 2>/dev/null |");
+		@data = <IN>;
 		close(IN);
-		open(IN, "iptables -t $table -nxvL OUTPUT |");
-		while(<IN>) {
+		open(IN, "$cmd6 -t $table -nxvL OUTPUT 2>/dev/null |");
+		push(@data, <IN>);
+		close(IN);
+		for($l = 0; $l < scalar(@data); $l++) {
 			for($n = 0; $n < $port->{max}; $n++) {
 				$o_out[$n] = 0 unless $o_out[$n];
 				$i_out[$n] = 0 unless $i_out[$n];
-				if(/ monitorix_OUT_$n /) {
-					my (undef, $bytes) = split(' ', $_);
+				if($data[$l] =~ / monitorix_OUT_$n /) {
+					my (undef, $bytes) = split(' ', $data[$l]);
 					chomp($bytes);
 					$o_out[$n] = $bytes - ($config->{port_hist_o_out}[$n] || 0);
 					$o_out[$n] = 0 unless $o_out[$n] != $bytes;
 					$config->{port_hist_o_out}[$n] = $bytes;
 					$o_out[$n] /= 60;
 				}
-				if(/ monitorix_IN_$n /) {
-					my (undef, $bytes) = split(' ', $_);
+				if($data[$l] =~ / monitorix_IN_$n /) {
+					my (undef, $bytes) = split(' ', $data[$l]);
 					chomp($bytes);
 					$i_out[$n] = $bytes - ($config->{port_hist_i_out}[$n] || 0);
 					$i_out[$n] = 0 unless $i_out[$n] != $bytes;
@@ -241,7 +268,6 @@ sub port_update {
 				}
 			}
 		}
-		close(IN);
 	}
 	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 		my @pl = split(',', $port->{list});
@@ -293,6 +319,15 @@ sub port_cgi {
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
 	my $zoom = "--zoom=" . $config->{global_zoom};
+	my %rrd = (
+		'new' => \&RRDs::graphv,
+		'old' => \&RRDs::graph,
+	);
+	my $version = "new";
+	my $pic;
+	my $picz;
+	my $picz_width;
+	my $picz_height;
 
 	my $u = "";
 	my $width;
@@ -313,6 +348,7 @@ sub port_cgi {
 	my $str;
 	my $err;
 
+	$version = "old" if $RRDs::VERSION < 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
 	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
@@ -466,6 +502,7 @@ sub port_cgi {
 			$pl[$n] = trim($pl[$n]);
 			my $pn = trim((split(',', $port->{desc}->{$pl[$n]}))[0]);
 			my $pp = trim((split(',', $port->{desc}->{$pl[$n]}))[1]);
+			$pp =~ s/6//;
 			my $prig = trim((split(',', $port->{desc}->{$pl[$n]}))[3]);
 			my $plim = trim((split(',', $port->{desc}->{$pl[$n]}))[4]);
 			@riglim = @{setup_riglim($prig, $plim)};
@@ -499,7 +536,7 @@ sub port_cgi {
 				}
 				close(IN);
 			}
-			if($pnum ne $pl[$n]) {
+			if(lc($pcon) ne "out" && $pnum ne $pl[$n]) {
 				push(@warning, $colors->{warning_color});
 			}
 
@@ -562,7 +599,7 @@ sub port_cgi {
 				push(@tmp, "COMMENT: \\n");
 				push(@tmp, "COMMENT: \\n");
 			}
-			RRDs::graph("$PNG_DIR" . "$PNG[$n3]",
+			$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$n3]",
 				"--title=$name traffic  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
@@ -586,7 +623,7 @@ sub port_cgi {
 			print("ERROR: while graphing $PNG_DIR" . "$PNG[$n3]: $err\n") if $err;
 			if(lc($config->{enable_zoom}) eq "y") {
 				($width, $height) = split('x', $config->{graph_size}->{zoom});
-				RRDs::graph("$PNG_DIR" . "$PNGz[$n3]",
+				$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$n3]",
 					"--title=$name traffic  ($tf->{nwhen}$tf->{twhen})",
 					"--start=-$tf->{nwhen}$tf->{twhen}",
 					"--imgformat=PNG",
@@ -594,6 +631,7 @@ sub port_cgi {
 					"--width=$width",
 					"--height=$height",
 					@riglim,
+					$zoom,
 					@{$cgi->{version12}},
 					@{$cgi->{version12_small}},
 					@{$colors->{graph_colors}},
@@ -612,9 +650,15 @@ sub port_cgi {
 				if(lc($config->{enable_zoom}) eq "y") {
 					if(lc($config->{disable_javascript_void}) eq "y") {
 						print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$n3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$n3] . "' border='0'></a>\n");
-					}
-					else {
-						print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$n3] . "','','width=" . ($width + 115) . ",height=" . ($height + 100) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$n3] . "' border='0'></a>\n");
+					} else {
+						if($version eq "new") {
+							$picz_width = $picz->{image_width} * $config->{global_zoom};
+							$picz_height = $picz->{image_height} * $config->{global_zoom};
+						} else {
+							$picz_width = $width + 115;
+							$picz_height = $height + 100;
+						}
+						print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$n3] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$n3] . "' border='0'></a>\n");
 					}
 				} else {
 					print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$n3] . "'>\n");
