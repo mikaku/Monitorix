@@ -2,6 +2,8 @@
 ====================
 - Changed to a clickable link the bottom URL in the Apache graph, and fixed the
   text color.
+- Changed to a clickable link the bottom URL in the Lighttpd graph, and fixed
+  the text color.
 
 
 
