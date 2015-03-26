@@ -1,3 +1,10 @@
+3.N.N  - DD-MMM-2015
+====================
+- Changed to a clickable link the bottom URL in the Apache graph, and fixed the
+  text color.
+
+
+
 3.7.0  - 12-Mar-2015
 ====================
 - Added a complete statistical VerliHub (verlihub) graph. [#72]
