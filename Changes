@@ -5,6 +5,7 @@
 - Changed to a clickable link the bottom URL in the Lighttpd graph, and fixed
   the text color.
 - Fixed the text color in the bottom URL of the Bind graph.
+- Fixed the text color in the bottom URL of the Icecast Streaming Server graph.
 
 
 
