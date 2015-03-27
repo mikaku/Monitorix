@@ -333,17 +333,23 @@ sub wowza_update {
 					$rrdata .= ":" . $msginbytes;
 					$rrdata .= ":" . $msgoutbytes;
 					my $instance;
-					if(ref($entry->{ApplicationInstance}->{Stream}) eq "ARRAY") {
-						$instance = $entry->{ApplicationInstance}->{Stream}[0];
+					if(ref($entry->{ApplicationInstance}) eq "ARRAY") {
+						$instance = $entry->{ApplicationInstance}[0];
 					} else {
-						$instance = $entry->{ApplicationInstance}->{Stream};
+						$instance = $entry->{ApplicationInstance};
 					}
-					$rrdata .= ":" . ($instance->{SessionsRTSP} || 0);
-					$rrdata .= ":" . ($instance->{SessionsSmooth} || 0);
-					$rrdata .= ":" . ($instance->{SessionsCupertino} || 0);
-					$rrdata .= ":" . ($instance->{SessionsFlash} || 0);
-					$rrdata .= ":" . ($instance->{SessionsSanJose} || 0);
-					$rrdata .= ":" . ($instance->{SessionsTotal} || 0);
+					my $stream;
+					if(ref($instance->{Stream}) eq "ARRAY") {
+						$stream = $instance->{Stream}[0];
+					} else {
+						$stream = $instance->{Stream};
+					}
+					$rrdata .= ":" . ($stream->{SessionsRTSP} || 0);
+					$rrdata .= ":" . ($stream->{SessionsSmooth} || 0);
+					$rrdata .= ":" . ($stream->{SessionsCupertino} || 0);
+					$rrdata .= ":" . ($stream->{SessionsFlash} || 0);
+					$rrdata .= ":" . ($stream->{SessionsSanJose} || 0);
+					$rrdata .= ":" . ($stream->{SessionsTotal} || 0);
 					$rrdata .= ":" . "0:0";
 					$e2++;
 					last;
