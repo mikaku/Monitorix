@@ -12,6 +12,7 @@
 - Fixed the text color in the bottom URL of the Icecast Streaming Server graph.
 - Fixed a problem with multiple 'ApplicationInstance' tags in Wowza Server
   graph. [#88]
+- Fixed the text color in the bottom URL of the Wowza graph.
 
 
 
