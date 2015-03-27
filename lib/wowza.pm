@@ -322,13 +322,8 @@ sub wowza_update {
 					$conntrej /= 60;
 					$config->{wowza_hist}->{$str} = $entry->{ConnectionsTotalRejected};
 
-					$str = $e . $e2 . "msginbytes";
 					$msginbytes = $entry->{MessagesInBytesRate};
-#					$msginbytes /= 60;
-
-					$str = $e . $e2 . "msgoutbytes";
 					$msgoutbytes = $entry->{MessagesOutBytesRate};
-#					$msgoutbytes /= 60;
 
 					$rrdata .= ":" . $entry->{TimeRunning};
 					$rrdata .= ":" . $entry->{ConnectionsTotal};
@@ -399,6 +394,8 @@ sub wowza_cgi {
 	my @tmp;
 	my @tmpz;
 	my @CDEF;
+	my $T = "B";
+	my $vlabel = "bytes/s";
 	my $e;
 	my $e2;
 	my $n;
@@ -434,6 +431,11 @@ sub wowza_cgi {
 	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
 
 	$title = !$silent ? $title : "";
+
+	if(lc($config->{netstats_in_bps}) eq "y") {
+		$T = "b";
+		$vlabel = "bits/s";
+	}
 
 
 	# text mode
@@ -570,9 +572,9 @@ sub wowza_cgi {
 			push(@tmp, "AREA:wms" . $e . "_a$n" . $AC[$n] . ":$str:STACK");
 			push(@tmpz, "AREA:wms" . $e . "_a$n" . $AC[$n] . ":$w:STACK");
 			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":LAST: Current\\:%3.0lf");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":AVERAGE:   Average\\:%3.0lf");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":MIN:   Min\\:%3.0lf");
-			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":MAX:   Max\\:%3.0lf\\n");
+			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":AVERAGE:  Average\\:%3.0lf");
+			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":MIN:  Min\\:%3.0lf");
+			push(@tmp, "GPRINT:wms" . $e . "_a$n" . ":MAX:  Max\\:%3.0lf\\n");
 			$n++;
 		}
 
@@ -669,12 +671,17 @@ sub wowza_cgi {
 			$str = sprintf("%-25s", substr($w, 0, 25));
 			push(@tmp, "LINE2:B_wms" . $e . "_a$n" . $LC[$n] . ":$str");
 			push(@tmpz, "LINE2:B_wms" . $e . "_a$n" . $LC[$n] . ":$w");
-			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":LAST: Cur\\:%4.0lfKB");
-			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":AVERAGE:  Avg\\:%4.0lfKB");
-			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":MIN:  Min\\:%4.0lfKB");
-			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":MAX:  Max\\:%4.0lfKB\\n");
-			push(@CDEF, "CDEF:wms" . $e . "_a$n=wms" . $e . "_a$n" . "i,wms" . $e . "_a$n" . "o,+");
-			push(@CDEF, "CDEF:B_wms" . $e . "_a$n=wms" . $e . "_a$n");
+			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":LAST: Cur\\:%3.0lfK$T/s");
+			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":AVERAGE: Avg\\:%3.0lfK$T/s");
+			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":MIN: Min\\:%3.0lfK$T/s");
+			push(@tmp, "GPRINT:K_wms" . $e . "_a$n" . ":MAX: Max\\:%3.0lfK$T/s\\n");
+			if(lc($config->{netstats_in_bps}) eq "y") {
+				push(@CDEF, "CDEF:wms" . $e . "_a$n=wms" . $e . "_a$n" . "i,wms" . $e . "_a$n" . "o,+");
+				push(@CDEF, "CDEF:B_wms" . $e . "_a$n=wms" . $e . "_a$n,8,*");
+			} else {
+				push(@CDEF, "CDEF:wms" . $e . "_a$n=wms" . $e . "_a$n" . "i,wms" . $e . "_a$n" . "o,+");
+				push(@CDEF, "CDEF:B_wms" . $e . "_a$n=wms" . $e . "_a$n");
+			}
 			push(@CDEF, "CDEF:K_wms" . $e . "_a$n=B_wms" . $e . "_a$n,1024,/");
 			$n++;
 		}
@@ -688,7 +695,7 @@ sub wowza_cgi {
 			"--title=$config->{graphs}->{_wowza2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=bytes",
+			"--vertical-label=$vlabel",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
@@ -722,7 +729,7 @@ sub wowza_cgi {
 				"--title=$config->{graphs}->{_wowza2}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=bytes",
+				"--vertical-label=$vlabel",
 				"--width=$width",
 				"--height=$height",
 				@riglim,
