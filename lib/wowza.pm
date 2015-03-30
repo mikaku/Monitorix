@@ -303,6 +303,8 @@ sub wowza_update {
 
 		my $e2 = 0;
 		foreach my $an (split(',', $wowza->{desc}->{$wls})) {
+			my $found = 0;
+
 			foreach my $entry (@app) {
 				my $conntacc = 0;
 				my $conntrej = 0;
@@ -352,9 +354,11 @@ sub wowza_update {
 					$rrdata .= ":" . ($stream->{SessionsTotal} || 0);
 					$rrdata .= ":" . "0:0";
 					$e2++;
+					$found = 1;
 					last;
 				}
 			}
+			$rrdata .= ":0:0:0:0:0:0:0:0:0:0:0:0:0:0:0" if !$found;
 		}
 		while($e2 < 8) {
 			$rrdata .= ":0:0:0:0:0:0:0:0:0:0:0:0:0:0:0";
