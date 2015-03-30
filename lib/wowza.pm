@@ -353,12 +353,12 @@ sub wowza_update {
 					$rrdata .= ":" . ($stream->{SessionsSanJose} || 0);
 					$rrdata .= ":" . ($stream->{SessionsTotal} || 0);
 					$rrdata .= ":" . "0:0";
-					$e2++;
 					$found = 1;
 					last;
 				}
 			}
 			$rrdata .= ":0:0:0:0:0:0:0:0:0:0:0:0:0:0:0" if !$found;
+			$e2++;
 		}
 		while($e2 < 8) {
 			$rrdata .= ":0:0:0:0:0:0:0:0:0:0:0:0:0:0:0";
