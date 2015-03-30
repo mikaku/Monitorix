@@ -13,8 +13,8 @@
 - Fixed a problem with multiple 'ApplicationInstance' tags in Wowza Server
   graph. [#88]
 - Fixed the text color in the bottom URL of the Wowza graph.
-- Fixed to avoid results garbled when a defined Application is shutdown in the
-  Wowza Server graph. [#89]
+- Fixed to avoid results garbled when a defined Application is shutdown or with
+  multiple servers in the Wowza graph. [#89]
 
 
 
