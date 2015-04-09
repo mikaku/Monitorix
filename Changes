@@ -8,6 +8,7 @@
   the text color.
 - Changed to a clickable link the bottom URL in the PHP APC graph, and fixed
   the text color.
+- Added custom url config option 'logo_top_url' for the top logo link. [#90]
 - Fixed the text color in the bottom URL of the Bind graph.
 - Fixed the text color in the bottom URL of the Icecast Streaming Server graph.
 - Fixed a problem with multiple 'ApplicationInstance' tags in Wowza Server

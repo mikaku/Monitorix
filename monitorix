@@ -597,6 +597,10 @@ if(!scalar($config{func_update})) {
 }
 
 logger("Generating the 'index.html' file.");
+if(!defined($config{logo_top_url})) {
+	logger("WARNING: the 'logo_top_url' option doesn't exist. Please consider upgrading your configuration file.");
+	$config{logo_top_url} = "http://www.monitorix.org/";
+}
 create_index();
 
 # start the HTTP built-in (if enabled)
