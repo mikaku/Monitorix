@@ -196,7 +196,7 @@ EOF
   <table>
     <tr>
       <td>
-        <a href="http://www.monitorix.org/"><img src="$base_url$config{logo_top}" border="0"></a>
+        <a href="$config{logo_top_url}"><img src="$base_url$config{logo_top}" border="0"></a>
       </td>
     </tr>
     <tr>
