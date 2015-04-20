@@ -420,7 +420,7 @@ sub icecast_cgi {
 		}
 		if(lc($icecast->{graph_mode}) ne "s") {
 			foreach my $i (split(',', $icecast->{desc}->{$url})) {
-				push(@tmp, "LINE1:ice" . $e . "_mp$n" . $LC[$n]);
+				push(@tmp, "LINE2:ice" . $e . "_mp$n" . $LC[$n]);
 				push(@tmpz, "LINE2:ice" . $e . "_mp$n" . $LC[$n]);
 			}
 		}
@@ -518,7 +518,7 @@ sub icecast_cgi {
 		foreach my $i (split(',', $icecast->{desc}->{$url})) {
 			$i = trim($i);
 			$str = sprintf("%-15s", substr($i, 0, 15));
-			push(@tmp, "LINE1:ice" . $e . "_mp$n" . $LC[$n] . ":$str");
+			push(@tmp, "LINE2:ice" . $e . "_mp$n" . $LC[$n] . ":$str");
 			push(@tmpz, "LINE2:ice" . $e . "_mp$n" . $LC[$n] . ":$i");
 			push(@tmp, "GPRINT:ice" . $e . "_mp$n" . ":LAST: Cur\\:%3.0lf");
 			push(@tmp, "GPRINT:ice" . $e . "_mp$n" . ":AVERAGE:  Avg\\:%3.0lf");
