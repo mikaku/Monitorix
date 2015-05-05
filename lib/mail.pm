@@ -355,31 +355,48 @@ sub mail_update {
 		}
 		while(<IN>) {
 			my @line;
-			if(/^$date/ && /MailScanner/ && /Spam Checks:/ && /Found/ && /spam messages/) {
-				@line = split(' ', $_);
-				$spam += int($line[8]);
-			}
-			if(/^$date/ && /MailScanner/ && /Virus Scanning:/ && /Found/ && /viruses/) {
-				@line = split(' ', $_);
-				$virus += int($line[8]);
-			}
-			if(/^$date/ && /amavis\[.* SPAM/) {
-				$spam++;
-			}
-			if(/^$date/ && /amavis\[.* INFECTED|amavis\[.* BANNED/) {
-				$virus++;
-			}
-			if(/^$date/ && / SPF none/) {
-				$spf_none++;
-			}
-			if(/^$date/ && / SPF pass/) {
-				$spf_pass++;
-			}
-			if(/^$date/ && / SPF softfail/) {
-				$spf_softfail++;
-			}
-			if(/^$date/ && / SPF fail/) {
-				$spf_fail++;
+			if(/^$date/) {
+				if(/MailScanner/ && /Spam Checks:/ && /Found/ && /spam messages/) {
+					@line = split(' ', $_);
+					$spam += int($line[8]);
+				}
+				if(/MailScanner/ && /Virus Scanning:/ && /Found/ && /viruses/) {
+					@line = split(' ', $_);
+					$virus += int($line[8]);
+				}
+				if(/amavis\[.* SPAM/) {
+					$spam++;
+				}
+				if(/amavis\[.* INFECTED|amavis\[.* BANNED/) {
+					$virus++;
+				}
+				# postfix-policyd-spf-perl 
+				if (/policy-spf/) {
+					if(/: pass/) {
+						$spf_pass++;
+					} elsif(/: none/) {
+						$spf_none++;
+					} elsif(/ action=550 /) {
+						$spf_fail++;
+					} else {
+						# There one line per spf check, so it gets here, we'll consider it is a softfail
+						$spf_softfail++;
+					}
+				# for other SPF handlers (smf-spf)
+				} else {
+					if(/ SPF none/) {
+						$spf_none++;
+					}
+					if(/ SPF pass/) {
+						$spf_pass++;
+					}
+					if(/ SPF softfail/) {
+						$spf_softfail++;
+					}
+					if(/ SPF fail/) {
+						$spf_fail++;
+					}
+				}
 			}
 		}
 		close(IN);
