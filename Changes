@@ -9,6 +9,8 @@
 - Changed to a clickable link the bottom URL in the PHP APC graph, and fixed
   the text color.
 - Added custom url config option 'logo_top_url' for the top logo link. [#90]
+- Added support for postfix-policyd-spf-perl SPF handler in Mail graph.
+	(thanks to Claude Nadon, claude AT ws01.info)
 - Fixed the text color in the bottom URL of the Bind graph.
 - Fixed the text color in the bottom URL of the Icecast Streaming Server graph.
 - Fixed a problem with multiple 'ApplicationInstance' tags in Wowza Server
@@ -16,6 +18,7 @@
 - Fixed the text color in the bottom URL of the Wowza graph.
 - Fixed to avoid results garbled when a defined Application is shutdown or if
   multiple servers are defined in the Wowza graph. [#89]
+- Small cosmetic changes.
 
 
 
