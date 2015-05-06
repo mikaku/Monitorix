@@ -256,7 +256,7 @@ sub mail_update {
 			}
 		}
 
-		logger("$myself: 'pflogsumm' returned empty data. Does it's really installed?")
+		logger("$myself: 'pflogsumm' returned empty data. Is it really installed?")
 			if !@data;
 
 		foreach(@data) {
