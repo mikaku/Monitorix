@@ -288,6 +288,14 @@ EOF
 				}
 				next;
 			}
+			if($g eq "du") {
+				for($n = 0; $n < scalar(my @du_list = split(',', $config{du}->{list})); $n++) {
+					my $name = trim($du_list[$n]);
+					$gname = "_" . $g;
+					print(OUT "              <option value='" . $gname . $n . "'>" . $name . "</option>\n");
+				}
+				next;
+			}
 			if($g eq "net") {
 				my $n2;
 				for($n = 0; $n < scalar(my @nl = split(',', $config{net}->{list})); $n++) {
