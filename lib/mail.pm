@@ -386,14 +386,11 @@ sub mail_update {
 				} else {
 					if(/ SPF none/) {
 						$spf_none++;
-					}
-					if(/ SPF pass/) {
+					} elsif(/ SPF pass/) {
 						$spf_pass++;
-					}
-					if(/ SPF softfail/) {
+					} elsif(/ SPF softfail/) {
 						$spf_softfail++;
-					}
-					if(/ SPF fail/) {
+					} elsif(/ SPF fail/) {
 						$spf_fail++;
 					}
 				}
