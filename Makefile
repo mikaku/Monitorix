@@ -68,6 +68,7 @@ install-bin:
 	$(INSTALL_DATA) lib/apcupsd.pm "$(DESTDIR)$(LIBDIR)/apcupsd.pm"
 	$(INSTALL_DATA) lib/bind.pm "$(DESTDIR)$(LIBDIR)/bind.pm"
 	$(INSTALL_DATA) lib/disk.pm "$(DESTDIR)$(LIBDIR)/disk.pm"
+	$(INSTALL_DATA) lib/du.pm "$(DESTDIR)$(LIBDIR)/du.pm"
 	$(INSTALL_DATA) lib/emailreports.pm "$(DESTDIR)$(LIBDIR)/emailreports.pm"
 	$(INSTALL_DATA) lib/fail2ban.pm "$(DESTDIR)$(LIBDIR)/fail2ban.pm"
 	$(INSTALL_DATA) lib/fs.pm "$(DESTDIR)$(LIBDIR)/fs.pm"
@@ -101,6 +102,8 @@ install-bin:
 	$(INSTALL_DATA) lib/system.pm "$(DESTDIR)$(LIBDIR)/system.pm"
 	$(INSTALL_DATA) lib/traffacct.pm "$(DESTDIR)$(LIBDIR)/traffacct.pm"
 	$(INSTALL_DATA) lib/user.pm "$(DESTDIR)$(LIBDIR)/user.pm"
+	$(INSTALL_DATA) lib/varnish.pm "$(DESTDIR)$(LIBDIR)/varnish.pm"
+	$(INSTALL_DATA) lib/verlihub.pm "$(DESTDIR)$(LIBDIR)/verlihub.pm"
 	$(INSTALL_DATA) lib/wowza.pm "$(DESTDIR)$(LIBDIR)/wowza.pm"
 
 	$(INSTALL_DIR) "$(DESTDIR)$(BASEDIR)/reports"
@@ -108,6 +111,7 @@ install-bin:
 	$(INSTALL_DATA) reports/de.html "$(DESTDIR)$(BASEDIR)/reports/de.html"
 	$(INSTALL_DATA) reports/en.html "$(DESTDIR)$(BASEDIR)/reports/en.html"
 	$(INSTALL_DATA) reports/it.html "$(DESTDIR)$(BASEDIR)/reports/it.html"
+	$(INSTALL_DATA) reports/nl_NL.html "$(DESTDIR)$(BASEDIR)/reports/nl_NL.html"
 	$(INSTALL_DATA) reports/pl.html "$(DESTDIR)$(BASEDIR)/reports/pl.html"
 	$(INSTALL_DATA) reports/zh_CN.html "$(DESTDIR)$(BASEDIR)/reports/zh_CN.html"
 
