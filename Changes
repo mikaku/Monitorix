@@ -20,6 +20,9 @@
 - Fixed the text color in the bottom URL of the Wowza graph.
 - Fixed to avoid results garbled when a defined Application is shutdown or if
   multiple servers are defined in the Wowza graph. [#89]
+- Fixed a pair of incorrectly defined values in the 'system' graph that affected
+  the new RRDtool 1.5 branch with the message "Function update_pdp_prep, case
+  DST_GAUGE - Cannot convert '' to float". [#91]
 - Small cosmetic changes.
 
 
