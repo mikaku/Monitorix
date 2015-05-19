@@ -199,7 +199,7 @@ sub system_update {
 			}
 		}
 		close(IN);
-		$macti = $minac = "";
+		$macti = $minac = 0;
 	} elsif($config->{os} eq "FreeBSD") {
 		my $page_size;
 		open(IN, "sysctl -n vm.loadavg |");
