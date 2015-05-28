@@ -1547,6 +1547,19 @@ Lower is better ... but 0% is not reachable and you should not try to reach it, 
 This graph monitors a local installation of the Varnish HTTP accelerator.
 .P
 Only the limit and rigid values can be set here.
+.SS PageSpeed Module statistics (pagespeed.rrd)
+This graph is able to monitor an unlimited number of PageSpeed installations.
+.P
+.BI list
+.RS
+This is a comma-separated list of URLs of PageSpeed status pages.
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIpagespeed.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fIhttp://modpagespeed.com/mod_pagespeed_statistics\fP
+.RE
+.P
+For more information please refer to https://developers.google.com/speed/pagespeed/module and http://stackoverflow.com/questions/9115595/what-do-the-mod-pagespeed-statistics-mean
 .SS Squid Proxy Web Cache (squid.rrd)
 .P
 .BI cmd
@@ -2226,9 +2239,9 @@ This value defines how the graph must be scaled. Its possible values are:
 .RS
 This is where you can enter the upper-limit and lower-limit values (separated by a colon) for a graph. The lower-limit value is optional. Some examples would be:
 .P
-\fI100:0\fP   \fI100\fP as the upper-limit value and \fI0\fP for the lower-limit value. This is commonly used for percentage values.
+\fI100:0\fP   which means \fI100\fP as the upper-limit value and \fI0\fP for the lower-limit value. This is commonly used for percentage values.
 .br
-\fI1000\fP   \fI1000\fP as the upper-limit value and undefined lower-limit value. This can also be written as \fI1000:\fP.
+\fI1000\fP   which means \fI1000\fP as the upper-limit value and leaving undefined the lower-limit value. This can also be written as \fI1000:\fP.
 .RE
 .SH AUTHOR
 Monitorix is written by Jordi Sanfeliu <jordi@fibranet.cat>
