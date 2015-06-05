@@ -1360,6 +1360,8 @@ ExtendedLog /var/log/proftpd/access.log AUTH,DIRS,READ,WRITE
 .P
 For best results with the vsftpd server I recommend to setup the option \fIxferlog_std_format\fP to \fINO\fP, and the option \fBftp_log\fP to \fI/var/log/vsftpd.log\fP.
 .P
+Pure-FTPd users might want to consider using the system \fBsyslog\fP logfile.
+.P
 .BI server
 .RS
 This option specifies the FTP server. The currently supported FTP servers are:
