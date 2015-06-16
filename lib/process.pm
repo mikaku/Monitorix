@@ -476,6 +476,7 @@ sub process_cgi {
 
 			if($p) {
 				$str = trim((split(',', $process->{desc}->{$p} || ""))[0]) || $p;
+				$str =~ s/:/\\:/g;	# escape colons
 				push(@tmpz, "LINE2:cpu" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:cpu" . $n . $LC[$n] . ":$str");
@@ -587,6 +588,7 @@ sub process_cgi {
 
 			if($p) {
 				$str = trim((split(',', $process->{desc}->{$p} || ""))[0]) || $p;
+				$str =~ s/:/\\:/g;	# escape colons
 				push(@tmpz, "LINE2:mem" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:mem" . $n . $LC[$n] . ":$str");
@@ -713,6 +715,7 @@ sub process_cgi {
 
 			if($p) {
 				$str = trim((split(',', $process->{desc}->{$p} || ""))[0]) || $p;
+				$str =~ s/:/\\:/g;	# escape colons
 				push(@tmpz, "LINE2:dsk" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:dsk" . $n . $LC[$n] . ":$str");
@@ -844,6 +847,7 @@ sub process_cgi {
 
 			if($p) {
 				$str = trim((split(',', $process->{desc}->{$p} || ""))[0]) || $p;
+				$str =~ s/:/\\:/g;	# escape colons
 				push(@tmpz, "LINE2:net" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:net" . $n . $LC[$n] . ":$str");
@@ -973,6 +977,7 @@ sub process_cgi {
 
 			if($p) {
 				$str = trim((split(',', $process->{desc}->{$p} || ""))[0]) || $p;
+				$str =~ s/:/\\:/g;	# escape colons
 				push(@tmpz, "LINE2:nof" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:nof" . $n . $LC[$n] . ":$str");
@@ -1084,6 +1089,7 @@ sub process_cgi {
 
 			if($p) {
 				$str = trim((split(',', $process->{desc}->{$p} || ""))[0]) || $p;
+				$str =~ s/:/\\:/g;	# escape colons
 				push(@tmpz, "LINE2:nth" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:nth" . $n . $LC[$n] . ":$str");
@@ -1190,6 +1196,7 @@ sub process_cgi {
 
 			if($p) {
 				$str = trim((split(',', $process->{desc}->{$p} || ""))[0]) || $p;
+				$str =~ s/:/\\:/g;	# escape colons
 				push(@tmpz, "LINE2:vcs" . $n . $LC[$n] . ":$str");
 				push(@tmpz, "LINE2:n_ics" . $n . $LC[$n]);
 				$str = sprintf("%-20s", substr($str, 0, 20));
@@ -1368,6 +1375,7 @@ sub process_cgi {
 
 			if($p) {
 				$str = trim((split(',', $process->{desc}->{$p} || ""))[0]) || $p;
+				$str =~ s/:/\\:/g;	# escape colons
 				push(@tmpz, "LINE2:pro" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:pro" . $n . $LC[$n] . ":$str");
