@@ -182,6 +182,11 @@ sub process_update {
 							next;
 						}
 					}
+					if(substr($p, 0, 15) eq substr($_, 6, 15)) {
+						push(@pid, $1);
+						$pro++;
+						next;
+					}
 				}
 				close(IN);
 			}
@@ -204,8 +209,12 @@ sub process_update {
 					my $stime = 0;
 					my $v_nth = 0;
 					my $v_mem = 0;
+					my $rest;
 
-					(undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, $utime, $stime, undef, undef, undef, undef, $v_nth, undef, undef, undef, $v_mem) = split(' ', <IN>);
+					# since a process name can include spaces, an 'split(' ', <IN>)' wouldn't work here.
+					# so we discard the first part of the process information (pid, comm and state)
+					(undef, $rest) = <IN> =~ m/^(\d+\s\(.*?\)\s\S\s)(.*?)$/;
+					(undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, $utime, $stime, undef, undef, undef, undef, $v_nth, undef, undef, undef, $v_mem) = split(' ', $rest);
 					close(IN);
 					$mem += ($v_mem *= 4096);
 					$nth += ($v_nth - 1);
