@@ -15,6 +15,7 @@
 - Added custom url config option 'logo_top_url' for the top logo link. [#90]
 - Added support for postfix-policyd-spf-perl SPF handler in Mail graph.
 	(thanks to Claude Nadon, claude AT ws01.info)
+- Added support for process names that include spaces in Process graph. [#94]
 - Fixed the text color in the bottom URL of the Bind graph.
 - Fixed the text color in the bottom URL of the Icecast Streaming Server graph.
 - Fixed a problem with multiple 'ApplicationInstance' tags in Wowza Server
