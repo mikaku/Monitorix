@@ -28,6 +28,8 @@
   DST_GAUGE - Cannot convert '' to float". [#91]
 - Fixed a parsing error when using process names with the character colon.
 	(thanks to Harold Pena, haroldpena AT hotmail.com for pointing this out)
+- Fixed to put the output of the 'addendum_script' in the right place, and
+  avoiding being repeated on each graph in the 'emailreports' graph.
 - Small cosmetic changes.
 
 
