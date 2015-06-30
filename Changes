@@ -34,6 +34,9 @@
 - Fixed a wrong example in the documentation when showing how to define the same
   port number using IPv4 and IPv6 in the 'port' graph.
 	(thanks to Dirk Tanneberger, os AT tanneberger.biz for pointing this out)
+- Fixed to not show the red background color in listening network ports using
+  IPv6 in the 'port' graph.
+	(thanks to Dirk Tanneberger, os AT tanneberger.biz for pointing this out)
 - Small cosmetic changes.
 
 

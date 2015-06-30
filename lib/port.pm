@@ -500,12 +500,15 @@ sub port_cgi {
 			}
 			my $pnum;
 			$pl[$n] = trim($pl[$n]);
+			my $num = ($pl[$n] =~ m/^(\d+).*?/)[0];	# strips any suffix from port number
 			my $pn = trim((split(',', $port->{desc}->{$pl[$n]}))[0]);
 			my $pp = trim((split(',', $port->{desc}->{$pl[$n]}))[1]);
 			$pp =~ s/6//;
 			my $prig = trim((split(',', $port->{desc}->{$pl[$n]}))[3]);
 			my $plim = trim((split(',', $port->{desc}->{$pl[$n]}))[4]);
 			@riglim = @{setup_riglim($prig, $plim)};
+
+			# check if the network port is still listening
 			undef(@warning);
 			if($config->{os} eq "Linux") {
 				open(IN, "netstat -nl --$pp |");
@@ -513,7 +516,7 @@ sub port_cgi {
 					(undef, undef, undef, $pnum) = split(' ', $_);
 					chomp($pnum);
 					$pnum =~ s/.*://;
-					if($pnum eq $pl[$n]) {
+					if($pnum eq $num) {
 						last;
 					}
 				}
@@ -529,14 +532,14 @@ sub port_cgi {
 						chomp($pnum);
 						($pnum) = ($pnum =~ m/^.*?(\.\d+$)/);
 						$pnum =~ s/\.//;
-						if($pnum eq $pl[$n]) {
+						if($pnum eq $num) {
 							last;
 						}
 					}
 				}
 				close(IN);
 			}
-			if(lc($pcon) ne "out" && $pnum ne $pl[$n]) {
+			if(lc($pcon) ne "out" && $pnum ne $num) {
 				push(@warning, $colors->{warning_color});
 			}
 
