@@ -31,6 +31,9 @@
 - Fixed to put the output of the 'addendum_script' at the bottom of the email,
   and to avoid being repeated on each graph in the 'emailreports' graph.
 	(thanks to Dirk Tanneberger, os AT tanneberger.biz)
+- Fixed a wrong example in the documentation when showing how to define the same
+  port number using IPv4 and IPv6 in the 'port' graph.
+	(thanks to Dirk Tanneberger, os AT tanneberger.biz for pointing this out)
 - Small cosmetic changes.
 
 

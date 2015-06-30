@@ -1329,11 +1329,13 @@ There is also support (Linux only) for IPv6 network ports activity by using prot
 .P
 An example would be:
 .RS
+list = 25, 25ip6, 80, 53
+.br
 <desc>
 .br
 	25 = SMTP, tcp, in/out, 0, 1000
 .br
-	25 = SMTP, tcp6, in/out, 0, 1000
+	25ip6 = SMTP, tcp6, in/out, 0, 1000
 .br
 	80 = HTTP, tcp, in, 0, 1000
 .br
@@ -1341,6 +1343,9 @@ An example would be:
 .br
 </desc>
 .RE
+.P
+As you can see, you cannot use the same port number twice. Instead, you must
+distinguish it with some suffix.
 .RE
 .P
 .BI graphs_per_row
