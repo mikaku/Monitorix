@@ -92,6 +92,7 @@ install-bin:
 	$(INSTALL_DATA) lib/nginx.pm "$(DESTDIR)$(LIBDIR)/nginx.pm"
 	$(INSTALL_DATA) lib/ntp.pm "$(DESTDIR)$(LIBDIR)/ntp.pm"
 	$(INSTALL_DATA) lib/nvidia.pm "$(DESTDIR)$(LIBDIR)/nvidia.pm"
+	$(INSTALL_DATA) lib/pagespeed.pm "$(DESTDIR)$(LIBDIR)/pagespeed.pm"
 	$(INSTALL_DATA) lib/phpapc.pm "$(DESTDIR)$(LIBDIR)/phpapc.pm"
 	$(INSTALL_DATA) lib/port.pm "$(DESTDIR)$(LIBDIR)/port.pm"
 	$(INSTALL_DATA) lib/process.pm "$(DESTDIR)$(LIBDIR)/process.pm"
