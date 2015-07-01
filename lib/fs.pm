@@ -521,15 +521,12 @@ sub fs_init {
 		}
 	}
 
-	# check dependencies
-	if(lc($fs->{alerts}->{rootfs_enabled}) eq "y") {
-		if(! -x $fs->{alerts}->{rootfs_script}) {
-			logger("$myself: ERROR: script '$fs->{alerts}->{rootfs_script}' doesn't exist or don't has execution permissions.");
-		}
+	# check for deprecated options
+	if($fs->{alerts}->{rootfs_enabled} || $fs->{alerts}->{rootfs_timeintvl} || $fs->{alerts}->{rootfs_threshold} || $fs->{alerts}->{rootfs_script}) {
+		logger("$myself: WARNING: you have deprecated options in the <alerts> section. Please read the monitorix.conf(5) man page and consider also upgrade your current configuration file.");
 	}
 
 	$config->{fs_hist} = ();
-	$config->{fs_hist_alert1} = 0;
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
 }
@@ -684,22 +681,27 @@ sub fs_update {
 				# prevents a division by 0 if device is not responding
 				$ino = ($used * 100) / ($used + $free) unless $used + $free == 0;
 
-				# FS alert
-				if($f eq "/" && lc($fs->{alerts}->{rootfs_enabled}) eq "y") {
-					if(!$fs->{alerts}->{rootfs_threshold} || $use < $fs->{alerts}->{rootfs_threshold}) {
-						$config->{fs_hist_alert1} = 0;
+				# check alerts for each filesystem
+				my @al = split(',', $fs->{alerts}->{$f} || "");
+				if(scalar(@al)) {
+					my $timeintvl = trim($al[0]);
+					my $threshold = trim($al[1]);
+					my $script = trim($al[2]);
+
+					if(!$threshold || $use < $threshold) {
+						$config->{fs_hist}->{$f} = 0;
 					} else {
-						if(!$config->{fs_hist_alert1}) {
-							$config->{fs_hist_alert1} = time;
+						if(!$config->{fs_hist}->{$f}) {
+							$config->{fs_hist}->{$f} = time;
 						}
-						if($config->{fs_hist_alert1} > 0 && (time - $config->{fs_hist_alert1}) >= $fs->{alerts}->{rootfs_timeintvl}) {
-							if(-x $fs->{alerts}->{rootfs_script}) {
-								logger("$myself: ALERT: executing script '$fs->{alerts}->{rootfs_script}'.");
-								system($fs->{alerts}->{rootfs_script} . " " . $fs->{alerts}->{rootfs_timeintvl} . " " . $fs->{alerts}->{rootfs_threshold} . " " . $use);
+						if($config->{fs_hist}->{$f} > 0 && (time - $config->{fs_hist}->{$f}) >= $timeintvl) {
+							if(-x $script) {
+								logger("$myself: alert on filesystem '$f': executing script '$script'.");
+								system($script . " " . $timeintvl . " " . $threshold . " " . $use);
 							} else {
-								logger("$myself: ERROR: script '$fs->{alerts}->{rootfs_script}' doesn't exist or don't has execution permissions.");
+								logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
 							}
-							$config->{fs_hist_alert1} = time;
+							$config->{fs_hist}->{$f} = time;
 						}
 					}
 				}

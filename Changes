@@ -16,6 +16,8 @@
 - Added support for postfix-policyd-spf-perl SPF handler in Mail graph.
 	(thanks to Claude Nadon, claude AT ws01.info)
 - Added support for process names that include spaces in Process graph. [#94]
+- Added the ability to include an alert for each defined filesystem in the 'fs'
+  graph. The previous alert system in this graph is now deprecated.
 - Fixed the text color in the bottom URL of the Bind graph.
 - Fixed the text color in the bottom URL of the Icecast Streaming Server graph.
 - Fixed a problem with multiple 'ApplicationInstance' tags in Wowza Server

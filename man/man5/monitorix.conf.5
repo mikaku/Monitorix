@@ -942,46 +942,41 @@ Just an example:
 You can define as much entries as you want.
 .RE
 .P
-.BI rootfs_enabled
+.BI alerts
 .RS
-This section enables or disables the alert capabilities for this graph. Only the alert for the root filesystem disk usage is currently implemented. It works as follows:
+This optional list enables the alert capabilities for this graph and complements with the \fBlist\fP option. Each alert has three fields separated by comma: the \fItime interval\fP, the \fIthreshold\fP and the path to the \fIscript\fP to be executed.
 .P
-If the percentage of disk space used in the root filesystem reaches the \fBrootfs_threshold\fP value for the interval of time defined in \fBrootfs_timeintvl\fP, Monitorix will execute the external alert script defined in \fBrootfs_script\fP.
+The \fItime interval\fP is the period of time (in seconds) that the \fIthreshold\fP needs to be exceeded before the external script is executed.
 .P
-The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+The \fIthreshold\fP is the percentage of disk space used in the file system that needs to be reached or exceeded within the specified time in \fItime interval\fP to execute the external script.
 .P
-Default value: \fIn\fP
-.RE
+The \fIscript\fP is the full path name of the script that will be executed by this alert.
 .P
-.BI rootfs_timeintvl
+Each defined filesystem has its own alert.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fImonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+The following is an example of an alert defined for the root filesystem:
+.P
 .RS
-This is the period of time (in seconds) that the threshold needs to be exceeded before the external alert script is executed.
-.P
-Default value: \fI3600\fP
-.RE
-.P
-.BI rootfs_threshold
-.RS
-This is the value that needs to be reached or exceeded within the specified time period in \fBrootfs_timeintvl\fP to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
-.P
-The value of this option is compared to the current root filesystem disk usage.
-.P
-Default value: \fI100\fP
-.RE
-.P
-.BI rootfs_script
-.RS
-This is the full path name of the script that will be executed by this alert.
-.P
-It will receive the following three parameters:
-.P
-1st - the value currently defined in \fBrootfs_timeintvl\fP.
+<alerts>
 .br
-2nd - the value currently defined in \fBrootfs_threshold\fP.
+	/ = 3600, 98, /path/to/script
 .br
-3rd - the current root filesystem disk usage.
+</alerts>
 .P
-Default value: \fI/path/to/script.sh\fP
+.RE
+Such alert means that if the percentage of disk space used in the root filesystem reaches or exceeds 98 during at least one hour (3600 seconds) the script in \fI/path/to/script\fP will be executed.
+.P
+The external script will receive the following arguments:
+.P
+.RS
+1st - the value defined as \fItime interval\fP.
+.br
+2nd - the value defined as \fIthreshold\fP.
+.br
+3rd - the filesystem disk usage.
+.P
 .RE
 .SS Directory usage statistics (du.rrd)
 This graph is able to monitor the usage of an unlimited number of directories.
