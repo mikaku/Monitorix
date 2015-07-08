@@ -28,6 +28,427 @@ use LWP::UserAgent;
 use Exporter 'import';
 our @EXPORT = qw(apache_init apache_update apache_cgi);
 
+#
+# Some ideas of this upgrading function have been taken from a script written
+# by Joost Cassee and found in the RRDtool Contrib Area:
+# <http://oss.oetiker.ch/rrdtool/pub/contrib/>
+#
+sub upgrade_to_380 {
+	my $myself = (caller(0))[3];
+	my $rrd = shift;
+
+	my $ds = 0;
+	my $cdp = 0;
+	my $in_idle = 0;
+	my $str = "";
+
+	logger("$myself: Adding 16 extra DS values to '$rrd'.");
+	logger("$myself: $!") if !(open(IN, "rrdtool dump $rrd |"));
+	logger("$myself: $!") if !(open(OUT, "| rrdtool restore - $rrd.new"));
+
+	while(<IN>) {
+		$ds = 1 if /<!-- Round Robin Database Dump -->/;
+		$ds = 0 if /<!-- Round Robin Archives -->/;
+		$cdp = 1 if /<cdp_prep>/;
+		$cdp = 0 if /<\/cdp_prep>/;
+		if($ds) {
+			if(/<name> apache(\d+)_idle <\/name>/) {
+				$str = "apache$1" . "_wcon";
+				$in_idle = 1;
+			}
+			if($in_idle) {
+				if(/<\/ds>/) {
+					print OUT $_;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> Nan </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/_wcon/_star/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/_star/_rreq/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/_rreq/_srep/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/_srep/_keep/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/_keep/_dnsl/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/_dnsl/_ccon/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/_ccon/_logg/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/_logg/_gfin/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/_gfin/_idlc/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/_idlc/_slot/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/_slot/_val1/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/_val1/_val2/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/_val2/_val3/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/_val3/_val4/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$str =~ s/_val4/_val5/;
+					print OUT "\n";
+					print OUT <<EOF;
+	<ds>
+		<name> $str </name>
+		<type> GAUGE </type>
+		<minimal_heartbeat> 120 </minimal_heartbeat>
+		<min> 0.0000000000e+00 </min>
+		<max> NaN </max>
+
+		<!-- PDP Status -->
+		<last_ds> UNKN </last_ds>
+		<value> 0.0000000000e+00 </value>
+		<unknown_sec> 0 </unknown_sec>
+	</ds>
+EOF
+					$in_idle = 0;
+					next;
+				}
+			}
+		}
+		if($cdp) {
+			if(/<\/ds>/) {
+				if(!($cdp % 5)) {
+					print OUT $_;
+					print OUT <<EOF;
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+			<ds>
+			<primary_value> 0.0000000000e+00 </primary_value>
+			<secondary_value> NaN </secondary_value>
+			<value> NaN </value>
+			<unknown_datapoints> 0 </unknown_datapoints>
+			</ds>
+EOF
+					$cdp++;
+					next;
+				}
+				$cdp++;
+			}
+		}
+
+		if(/<\/row>/) {
+			my $str = $_;
+			my $n = 0;
+			$str =~ s/(\s*<\/v>)/++$n % 5 == 0 ? " $1<v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v><v> NaN <\/v>" : $1/eg;
+			print OUT $str;
+			next;
+		}
+
+		print OUT $_;
+	}
+	close(IN);
+	close(OUT);
+
+	if(-f "$rrd.new") {
+		rename($rrd, "$rrd.old");
+		rename("$rrd.new", $rrd);
+	} else {
+		logger("$myself: WARNING: something went wrong upgrading $rrd. You have an unsupported old version.");
+	}
+}
+
 sub apache_init {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
@@ -64,8 +485,22 @@ sub apache_init {
 				}
 			}
 		}
-		if(scalar(@ds) / 5 != scalar(my @al = split(',', $apache->{list}))) {
-			logger("$myself: Detected size mismatch between 'list' (" . scalar(my @al = split(',', $apache->{list})) . ") and $rrd (" . scalar(@ds) / 5 . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
+
+		# convert from 3.7.0- to 3.8.0 (adding 16 extra DS)
+		upgrade_to_380($rrd) if scalar(@ds) == 5;
+		# recalculate the number of DS
+		undef(@ds);
+		$info = RRDs::info($rrd);
+		for my $key (keys %$info) {
+			if(index($key, 'ds[') == 0) {
+				if(index($key, '.type') != -1) {
+					push(@ds, substr($key, 3, index($key, ']') - 3));
+				}
+			}
+		}
+
+		if(scalar(@ds) / 21 != scalar(my @al = split(',', $apache->{list}))) {
+			logger("$myself: Detected size mismatch between 'list' (" . scalar(my @al = split(',', $apache->{list})) . ") and $rrd (" . scalar(@ds) / 21 . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 		if(scalar(@rra) < 12 + (4 * $config->{max_historic_years})) {
@@ -88,6 +523,22 @@ sub apache_init {
 			push(@tmp, "DS:apache" . $n . "_cpu:GAUGE:120:0:U");
 			push(@tmp, "DS:apache" . $n . "_busy:GAUGE:120:0:U");
 			push(@tmp, "DS:apache" . $n . "_idle:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_wcon:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_star:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_rreq:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_srep:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_keep:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_dnsl:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_ccon:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_logg:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_gfin:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_idlc:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_slot:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_val1:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_val2:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_val3:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_val4:GAUGE:120:0:U");
+			push(@tmp, "DS:apache" . $n . "_val5:GAUGE:120:0:U");
 		}
 		eval {
 			RRDs::create($rrd,
@@ -158,6 +609,17 @@ sub apache_update {
 		my $cpu = 0;
 		my $busy = 0;
 		my $idle = 0;
+		my $wcon = "";
+		my $star = "";
+		my $rreq = "";
+		my $srep = "";
+		my $keep = "";
+		my $dnsl = "";
+		my $ccon = "";
+		my $logg = "";
+		my $gfin = "";
+		my $idlc = "";
+		my $slot = "";
 
 		foreach(split('\n', $response->content)) {
 			if(/^Total Accesses:\s+(\d+)$/) {
@@ -185,6 +647,21 @@ sub apache_update {
 			}
 			if(/^IdleWorkers:\s+(\d+)/ || /^IdleServers:\s+(\d+)/) {
 				$idle = int($1) || 0;
+				next;
+			}
+			if(/^Scoreboard:\s+(\S+)$/) {
+				my $scoreboard = $1;
+				$wcon = ($scoreboard =~ tr/_//);
+				$star = ($scoreboard =~ tr/S//);
+				$rreq = ($scoreboard =~ tr/R//);
+				$srep = ($scoreboard =~ tr/W//);
+				$keep = ($scoreboard =~ tr/K//);
+				$dnsl = ($scoreboard =~ tr/D//);
+				$ccon = ($scoreboard =~ tr/C//);
+				$logg = ($scoreboard =~ tr/L//);
+				$gfin = ($scoreboard =~ tr/G//);
+				$idlc = ($scoreboard =~ tr/I//);
+				$slot = ($scoreboard =~ tr/\.//);
 				last;
 			}
 		}
@@ -193,7 +670,7 @@ sub apache_update {
 			logger("$myself: WARNING: collected values are zero. Check the URL defined.");
 		}
 
-		$rrdata .= ":$acc:$kb:$cpu:$busy:$idle";
+		$rrdata .= ":$acc:$kb:$cpu:$busy:$idle:$wcon:$star:$rreq:$srep:$keep:$dnsl:$ccon:$logg:$gfin:$idlc:$slot:0:0:0:0:0";
 		$n++;
 	}
 
@@ -321,7 +798,7 @@ sub apache_cgi {
 	}
 
 	for($n = 0; $n < scalar(my @al = split(',', $apache->{list})); $n++) {
-		for($n2 = 1; $n2 <= 3; $n2++) {
+		for($n2 = 1; $n2 <= 6; $n2++) {
 			$str = $u . $package . $n . $n2 . "." . $tf->{when} . ".png";
 			push(@PNG, $str);
 			unlink("$PNG_DIR" . $str);
@@ -350,23 +827,23 @@ sub apache_cgi {
 		undef(@tmpz);
 		undef(@CDEF);
 		push(@tmp, "AREA:apache" . $e . "_idle#4444EE:Idle");
-		push(@tmp, "GPRINT:apache" . $e . "_idle:LAST:            Current\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_idle:LAST:              Current\\: %3.0lf");
 		push(@tmp, "GPRINT:apache" . $e . "_idle:AVERAGE:   Average\\: %3.0lf");
 		push(@tmp, "GPRINT:apache" . $e . "_idle:MIN:   Min\\: %3.0lf");
 		push(@tmp, "GPRINT:apache" . $e . "_idle:MAX:   Max\\: %3.0lf\\n");
 		push(@tmp, "AREA:apache" . $e . "_busy#44EEEE:Busy");
-		push(@tmp, "GPRINT:apache" . $e . "_busy:LAST:            Current\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_busy:LAST:              Current\\: %3.0lf");
 		push(@tmp, "GPRINT:apache" . $e . "_busy:AVERAGE:   Average\\: %3.0lf");
 		push(@tmp, "GPRINT:apache" . $e . "_busy:MIN:   Min\\: %3.0lf");
 		push(@tmp, "GPRINT:apache" . $e . "_busy:MAX:   Max\\: %3.0lf\\n");
-		push(@tmp, "LINE1:apache" . $e . "_idle#0000EE");
-		push(@tmp, "LINE1:apache" . $e . "_busy#00EEEE");
-		push(@tmp, "LINE1:apache" . $e . "_tot#EE0000:Total");
+		push(@tmp, "LINE1.5:apache" . $e . "_idle#0000EE");
+		push(@tmp, "LINE1.5:apache" . $e . "_busy#00EEEE");
+		push(@tmp, "LINE1.5:apache" . $e . "_tot#EEEE44:Total");
 		push(@tmpz, "AREA:apache" . $e . "_idle#4444EE:Idle");
 		push(@tmpz, "AREA:apache" . $e . "_busy#44EEEE:Busy");
 		push(@tmpz, "LINE2:apache" . $e . "_idle#0000EE");
 		push(@tmpz, "LINE2:apache" . $e . "_busy#00EEEE");
-		push(@tmpz, "LINE2:apache" . $e . "_tot#EE0000:Total");
+		push(@tmpz, "LINE2:apache" . $e . "_tot#EEEE00:Total");
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -442,49 +919,91 @@ sub apache_cgi {
 			}
 		}
 
-		if($title) {
-			print("    </td>\n");
-			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
-		}
 		@riglim = @{setup_riglim($rigid[1], $limit[1])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
-		push(@tmp, "AREA:apache" . $e . "_cpu#44AAEE:CPU");
-		push(@tmp, "GPRINT:apache" . $e . "_cpu:LAST:                  Current\\: %5.2lf%%\\n");
-		push(@tmp, "LINE1:apache" . $e . "_cpu#00EEEE");
-		push(@tmpz, "AREA:apache" . $e . "_cpu#44AAEE:CPU");
-		push(@tmpz, "LINE1:apache" . $e . "_cpu#00EEEE");
+		push(@tmp, "AREA:apache" . $e . "_star#FFA500:Starting up");
+		push(@tmp, "GPRINT:apache" . $e . "_star:LAST:       Current\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_star:AVERAGE:   Average\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_star:MIN:   Min\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_star:MAX:   Max\\: %3.0lf\\n");
+		push(@tmp, "AREA:apache" . $e . "_rreq#44EEEE:Reading request");
+		push(@tmp, "GPRINT:apache" . $e . "_rreq:LAST:   Current\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_rreq:AVERAGE:   Average\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_rreq:MIN:   Min\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_rreq:MAX:   Max\\: %3.0lf\\n");
+		push(@tmp, "AREA:apache" . $e . "_srep#4444EE:Sending reply");
+		push(@tmp, "GPRINT:apache" . $e . "_srep:LAST:     Current\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_srep:AVERAGE:   Average\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_srep:MIN:   Min\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_srep:MAX:   Max\\: %3.0lf\\n");
+		push(@tmp, "AREA:apache" . $e . "_dnsl#44EE44:DNS lookup");
+		push(@tmp, "GPRINT:apache" . $e . "_dnsl:LAST:        Current\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_dnsl:AVERAGE:   Average\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_dnsl:MIN:   Min\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_dnsl:MAX:   Max\\: %3.0lf\\n");
+		push(@tmp, "AREA:apache" . $e . "_ccon#EE44EE:Closing conn");
+		push(@tmp, "GPRINT:apache" . $e . "_ccon:LAST:      Current\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_ccon:AVERAGE:   Average\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_ccon:MIN:   Min\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_ccon:MAX:   Max\\: %3.0lf\\n");
+		push(@tmp, "AREA:apache" . $e . "_logg#EEEE44:Logging");
+		push(@tmp, "GPRINT:apache" . $e . "_logg:LAST:           Current\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_logg:AVERAGE:   Average\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_logg:MIN:   Min\\: %3.0lf");
+		push(@tmp, "GPRINT:apache" . $e . "_logg:MAX:   Max\\: %3.0lf\\n");
+		push(@tmp, "LINE1.5:apache" . $e . "_logg#EEEE00");
+		push(@tmp, "LINE1.5:apache" . $e . "_ccon#EE00EE");
+		push(@tmp, "LINE1.5:apache" . $e . "_dnsl#00EE00");
+		push(@tmp, "LINE1.5:apache" . $e . "_srep#0000EE");
+		push(@tmp, "LINE1.5:apache" . $e . "_rreq#00EEEE");
+		push(@tmp, "LINE1.5:apache" . $e . "_star#FFA500");
+		push(@tmpz, "AREA:apache" . $e . "_star#FFA500:Starting up");
+		push(@tmpz, "AREA:apache" . $e . "_rreq#44EEEE:Reading request");
+		push(@tmpz, "AREA:apache" . $e . "_srep#4444EE:Sending reply");
+		push(@tmpz, "AREA:apache" . $e . "_dnsl#44EE44:DNS lookup");
+		push(@tmpz, "AREA:apache" . $e . "_ccon#EE44EE:Closing conn");
+		push(@tmpz, "AREA:apache" . $e . "_logg#EEEE44:Logging");
+		push(@tmpz, "LINE2:apache" . $e . "_logg#EEEE00");
+		push(@tmpz, "LINE2:apache" . $e . "_ccon#EE00EE");
+		push(@tmpz, "LINE2:apache" . $e . "_dnsl#00EE00");
+		push(@tmpz, "LINE2:apache" . $e . "_srep#0000EE");
+		push(@tmpz, "LINE2:apache" . $e . "_rreq#00EEEE");
+		push(@tmpz, "LINE2:apache" . $e . "_star#FFA500");
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
 			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
-		($width, $height) = split('x', $config->{graph_size}->{small});
+		($width, $height) = split('x', $config->{graph_size}->{main});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
-			push(@tmp, "COMMENT: \\n");
-			push(@tmp, "COMMENT: \\n");
-			push(@tmp, "COMMENT: \\n");
 		}
 		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 3 + 1]",
 			"--title=$config->{graphs}->{_apache2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Percent (%)",
+			"--vertical-label=Workers",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
-			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
-			"DEF:apache" . $e . "_cpu=$rrd:apache" . $e . "_cpu:AVERAGE",
-			"CDEF:allvalues=apache" . $e . "_cpu",
+			"DEF:apache" . $e . "_star=$rrd:apache" . $e . "_star:AVERAGE",
+			"DEF:apache" . $e . "_rreq=$rrd:apache" . $e . "_rreq:AVERAGE",
+			"DEF:apache" . $e . "_srep=$rrd:apache" . $e . "_srep:AVERAGE",
+			"DEF:apache" . $e . "_dnsl=$rrd:apache" . $e . "_dnsl:AVERAGE",
+			"DEF:apache" . $e . "_ccon=$rrd:apache" . $e . "_ccon:AVERAGE",
+			"DEF:apache" . $e . "_logg=$rrd:apache" . $e . "_logg:AVERAGE",
+			"CDEF:allvalues=apache" . $e . "_star,apache" . $e . "_rreq,apache" . $e . "_srep,apache" . $e . "_dnsl,apache" . $e . "_ccon,apache" . $e . "_logg,+,+,+,+,+",
 			@CDEF,
-			@tmp);
+			"COMMENT: \\n",
+			@tmp,
+			"COMMENT: \\n");
 		$err = RRDs::error;
 		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 1]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
@@ -493,16 +1012,20 @@ sub apache_cgi {
 				"--title=$config->{graphs}->{_apache2}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=Percent",
+				"--vertical-label=Workers",
 				"--width=$width",
 				"--height=$height",
 				@riglim,
 				$zoom,
 				@{$cgi->{version12}},
-				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
-				"DEF:apache" . $e . "_cpu=$rrd:apache" . $e . "_cpu:AVERAGE",
-				"CDEF:allvalues=apache" . $e . "_cpu",
+				"DEF:apache" . $e . "_star=$rrd:apache" . $e . "_star:AVERAGE",
+				"DEF:apache" . $e . "_rreq=$rrd:apache" . $e . "_rreq:AVERAGE",
+				"DEF:apache" . $e . "_srep=$rrd:apache" . $e . "_srep:AVERAGE",
+				"DEF:apache" . $e . "_dnsl=$rrd:apache" . $e . "_dnsl:AVERAGE",
+				"DEF:apache" . $e . "_ccon=$rrd:apache" . $e . "_ccon:AVERAGE",
+				"DEF:apache" . $e . "_logg=$rrd:apache" . $e . "_logg:AVERAGE",
+				"CDEF:allvalues=apache" . $e . "_star,apache" . $e . "_rreq,apache" . $e . "_srep,apache" . $e . "_dnsl,apache" . $e . "_ccon,apache" . $e . "_logg,+,+,+,+,+",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -528,15 +1051,19 @@ sub apache_cgi {
 			}
 		}
 
+		if($title) {
+			print("    </td>\n");
+			print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		}
 		@riglim = @{setup_riglim($rigid[2], $limit[2])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
-		push(@tmp, "AREA:apache" . $e . "_acc#44EE44:Accesses");
-		push(@tmp, "GPRINT:apache" . $e . "_acc:LAST:             Current\\: %5.2lf\\n");
-		push(@tmp, "LINE1:apache" . $e . "_acc#00EE00");
-		push(@tmpz, "AREA:apache" . $e . "_acc#44EE44:Accesses");
-		push(@tmpz, "LINE1:apache" . $e . "_acc#00EE00");
+		push(@tmp, "AREA:apache" . $e . "_cpu#44AAEE:CPU");
+		push(@tmp, "GPRINT:apache" . $e . "_cpu:LAST:                  Current\\: %5.2lf%%\\n");
+		push(@tmp, "LINE1:apache" . $e . "_cpu#00EEEE");
+		push(@tmpz, "AREA:apache" . $e . "_cpu#44AAEE:CPU");
+		push(@tmpz, "LINE1:apache" . $e . "_cpu#00EEEE");
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -555,7 +1082,7 @@ sub apache_cgi {
 			"--title=$config->{graphs}->{_apache3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=PNG",
-			"--vertical-label=Accesses/s",
+			"--vertical-label=Percent (%)",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
@@ -563,8 +1090,8 @@ sub apache_cgi {
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
-			"DEF:apache" . $e . "_acc=$rrd:apache" . $e . "_acc:AVERAGE",
-			"CDEF:allvalues=apache" . $e . "_acc",
+			"DEF:apache" . $e . "_cpu=$rrd:apache" . $e . "_cpu:AVERAGE",
+			"CDEF:allvalues=apache" . $e . "_cpu",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -575,7 +1102,7 @@ sub apache_cgi {
 				"--title=$config->{graphs}->{_apache3}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=Accesses/s",
+				"--vertical-label=Percent",
 				"--width=$width",
 				"--height=$height",
 				@riglim,
@@ -583,8 +1110,8 @@ sub apache_cgi {
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
-				"DEF:apache" . $e . "_acc=$rrd:apache" . $e . "_acc:AVERAGE",
-				"CDEF:allvalues=apache" . $e . "_acc",
+				"DEF:apache" . $e . "_cpu=$rrd:apache" . $e . "_cpu:AVERAGE",
+				"CDEF:allvalues=apache" . $e . "_cpu",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -607,6 +1134,265 @@ sub apache_cgi {
 				}
 			} else {
 				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 2] . "'>\n");
+			}
+		}
+
+		@riglim = @{setup_riglim($rigid[3], $limit[3])};
+		undef(@tmp);
+		undef(@tmpz);
+		undef(@CDEF);
+		push(@tmp, "AREA:apache" . $e . "_acc#44EE44:Requests");
+		push(@tmp, "GPRINT:apache" . $e . "_acc:LAST:             Current\\: %5.2lf\\n");
+		push(@tmp, "LINE1:apache" . $e . "_acc#00EE00");
+		push(@tmpz, "AREA:apache" . $e . "_acc#44EE44:Requests");
+		push(@tmpz, "LINE1:apache" . $e . "_acc#00EE00");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
+		($width, $height) = split('x', $config->{graph_size}->{small});
+		if($silent =~ /imagetag/) {
+			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+			@tmp = @tmpz;
+			push(@tmp, "COMMENT: \\n");
+			push(@tmp, "COMMENT: \\n");
+			push(@tmp, "COMMENT: \\n");
+		}
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 3 + 3]",
+			"--title=$config->{graphs}->{_apache4}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Requests/s",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			$zoom,
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:apache" . $e . "_acc=$rrd:apache" . $e . "_acc:AVERAGE",
+			"CDEF:allvalues=apache" . $e . "_acc",
+			@CDEF,
+			@tmp);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 3]: $err\n") if $err;
+		if(lc($config->{enable_zoom}) eq "y") {
+			($width, $height) = split('x', $config->{graph_size}->{zoom});
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 3 + 3]",
+				"--title=$config->{graphs}->{_apache4}  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=PNG",
+				"--vertical-label=Requests/s",
+				"--width=$width",
+				"--height=$height",
+				@riglim,
+				$zoom,
+				@{$cgi->{version12}},
+				@{$cgi->{version12_small}},
+				@{$colors->{graph_colors}},
+				"DEF:apache" . $e . "_acc=$rrd:apache" . $e . "_acc:AVERAGE",
+				"CDEF:allvalues=apache" . $e . "_acc",
+				@CDEF,
+				@tmpz);
+			$err = RRDs::error;
+			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 3]: $err\n") if $err;
+		}
+		$e2 = $e + 4;
+		if($title || ($silent =~ /imagetag/ && $graph =~ /apache$e2/)) {
+			if(lc($config->{enable_zoom}) eq "y") {
+				if(lc($config->{disable_javascript_void}) eq "y") {
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 3] . "' border='0'></a>\n");
+				} else {
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 3] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 3] . "' border='0'></a>\n");
+				}
+			} else {
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 3] . "'>\n");
+			}
+		}
+
+		@riglim = @{setup_riglim($rigid[4], $limit[4])};
+		undef(@tmp);
+		undef(@tmpz);
+		undef(@CDEF);
+		push(@tmp, "LINE2:apache" . $e . "_wcon#FFA500:Waiting for conn");
+		push(@tmp, "GPRINT:apache" . $e . "_wcon:LAST:     Current\\: %3.0lf\\n");
+		push(@tmp, "LINE2:apache" . $e . "_keep#44EEEE:Keepalive");
+		push(@tmp, "GPRINT:apache" . $e . "_keep:LAST:            Current\\: %3.0lf\\n");
+		push(@tmp, "LINE2:apache" . $e . "_idlc#44EE44:Idle cleanup");
+		push(@tmp, "GPRINT:apache" . $e . "_idlc:LAST:         Current\\: %3.0lf\\n");
+		push(@tmp, "LINE2:apache" . $e . "_gfin#4444EE:Gracefully fin");
+		push(@tmp, "GPRINT:apache" . $e . "_gfin:LAST:       Current\\: %3.0lf\\n");
+		push(@tmpz, "LINE2:apache" . $e . "_wcon#FFA500:Waiting for conn");
+		push(@tmpz, "LINE2:apache" . $e . "_keep#44EEEE:Keepalive");
+		push(@tmpz, "LINE2:apache" . $e . "_idlc#44EE44:Idle cleanup");
+		push(@tmpz, "LINE2:apache" . $e . "_gfin#4444EE:Gracefully fin");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
+		($width, $height) = split('x', $config->{graph_size}->{small});
+		if($silent =~ /imagetag/) {
+			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+			@tmp = @tmpz;
+			push(@tmp, "COMMENT: \\n");
+			push(@tmp, "COMMENT: \\n");
+			push(@tmp, "COMMENT: \\n");
+		}
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 3 + 4]",
+			"--title=$config->{graphs}->{_apache5}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Workers",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			$zoom,
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:apache" . $e . "_wcon=$rrd:apache" . $e . "_wcon:AVERAGE",
+			"DEF:apache" . $e . "_keep=$rrd:apache" . $e . "_keep:AVERAGE",
+			"DEF:apache" . $e . "_idlc=$rrd:apache" . $e . "_idlc:AVERAGE",
+			"DEF:apache" . $e . "_gfin=$rrd:apache" . $e . "_gfin:AVERAGE",
+			"CDEF:allvalues=apache" . $e . "_wcon,apache" . $e . "_keep,apache" . $e . "_idlc,apache" . $e . "_gfin,+,+,+",
+			@CDEF,
+			@tmp);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 4]: $err\n") if $err;
+		if(lc($config->{enable_zoom}) eq "y") {
+			($width, $height) = split('x', $config->{graph_size}->{zoom});
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 3 + 4]",
+				"--title=$config->{graphs}->{_apache5}  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=PNG",
+				"--vertical-label=Workers",
+				"--width=$width",
+				"--height=$height",
+				@riglim,
+				$zoom,
+				@{$cgi->{version12}},
+				@{$cgi->{version12_small}},
+				@{$colors->{graph_colors}},
+				"DEF:apache" . $e . "_wcon=$rrd:apache" . $e . "_wcon:AVERAGE",
+				"DEF:apache" . $e . "_keep=$rrd:apache" . $e . "_keep:AVERAGE",
+				"DEF:apache" . $e . "_idlc=$rrd:apache" . $e . "_idlc:AVERAGE",
+				"DEF:apache" . $e . "_gfin=$rrd:apache" . $e . "_gfin:AVERAGE",
+				"CDEF:allvalues=apache" . $e . "_wcon,apache" . $e . "_keep,apache" . $e . "_idlc,apache" . $e . "_gfin,+,+,+",
+				@CDEF,
+				@tmpz);
+			$err = RRDs::error;
+			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 4]: $err\n") if $err;
+		}
+		$e2 = $e + 5;
+		if($title || ($silent =~ /imagetag/ && $graph =~ /apache$e2/)) {
+			if(lc($config->{enable_zoom}) eq "y") {
+				if(lc($config->{disable_javascript_void}) eq "y") {
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 4] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 4] . "' border='0'></a>\n");
+				} else {
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 4] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 4] . "' border='0'></a>\n");
+				}
+			} else {
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 4] . "'>\n");
+			}
+		}
+
+		@riglim = @{setup_riglim($rigid[5], $limit[5])};
+		undef(@tmp);
+		undef(@tmpz);
+		undef(@CDEF);
+		push(@tmp, "AREA:apache" . $e . "_slot#EE44EE:Open slots");
+		push(@tmp, "GPRINT:apache" . $e . "_slot:LAST:           Current\\: %4.0lf\\n");
+		push(@tmp, "LINE1:apache" . $e . "_slot#963C74");
+		push(@tmpz, "AREA:apache" . $e . "_slot#EE44EE:Open slots");
+		push(@tmpz, "LINE1:apache" . $e . "_slot#963C74");
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
+		($width, $height) = split('x', $config->{graph_size}->{small});
+		if($silent =~ /imagetag/) {
+			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+			@tmp = @tmpz;
+			push(@tmp, "COMMENT: \\n");
+			push(@tmp, "COMMENT: \\n");
+			push(@tmp, "COMMENT: \\n");
+		}
+		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 3 + 5]",
+			"--title=$config->{graphs}->{_apache6}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=PNG",
+			"--vertical-label=Slots",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			$zoom,
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:apache" . $e . "_slot=$rrd:apache" . $e . "_slot:AVERAGE",
+			"CDEF:allvalues=apache" . $e . "_slot",
+			@CDEF,
+			@tmp);
+		$err = RRDs::error;
+		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 3 + 5]: $err\n") if $err;
+		if(lc($config->{enable_zoom}) eq "y") {
+			($width, $height) = split('x', $config->{graph_size}->{zoom});
+			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 3 + 5]",
+				"--title=$config->{graphs}->{_apache6}  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=PNG",
+				"--vertical-label=Slots",
+				"--width=$width",
+				"--height=$height",
+				@riglim,
+				$zoom,
+				@{$cgi->{version12}},
+				@{$cgi->{version12_small}},
+				@{$colors->{graph_colors}},
+				"DEF:apache" . $e . "_slot=$rrd:apache" . $e . "_slot:AVERAGE",
+				"CDEF:allvalues=apache" . $e . "_slot",
+				@CDEF,
+				@tmpz);
+			$err = RRDs::error;
+			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 3 + 5]: $err\n") if $err;
+		}
+		$e2 = $e + 6;
+		if($title || ($silent =~ /imagetag/ && $graph =~ /apache$e2/)) {
+			if(lc($config->{enable_zoom}) eq "y") {
+				if(lc($config->{disable_javascript_void}) eq "y") {
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 5] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 5] . "' border='0'></a>\n");
+				} else {
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 3 + 5] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 5] . "' border='0'></a>\n");
+				}
+			} else {
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 3 + 5] . "'>\n");
 			}
 		}
 
