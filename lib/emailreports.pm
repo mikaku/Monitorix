@@ -200,7 +200,7 @@ EOF
 			);
 		}
 
-		if(lc($config->{method} || "") eq "relay") {
+		if(lc($emailreports->{method} || "") eq "relay") {
 			$msg->send();
 
 		} else {
