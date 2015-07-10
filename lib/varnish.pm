@@ -185,103 +185,103 @@ sub varnish_update {
 
 	open(IN, "varnishstat -1 |");
 	while(<IN>) {
-		if(/^client_conn\s+(\d+)\s+/) {
+		if(/^(client_conn|MAIN.sess_conn)\s+(\d+)\s+/) {
 			$str = $e . "cconn";
-			$cconn = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$cconn = 0 unless $cconn != $1;
+			$cconn = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$cconn = 0 unless $cconn != $2;
 			$cconn /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^client_drop\s+(\d+)\s+/) {
+		if(/^(client_drop|MAIN.sess_drop)\s+(\d+)\s+/) {
 			$str = $e . "cdrop";
-			$cdrop = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$cdrop = 0 unless $cdrop != $1;
+			$cdrop = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$cdrop = 0 unless $cdrop != $2;
 			$cdrop /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^client_req\s+(\d+)\s+/) {
+		if(/^(client_req|MAIN.client_req)\s+(\d+)\s+/) {
 			$str = $e . "creq";
-			$creq = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$creq = 0 unless $creq != $1;
+			$creq = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$creq = 0 unless $creq != $2;
 			$creq /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^cache_hit\s+(\d+)\s+/) {
+		if(/^(cache_hit|MAIN.cache_hit)\s+(\d+)\s+/) {
 			$str = $e . "chit";
-			$chit = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$chit = 0 unless $chit != $1;
+			$chit = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$chit = 0 unless $chit != $2;
 			$chit /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^cache_hitpass\s+(\d+)\s+/) {
+		if(/^(cache_hitpass|MAIN.cache_hitpass)\s+(\d+)\s+/) {
 			$str = $e . "chitp";
-			$chitp = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$chitp = 0 unless $chitp != $1;
+			$chitp = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$chitp = 0 unless $chitp != $2;
 			$chitp /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^cache_miss\s+(\d+)\s+/) {
+		if(/^(cache_miss|MAIN.cache_miss)\s+(\d+)\s+/) {
 			$str = $e . "cmiss";
-			$cmiss = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$cmiss = 0 unless $cmiss != $1;
+			$cmiss = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$cmiss = 0 unless $cmiss != $2;
 			$cmiss /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^backend_conn\s+(\d+)\s+/) {
+		if(/^(backend_conn|MAIN.backend_conn)\s+(\d+)\s+/) {
 			$str = $e . "bconn";
-			$bconn = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$bconn = 0 unless $bconn != $1;
+			$bconn = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$bconn = 0 unless $bconn != $2;
 			$bconn /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^backend_unhealthy\s+(\d+)\s+/) {
+		if(/^(backend_unhealthy|MAIN.backend_unhealthy)\s+(\d+)\s+/) {
 			$str = $e . "bunhe";
-			$bunhe = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$bunhe = 0 unless $bunhe != $1;
+			$bunhe = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$bunhe = 0 unless $bunhe != $2;
 			$bunhe /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^backend_busy\s+(\d+)\s+/) {
+		if(/^(backend_busy|MAIN.backend_busy)\s+(\d+)\s+/) {
 			$str = $e . "bbusy";
-			$bbusy = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$bbusy = 0 unless $bbusy != $1;
+			$bbusy = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$bbusy = 0 unless $bbusy != $2;
 			$bbusy /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^backend_fail\s+(\d+)\s+/) {
+		if(/^(backend_fail|MAIN.backend_fail)\s+(\d+)\s+/) {
 			$str = $e . "bfail";
-			$bfail = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$bfail = 0 unless $bfail != $1;
+			$bfail = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$bfail = 0 unless $bfail != $2;
 			$bfail /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^backend_reuse\s+(\d+)\s+/) {
+		if(/^(backend_reuse|MAIN.backend_reuse)\s+(\d+)\s+/) {
 			$str = $e . "breus";
-			$breus = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$breus = 0 unless $breus != $1;
+			$breus = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$breus = 0 unless $breus != $2;
 			$breus /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^backend_toolate\s+(\d+)\s+/) {
+		if(/^(backend_toolate|MAIN.backend_toolate)\s+(\d+)\s+/) {
 			$str = $e . "btool";
-			$btool = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$btool = 0 unless $btool != $1;
+			$btool = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$btool = 0 unless $btool != $2;
 			$btool /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^backend_recycle\s+(\d+)\s+/) {
+		if(/^(backend_recycle|MAIN.backend_recycle)\s+(\d+)\s+/) {
 			$str = $e . "brecy";
-			$brecy = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$brecy = 0 unless $brecy != $1;
+			$brecy = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$brecy = 0 unless $brecy != $2;
 			$brecy /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^backend_retry\s+(\d+)\s+/) {
+		if(/^(backend_retry|MAIN.backend_retry)\s+(\d+)\s+/) {
 			$str = $e . "bretr";
-			$bretr = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$bretr = 0 unless $bretr != $1;
+			$bretr = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$bretr = 0 unless $bretr != $2;
 			$bretr /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
 		if(/^n_wrk_create\s+(\d+)\s+/) {
 			$str = $e . "nwcre";
@@ -318,46 +318,47 @@ sub varnish_update {
 			$nwdro /= 60;
 			$config->{varnish_hist}->{$str} = $1;
 		}
-		if(/^n_lru_nuked\s+(\d+)\s+/) {
+		if(/^(n_lru_nuked|MAIN.n_lru_nuked)\s+(\d+)\s+/) {
 			$str = $e . "nlnuk";
-			$nlnuk = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$nlnuk = 0 unless $nlnuk != $1;
+			$nlnuk = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$nlnuk = 0 unless $nlnuk != $2;
 			$nlnuk /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^n_lru_moved\s+(\d+)\s+/) {
+		if(/^(n_lru_moved|MAIN.n_lru_moved)\s+(\d+)\s+/) {
 			$str = $e . "nlmov";
-			$nlmov = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$nlmov = 0 unless $nlmov != $1;
+			$nlmov = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$nlmov = 0 unless $nlmov != $2;
 			$nlmov /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^n_object\s+(\d+)\s+/) {
-			$nsob = $1;
+		if(/^(MAIN.n_object|n_object)\s+(\d+)\s+/) {
+			$nsob = $2;
 		}
-		if(/^n_objectcore\s+(\d+)\s+/) {
-			$nsoc = $1;
+		if(/^(n_objectcore|MAIN.n_objectcore)\s+(\d+)\s+/) {
+			$nsoc = $2;
 		}
-		if(/^n_objecthead\s+(\d+)\s+/) {
-			$nsoh = $1;
+		if(/^(n_objecthead|MAIN.n_objecthead)\s+(\d+)\s+/) {
+			$nsoh = $2;
 		}
-		if(/^n_waitinglist\s+(\d+)\s+/) {
-			$nswl = $1;
+		if(/^(n_waitinglist|MAIN.n_waitinglist)\s+(\d+)\s+/) {
+			$nswl = $2;
 		}
-		if(/^s_hdrbytes\s+(\d+)\s+/) {
+		if(/^(s_hdrbytes|MAIN.s_resp_hdrbytes)\s+(\d+)\s+/) {
 			$str = $e . "hdrb";
-			$hdrb = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$hdrb = 0 unless $hdrb != $1;
+			$hdrb = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$hdrb = 0 unless $hdrb != $2;
 			$hdrb /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
-		if(/^s_bodybytes\s+(\d+)\s+/) {
+		if(/^(s_bodybytes|MAIN.s_resp_bodybytes)\s+(\d+)\s+/) {
 			$str = $e . "bodb";
-			$bodb = $1 - ($config->{varnish_hist}->{$str} || 0);
-			$bodb = 0 unless $bodb != $1;
+			$bodb = $2 - ($config->{varnish_hist}->{$str} || 0);
+			$bodb = 0 unless $bodb != $2;
 			$bodb /= 60;
-			$config->{varnish_hist}->{$str} = $1;
+			$config->{varnish_hist}->{$str} = $2;
 		}
+
 	}
 	close(IN);
 	$rrdata .= ":$cconn:$cdrop:$creq:$chit:$chitp:$cmiss:$bconn:$bunhe:$bbusy:$bfail:$breus:$btool:$brecy:$bretr:$nwcre:$nwfai:$nwmax:$nwque:$nwdro:$nlnuk:$nlmov:$nsob:$nsoc:$nsoh:$nswl:$hdrb:$bodb:0:0:0:0:0:0:0:0:0:0";
