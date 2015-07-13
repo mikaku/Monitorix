@@ -1905,6 +1905,19 @@ WARNING: Every time the number of entries in this option changes, Monitorix will
 .P
 Default value: \fIlocalhost:3551\fP
 .RE
+.SS Network UPS Tools statistics (nut.rrd)
+This graph is able to monitor an unlimited number of Network UPS Tools (upsc) installations.
+.P
+.BI list
+.RS
+This is a comma-separated list of UPS names with optionally the hostname and the network port where it's running \fIupsd\fP. The format of each entry must be:
+.P
+upsname[@hostname[:port]]
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fInut.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fIups@localhost\fP
+.RE
 .SS Wowza Media Server (wowza.rrd)
 This graph is able to monitor an unlimited number of Wowza servers.
 .P
