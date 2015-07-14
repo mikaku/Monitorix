@@ -20,6 +20,7 @@
 - Added the ability to include an alert for each defined filesystem in the 'fs'
   graph. The previous unique alert system in this graph is now deprecated.
 - Improved the Apache graph adding more statistical values and graphs.
+- Added Varnish 4 compatibility (partial). [#98]
 - Fixed the text color in the bottom URL of the Bind graph.
 - Fixed the text color in the bottom URL of the Icecast Streaming Server graph.
 - Fixed a problem with multiple 'ApplicationInstance' tags in Wowza Server
