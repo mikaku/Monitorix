@@ -503,8 +503,14 @@ sub fs_init {
 				}
 			} elsif($config->{os} eq "FreeBSD" || $config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
 				if($f eq "swap") {
-					$d = `swapinfo | tail -1 | awk -F " " '{ print \$1 }'`;
-					chomp($d);
+					if($config->{os} eq "FreeBSD" || $config->{os} eq "NetBSD") {
+						$d = `swapinfo | tail -1 | awk -F " " '{ print \$1 }'`;
+						chomp($d);
+					}
+					if($config->{os} eq "OpenBSD") {
+						$d = `swapctl -l | tail -1 | awk -F " " '{ print \$1 }'`;
+						chomp($d);
+					}
 				}
 
 				# remove the /dev/ prefix
