@@ -538,18 +538,20 @@ if(open(OUT, "> " . $config{base_dir} . "/cgi/monitorix.conf.path")) {
 	logger("Unable to create the file '$config{base_dir}/cgi/monitorix.conf.path'. $!");
 }
 
-# make sure that 'ip_default_table' option has a consistent value
-$config{ip_default_table} = "filter" if !$config{ip_default_table};
+if($config{os} eq "Linux") {
+	# make sure that 'ip_default_table' option has a consistent value
+	$config{ip_default_table} = "filter" if !$config{ip_default_table};
 
-# check 'iptables' version to include the new wait lock option '--wait'
-my $ipv = `iptables --version`;
-chomp($ipv);
-$ipv =~ s/^iptables v//;
-$ipv = sprintf("%03s.%03s.%03s", split('\.', $ipv));
-if($ipv gt "001.004.020") {       # 1.4.20
-	$config{iptables_wait_lock} = " --wait ";
-} else {
-	$config{iptables_wait_lock} = "";
+	# check 'iptables' version to include the new wait lock option '--wait'
+	my $ipv = `iptables --version`;
+	chomp($ipv);
+	$ipv =~ s/^iptables v//;
+	$ipv = sprintf("%03s.%03s.%03s", split('\.', $ipv));
+	if($ipv gt "001.004.020") {       # 1.4.20
+		$config{iptables_wait_lock} = " --wait ";
+	} else {
+		$config{iptables_wait_lock} = "";
+	}
 }
 
 # make sure that there aren't residual Monitorix iptables rules
