@@ -91,6 +91,7 @@ install-bin:
 	$(INSTALL_DATA) lib/nfss.pm "$(DESTDIR)$(LIBDIR)/nfss.pm"
 	$(INSTALL_DATA) lib/nginx.pm "$(DESTDIR)$(LIBDIR)/nginx.pm"
 	$(INSTALL_DATA) lib/ntp.pm "$(DESTDIR)$(LIBDIR)/ntp.pm"
+	$(INSTALL_DATA) lib/nut.pm "$(DESTDIR)$(LIBDIR)/nut.pm"
 	$(INSTALL_DATA) lib/nvidia.pm "$(DESTDIR)$(LIBDIR)/nvidia.pm"
 	$(INSTALL_DATA) lib/pagespeed.pm "$(DESTDIR)$(LIBDIR)/pagespeed.pm"
 	$(INSTALL_DATA) lib/phpapc.pm "$(DESTDIR)$(LIBDIR)/phpapc.pm"
@@ -106,6 +107,7 @@ install-bin:
 	$(INSTALL_DATA) lib/varnish.pm "$(DESTDIR)$(LIBDIR)/varnish.pm"
 	$(INSTALL_DATA) lib/verlihub.pm "$(DESTDIR)$(LIBDIR)/verlihub.pm"
 	$(INSTALL_DATA) lib/wowza.pm "$(DESTDIR)$(LIBDIR)/wowza.pm"
+	$(INSTALL_DATA) lib/zfs.pm "$(DESTDIR)$(LIBDIR)/zfs.pm"
 
 	$(INSTALL_DIR) "$(DESTDIR)$(BASEDIR)/reports"
 	$(INSTALL_DATA) reports/ca.html "$(DESTDIR)$(BASEDIR)/reports/ca.html"
