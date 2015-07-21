@@ -5,6 +5,8 @@
 - Added a complete graph for the PageSpeed Module.
 	(suggested by Jeroen Kik, monitorix AT steelyard.nl)
 - Added a complete graph for the 'upsc' (Network UPS Tools) command. [#95]
+- Added a complete graph for the ZFS filesystem.
+	(suggested by Kilian Cavalotti, kilian AT stanford.edu and others)
 - Changed the code in Wowza Server graph to treat MessagesInBytesRate and
   MessagesOutBytesRate as gauge values. [#86]
 - Changed to a clickable link the bottom URL in the Apache graph, and fixed the

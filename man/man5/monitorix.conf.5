@@ -978,6 +978,20 @@ The external script will receive the following arguments:
 3rd - the filesystem disk usage.
 .P
 .RE
+.SS ZFS statistics (zfs.rrd)
+This graph is able to monitor an unlimited number of pools.
+.P
+.BI max_pools
+.RS
+This is the maximum number of pools that you can define in \fBlist\fP. There is no limit to the number of pools monitored, but keep in mind that every time this number changes, Monitorix will resize the \fIzfs.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fI5\fP
+.P
+.RE
+.BI list
+.RS
+This is a comma-separated list of pool names. The number of pool names defined here can't be greater than the number defined in \fBmax_pools\fP.
+.RE
 .SS Directory usage statistics (du.rrd)
 This graph is able to monitor the usage of an unlimited number of directories.
 .P
