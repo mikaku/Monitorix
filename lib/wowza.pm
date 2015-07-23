@@ -1078,6 +1078,10 @@ sub wowza_cgi {
 			}
 		}
 
+		# remove authentication information from the URL
+		my ($auth) = ($url =~ m/^http:\/\/(\S*)@.*?$/);
+		$url =~ s/$auth@// if $auth;
+
 		if($title) {
 			print("    </td>\n");
 			print("    </tr>\n");
