@@ -1937,7 +1937,7 @@ This graph is able to monitor an unlimited number of Wowza servers.
 .P
 .BI list
 .RS
-This is a comma-separated list of URLs of Wowza server status pages.
+This is a comma-separated list of URLs of Wowza server status pages. Each URL can include the Basic Authentication in the form of \fIhttp://username:password@localhost:8086/connectioncounts\fP.
 .P
 WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIwowza.rrd\fP file accordingly, removing all historical data.
 .P
