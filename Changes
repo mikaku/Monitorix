@@ -24,6 +24,7 @@
 - Improved the Apache graph adding more statistical values and graphs.
 	(suggested by Marco Reale, mlist AT libero.it)
 - Added Varnish 4 compatibility (partial). [#98]
+- Added support of Basic Authentication to Wowza graph. [#100]
 - Fixed the text color in the bottom URL of the Bind graph.
 - Fixed the text color in the bottom URL of the Icecast Streaming Server graph.
 - Fixed a problem with multiple 'ApplicationInstance' tags in Wowza Server
@@ -47,6 +48,9 @@
 	(thanks to Dirk Tanneberger, os AT tanneberger.biz for pointing this out)
 - Fixed to avoid checking 'iptables' version on BSD systems.
 - Fixed to use 'swapctl' instead of 'swapinfo' in OpenBSD.
+- Fixed to show the correct uptime in additional Wowza servers.
+- Fixed to remove the authentication information from the URLs shown in the
+  bottom of Wowza graphs.
 - Small cosmetic changes.
 
 
