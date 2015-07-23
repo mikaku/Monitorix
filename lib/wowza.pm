@@ -573,7 +573,7 @@ sub wowza_cgi {
 			"AVERAGE",
 			"-r 60");
 		my $line = @$data[0];
-		my ($uptime) = @$line;
+		my ($uptime) = @$line[$e * 130];
 		my $uptimeline;
 		if($RRDs::VERSION > 1.2) {
 			$uptimeline = "COMMENT:uptime\\: " . uptime2str($uptime) . "\\c";
