@@ -24,7 +24,7 @@ use strict;
 use warnings;
 use Monitorix;
 use RRDs;
-use LWP::UserAgent;
+use base 'LWP::UserAgent';
 use XML::Simple;
 use Exporter 'import';
 our @EXPORT = qw(wowza_init wowza_update wowza_cgi);
@@ -250,6 +250,15 @@ sub wowza_init {
 	logger("$myself: Ok") if $debug;
 }
 
+sub get_basic_credentials {
+	my ($self, $realm, $url) = @_;
+	my $user = "";
+	my $pass = "";
+
+	my ($auth) = ($url =~ m/^http:\/\/(\S*)@.*?$/);
+	return ($user, $pass) = ($auth =~ m/^(\S+):(\S+)$/) if $auth;
+}
+
 sub wowza_update {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
@@ -270,12 +279,12 @@ sub wowza_update {
 		$ssl = "ssl_opts => {verify_hostname => 0}"
 			if lc($config->{accept_selfsigned_certs}) eq "y";
 
-		my $ua = LWP::UserAgent->new(timeout => 30, $ssl);
-		my $response = $ua->request(HTTP::Request->new('GET', $wls));
+		my $ua = wowza->new(timeout => 30, $ssl);
+		my $response = $ua->get($wls);
 		my $data = XMLin($response->content);
 
 		if(!$response->is_success) {
-			logger("$myself: ERROR: Unable to connect to '$wls'.");
+			logger("$myself: ERROR: Unable to connect to '$wls' (" . $response->status_line . ").");
 		}
 
 		# main (VHost) stats
