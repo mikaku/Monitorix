@@ -595,6 +595,23 @@ sub apache_update {
 		my $url = trim($_);
 		my $ssl = "";
 
+		my $acc = 0;
+		my $kb = 0;
+		my $cpu = 0;
+		my $busy = 0;
+		my $idle = 0;
+		my $wcon = 0;
+		my $star = 0;
+		my $rreq = 0;
+		my $srep = 0;
+		my $keep = 0;
+		my $dnsl = 0;
+		my $ccon = 0;
+		my $logg = 0;
+		my $gfin = 0;
+		my $idlc = 0;
+		my $slot = 0;
+
 		$ssl = "ssl_opts => {verify_hostname => 0}"
 			if lc($config->{accept_selfsigned_certs}) eq "y";
 
@@ -603,98 +620,81 @@ sub apache_update {
 
 		if(!$response->is_success) {
 			logger("$myself: ERROR: Unable to connect to '$url'.");
-		}
-
-		my $acc = 0;
-		my $kb = 0;
-		my $cpu = 0;
-		my $busy = 0;
-		my $idle = 0;
-		my $wcon = "";
-		my $star = "";
-		my $rreq = "";
-		my $srep = "";
-		my $keep = "";
-		my $dnsl = "";
-		my $ccon = "";
-		my $logg = "";
-		my $gfin = "";
-		my $idlc = "";
-		my $slot = "";
-
-		foreach(split('\n', $response->content)) {
-			if(/^Total Accesses:\s+(\d+)$/) {
-				$str = $n . "acc";
-				$acc = $1 - ($config->{apache_hist}->{$str} || 0);
-				$acc = 0 unless $acc != $1;
-				$acc /= 60;
-				$config->{apache_hist}->{$str} = $1;
-				next;
-			}
-			if(/^Total kBytes:\s+(\d+)$/) {
-				$str = $n . "kb";
-				$kb = $1 - ($config->{apache_hist}->{$str} || 0);
-				$kb = 0 unless $kb != $1;
-				$config->{apache_hist}->{$str} = $1;
-				next;
-			}
-			if(/^CPULoad:\s+(\d*\.\d+)$/) {
-				$cpu = abs($1) || 0;
-				next;
-			}
-			if(/^BusyWorkers:\s+(\d+)/ || /^BusyServers:\s+(\d+)/) {
-				$busy = int($1) || 0;
-				next;
-			}
-			if(/^IdleWorkers:\s+(\d+)/ || /^IdleServers:\s+(\d+)/) {
-				$idle = int($1) || 0;
-				next;
-			}
-			if(/^Scoreboard:\s+(\S+)$/) {
-				my $scoreboard = $1;
-				$wcon = ($scoreboard =~ tr/_//);
-				$star = ($scoreboard =~ tr/S//);
-				$rreq = ($scoreboard =~ tr/R//);
-				$srep = ($scoreboard =~ tr/W//);
-				$keep = ($scoreboard =~ tr/K//);
-				$dnsl = ($scoreboard =~ tr/D//);
-				$ccon = ($scoreboard =~ tr/C//);
-				$logg = ($scoreboard =~ tr/L//);
-				$gfin = ($scoreboard =~ tr/G//);
-				$idlc = ($scoreboard =~ tr/I//);
-				$slot = ($scoreboard =~ tr/\.//);
-				last;
-			}
-		}
-
-		# check alerts for each Apache
-		my @al = split(',', $apache->{alerts}->{$url} || "");
-		if(scalar(@al)) {
-			my $timeintvl = trim($al[0]);
-			my $threshold = trim($al[1]);
-			my $script = trim($al[2]);
-
-			if(!$threshold || $slot >= $threshold) {
-				$config->{apache_hist_alerts}->{$url} = 0;
-			} else {
-				if(!$config->{apache_hist_alerts}->{$url}) {
-					$config->{apache_hist_alerts}->{$url} = time;
+		} else {
+			foreach(split('\n', $response->content)) {
+				if(/^Total Accesses:\s+(\d+)$/) {
+					$str = $n . "acc";
+					$acc = $1 - ($config->{apache_hist}->{$str} || 0);
+					$acc = 0 unless $acc != $1;
+					$acc /= 60;
+					$config->{apache_hist}->{$str} = $1;
+					next;
 				}
-				if($config->{apache_hist_alerts}->{$url} > 0 && (time - $config->{apache_hist_alerts}->{$url}) >= $timeintvl) {
-					if(-x $script) {
-						logger("$myself: alert on Apache ($url): executing script '$script'.");
-						system($script . " " . $timeintvl . " " . $threshold . " " . $slot);
-					} else {
-						logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+				if(/^Total kBytes:\s+(\d+)$/) {
+					$str = $n . "kb";
+					$kb = $1 - ($config->{apache_hist}->{$str} || 0);
+					$kb = 0 unless $kb != $1;
+					$config->{apache_hist}->{$str} = $1;
+					next;
+				}
+				if(/^CPULoad:\s+(\d*\.\d+)$/) {
+					$cpu = abs($1) || 0;
+					next;
+				}
+				if(/^BusyWorkers:\s+(\d+)/ || /^BusyServers:\s+(\d+)/) {
+					$busy = int($1) || 0;
+					next;
+				}
+				if(/^IdleWorkers:\s+(\d+)/ || /^IdleServers:\s+(\d+)/) {
+					$idle = int($1) || 0;
+					next;
+				}
+				if(/^Scoreboard:\s+(\S+)$/) {
+					my $scoreboard = $1;
+					$wcon = ($scoreboard =~ tr/_//);
+					$star = ($scoreboard =~ tr/S//);
+					$rreq = ($scoreboard =~ tr/R//);
+					$srep = ($scoreboard =~ tr/W//);
+					$keep = ($scoreboard =~ tr/K//);
+					$dnsl = ($scoreboard =~ tr/D//);
+					$ccon = ($scoreboard =~ tr/C//);
+					$logg = ($scoreboard =~ tr/L//);
+					$gfin = ($scoreboard =~ tr/G//);
+					$idlc = ($scoreboard =~ tr/I//);
+					$slot = ($scoreboard =~ tr/\.//);
+					last;
+				}
+			}
+
+			# check alerts for each Apache
+			my @al = split(',', $apache->{alerts}->{$url} || "");
+			if(scalar(@al)) {
+				my $timeintvl = trim($al[0]);
+				my $threshold = trim($al[1]);
+				my $script = trim($al[2]);
+	
+				if(!$threshold || $slot >= $threshold) {
+					$config->{apache_hist_alerts}->{$url} = 0;
+				} else {
+					if(!$config->{apache_hist_alerts}->{$url}) {
+						$config->{apache_hist_alerts}->{$url} = time;
 					}
-					$config->{apache_hist_alerts}->{$url} = time;
+					if($config->{apache_hist_alerts}->{$url} > 0 && (time - $config->{apache_hist_alerts}->{$url}) >= $timeintvl) {
+						if(-x $script) {
+							logger("$myself: alert on Apache ($url): executing script '$script'.");
+							system($script . " " . $timeintvl . " " . $threshold . " " . $slot);
+						} else {
+							logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+						}
+						$config->{apache_hist_alerts}->{$url} = time;
+					}
 				}
+	
 			}
 
-		}
-
-		if(!$acc && !$kb && !$busy && !$idle) {
-			logger("$myself: WARNING: collected values are zero. Check the URL defined.");
+			if(!$acc && !$kb && !$busy && !$idle) {
+				logger("$myself: WARNING: collected values are zero. Check the URL defined.");
+			}
 		}
 
 		$rrdata .= ":$acc:$kb:$cpu:$busy:$idle:$wcon:$star:$rreq:$srep:$keep:$dnsl:$ccon:$logg:$gfin:$idlc:$slot:0:0:0:0:0";
