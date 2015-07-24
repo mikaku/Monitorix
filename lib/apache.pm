@@ -576,6 +576,7 @@ sub apache_init {
 	}
 
 	$config->{apache_hist} = ();
+	$config->{apache_hist_alerts} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
 }
@@ -664,6 +665,32 @@ sub apache_update {
 				$slot = ($scoreboard =~ tr/\.//);
 				last;
 			}
+		}
+
+		# check alerts for each Apache
+		my @al = split(',', $apache->{alerts}->{$url} || "");
+		if(scalar(@al)) {
+			my $timeintvl = trim($al[0]);
+			my $threshold = trim($al[1]);
+			my $script = trim($al[2]);
+
+			if(!$threshold || $slot >= $threshold) {
+				$config->{apache_hist_alerts}->{$url} = 0;
+			} else {
+				if(!$config->{apache_hist_alerts}->{$url}) {
+					$config->{apache_hist_alerts}->{$url} = time;
+				}
+				if($config->{apache_hist_alerts}->{$url} > 0 && (time - $config->{apache_hist_alerts}->{$url}) >= $timeintvl) {
+					if(-x $script) {
+						logger("$myself: alert on Apache ($url): executing script '$script'.");
+						system($script . " " . $timeintvl . " " . $threshold . " " . $slot);
+					} else {
+						logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+					}
+					$config->{apache_hist_alerts}->{$url} = time;
+				}
+			}
+
 		}
 
 		if(!$acc && !$kb && !$busy && !$idle) {
