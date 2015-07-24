@@ -25,6 +25,8 @@
 	(suggested by Marco Reale, mlist AT libero.it)
 - Added Varnish 4 compatibility (partial). [#98]
 - Added support of Basic Authentication to Wowza graph. [#100]
+- Added alert capabilities to Apache graph based on the remaining free slots.
+	(suggested by Marco Reale, mlist AT libero.it)
 - Fixed the text color in the bottom URL of the Bind graph.
 - Fixed the text color in the bottom URL of the Icecast Streaming Server graph.
 - Fixed a problem with multiple 'ApplicationInstance' tags in Wowza Server
