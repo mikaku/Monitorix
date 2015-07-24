@@ -839,6 +839,7 @@ sub apache_cgi {
 
 	$e = 0;
 	foreach my $url (my @al = split(',', $apache->{list})) {
+		$url = trim($url);
 		if($e) {
 			print("  <br>\n");
 		}
