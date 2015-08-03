@@ -358,40 +358,42 @@ sub flush_accounting_rules {
 			}
 
 			# IPv6
-			undef(@names);
-			if(open(IN, "$cmd6 -t $table -nxvL INPUT --line-numbers |")) {
-				my @rules;
-				while(<IN>) {
-					my ($rule, undef, undef, $name) = split(' ', $_);
-					if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
-						push(@rules, $rule);
-						push(@names, $name);
+			if(lc($config->{ipv6_disabled}) ne "y") {
+				undef(@names);
+				if(open(IN, "$cmd6 -t $table -nxvL INPUT --line-numbers |")) {
+					my @rules;
+					while(<IN>) {
+						my ($rule, undef, undef, $name) = split(' ', $_);
+						if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
+							push(@rules, $rule);
+							push(@names, $name);
+						}
+					}
+					close(IN);
+					@rules = reverse(@rules);
+					foreach(@rules) {
+						system("$cmd6 -t $table -D INPUT $_");
+						$num6++;
 					}
 				}
-				close(IN);
-				@rules = reverse(@rules);
-				foreach(@rules) {
-					system("$cmd6 -t $table -D INPUT $_");
-					$num6++;
-				}
-			}
-			if(open(IN, "$cmd6 -t $table -nxvL OUTPUT --line-numbers |")) {
-				my @rules;
-				while(<IN>) {
-					my ($rule, undef, undef, $name) = split(' ', $_);
-					if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
-						push(@rules, $rule);
+				if(open(IN, "$cmd6 -t $table -nxvL OUTPUT --line-numbers |")) {
+					my @rules;
+					while(<IN>) {
+						my ($rule, undef, undef, $name) = split(' ', $_);
+						if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
+							push(@rules, $rule);
+						}
+					}
+					close(IN);
+					@rules = reverse(@rules);
+					foreach(@rules) {
+						system("$cmd6 -t $table -D OUTPUT $_");
+						$num6++;
 					}
 				}
-				close(IN);
-				@rules = reverse(@rules);
-				foreach(@rules) {
-					system("$cmd6 -t $table -D OUTPUT $_");
-					$num6++;
+				foreach(@names) {
+					system("$cmd6 -t $table -X $_");
 				}
-			}
-			foreach(@names) {
-				system("$cmd6 -t $table -X $_");
 			}
 		}
 		if(open(IN, "$cmd -t $table -nxvL FORWARD --line-numbers |")) {
@@ -415,29 +417,33 @@ sub flush_accounting_rules {
 				system("$cmd -t $table -X $_");
 			}
 		}
-		if(open(IN, "$cmd6 -t $table -nxvL FORWARD --line-numbers |")) {
-			my @rules;
-			my @names;
-			while(<IN>) {
-				my ($rule, undef, undef, $name) = split(' ', $_);
-				if($name =~ /monitorix_daily_/ || /monitorix_total_/) {
-					push(@rules, $rule);
-					push(@names, $name);
+		if(lc($config->{ipv6_disabled}) ne "y") {
+			if(open(IN, "$cmd6 -t $table -nxvL FORWARD --line-numbers |")) {
+				my @rules;
+				my @names;
+				while(<IN>) {
+					my ($rule, undef, undef, $name) = split(' ', $_);
+					if($name =~ /monitorix_daily_/ || /monitorix_total_/) {
+						push(@rules, $rule);
+						push(@names, $name);
+					}
 				}
-			}
-			close(IN);
-			@rules = reverse(@rules);
-			foreach(@rules) {
-				system("$cmd6 -t $table -D FORWARD $_");
-				$num6++;
-			}
-			foreach(@names) {
-				system("$cmd6 -t $table -F $_");
-				system("$cmd6 -t $table -X $_");
+				close(IN);
+				@rules = reverse(@rules);
+				foreach(@rules) {
+					system("$cmd6 -t $table -D FORWARD $_");
+					$num6++;
+				}
+				foreach(@names) {
+					system("$cmd6 -t $table -F $_");
+					system("$cmd6 -t $table -X $_");
+				}
 			}
 		}
 		logger("$num iptables rules have been flushed.") if $debug;
-		logger("$num6 ip6tables rules have been flushed.") if $debug;
+		if(lc($config->{ipv6_disabled}) ne "y") {
+			logger("$num6 ip6tables rules have been flushed.") if $debug;
+		}
 	}
 	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 		logger("Flushing out ipfw rules.") if $debug;

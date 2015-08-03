@@ -27,6 +27,7 @@
 - Added support of Basic Authentication to Wowza graph. [#100]
 - Added alert capabilities to Apache graph based on the remaining free slots.
 	(suggested by Marco Reale, mlist AT libero.it)
+- Added the new option 'ipv6_disabled' (default: no) to disable IPv6 monitoring.
 - Fixed the text color in the bottom URL of the Bind graph.
 - Fixed the text color in the bottom URL of the Icecast Streaming Server graph.
 - Fixed a problem with multiple 'ApplicationInstance' tags in Wowza Server
