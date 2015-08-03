@@ -265,7 +265,7 @@ sub system_update {
 				}
 			}
 			if($config->{os} eq "OpenBSD") {
-				if(/^Memory: Real: (\d+)\w\/\d+\w act\/tot  Free: (\d+)\w  /) {
+				if(/^Memory:\s+Real:\s+(\d+)\w\/\d+\w\s+act\/tot\s+Free:\s+(\d+)\w\s+/) {
 					$macti = $1;
 					$mfree = $2;
 					$macti = int($macti) * 1024;
