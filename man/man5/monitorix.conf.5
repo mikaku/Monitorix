@@ -156,6 +156,15 @@ Although this is a global option, only the graphs \fIport\fP, \fInginx\fP and \f
 Default value: \fIfilter\fP
 .RE
 .P
+.BI ipv6_disabled
+.RS
+This option enables or disables the use of the \fIip6tables\fP command. It only works on Linux.
+.P
+Although this is a global option, only the graph \fIport\fP is currently affected by it.
+.P
+Default value: \fIn\fP
+.RE
+.P
 .BI url_prefix_proxy
 .RS
 This option forces \fImonitorix.cgi\fP to bypass the URL building. This is specially usefull when Monitorix is used behind a reverse proxy.
