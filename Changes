@@ -53,6 +53,7 @@
 - Fixed to show the correct uptime in additional Wowza servers.
 - Fixed to remove the authentication information from the URLs shown in the
   bottom of Wowza graphs.
+- Fixed a bug in the regexp of memory graph in OpenBSD.
 - Small cosmetic changes.
 
 
