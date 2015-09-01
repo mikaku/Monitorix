@@ -358,7 +358,7 @@ sub flush_accounting_rules {
 			}
 
 			# IPv6
-			if(lc($config->{ipv6_disabled}) ne "y") {
+			if(lc($config->{ipv6_disabled} || "") ne "y") {
 				undef(@names);
 				if(open(IN, "$cmd6 -t $table -nxvL INPUT --line-numbers |")) {
 					my @rules;
@@ -417,7 +417,7 @@ sub flush_accounting_rules {
 				system("$cmd -t $table -X $_");
 			}
 		}
-		if(lc($config->{ipv6_disabled}) ne "y") {
+		if(lc($config->{ipv6_disabled} || "") ne "y") {
 			if(open(IN, "$cmd6 -t $table -nxvL FORWARD --line-numbers |")) {
 				my @rules;
 				my @names;
@@ -441,7 +441,7 @@ sub flush_accounting_rules {
 			}
 		}
 		logger("$num iptables rules have been flushed.") if $debug;
-		if(lc($config->{ipv6_disabled}) ne "y") {
+		if(lc($config->{ipv6_disabled} || "") ne "y") {
 			logger("$num6 ip6tables rules have been flushed.") if $debug;
 		}
 	}
