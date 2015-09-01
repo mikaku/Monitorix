@@ -31,8 +31,8 @@ install:
 	$(Q)echo "Run one of the following:"
 	$(Q)echo "  make install-systemd-all (systemd based systems)"
 	$(Q)echo "  make install-upstart-all (upstart based systems)"
-	$(Q)echo "  make install-debian-all (debian sysv based systems)"
-	$(Q)echo "  make install-redhat-all (redhat sysv based systems)"
+	$(Q)echo "  make install-debian-all (legacy debian sysv based systems)"
+	$(Q)echo "  make install-redhat-all (legacy redhat sysv based systems)"
 	$(Q)echo
 	$(Q)echo "Default targets may be overridden on the shell so"
 	$(Q)echo "check out the Makefile for specific rules."
