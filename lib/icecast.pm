@@ -418,10 +418,12 @@ sub icecast_cgi {
 			push(@tmp, "GPRINT:ice" . $e . "_mp$n" . ":MAX: Max\\:%4.0lf\\n");
 			$n++;
 		}
+		$n = 0;
 		if(lc($icecast->{graph_mode}) ne "s") {
 			foreach my $i (split(',', $icecast->{desc}->{$url})) {
 				push(@tmp, "LINE2:ice" . $e . "_mp$n" . $LC[$n]);
 				push(@tmpz, "LINE2:ice" . $e . "_mp$n" . $LC[$n]);
+				$n++;
 			}
 		}
 
