@@ -1,4 +1,4 @@
-3.N.N  - DD-MMM-2015
+3.8.0  - 16-Sep-2015
 ====================
 - Added a complete graph for the 'du' command.
 	(suggested by Julien Flatrès, julien_flatres AT yahoo.fr)
