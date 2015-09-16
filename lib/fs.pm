@@ -595,7 +595,7 @@ sub fs_update {
 				if($config->{os} eq "Linux") {
 					open(IN, "free |");
 					while(<IN>) {
-						if(/^Swap:\s+\d+\s+(\d+)\s+(\d+)$/) {
+						if(/^Swap:\s+\d+\s+(\d+)\s+(\d+)\s*$/) {
 							$used = $1;
 							$free = $2;
 						}
