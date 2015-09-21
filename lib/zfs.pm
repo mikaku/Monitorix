@@ -255,12 +255,21 @@ sub zfs_update {
 
 		my $pool = (split(',', $zfs->{list}))[$n] || "";
 		if($pool) {
+			my @zpool;
+
 			$free = trim(`zfs get -rHp -o value available $pool`);
 			$udata = trim(`zfs get -rHp -o value used $pool`);
 			$usnap = trim(`zfs get -rHp -o value usedbysnapshots $pool`);
-			$cap = trim((split(' ', `zpool list -H $pool` || ""))[6]);
+			@zpool = split(' ', `zpool list -H $pool` || "");
+
+			if(scalar(@zpool) == 10) {	# ZFS version 0.6.4+
+				$cap = trim($zpool[6]);
+				$fra = trim($zpool[5]);
+			} elsif(scalar(@zpool) == 8) {	# ZFS version 0.6.3- (?)
+				$cap = trim($zpool[4]);
+				$fra = 0;
+			}
 			$cap =~ s/%//;
-			$fra = trim((split(' ', `zpool list -H $pool` || ""))[5]);
 			$fra =~ s/%//;
 		}
 
