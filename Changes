@@ -1,3 +1,10 @@
+N.N.N  - DD-MMM-2015
+====================
+- Added support in ZFS graph for versions older than 0.6.4.
+- Fixed a missing identifier in sprintf(). [#109]
+
+
+
 3.8.0  - 16-Sep-2015
 ====================
 - Added a complete graph for the 'du' command.
