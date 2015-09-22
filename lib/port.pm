@@ -147,7 +147,7 @@ sub port_init {
 				}
 				$cmd = "iptables" . $config->{iptables_wait_lock};
 				if(grep {$_ eq $p} ("tcp6", "udp6")) {
-					if(lc($config->{ipv6_disabled}) eq "y") {
+					if(lc($config->{ipv6_disabled} || "") eq "y") {
 						logger("$myself: IPv6 is explicitly disabled, you shouldn't want to monitor 'tcp6' or 'udp6' protocols.");
 						next;
 					}
@@ -219,7 +219,7 @@ sub port_update {
 		open(IN, "$cmd -t $table -nxvL INPUT 2>/dev/null |");
 		@data = <IN>;
 		close(IN);
-		if(lc($config->{ipv6_disabled}) ne "y") {
+		if(lc($config->{ipv6_disabled} || "") ne "y") {
 			open(IN, "$cmd6 -t $table -nxvL INPUT 2>/dev/null |");
 			push(@data, <IN>);
 			close(IN);
@@ -249,7 +249,7 @@ sub port_update {
 		open(IN, "$cmd -t $table -nxvL OUTPUT 2>/dev/null |");
 		@data = <IN>;
 		close(IN);
-		if(lc($config->{ipv6_disabled}) ne "y") {
+		if(lc($config->{ipv6_disabled} || "") ne "y") {
 			open(IN, "$cmd6 -t $table -nxvL OUTPUT 2>/dev/null |");
 			push(@data, <IN>);
 			close(IN);
