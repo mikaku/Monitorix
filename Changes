@@ -2,6 +2,7 @@ N.N.N  - DD-MMM-2015
 ====================
 - Added support in ZFS graph for versions older than 0.6.4.
 - Fixed a missing identifier in sprintf(). [#109]
+- Fixed a message of 'use of uninitialized value' in 'port.pm'. [#110]
 
 
 
