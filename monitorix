@@ -535,7 +535,7 @@ if(open(OUT, "> " . $config{base_dir} . "/cgi/monitorix.conf.path")) {
 	print(OUT "$options{c}\n");
 	close(OUT);
 } else {
-	logger("Unable to create the file '$config{base_dir}/cgi/monitorix.conf.path'. $!");
+	logger("WARNING: unable to create the file '$config{base_dir}/cgi/monitorix.conf.path'. $!");
 }
 
 if($config{os} eq "Linux") {
