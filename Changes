@@ -3,7 +3,8 @@ N.N.N  - DD-MMM-2015
 - Added support in ZFS graph for versions older than 0.6.4.
 - Fixed a missing identifier in sprintf(). [#109]
 - Fixed a message of 'use of uninitialized value' in 'port.pm'. [#110]
-
+- Fixed the Y-axis title in 'fail2ban' graph. [#111]
+- Small cosmetic changes.
 
 
 3.8.0  - 16-Sep-2015
@@ -65,7 +66,6 @@ N.N.N  - DD-MMM-2015
 - Fixed a bug in the regexp of memory graph in OpenBSD.
 - Fixed to show hidden colors of some values in the Icecast graph. [#108]
 - Small cosmetic changes.
-
 
 
 3.7.0  - 12-Mar-2015
