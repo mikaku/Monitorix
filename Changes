@@ -3,7 +3,8 @@ N.N.N  - DD-MMM-2015
 - Added support in ZFS graph for versions older than 0.6.4.
 - Fixed a missing identifier in sprintf(). [#109]
 - Fixed a message of 'use of uninitialized value' in 'port.pm'. [#110]
-- Fixed the Y-axis title in 'fail2ban' graph. [#111]
+- Fixed the Y-axis title in 'fail2ban.pm'. [#111]
+- Fixed to avoid negative values in the network graph of 'process.pm'. [#117]
 - Small cosmetic changes.
 
 
