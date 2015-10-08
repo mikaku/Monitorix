@@ -211,8 +211,8 @@ sub process_update {
 					my $v_mem = 0;
 					my $rest;
 
-					# since a process name can include spaces, an 'split(' ', <IN>)' wouldn't work here.
-					# so we discard the first part of the process information (pid, comm and state)
+					# since a process name can include spaces an 'split(' ', <IN>)' wouldn't work here,
+					# therefore we discard the first part of the process information (pid, comm and state).
 					(undef, $rest) = <IN> =~ m/^(\d+\s\(.*?\)\s\S\s)(.*?)$/;
 					(undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, $utime, $stime, undef, undef, undef, undef, $v_nth, undef, undef, undef, $v_mem) = split(' ', $rest);
 					close(IN);
@@ -255,6 +255,7 @@ sub process_update {
 			$net = 0 unless $v_net != $net;
 			$net /= 60;
 			$config->{process_hist}->{$str} = $v_net;
+			$net = 0 if $net < 0;
 
 			my $v_vcs = 0;
 			my $v_ics = 0;
