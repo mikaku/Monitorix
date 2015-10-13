@@ -5,6 +5,8 @@ N.N.N  - DD-MMM-2015
 - Fixed a message of 'use of uninitialized value' in 'port.pm'. [#110]
 - Fixed the Y-axis title in 'fail2ban.pm'. [#111]
 - Fixed to avoid negative values in the network graph of 'process.pm'. [#117]
+- Fixed to force a rigid scale in the memory graph.
+	(thanks to Lane Russell, lanerussell028 AT gmail.com for pointing this out)
 - Small cosmetic changes.
 
 
