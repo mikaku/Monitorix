@@ -1,6 +1,9 @@
 N.N.N  - DD-MMM-2015
 ====================
 - Added support in ZFS graph for versions older than 0.6.4.
+- Added the new option 'extra_args' in 'ntp.pm' to be able to include extra
+  arguments to the command executed by Monitorix.
+	(suggested by Matti Pentti, Matti.Pentti AT cimcorp.com)
 - Fixed a missing identifier in sprintf(). [#109]
 - Fixed a message of 'use of uninitialized value' in 'port.pm'. [#110]
 - Fixed the Y-axis title in 'fail2ban.pm'. [#111]

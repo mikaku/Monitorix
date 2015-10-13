@@ -1827,6 +1827,17 @@ For more information on these NTP codes:
 .P
 The maximum number of codes allowed for each hostname is 10.
 .RE
+.P
+.BI extra_args
+.RS
+This option includes any extra argument to the NTP command executed by Monitorix, which is "ntpq -pn". This is specially useful if you want to force using IPv4, in this case just define this option like this:
+.P
+.RS
+extra_args = "-4"
+.RE
+.P
+Monitorix will add this extra argument to the NTP command which will become as "ntpq -pn -4".
+.RE
 .SS Fail2ban statistics (fail2ban.rrd)
 This graph is able to monitor an unlimited number of Fail2ban jails.
 .P

@@ -136,6 +136,7 @@ sub ntp_update {
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $ntp = $config->{ntp};
+	my $args = $ntp->{extra_args} || "";
 
 	my @data;
 	my $del;
@@ -150,7 +151,7 @@ sub ntp_update {
 	my $e = 0;
 	foreach my $h (split(',', $ntp->{list})) {
 		$h = trim($h);
-		open(IN, "ntpq -pn $h |");
+		open(IN, "ntpq -pn $args $h |");
 		@data = <IN>;
 		close(IN);
 		$cod = $str = $del = $off = $jit = 0;
