@@ -220,11 +220,11 @@ sub disk_update {
 						$temp = $tmp[9];
 						chomp($temp);
 					}
-          if(/^190/ && /Airflow_Temperature_Cel/) {
-            my @tmp = split(' ', $_);
-            $temp = $tmp[9] unless $temp;
-            chomp($temp);
-          }
+					if(/^190/ && /Airflow_Temperature_Cel/) {
+						my @tmp = split(' ', $_);
+						$temp = $tmp[9] unless $temp;
+						chomp($temp);
+					}
 					if(/^197/ && /Current_Pending_Sector/) {
 						my @tmp = split(' ', $_);
 						$smart2 = $tmp[9];
