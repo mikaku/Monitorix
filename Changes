@@ -4,6 +4,7 @@ N.N.N  - DD-MMM-2015
 - Added the new option 'extra_args' in 'ntp.pm' to be able to include extra
   arguments to the command executed by Monitorix.
 	(suggested by Matti Pentti, Matti.Pentti AT cimcorp.com)
+- Added SMART temperature ID 190 as a fallback option if 194 is missing. [#121]
 - Fixed a missing identifier in sprintf(). [#109]
 - Fixed a message of 'use of uninitialized value' in 'port.pm'. [#110]
 - Fixed the Y-axis title in 'fail2ban.pm'. [#111]
