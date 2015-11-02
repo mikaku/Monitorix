@@ -11,6 +11,7 @@ N.N.N  - DD-MMM-2015
 - Fixed to avoid negative values in the network graph of 'process.pm'. [#117]
 - Fixed to force a rigid scale in the memory graph.
 	(thanks to Lane Russell, lanerussell028 AT gmail.com for pointing this out)
+- Fixed the scale of the y-axis in 'du'.
 - Small cosmetic changes.
 
 
