@@ -346,9 +346,9 @@ sub du_cgi {
 				$i = trim($i);
 				$str = $du->{dirmap}->{$i} || $i;
 				$str = sprintf("%-40s", substr($str, 0, 40));
-				push(@tmp, "LINE2:dm" . ($e + 1) . $LC[$e] . ":$str");
+				push(@tmp, "LINE2:d" . ($e + 1) . $LC[$e] . ":$str");
 				push(@tmp, "GPRINT:d" . ($e + 1) . ":LAST: Current\\:%7.1lf%s\\n");
-				push(@tmpz, "LINE2:dm" . ($e + 1) . $LC[$e] . ":$str");
+				push(@tmpz, "LINE2:d" . ($e + 1) . $LC[$e] . ":$str");
 				$e++;
 			}
 			while($e < 9) {
@@ -366,7 +366,7 @@ sub du_cgi {
 				"--title=$str  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=PNG",
-				"--vertical-label=Megabytes",
+				"--vertical-label=bytes",
 				"--width=$width",
 				"--height=$height",
 				@riglim,
@@ -393,15 +393,6 @@ sub du_cgi {
 				"CDEF:d7=dk7,1024,*",
 				"CDEF:d8=dk8,1024,*",
 				"CDEF:d9=dk9,1024,*",
-				"CDEF:dm1=dk1,1024,/",
-				"CDEF:dm2=dk2,1024,/",
-				"CDEF:dm3=dk3,1024,/",
-				"CDEF:dm4=dk4,1024,/",
-				"CDEF:dm5=dk5,1024,/",
-				"CDEF:dm6=dk6,1024,/",
-				"CDEF:dm7=dk7,1024,/",
-				"CDEF:dm8=dk8,1024,/",
-				"CDEF:dm9=dk9,1024,/",
 				@CDEF,
 				@tmp);
 			$err = RRDs::error;
@@ -412,7 +403,7 @@ sub du_cgi {
 					"--title=$str  ($tf->{nwhen}$tf->{twhen})",
 					"--start=-$tf->{nwhen}$tf->{twhen}",
 					"--imgformat=PNG",
-					"--vertical-label=Megabytes",
+					"--vertical-label=bytes",
 					"--width=$width",
 					"--height=$height",
 					@riglim,
@@ -439,15 +430,6 @@ sub du_cgi {
 					"CDEF:d7=dk7,1024,*",
 					"CDEF:d8=dk8,1024,*",
 					"CDEF:d9=dk9,1024,*",
-					"CDEF:dm1=dk1,1024,/",
-					"CDEF:dm2=dk2,1024,/",
-					"CDEF:dm3=dk3,1024,/",
-					"CDEF:dm4=dk4,1024,/",
-					"CDEF:dm5=dk5,1024,/",
-					"CDEF:dm6=dk6,1024,/",
-					"CDEF:dm7=dk7,1024,/",
-					"CDEF:dm8=dk8,1024,/",
-					"CDEF:dm9=dk9,1024,/",
 					@CDEF,
 					@tmpz);
 				$err = RRDs::error;
