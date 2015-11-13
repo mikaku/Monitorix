@@ -1,4 +1,4 @@
-N.N.N  - DD-MMM-2015
+3.8.1  - 13-Nov-2015
 ====================
 - Added support in ZFS graph for versions older than 0.6.4.
 - Added the new option 'extra_args' in 'ntp.pm' to be able to include extra
