@@ -12,6 +12,9 @@ N.N.N  - DD-MMM-2015
 - Fixed to force a rigid scale in the memory graph.
 	(thanks to Lane Russell, lanerussell028 AT gmail.com for pointing this out)
 - Fixed the scale of the y-axis in 'du'.
+- Fixed a DOM based XSS and a potential DoS vulnerabilities that affected the
+  'when' parameter of the 'monitorix.cgi' file.
+	(thanks to Dolev Farhi, farhi AT F5.com for pointing this out)
 - Small cosmetic changes.
 
 
