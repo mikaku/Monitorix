@@ -179,6 +179,7 @@ sub libvirt_update {
 					$cpu = $c - ($config->{libvirt_hist}->{$str} || 0);
 					$cpu = 0 unless $c != $cpu;
 					$cpu = $cpu * 100 / 60;
+					$cpu = $cpu > 100 ? 100 : $cpu;
 					$config->{libvirt_hist}->{$str} = $c;
 				}
 				if(open(IN, "virsh dommemstat $vm |")) {
