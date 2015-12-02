@@ -1,5 +1,7 @@
 N.N.N  - DD-MMM-2015
 ====================
+- Added the option 'cmd' in 'libvirt.pm' in order to be able to execute a
+  custom command like 'virsh -r -c qemu:///session'.
 - Fixed in 'libvirt.pm' limiting to 100 all CPU values greater than 100.
 
 

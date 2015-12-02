@@ -125,6 +125,12 @@ sub libvirt_init {
 		}
 	}
 
+	# check for missing options
+	if(!$libvirt->{cmd}) {
+		logger("$myself: WARNING: the 'cmd' option doesn't exist. Please consider upgrading your configuration file.");
+		$libvirt->{cmd} = "virsh";
+	}
+
 	$config->{libvirt_hist} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
@@ -161,13 +167,13 @@ sub libvirt_update {
 			}
 
 			# check first if that 'vm' is running
-			if($vm && open(IN, "virsh domstate $vm |")) {
+			if($vm && open(IN, "$libvirt->{cmd} domstate $vm |")) {
 				$state = trim(<IN>);
 				close(IN);
 			}
 
 			if($state eq "running") {
-				if(open(IN, "virsh cpu-stats $vm --total |")) {
+				if(open(IN, "$libvirt->{cmd} cpu-stats $vm --total |")) {
 					my $c = 0;
 					while(<IN>) {
 						if(/^\s+cpu_time\s+(\d+\.\d+) seconds$/) {
@@ -182,7 +188,7 @@ sub libvirt_update {
 					$cpu = $cpu > 100 ? 100 : $cpu;
 					$config->{libvirt_hist}->{$str} = $c;
 				}
-				if(open(IN, "virsh dommemstat $vm |")) {
+				if(open(IN, "$libvirt->{cmd} dommemstat $vm |")) {
 					while(<IN>) {
 						if(/^rss\s+(\d+)$/) {
 							$mem = $1 * 1024;
@@ -190,7 +196,7 @@ sub libvirt_update {
 					}
 					close(IN);
 				}
-				if(open(IN, "virsh domblkstat $vm $vda |")) {
+				if(open(IN, "$libvirt->{cmd} domblkstat $vm $vda |")) {
 					my $r = 0;
 					my $w = 0;
 					while(<IN>) {
@@ -210,7 +216,7 @@ sub libvirt_update {
 					$dsk /= 60;
 					$config->{libvirt_hist}->{$str} = $t;
 				}
-				if(open(IN, "virsh domiflist $vm |")) {
+				if(open(IN, "$libvirt->{cmd} domiflist $vm |")) {
 					while(<IN>) {
 						if(/^(\S+)\s+.*?\s+$vmac$/) {
 							$vnet = $1;
@@ -218,7 +224,7 @@ sub libvirt_update {
 					}
 					close(IN);
 				}
-				if(open(IN, "virsh domifstat $vm $vnet |")) {
+				if(open(IN, "$libvirt->{cmd} domifstat $vm $vnet |")) {
 					my $r = 0;
 					my $w = 0;
 					while(<IN>) {
