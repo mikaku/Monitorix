@@ -417,6 +417,9 @@ sub libvirt_cgi {
 	foreach my $vmg (sort keys %{$libvirt->{list}}) {
 		my @lvl = split(',', $libvirt->{list}->{$vmg});
 
+		# hide empty groups
+		next if !scalar(@lvl);
+
 		if($e) {
 			print("   <br>\n");
 		}
