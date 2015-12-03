@@ -1084,6 +1084,20 @@ Only the limit and rigid values can be set here.
 .SS Libvirt statistics (libvirt.rrd)
 This graph is able to monitor an unlimited number of virtual machines managed by Libvirt.
 .P
+.BI cmd
+.RS
+This is the command that will be used to gather statistics from each virtual machine listed in \fBlist\fP.
+.P
+Default value: \fIvirsh\fP
+.P
+An example would be:
+.P
+.RS
+cmd = virsh -r -c qemu:///session
+.RE
+.P
+.RE
+.P
 .BI list
 .RS
 This is a list of groups of virtual machines that you want to monitor. Each group will become a graph and there may be an unlimited number of groups.
