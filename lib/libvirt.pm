@@ -157,11 +157,27 @@ sub libvirt_update {
 			my $str;
 			my $state = "";
 			my $vm = trim($lvl[$n] || "");
-			my $vda = trim((split(',', $libvirt->{desc}->{$vm} || ""))[1]);
-			my $vmac = trim((split(',', $libvirt->{desc}->{$vm} || ""))[2]);
+
+			my @vda;
+			my @vmac;
+
+			# convert from old configuration to new
+			if(ref($libvirt->{desc}->{$vm} || "") ne "HASH") {
+				my $val;
+
+				$val = trim((split(',', $libvirt->{desc}->{$vm} || ""))[1]);
+				push(@vda, $val) if $val;
+				$val = trim((split(',', $libvirt->{desc}->{$vm} || ""))[2]);
+				push(@vmac, $val) if $val;
+			} else {
+				@vda = split(',', $libvirt->{desc}->{$vm}->{disk} || "");
+				@vmac = split(',', $libvirt->{desc}->{$vm}->{net} || "");
+			}
+
 			my $vnet = "";
 
-			if($vm && (!$vda || !$vmac)) {
+			print "$vm = " . scalar(@vda) . "\n";
+			if($vm && (!scalar(@vda) || !scalar(@vmac))) {
 				logger("$myself: missing parameters in '$vm' virtual machine.");
 				$vm = "";	# invalidates this vm
 			}
@@ -173,6 +189,8 @@ sub libvirt_update {
 			}
 
 			if($state eq "running") {
+				my $t;
+
 				if(open(IN, "$libvirt->{cmd} cpu-stats $vm --total |")) {
 					my $c = 0;
 					while(<IN>) {
@@ -196,54 +214,64 @@ sub libvirt_update {
 					}
 					close(IN);
 				}
-				if(open(IN, "$libvirt->{cmd} domblkstat $vm $vda |")) {
-					my $r = 0;
-					my $w = 0;
-					while(<IN>) {
-						if(/^$vda\s+rd_bytes\s+(\d+)$/) {
-							$r = $1;
+
+				# summarizes all virtual disks stats for each 'vm'
+				$t = 0;
+				foreach (my $vd = trim(split(',', @vda))) {
+					if(open(IN, "$libvirt->{cmd} domblkstat $vm $vd |")) {
+						my $r = 0;
+						my $w = 0;
+						while(<IN>) {
+							if(/^$vd\s+rd_bytes\s+(\d+)$/) {
+								$r = $1;
+							}
+							if(/^$vd\s+wr_bytes\s+(\d+)$/) {
+								$w = $1;
+								last;
+							}
 						}
-						if(/^$vda\s+wr_bytes\s+(\d+)$/) {
-							$w = $1;
-							last;
-						}
+						close(IN);
+						$t += ($r + $w);
 					}
-					close(IN);
-					my $t = $r + $w;
-					$str = $e . "_dsk" . $n;
-					$dsk = $t - ($config->{libvirt_hist}->{$str} || 0);
-					$dsk = 0 unless $t != $dsk;
-					$dsk /= 60;
-					$config->{libvirt_hist}->{$str} = $t;
 				}
-				if(open(IN, "$libvirt->{cmd} domiflist $vm |")) {
-					while(<IN>) {
-						if(/^(\S+)\s+.*?\s+$vmac$/) {
-							$vnet = $1;
+				$str = $e . "_dsk" . $n;
+				$dsk = $t - ($config->{libvirt_hist}->{$str} || 0);
+				$dsk = 0 unless $t != $dsk;
+				$dsk /= 60;
+				$config->{libvirt_hist}->{$str} = $t;
+
+				# summarizes all virtual network stats for each 'vm'
+				$t = 0;
+				foreach (my $vn = trim(split(',', @vmac))) {
+					if(open(IN, "$libvirt->{cmd} domiflist $vm |")) {
+						while(<IN>) {
+							if(/^(\S+)\s+.*?\s+$vn$/) {
+								$vnet = $1;
+							}
 						}
+						close(IN);
 					}
-					close(IN);
-				}
-				if(open(IN, "$libvirt->{cmd} domifstat $vm $vnet |")) {
-					my $r = 0;
-					my $w = 0;
-					while(<IN>) {
-						if(/^$vnet\s+rx_bytes\s+(\d+)$/) {
-							$r = $1;
+					if(open(IN, "$libvirt->{cmd} domifstat $vm $vnet |")) {
+						my $r = 0;
+						my $w = 0;
+						while(<IN>) {
+							if(/^$vnet\s+rx_bytes\s+(\d+)$/) {
+								$r = $1;
+							}
+							if(/^$vnet\s+tx_bytes\s+(\d+)$/) {
+								$w = $1;
+								last;
+							}
 						}
-						if(/^$vnet\s+tx_bytes\s+(\d+)$/) {
-							$w = $1;
-							last;
-						}
+						close(IN);
+						$t += ($r + $w);
 					}
-					close(IN);
-					my $t = $r + $w;
-					$str = $e . "_net" . $n;
-					$net = $t - ($config->{libvirt_hist}->{$str} || 0);
-					$net = 0 unless $t != $net;
-					$net /= 60;
-					$config->{libvirt_hist}->{$str} = $t;
 				}
+				$str = $e . "_net" . $n;
+				$net = $t - ($config->{libvirt_hist}->{$str} || 0);
+				$net = 0 unless $t != $net;
+				$net /= 60;
+				$config->{libvirt_hist}->{$str} = $t;
 			}
 			$rrdata .= ":$cpu:$mem:$dsk:$net:0:0:0:0";
 		}
