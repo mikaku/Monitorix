@@ -176,7 +176,6 @@ sub libvirt_update {
 
 			my $vnet = "";
 
-			print "$vm = " . scalar(@vda) . "\n";
 			if($vm && (!scalar(@vda) || !scalar(@vmac))) {
 				logger("$myself: missing parameters in '$vm' virtual machine.");
 				$vm = "";	# invalidates this vm
@@ -217,7 +216,8 @@ sub libvirt_update {
 
 				# summarizes all virtual disks stats for each 'vm'
 				$t = 0;
-				foreach (my $vd = trim(split(',', @vda))) {
+				foreach my $vd (@vda) {
+					$vd = trim($vd);
 					if(open(IN, "$libvirt->{cmd} domblkstat $vm $vd |")) {
 						my $r = 0;
 						my $w = 0;
@@ -242,7 +242,8 @@ sub libvirt_update {
 
 				# summarizes all virtual network stats for each 'vm'
 				$t = 0;
-				foreach (my $vn = trim(split(',', @vmac))) {
+				foreach my $vn (@vmac) {
+					$vn = trim($vn);
 					if(open(IN, "$libvirt->{cmd} domiflist $vm |")) {
 						while(<IN>) {
 							if(/^(\S+)\s+.*?\s+$vn$/) {
