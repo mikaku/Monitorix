@@ -370,7 +370,15 @@ sub libvirt_cgi {
 			my @lvl = split(',', $libvirt->{list}->{$vmg});
 			for($n = 0; $n < scalar(@lvl); $n++) {
 				my $vm = trim($lvl[$n]);
-				$str = sprintf("%31s", trim((split(',', $libvirt->{desc}->{$vm} || $vm))[0]));
+
+				# convert from old configuration to new
+				if(ref($libvirt->{desc}->{$vm} || "") ne "HASH") {
+					$str = trim((split(',', $libvirt->{desc}->{$vm} || ""))[0]);
+				} else {
+					$str = $libvirt->{desc}->{$vm}->{desc} || "";
+				}
+
+				$str = sprintf("%31s", trim((split(',', $str || $vm))[0]));
 				$line1 .= $str;
 				$str = sprintf("  CPU%%  Memory    Disk     Net ");
 				$line2 .= $str;
@@ -464,7 +472,12 @@ sub libvirt_cgi {
 			my $vm = trim($lvl[$n] || "");
 
 			if($vm) {
-				$str = trim((split(',', $libvirt->{desc}->{$vm} || ""))[0]);
+				# convert from old configuration to new
+				if(ref($libvirt->{desc}->{$vm} || "") ne "HASH") {
+					$str = trim((split(',', $libvirt->{desc}->{$vm} || ""))[0]);
+				} else {
+					$str = $libvirt->{desc}->{$vm}->{desc} || "";
+				}
 				push(@tmpz, "LINE2:cpu" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:cpu" . $n . $LC[$n] . ":$str");
@@ -571,7 +584,12 @@ sub libvirt_cgi {
 			my $vm = trim($lvl[$n] || "");
 
 			if($vm) {
-				$str = trim((split(',', $libvirt->{desc}->{$vm} || ""))[0]);
+				# convert from old configuration to new
+				if(ref($libvirt->{desc}->{$vm} || "") ne "HASH") {
+					$str = trim((split(',', $libvirt->{desc}->{$vm} || ""))[0]);
+				} else {
+					$str = $libvirt->{desc}->{$vm}->{desc} || "";
+				}
 				push(@tmpz, "LINE2:mem" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:mem" . $n . $LC[$n] . ":$str");
@@ -689,7 +707,12 @@ sub libvirt_cgi {
 			my $vm = trim($lvl[$n] || "");
 
 			if($vm) {
-				$str = trim((split(',', $libvirt->{desc}->{$vm} || ""))[0]);
+				# convert from old configuration to new
+				if(ref($libvirt->{desc}->{$vm} || "") ne "HASH") {
+					$str = trim((split(',', $libvirt->{desc}->{$vm} || ""))[0]);
+				} else {
+					$str = $libvirt->{desc}->{$vm}->{desc} || "";
+				}
 				push(@tmpz, "LINE2:dsk" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:dsk" . $n . $LC[$n] . ":$str");
@@ -812,7 +835,12 @@ sub libvirt_cgi {
 			my $vm = trim($lvl[$n] || "");
 
 			if($vm) {
-				$str = trim((split(',', $libvirt->{desc}->{$vm} || ""))[0]);
+				# convert from old configuration to new
+				if(ref($libvirt->{desc}->{$vm} || "") ne "HASH") {
+					$str = trim((split(',', $libvirt->{desc}->{$vm} || ""))[0]);
+				} else {
+					$str = $libvirt->{desc}->{$vm}->{desc} || "";
+				}
 				push(@tmpz, "LINE2:net" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:net" . $n . $LC[$n] . ":$str");
