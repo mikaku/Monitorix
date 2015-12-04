@@ -1119,7 +1119,7 @@ The maximum number of virtual machines allowed per group is 8.
 .P
 .BI desc
 .RS
-This list complements the \fBlist\fP option and is mandatory for every virtual machine listed. You must define the virtual block device and the MAC address of the virtual network device that you want to monitor for every virtual machine:
+This list complements the \fBlist\fP option and is mandatory for every virtual machine listed. You must define the virtual block device and the MAC address of the virtual network device that you want to monitor for every virtual machine. Just like this:
 .P
 .RS
 <desc>
@@ -1131,7 +1131,25 @@ This list complements the \fBlist\fP option and is mandatory for every virtual m
 </desc>
 .RE
 .P
-To obtain these values you might want to use the following commands:
+You might also define this list using sections for each virtual machine, this way you'll be able to define multiple disks and multiple network interfaces for each virtual machine. Just like this:
+.P
+.RS
+<desc>
+.br
+	<centos6>
+.br
+		desc = "CentOS 6"
+.br
+		disk = vda, vdb, vdc
+.br
+		net = 52:54:00:45:d0:e7, 52:54:00:45:d0:e8
+.br
+	</centos6>
+.br
+</desc>
+.RE
+.P
+To obtain all these values you might want to use the following commands:
 .P
 .br
 # virsh domblklist centos6 
