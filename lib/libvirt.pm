@@ -478,6 +478,7 @@ sub libvirt_cgi {
 				} else {
 					$str = $libvirt->{desc}->{$vm}->{desc} || "";
 				}
+
 				push(@tmpz, "LINE2:cpu" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:cpu" . $n . $LC[$n] . ":$str");
