@@ -87,7 +87,7 @@ rm -rf %{buildroot}
 %{_localstatedir}/lib/monitorix/www/cgi/monitorix.cgi
 %attr(777,root,root) %{_localstatedir}/lib/monitorix/www/imgs
 %attr(755,root,root) %{_localstatedir}/lib/monitorix/usage
-%config(noreplace) %{_localstatedir}/lib/monitorix/reports/*.html
+%{_localstatedir}/lib/monitorix/reports/*.html
 %doc %{_mandir}/man5/monitorix.conf.5.gz
 %doc %{_mandir}/man8/monitorix.8.gz
 %doc Changes COPYING README README.nginx README.FreeBSD README.OpenBSD README.NetBSD docs/monitorix-alert.sh docs/monitorix-apache.conf docs/monitorix-lighttpd.conf docs/monitorix.service docs/htpasswd.pl
