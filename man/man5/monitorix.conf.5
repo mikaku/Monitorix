@@ -1113,7 +1113,34 @@ An example would be:
 The maximum number of qdiscs allowed is 9.
 .RE
 .P
-
+.BI map
+.RS
+This option complements the \fBdesc\fP option. It basically allows you to change the name of the qdiscs that will appear in the graphs. If no association is defined, then Monitorix will show the name as specified in the \fBdesc\fP option.
+.P
+Since the qdisc names have the space character in their names, they can't be used as the key in the association, instead you must the use their position number (starting by 0) in the \fBdesc\fP option.
+.P
+An example would be:
+.P
+.RS
+<map>
+.br
+	<eth0>
+.br
+		0 = Class Based Queueing
+.br
+		1 = Stochastic Fairness Queueing 10
+.br
+	</eth0>
+.br
+	<eth1>
+.br
+		0 = Hierarchical Token Bucket
+.br
+	</eth1>
+.br
+</map>
+.RE
+.RE
 .SS Libvirt statistics (libvirt.rrd)
 This graph is able to monitor an unlimited number of virtual machines managed by Libvirt.
 .P
