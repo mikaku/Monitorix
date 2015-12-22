@@ -470,6 +470,9 @@ sub tc_cgi {
 			my ($q1, $q2) = (($qdisc[$n] || "") =~ m/\s*(\S+)\s*(.*)\s*/);
 			my $str = ($q1 || "") . ($q2 ? " $q2" : "");
 			if($str) {
+				if($tc->{map}->{$n} || "" eq $str) {
+					$str = $tc->{map}->{$n};
+				}
 				push(@tmpz, "LINE2:sent" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-15s", substr($str, 0, 15));
 				push(@tmp, "LINE2:sent" . $n . $LC[$n] . ":$str");
@@ -599,6 +602,9 @@ sub tc_cgi {
 			my ($q1, $q2) = (($qdisc[$n] || "") =~ m/\s*(\S+)\s*(.*)\s*/);
 			my $str = ($q1 || "") . ($q2 ? " $q2" : "");
 			if($str) {
+				if($tc->{map}->{$n} || "" eq $str) {
+					$str = $tc->{map}->{$n};
+				}
 				push(@tmpz, "LINE2:drop" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-15s", substr($str, 0, 15));
 				push(@tmp, "LINE2:drop" . $n . $LC[$n] . ":$str");
@@ -702,6 +708,9 @@ sub tc_cgi {
 			my ($q1, $q2) = (($qdisc[$n] || "") =~ m/\s*(\S+)\s*(.*)\s*/);
 			my $str = ($q1 || "") . ($q2 ? " $q2" : "");
 			if($str) {
+				if($tc->{map}->{$n} || "" eq $str) {
+					$str = $tc->{map}->{$n};
+				}
 				push(@tmpz, "LINE2:over" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-15s", substr($str, 0, 15));
 				push(@tmp, "LINE2:over" . $n . $LC[$n] . ":$str");
@@ -809,6 +818,9 @@ sub tc_cgi {
 			my ($q1, $q2) = (($qdisc[$n] || "") =~ m/\s*(\S+)\s*(.*)\s*/);
 			my $str = ($q1 || "") . ($q2 ? " $q2" : "");
 			if($str) {
+				if($tc->{map}->{$n} || "" eq $str) {
+					$str = $tc->{map}->{$n};
+				}
 				push(@tmpz, "LINE2:requ" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-15s", substr($str, 0, 15));
 				push(@tmp, "LINE2:requ" . $n . $LC[$n] . ":$str");
