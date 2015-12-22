@@ -470,15 +470,15 @@ sub tc_cgi {
 			my ($q1, $q2) = (($qdisc[$n] || "") =~ m/\s*(\S+)\s*(.*)\s*/);
 			my $str = ($q1 || "") . ($q2 ? " $q2" : "");
 			if($str) {
-				if($tc->{map}->{$n} || "" eq $str) {
-					$str = $tc->{map}->{$n};
+				if($tc->{map}->{$dev}->{$n} || "" eq $str) {
+					$str = $tc->{map}->{$dev}->{$n};
 				}
 				push(@tmpz, "LINE2:sent" . $n . $LC[$n] . ":$str");
-				$str = sprintf("%-15s", substr($str, 0, 15));
+				$str = sprintf("%-19s", substr($str, 0, 19));
 				push(@tmp, "LINE2:sent" . $n . $LC[$n] . ":$str");
-				push(@tmp, "GPRINT:b_sent" . $n . ":LAST:Cur\\: %5.0lf%s");
-				push(@tmp, "GPRINT:b_sent" . $n . ":MIN:  Min\\: %5.0lf%s");
-				push(@tmp, "GPRINT:b_sent" . $n . ":MAX:  Max\\: %5.0lf%s\\n");
+				push(@tmp, "GPRINT:b_sent" . $n . ":LAST:Cur\\: %4.0lf%s");
+				push(@tmp, "GPRINT:b_sent" . $n . ":MIN:  Min\\: %4.0lf%s");
+				push(@tmp, "GPRINT:b_sent" . $n . ":MAX:  Max\\: %4.0lf%s\\n");
 			}
 		}
 		if(lc($config->{netstats_in_bps}) eq "y") {
@@ -602,11 +602,11 @@ sub tc_cgi {
 			my ($q1, $q2) = (($qdisc[$n] || "") =~ m/\s*(\S+)\s*(.*)\s*/);
 			my $str = ($q1 || "") . ($q2 ? " $q2" : "");
 			if($str) {
-				if($tc->{map}->{$n} || "" eq $str) {
-					$str = $tc->{map}->{$n};
+				if($tc->{map}->{$dev}->{$n} || "" eq $str) {
+					$str = $tc->{map}->{$dev}->{$n};
 				}
 				push(@tmpz, "LINE2:drop" . $n . $LC[$n] . ":$str");
-				$str = sprintf("%-15s", substr($str, 0, 15));
+				$str = sprintf("%-19s", substr($str, 0, 19));
 				push(@tmp, "LINE2:drop" . $n . $LC[$n] . ":$str");
 				push(@tmp, "GPRINT:drop" . $n . ":LAST:Cur\\: %5.0lf");
 				push(@tmp, "GPRINT:drop" . $n . ":MIN:  Min\\: %5.0lf");
@@ -708,11 +708,11 @@ sub tc_cgi {
 			my ($q1, $q2) = (($qdisc[$n] || "") =~ m/\s*(\S+)\s*(.*)\s*/);
 			my $str = ($q1 || "") . ($q2 ? " $q2" : "");
 			if($str) {
-				if($tc->{map}->{$n} || "" eq $str) {
-					$str = $tc->{map}->{$n};
+				if($tc->{map}->{$dev}->{$n} || "" eq $str) {
+					$str = $tc->{map}->{$dev}->{$n};
 				}
 				push(@tmpz, "LINE2:over" . $n . $LC[$n] . ":$str");
-				$str = sprintf("%-15s", substr($str, 0, 15));
+				$str = sprintf("%-19s", substr($str, 0, 19));
 				push(@tmp, "LINE2:over" . $n . $LC[$n] . ":$str");
 				push(@tmp, "GPRINT:over" . $n . ":LAST:Cur\\: %5.0lf");
 				push(@tmp, "GPRINT:over" . $n . ":MIN:  Min\\: %5.0lf");
@@ -818,11 +818,11 @@ sub tc_cgi {
 			my ($q1, $q2) = (($qdisc[$n] || "") =~ m/\s*(\S+)\s*(.*)\s*/);
 			my $str = ($q1 || "") . ($q2 ? " $q2" : "");
 			if($str) {
-				if($tc->{map}->{$n} || "" eq $str) {
-					$str = $tc->{map}->{$n};
+				if($tc->{map}->{$dev}->{$n} || "" eq $str) {
+					$str = $tc->{map}->{$dev}->{$n};
 				}
 				push(@tmpz, "LINE2:requ" . $n . $LC[$n] . ":$str");
-				$str = sprintf("%-15s", substr($str, 0, 15));
+				$str = sprintf("%-19s", substr($str, 0, 19));
 				push(@tmp, "LINE2:requ" . $n . $LC[$n] . ":$str");
 				push(@tmp, "GPRINT:requ" . $n . ":LAST:Cur\\: %5.0lf");
 				push(@tmp, "GPRINT:requ" . $n . ":MIN:  Min\\: %5.0lf");
