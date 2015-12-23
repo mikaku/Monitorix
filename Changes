@@ -7,6 +7,8 @@ N.N.N  - DD-MMM-2015
 - Added in 'libvirt.pm' the ability to support multiple disks and network
   interfaces for each virtual machine.
   	(suggested by Pavel Bauer, pbauer AT algotech.cz)
+- Added in 'du.pm' the new 'extra_args' option to be able to include extra
+  arguments to the 'du' command.
 - Fixed in 'libvirt.pm' limiting to 100 all CPU values greater than 100.
 - Fixed in 'libvirt.pm' to hide empty groups.
   	(thanks to Pavel Bauer, pbauer AT algotech.cz for pointing this out)

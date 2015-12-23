@@ -1004,6 +1004,8 @@ This is a comma-separated list of pool names. The number of pool names defined h
 .SS Directory usage statistics (du.rrd)
 This graph is able to monitor the usage of an unlimited number of directories.
 .P
+IMPORTANT NOTE: The \fIdu\fP command makes intensive disk I/O access that might slow down the whole system. Moreover, continued executions of this command will affect the buffer cache mechanism and this will also increase its response time.
+.P
 .BI list
 .RS
 This is a comma-separated list that describes the groups of directories in \fBdesc\fP. Put one description for each group. For every group specified you need to specify its description in the \fBdesc\fP option.
@@ -1041,6 +1043,16 @@ This is the number of graphs that will be put in a row.
 .P
 Default value: \fI2\fP
 .RE
+.P
+.BI extra_args
+.RS
+This option includes any extra argument to the \fIdu\fP command executed by Monitorix, which is "du -ks". This is specially useful if you want to skip directories on differents file systems, in this case just define this option like this:
+.P
+.RS
+extra_args = "-x"
+.RE
+.P
+IMPORTANT NOTICE: Keep in mind that including certain flags like '-h' (which gives results in human readable format) could make Monitorix unable to interpret the results.
 .SS Network traffic and usage (net.rrd)
 .BI list
 .RS
