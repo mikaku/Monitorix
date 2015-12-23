@@ -132,6 +132,7 @@ sub du_update {
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $du = $config->{du};
+	my $args = $du->{extra_args} || "";
 
 	my $seek_pos;
 	my $logsize;
@@ -150,7 +151,7 @@ sub du_update {
 			$dirs[$e][$e2] = 0 unless defined $dirs[$e][$e2];
 			$str = trim($i);
 			if(-d $str) {
-				$line = `du -ks "$str"`;	# in KB
+				$line = `du -ks $args "$str"`;	# in KB
 				if($line =~ /(^\d+)\s+/) {
 					$dirs[$e][$e2] = $1;
 				}
