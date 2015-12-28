@@ -634,6 +634,7 @@ if($config{max_historic_years} > 5) {
 }
 
 
+setpriority(0, 0, $config{priority} || 0);
 logger("Ok, ready.");
 
 # main loop

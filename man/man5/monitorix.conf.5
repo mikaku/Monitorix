@@ -136,6 +136,15 @@ This option forces to accept self-signed certificates when collecting values rem
 Default value: \fIy\fP
 .RE
 .P
+.BI priority
+.RS
+Sometimes when a server is under heavy use, Monitorix might be unable to collect some statistical data due to its normal priority (0 by default). This makes monitoring useless because graphs are empty during that hard period of time.
+.P
+In order to mitigate this situation this option sets the priority in which Monitorix will be scheduled by the kernel. The accepted range of values is the same as in the \fIsetpriority()\fP system call: that is, from -20 (maximum priority) to 19 (lowest priority).
+.P
+Default value: \fI0\fP
+.RE
+.P
 .BI include_dir
 .RS
 The main configuration file is usually called \fImonitorix.conf\fP and its location is provided as part of the command line arguments. In addition, other configuration files may be loaded placing them in the directory pointed by this option. The names must end with .conf to be included.
