@@ -375,7 +375,7 @@ sub serv_update {
 		$date = strftime("%Y-%m-%d", localtime);
 		open(IN, $config->{fail2ban_log});
 		while(<IN>) {
-			if(/^$date/ && / fail2ban/ && / WARNING / && / Ban /) {
+			if(/^$date/ && / fail2ban.actions/ && / Ban /) {
 				$f2b++;
 			}
 		}
