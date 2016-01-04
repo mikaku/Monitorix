@@ -15,6 +15,7 @@ N.N.N  - DD-MMM-2015
 - Fixed in 'libvirt.pm' limiting to 100 all CPU values greater than 100.
 - Fixed in 'libvirt.pm' to hide empty groups.
   	(thanks to Pavel Bauer, pbauer AT algotech.cz for pointing this out)
+- Fixed 'serv.pm' to support newer versions of fail2ban.
 
 
 3.8.1  - 13-Nov-2015
