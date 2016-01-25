@@ -343,6 +343,14 @@ if($config{backwards_compat_old_multihost}) {
 	$tf{when} = $tf{twhen};
 }
 
+# make sure that some options are correctly defined
+if(!$config{global_zoom}) {
+	$config{global_zoom} = 1;
+}
+if(!$config{image_format}) {
+	$config{image_format} = "PNG";
+}
+
 our ($res, $tc, $tb, $ts);
 if($tf{twhen} eq "day") {
 	($tf{res}, $tf{tc}, $tf{tb}, $tf{ts}) = (3600, 'h', 24, 1);
