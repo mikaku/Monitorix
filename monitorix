@@ -622,7 +622,7 @@ if(lc($config{httpd_builtin}->{enabled}) eq "y") {
 # make sure that some options are correctly defined
 if(!$config{global_zoom}) {
 	logger("WARNING: the 'global_zoom' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
-	$config{global_zoom} = 1;
+	# it's set in 'monitorix.cgi'
 }
 if(!$config{max_historic_years}) {
 	logger("WARNING: the 'max_historic_years' option doesn't exist. Please consider upgrading your configuration file.");
@@ -631,6 +631,10 @@ if(!$config{max_historic_years}) {
 if($config{max_historic_years} > 5) {
 	logger("WARNING: the 'max_historic_years' option exceeds the maximum years permitted (5).");
 	exit(0);
+}
+if(!$config{image_format}) {
+	logger("WARNING: the 'image_format' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
+	# it's set in 'monitorix.cgi'
 }
 
 
