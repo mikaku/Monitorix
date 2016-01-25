@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2015 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2016 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -663,7 +663,9 @@ sub serv_cgi {
 	$version = "old" if $RRDs::VERSION < 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
-	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
+	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
+	my $imgfmt_uc = uc($config->{image_format});
+	my $imgfmt_lc = lc($config->{image_format});
 
 	$title = !$silent ? $title : "";
 
@@ -730,19 +732,19 @@ sub serv_cgi {
 		$u = "";
 	}
 
-	my $PNG1 = $u . $package . "1." . $tf->{when} . ".png";
-	my $PNG2 = $u . $package . "2." . $tf->{when} . ".png";
-	my $PNG3 = $u . $package . "3." . $tf->{when} . ".png";
-	my $PNG1z = $u . $package . "1z." . $tf->{when} . ".png";
-	my $PNG2z = $u . $package . "2z." . $tf->{when} . ".png";
-	my $PNG3z = $u . $package . "3z." . $tf->{when} . ".png";
-	unlink ("$PNG_DIR" . "$PNG1",
-		"$PNG_DIR" . "$PNG2",
-		"$PNG_DIR" . "$PNG3");
+	my $IMG1 = $u . $package . "1." . $tf->{when} . ".$imgfmt_lc";
+	my $IMG2 = $u . $package . "2." . $tf->{when} . ".$imgfmt_lc";
+	my $IMG3 = $u . $package . "3." . $tf->{when} . ".$imgfmt_lc";
+	my $IMG1z = $u . $package . "1z." . $tf->{when} . ".$imgfmt_lc";
+	my $IMG2z = $u . $package . "2z." . $tf->{when} . ".$imgfmt_lc";
+	my $IMG3z = $u . $package . "3z." . $tf->{when} . ".$imgfmt_lc";
+	unlink ("$IMG_DIR" . "$IMG1",
+		"$IMG_DIR" . "$IMG2",
+		"$IMG_DIR" . "$IMG3");
 	if(lc($config->{enable_zoom}) eq "y") {
-		unlink ("$PNG_DIR" . "$PNG1z",
-			"$PNG_DIR" . "$PNG2z",
-			"$PNG_DIR" . "$PNG3z");
+		unlink ("$IMG_DIR" . "$IMG1z",
+			"$IMG_DIR" . "$IMG2z",
+			"$IMG_DIR" . "$IMG3z");
 	}
 
 	if($title) {
@@ -889,10 +891,10 @@ sub serv_cgi {
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 	}
-	$pic = $rrd{$version}->("$PNG_DIR" . "$PNG1",
+	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG1",
 		"--title=$config->{graphs}->{_serv1}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
-		"--imgformat=PNG",
+		"--imgformat=$imgfmt_uc",
 		"--vertical-label=$vlabel",
 		"--width=$width",
 		"--height=$height",
@@ -920,13 +922,13 @@ sub serv_cgi {
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
-	print("ERROR: while graphing $PNG_DIR" . "$PNG1: $err\n") if $err;
+	print("ERROR: while graphing $IMG_DIR" . "$IMG1: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		$picz = $rrd{$version}->("$PNG_DIR" . "$PNG1z",
+		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG1z",
 			"--title=$config->{graphs}->{_serv1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=PNG",
+			"--imgformat=$imgfmt_uc",
 			"--vertical-label=$vlabel",
 			"--width=$width",
 			"--height=$height",
@@ -954,12 +956,12 @@ sub serv_cgi {
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG1z: $err\n") if $err;
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /serv1/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -968,10 +970,10 @@ sub serv_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "'>\n");
 		}
 	}
 
@@ -1022,10 +1024,10 @@ sub serv_cgi {
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 	}
-	$pic = $rrd{$version}->("$PNG_DIR" . "$PNG2",
+	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG2",
 		"--title=$config->{graphs}->{_serv2}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
-		"--imgformat=PNG",
+		"--imgformat=$imgfmt_uc",
 		"--vertical-label=$vlabel",
 		"--width=$width",
 		"--height=$height",
@@ -1042,13 +1044,13 @@ sub serv_cgi {
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
-	print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
+	print("ERROR: while graphing $IMG_DIR" . "$IMG2: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		$picz = $rrd{$version}->("$PNG_DIR" . "$PNG2z",
+		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG2z",
 			"--title=$config->{graphs}->{_serv2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=PNG",
+			"--imgformat=$imgfmt_uc",
 			"--vertical-label=$vlabel",
 			"--width=$width",
 			"--height=$height",
@@ -1065,12 +1067,12 @@ sub serv_cgi {
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG2z: $err\n") if $err;
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /serv2/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1079,10 +1081,10 @@ sub serv_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "'>\n");
 		}
 	}
 
@@ -1141,10 +1143,10 @@ sub serv_cgi {
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 	}
-	$pic = $rrd{$version}->("$PNG_DIR" . "$PNG3",
+	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG3",
 		"--title=$config->{graphs}->{_serv3}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
-		"--imgformat=PNG",
+		"--imgformat=$imgfmt_uc",
 		"--vertical-label=$vlabel",
 		"--width=$width",
 		"--height=$height",
@@ -1163,14 +1165,14 @@ sub serv_cgi {
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
-	print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
+	print("ERROR: while graphing $IMG_DIR" . "$IMG3: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		undef(@tmp);
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		$picz = $rrd{$version}->("$PNG_DIR" . "$PNG3z",
+		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG3z",
 			"--title=$config->{graphs}->{_serv3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=PNG",
+			"--imgformat=$imgfmt_uc",
 			"--vertical-label=$vlabel",
 			"--width=$width",
 			"--height=$height",
@@ -1189,12 +1191,12 @@ sub serv_cgi {
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG3z: $err\n") if $err;
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /serv3/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1203,10 +1205,10 @@ sub serv_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "'>\n");
 		}
 	}
 

@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2015 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2016 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -129,6 +129,8 @@ sub http_header {
 		print "Content-Type: text/html; charset=UTF-8\r\n";
 	} elsif($mimetype eq "css") {
 		print "Content-Type: text/css; charset=UTF-8\r\n";
+	} elsif($mimetype eq "svg") {
+		print "Content-Type: image/svg+xml; charset=UTF-8\r\n";
 	} else {
 		print "Content-Type: image/$mimetype;\r\n";
 	}
@@ -205,7 +207,7 @@ sub handle_request {
 	if(!$target || $target eq $base_url) {
 		$target = "index.html" unless $target;
 	}
-	($mimetype) = ($target =~ m/.*\.(html|cgi|css|png)$/);
+	($mimetype) = ($target =~ m/.*\.(html|cgi|css|png|svg)$/);
 
 	$target =~ s/^\/*//;		# removes leading slashes
 	$target_cgi =~ s/^\/*//;	# removes leading slashes

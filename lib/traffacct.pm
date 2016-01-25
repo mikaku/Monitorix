@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2015 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2016 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -371,7 +371,7 @@ sub traffacct_sendreports {
 		my $ua = LWP::UserAgent->new(timeout => 30, $ssl);
 		$ua->request(HTTP::Request->new('GET', $url));
 
-		$url = $traffacct->{reports}->{url_prefix} . $base_url . "/" . $imgs_dir . "traffacct" . $n . ".1month.png";
+		$url = $traffacct->{reports}->{url_prefix} . $base_url . "/" . $imgs_dir . "traffacct" . $n . ".1month.$imgfmt_lc";
 		my $image = $ua->request(HTTP::Request->new('GET', $url));
 		if(!$image->is_success) {
 			logger("$myself: ERROR: Unable to connect to '$url'.");
@@ -440,8 +440,8 @@ sub traffacct_cgi {
 	my $width;
 	my $height;
 	my @riglim;
-	my @PNG;
-	my @PNGz;
+	my @IMG;
+	my @IMGz;
 	my @tmp;
 	my @tmpz;
 	my @CDEF;
@@ -455,7 +455,9 @@ sub traffacct_cgi {
 	$version = "old" if $RRDs::VERSION < 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
-	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
+	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
+	my $imgfmt_uc = uc($config->{image_format});
+	my $imgfmt_lc = lc($config->{image_format});
 
 	if(lc($config->{netstats_in_bps}) eq "y") {
 		$T = "b";
@@ -475,13 +477,13 @@ sub traffacct_cgi {
 	}
 
 	for($n = 0; $n < $traffacct->{max}; $n++) {
-		$str = $u . "traffacct" . $n . ".$tf->{when}" . ".png";
-		push(@PNG, $str);
-		unlink("$PNG_DIR" . $str);
+		$str = $u . "traffacct" . $n . ".$tf->{when}" . ".$imgfmt_lc";
+		push(@IMG, $str);
+		unlink("$IMG_DIR" . $str);
 		if(lc($config->{enable_zoom}) eq "y") {
-			$str = $u . "traffacct" . $n . "z.$tf->{when}" . ".png";
-			push(@PNGz, $str);
-			unlink("$PNG_DIR" . $str);
+			$str = $u . "traffacct" . $n . "z.$tf->{when}" . ".$imgfmt_lc";
+			push(@IMGz, $str);
+			unlink("$IMG_DIR" . $str);
 		}
 	}
 	@riglim = @{setup_riglim($rigid[0], $limit[0])};
@@ -535,10 +537,10 @@ sub traffacct_cgi {
 					push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 				}
 				($width, $height) = split('x', $config->{graph_size}->{remote});
-				$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$n]",
+				$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$n]",
 					"--title=$name traffic  ($tf->{nwhen}$tf->{twhen})",
 					"--start=-$tf->{nwhen}$tf->{twhen}",
-					"--imgformat=PNG",
+					"--imgformat=$imgfmt_uc",
 					"--vertical-label=$vlabel",
 					"--width=$width",
 					"--height=$height",
@@ -553,13 +555,13 @@ sub traffacct_cgi {
 					@CDEF,
 					@tmp);
 				$err = RRDs::error;
-				print("ERROR: while graphing $PNG_DIR" . "$PNG[$n]: $err\n") if $err;
+				print("ERROR: while graphing $IMG_DIR" . "$IMG[$n]: $err\n") if $err;
 				if(lc($config->{enable_zoom}) eq "y") {
 					($width, $height) = split('x', $config->{graph_size}->{zoom});
-					$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$n]",
+					$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$n]",
 						"--title=$name traffic  ($tf->{nwhen}$tf->{twhen})",
 						"--start=-$tf->{nwhen}$tf->{twhen}",
-						"--imgformat=PNG",
+						"--imgformat=$imgfmt_uc",
 						"--vertical-label=$vlabel",
 						"--width=$width",
 						"--height=$height",
@@ -574,11 +576,11 @@ sub traffacct_cgi {
 						@CDEF,
 						@tmpz);
 					$err = RRDs::error;
-					print("ERROR: while graphing $PNG_DIR" . "$PNGz[$n]: $err\n") if $err;
+					print("ERROR: while graphing $IMG_DIR" . "$IMGz[$n]: $err\n") if $err;
 				}
 				if(lc($config->{enable_zoom}) eq "y") {
 					if(lc($config->{disable_javascript_void}) eq "y") {
-						print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$n] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$n] . "' border='0'></a>\n");
+						print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$n] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "' border='0'></a>\n");
 					} else {
 						if($version eq "new") {
 							$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -587,10 +589,10 @@ sub traffacct_cgi {
 							$picz_width = $width + 115;
 							$picz_height = $height + 100;
 						}
-						print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$n] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$n] . "' border='0'></a>\n");
+						print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$n] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "' border='0'></a>\n");
 					}
 				} else {
-					print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$n] . "'>\n");
+					print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "'>\n");
 				}
 				print("  </td>\n");
 				$n++;
@@ -648,10 +650,10 @@ sub traffacct_cgi {
 			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
-		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$cgi->{val}]",
+		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$cgi->{val}]",
 			"--title=$tal[$cgi->{val}] traffic  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=PNG",
+			"--imgformat=$imgfmt_uc",
 			"--vertical-label=$vlabel",
 			"--width=$width",
 			"--height=$height",
@@ -667,13 +669,13 @@ sub traffacct_cgi {
 			"CDEF:K_out=B_out,1024,/",
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG[$cgi->{val}]: $err\n") if $err;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG[$cgi->{val}]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$cgi->{val}]",
+			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$cgi->{val}]",
 				"--title=$tal[$cgi->{val}] traffic  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
-				"--imgformat=PNG",
+				"--imgformat=$imgfmt_uc",
 				"--vertical-label=$vlabel",
 				"--width=$width",
 				"--height=$height",
@@ -689,11 +691,11 @@ sub traffacct_cgi {
 				"CDEF:K_out=B_out,1024,/",
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$cgi->{val}]: $err\n") if $err;
+			print("ERROR: while graphing $IMG_DIR" . "$IMGz[$cgi->{val}]: $err\n") if $err;
 		}
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$cgi->{val}] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$cgi->{val}] . "' border='0'></a>\n");
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$cgi->{val}] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$cgi->{val}] . "' border='0'></a>\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -702,10 +704,10 @@ sub traffacct_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$cgi->{val}] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$cgi->{val}] . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$cgi->{val}] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$cgi->{val}] . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$cgi->{val}] . "'>\n");
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$cgi->{val}] . "'>\n");
 		}
 		if(!$silent) {
 			print("  </td>\n");

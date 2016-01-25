@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2015 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2016 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -319,7 +319,9 @@ sub net_cgi {
 	$version = "old" if $RRDs::VERSION < 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
-	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
+	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
+	my $imgfmt_uc = uc($config->{image_format});
+	my $imgfmt_lc = lc($config->{image_format});
 
 	$title = !$silent ? $title : "";
 
@@ -410,26 +412,26 @@ sub net_cgi {
 		$u = "";
 	}
 
-	my $PNG1;
-	my $PNG2;
-	my $PNG3;
-	my $PNG1z;
-	my $PNG2z;
-	my $PNG3z;
+	my $IMG1;
+	my $IMG2;
+	my $IMG3;
+	my $IMG1z;
+	my $IMG2z;
+	my $IMG3z;
 	for($n = 0; $n < scalar(my @nl = split(',', $net->{list})); $n++) {
-		$PNG1 = $u . $package . $n . "1." . $tf->{when} . ".png";
-		$PNG2 = $u . $package . $n . "2." . $tf->{when} . ".png";
-		$PNG3 = $u . $package . $n . "3." . $tf->{when} . ".png";
-		unlink("$PNG_DIR" . $PNG1);
-		unlink("$PNG_DIR" . $PNG2);
-		unlink("$PNG_DIR" . $PNG3);
+		$IMG1 = $u . $package . $n . "1." . $tf->{when} . ".$imgfmt_lc";
+		$IMG2 = $u . $package . $n . "2." . $tf->{when} . ".$imgfmt_lc";
+		$IMG3 = $u . $package . $n . "3." . $tf->{when} . ".$imgfmt_lc";
+		unlink("$IMG_DIR" . $IMG1);
+		unlink("$IMG_DIR" . $IMG2);
+		unlink("$IMG_DIR" . $IMG3);
 		if(lc($config->{enable_zoom}) eq "y") {
-			$PNG1z = $u . $package . $n . "1z." . $tf->{when} . ".png";
-			$PNG2z = $u . $package . $n . "2z." . $tf->{when} . ".png";
-			$PNG3z = $u . $package . $n . "3z." . $tf->{when} . ".png";
-			unlink("$PNG_DIR" . $PNG1z);
-			unlink("$PNG_DIR" . $PNG2z);
-			unlink("$PNG_DIR" . $PNG3z);
+			$IMG1z = $u . $package . $n . "1z." . $tf->{when} . ".$imgfmt_lc";
+			$IMG2z = $u . $package . $n . "2z." . $tf->{when} . ".$imgfmt_lc";
+			$IMG3z = $u . $package . $n . "3z." . $tf->{when} . ".$imgfmt_lc";
+			unlink("$IMG_DIR" . $IMG1z);
+			unlink("$IMG_DIR" . $IMG2z);
+			unlink("$IMG_DIR" . $IMG3z);
 		}
 
 		$nl[$n] = trim($nl[$n]);
@@ -489,10 +491,10 @@ sub net_cgi {
 			@tmp = @tmpz;
 			push(@tmp, "COMMENT: \\n");
 		}
-		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG1",
+		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG1",
 			"--title=$nl[$n] $nd  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=PNG",
+			"--imgformat=$imgfmt_uc",
 			"--vertical-label=$vlabel",
 			"--width=$width",
 			"--height=$height",
@@ -512,13 +514,13 @@ sub net_cgi {
 			"COMMENT: \\n",
 			);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG1: $err\n") if $err;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG1: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			$picz = $rrd{$version}->("$PNG_DIR" . "$PNG1z",
+			$picz = $rrd{$version}->("$IMG_DIR" . "$IMG1z",
 				"--title=$nl[$n] $nd  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
-				"--imgformat=PNG",
+				"--imgformat=$imgfmt_uc",
 				"--vertical-label=$vlabel",
 				"--width=$width",
 				"--height=$height",
@@ -532,13 +534,13 @@ sub net_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNG1z: $err\n") if $err;
+			print("ERROR: while graphing $IMG_DIR" . "$IMG1z: $err\n") if $err;
 		}
 		$netname="net" . $n . "1";
 		if($title || ($silent =~ /imagetag/ && $graph =~ /$netname/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -547,10 +549,10 @@ sub net_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG1 . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "'>\n");
 			}
 		}
 
@@ -588,10 +590,10 @@ sub net_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG2",
+		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG2",
 			"--title=$nl[$n] $config->{graphs}->{_net2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=PNG",
+			"--imgformat=$imgfmt_uc",
 			"--vertical-label=Packets/s",
 			"--width=$width",
 			"--height=$height",
@@ -606,13 +608,13 @@ sub net_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG2: $err\n") if $err;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG2: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			$picz = $rrd{$version}->("$PNG_DIR" . "$PNG2z",
+			$picz = $rrd{$version}->("$IMG_DIR" . "$IMG2z",
 				"--title=$nl[$n] $config->{graphs}->{_net2}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
-				"--imgformat=PNG",
+				"--imgformat=$imgfmt_uc",
 				"--vertical-label=Packets/s",
 				"--width=$width",
 				"--height=$height",
@@ -627,13 +629,13 @@ sub net_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNG2z: $err\n") if $err;
+			print("ERROR: while graphing $IMG_DIR" . "$IMG2z: $err\n") if $err;
 		}
 		$netname="net" . $n . "2";
 		if($title || ($silent =~ /imagetag/ && $graph =~ /$netname/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -642,10 +644,10 @@ sub net_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG2 . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "'>\n");
 			}
 		}
 
@@ -679,10 +681,10 @@ sub net_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG3",
+		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG3",
 			"--title=$nl[$n] $config->{graphs}->{_net3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=PNG",
+			"--imgformat=$imgfmt_uc",
 			"--vertical-label=Errors/s",
 			"--width=$width",
 			"--height=$height",
@@ -697,13 +699,13 @@ sub net_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG3: $err\n") if $err;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG3: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			$picz = $rrd{$version}->("$PNG_DIR" . "$PNG3z",
+			$picz = $rrd{$version}->("$IMG_DIR" . "$IMG3z",
 				"--title=$nl[$n] $config->{graphs}->{_net3}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
-				"--imgformat=PNG",
+				"--imgformat=$imgfmt_uc",
 				"--vertical-label=Errors/s",
 				"--width=$width",
 				"--height=$height",
@@ -718,13 +720,13 @@ sub net_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNG3z: $err\n") if $err;
+			print("ERROR: while graphing $IMG_DIR" . "$IMG3z: $err\n") if $err;
 		}
 		$netname="net" . $n . "3";
 		if($title || ($silent =~ /imagetag/ && $graph =~ /$netname/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -733,10 +735,10 @@ sub net_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG3 . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "'>\n");
 			}
 		}
 

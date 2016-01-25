@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2015 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2016 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -268,8 +268,8 @@ sub nut_cgi {
 	my $height;
 	my $temp_scale = "Celsius";
 	my @riglim;
-	my @PNG;
-	my @PNGz;
+	my @IMG;
+	my @IMGz;
 	my @tmp;
 	my @tmpz;
 	my @CDEF;
@@ -283,7 +283,9 @@ sub nut_cgi {
 	$version = "old" if $RRDs::VERSION < 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
-	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
+	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
+	my $imgfmt_uc = uc($config->{image_format});
+	my $imgfmt_lc = lc($config->{image_format});
 
 	$title = !$silent ? $title : "";
 
@@ -365,13 +367,13 @@ sub nut_cgi {
 
 	for($n = 0; $n < scalar(my @nl = split(',', $nut->{list})); $n++) {
 		for($n2 = 1; $n2 <= 6; $n2++) {
-			$str = $u . $package . $n . $n2 . "." . $tf->{when} . ".png";
-			push(@PNG, $str);
-			unlink("$PNG_DIR" . $str);
+			$str = $u . $package . $n . $n2 . "." . $tf->{when} . ".$imgfmt_lc";
+			push(@IMG, $str);
+			unlink("$IMG_DIR" . $str);
 			if(lc($config->{enable_zoom}) eq "y") {
-				$str = $u . $package . $n . $n2 . "z." . $tf->{when} . ".png";
-				push(@PNGz, $str);
-				unlink("$PNG_DIR" . $str);
+				$str = $u . $package . $n . $n2 . "z." . $tf->{when} . ".$imgfmt_lc";
+				push(@IMGz, $str);
+				unlink("$IMG_DIR" . $str);
 			}
 		}
 	}
@@ -471,10 +473,10 @@ sub nut_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
-		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 6]",
+		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6]",
 			"--title=$config->{graphs}->{_nut1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=PNG",
+			"--imgformat=$imgfmt_uc",
 			"--vertical-label=Volts",
 			"--width=$width",
 			"--height=$height",
@@ -493,13 +495,13 @@ sub nut_cgi {
 			"COMMENT: \\n",
 			$driver);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6]: $err\n") if $err;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG[$e * 6]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 6]",
+			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 6]",
 				"--title=$config->{graphs}->{_nut1}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
-				"--imgformat=PNG",
+				"--imgformat=$imgfmt_uc",
 				"--vertical-label=Volts",
 				"--width=$width",
 				"--height=$height",
@@ -515,13 +517,13 @@ sub nut_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 6]: $err\n") if $err;
+			print("ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 6]: $err\n") if $err;
 		}
 		$e2 = $e + 1;
 		if($title || ($silent =~ /imagetag/ && $graph =~ /nut$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6] . "' border='0'></a>\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -530,10 +532,10 @@ sub nut_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6] . "'>\n");
 			}
 		}
 
@@ -573,10 +575,10 @@ sub nut_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
-		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 6 + 1]",
+		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 1]",
 			"--title=$config->{graphs}->{_nut2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=PNG",
+			"--imgformat=$imgfmt_uc",
 			"--vertical-label=Percent (%)",
 			"--width=$width",
 			"--height=$height",
@@ -595,13 +597,13 @@ sub nut_cgi {
 			$transfer,
 			"COMMENT: \\n");
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 1]: $err\n") if $err;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG[$e * 6 + 1]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 6 + 1]",
+			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 6 + 1]",
 				"--title=$config->{graphs}->{_nut2}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
-				"--imgformat=PNG",
+				"--imgformat=$imgfmt_uc",
 				"--vertical-label=Percent (%)",
 				"--width=$width",
 				"--height=$height",
@@ -616,13 +618,13 @@ sub nut_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 6 + 1]: $err\n") if $err;
+			print("ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 6 + 1]: $err\n") if $err;
 		}
 		$e2 = $e + 2;
 		if($title || ($silent =~ /imagetag/ && $graph =~ /nut$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 1] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 1] . "' border='0'></a>\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -631,10 +633,10 @@ sub nut_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 1] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 1] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 1] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 1] . "'>\n");
 			}
 		}
 
@@ -675,10 +677,10 @@ sub nut_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 6 + 2]",
+		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 2]",
 			"--title=$config->{graphs}->{_nut3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=PNG",
+			"--imgformat=$imgfmt_uc",
 			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
@@ -694,13 +696,13 @@ sub nut_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 2]: $err\n") if $err;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG[$e * 6 + 2]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 6 + 2]",
+			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 6 + 2]",
 				"--title=$config->{graphs}->{_nut3}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
-				"--imgformat=PNG",
+				"--imgformat=$imgfmt_uc",
 				"--vertical-label=$temp_scale",
 				"--width=$width",
 				"--height=$height",
@@ -716,13 +718,13 @@ sub nut_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 6 + 2]: $err\n") if $err;
+			print("ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 6 + 2]: $err\n") if $err;
 		}
 		$e2 = $e + 3;
 		if($title || ($silent =~ /imagetag/ && $graph =~ /nut$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 2] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 2] . "' border='0'></a>\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -731,10 +733,10 @@ sub nut_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 2] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 2] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 2] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 2] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 2] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 2] . "'>\n");
 			}
 		}
 
@@ -762,10 +764,10 @@ sub nut_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 6 + 3]",
+		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 3]",
 			"--title=$config->{graphs}->{_nut4}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=PNG",
+			"--imgformat=$imgfmt_uc",
 			"--vertical-label=Volts",
 			"--width=$width",
 			"--height=$height",
@@ -780,13 +782,13 @@ sub nut_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 3]: $err\n") if $err;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG[$e * 6 + 3]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 6 + 3]",
+			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 6 + 3]",
 				"--title=$config->{graphs}->{_nut4}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
-				"--imgformat=PNG",
+				"--imgformat=$imgfmt_uc",
 				"--vertical-label=Volts",
 				"--width=$width",
 				"--height=$height",
@@ -801,13 +803,13 @@ sub nut_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 6 + 3]: $err\n") if $err;
+			print("ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 6 + 3]: $err\n") if $err;
 		}
 		$e2 = $e + 4;
 		if($title || ($silent =~ /imagetag/ && $graph =~ /nut$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 3] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 3] . "' border='0'></a>\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -816,10 +818,10 @@ sub nut_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 3] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 3] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 3] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 3] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 3] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 3] . "'>\n");
 			}
 		}
 
@@ -847,10 +849,10 @@ sub nut_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 6 + 4]",
+		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 4]",
 			"--title=$config->{graphs}->{_nut5}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=PNG",
+			"--imgformat=$imgfmt_uc",
 			"--vertical-label=Minutes",
 			"--width=$width",
 			"--height=$height",
@@ -867,13 +869,13 @@ sub nut_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 4]: $err\n") if $err;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG[$e * 6 + 4]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 6 + 4]",
+			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 6 + 4]",
 				"--title=$config->{graphs}->{_nut5}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
-				"--imgformat=PNG",
+				"--imgformat=$imgfmt_uc",
 				"--vertical-label=Minutes",
 				"--width=$width",
 				"--height=$height",
@@ -890,13 +892,13 @@ sub nut_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 6 + 4]: $err\n") if $err;
+			print("ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 6 + 4]: $err\n") if $err;
 		}
 		$e2 = $e + 5;
 		if($title || ($silent =~ /imagetag/ && $graph =~ /nut$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 4] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 4] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 4] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 4] . "' border='0'></a>\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -905,10 +907,10 @@ sub nut_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 4] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 4] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 4] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 4] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 4] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 4] . "'>\n");
 			}
 		}
 
@@ -933,10 +935,10 @@ sub nut_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 6 + 5]",
+		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 5]",
 			"--title=$config->{graphs}->{_nut6}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=PNG",
+			"--imgformat=$imgfmt_uc",
 			"--vertical-label=Hz",
 			"--width=$width",
 			"--height=$height",
@@ -950,13 +952,13 @@ sub nut_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 6 + 5]: $err\n") if $err;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG[$e * 6 + 5]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 6 + 5]",
+			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 6 + 5]",
 				"--title=$config->{graphs}->{_nut6}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
-				"--imgformat=PNG",
+				"--imgformat=$imgfmt_uc",
 				"--vertical-label=Hz",
 				"--width=$width",
 				"--height=$height",
@@ -970,13 +972,13 @@ sub nut_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 6 + 5]: $err\n") if $err;
+			print("ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 6 + 5]: $err\n") if $err;
 		}
 		$e2 = $e + 6;
 		if($title || ($silent =~ /imagetag/ && $graph =~ /nut$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 5] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 5] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 5] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 5] . "' border='0'></a>\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -985,10 +987,10 @@ sub nut_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 6 + 5] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 5] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 5] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 5] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 6 + 5] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 5] . "'>\n");
 			}
 		}
 

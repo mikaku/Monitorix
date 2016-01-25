@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2015 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2016 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -242,8 +242,8 @@ sub icecast_cgi {
 	my $width;
 	my $height;
 	my @riglim;
-	my @PNG;
-	my @PNGz;
+	my @IMG;
+	my @IMGz;
 	my @tmp;
 	my @tmpz;
 	my @CDEF;
@@ -278,7 +278,9 @@ sub icecast_cgi {
 	$version = "old" if $RRDs::VERSION < 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
-	my $PNG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
+	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
+	my $imgfmt_uc = uc($config->{image_format});
+	my $imgfmt_lc = lc($config->{image_format});
 
 	$title = !$silent ? $title : "";
 
@@ -373,19 +375,19 @@ sub icecast_cgi {
 	}
 
 	for($n = 0; $n < scalar(my @il = split(',', $icecast->{list})); $n++) {
-		$str = $u . $package . $n . "1." . $tf->{when} . ".png";
-		push(@PNG, $str);
-		unlink("$PNG_DIR" . $str);
-		$str = $u . $package . $n . "2." . $tf->{when} . ".png";
-		push(@PNG, $str);
-		unlink("$PNG_DIR" . $str);
+		$str = $u . $package . $n . "1." . $tf->{when} . ".$imgfmt_lc";
+		push(@IMG, $str);
+		unlink("$IMG_DIR" . $str);
+		$str = $u . $package . $n . "2." . $tf->{when} . ".$imgfmt_lc";
+		push(@IMG, $str);
+		unlink("$IMG_DIR" . $str);
 		if(lc($config->{enable_zoom}) eq "y") {
-			$str = $u . $package . $n . "1z." . $tf->{when} . ".png";
-			push(@PNGz, $str);
-			unlink("$PNG_DIR" . $str);
-			$str = $u . $package . $n . "2z." . $tf->{when} . ".png";
-			push(@PNGz, $str);
-			unlink("$PNG_DIR" . $str);
+			$str = $u . $package . $n . "1z." . $tf->{when} . ".$imgfmt_lc";
+			push(@IMGz, $str);
+			unlink("$IMG_DIR" . $str);
+			$str = $u . $package . $n . "2z." . $tf->{when} . ".$imgfmt_lc";
+			push(@IMGz, $str);
+			unlink("$IMG_DIR" . $str);
 		}
 	}
 
@@ -437,10 +439,10 @@ sub icecast_cgi {
 			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{medium});
-		$pic = $rrd{$version}->("$PNG_DIR" . "$PNG[$e * 2]",
+		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 2]",
 			"--title=$config->{graphs}->{_icecast1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=PNG",
+			"--imgformat=$imgfmt_uc",
 			"--vertical-label=Listeners",
 			"--width=$width",
 			"--height=$height",
@@ -461,13 +463,13 @@ sub icecast_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . "$PNG[$e * 2]: $err\n") if $err;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG[$e * 2]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			$picz = $rrd{$version}->("$PNG_DIR" . "$PNGz[$e * 2]",
+			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 2]",
 				"--title=$config->{graphs}->{_icecast1}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
-				"--imgformat=PNG",
+				"--imgformat=$imgfmt_uc",
 				"--vertical-label=Listeners",
 				"--width=$width",
 				"--height=$height",
@@ -488,12 +490,12 @@ sub icecast_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . "$PNGz[$e * 2]: $err\n") if $err;
+			print("ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 2]: $err\n") if $err;
 		}
 		if($title || ($silent =~ /imagetag/ && $graph =~ /icecast$e/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 2] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2] . "' border='0'></a>\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -502,10 +504,10 @@ sub icecast_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 2] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 2] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 2] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 2] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2] . "'>\n");
 			}
 		}
 		if($title) {
@@ -538,10 +540,10 @@ sub icecast_cgi {
 			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{medium});
-		$pic = $rrd{$version}->("$PNG_DIR" . $PNG[$e * 2 + 1],
+		$pic = $rrd{$version}->("$IMG_DIR" . $IMG[$e * 2 + 1],
 			"--title=$config->{graphs}->{_icecast2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=PNG",
+			"--imgformat=$imgfmt_uc",
 			"--vertical-label=Bitrate",
 			"--width=$width",
 			"--height=$height",
@@ -562,13 +564,13 @@ sub icecast_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $PNG_DIR" . $PNG[$e * 2 + 1] . ": $err\n") if $err;
+		print("ERROR: while graphing $IMG_DIR" . $IMG[$e * 2 + 1] . ": $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			$picz = $rrd{$version}->("$PNG_DIR" . $PNGz[$e * 2 + 1],
+			$picz = $rrd{$version}->("$IMG_DIR" . $IMGz[$e * 2 + 1],
 				"--title=$config->{graphs}->{_icecast2}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
-				"--imgformat=PNG",
+				"--imgformat=$imgfmt_uc",
 				"--vertical-label=Bitrate",
 				"--width=$width",
 				"--height=$height",
@@ -589,12 +591,12 @@ sub icecast_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $PNG_DIR" . $PNGz[$e * 2 + 1] . ": $err\n") if $err;
+			print("ERROR: while graphing $IMG_DIR" . $IMGz[$e * 2 + 1] . ": $err\n") if $err;
 		}
 		if($title || ($silent =~ /imagetag/ && $graph =~ /icecast$e/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 2 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 2 + 1] . "' border='0'></a>\n");
+					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 2 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2 + 1] . "' border='0'></a>\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -603,10 +605,10 @@ sub icecast_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $PNGz[$e * 2 + 1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 2 + 1] . "' border='0'></a>\n");
+					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 2 + 1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2 + 1] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $PNG[$e * 2 + 1] . "'>\n");
+				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2 + 1] . "'>\n");
 			}
 		}
 		if($title) {
