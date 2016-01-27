@@ -14,6 +14,7 @@ N.N.N  - DD-MMM-2015
   will run.
 - Added the new option "image_format" to specify the file format of each
   generated graph. [#132]
+- Added name substring match in 'process.pm'. [#136]
 - Fixed in 'libvirt.pm' limiting to 100 all CPU values greater than 100.
 - Fixed in 'libvirt.pm' to hide empty groups.
   	(thanks to Pavel Bauer, pbauer AT algotech.cz for pointing this out)
