@@ -187,6 +187,11 @@ sub process_update {
 						$pro++;
 						next;
 					}
+					if(index($3, $p) != -1) {
+                                                push(@pid, $1);
+                                                $pro++;
+                                                next;
+                                        }
 				}
 				close(IN);
 			}
