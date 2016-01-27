@@ -181,6 +181,11 @@ sub process_update {
 							$pro++;
 							next;
 						}
+						if(index($3, $p) != -1) {
+							push(@pid, $1);
+							$pro++;
+							next;
+						}
 					}
 					if(substr($p, 0, 15) eq substr($_, 6, 15)) {
 						push(@pid, $1);
