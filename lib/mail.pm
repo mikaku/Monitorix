@@ -180,6 +180,7 @@ sub mail_update {
 	my $spf_pass;
 	my $spf_softfail;
 	my $spf_fail;
+	my $rbl;
 	my $gl_records;
 	my $gl_greylisted;
 	my $gl_whitelisted;
@@ -338,6 +339,7 @@ sub mail_update {
 
 	$spam = $virus = 0;
 	$spf_none = $spf_pass = $spf_softfail = $spf_fail = 0;
+	$rbl = 0;
 	if(-r $config->{mail_log}) {
 		my $date = strftime("%b %e", localtime);
 		open(IN, $config->{mail_log});
@@ -393,6 +395,10 @@ sub mail_update {
 					} elsif(/ SPF fail/) {
 						$spf_fail++;
 					}
+				}
+				# postfix RBL
+				if(/ postfix\/smtpd\[\d+\]: NOQUEUE: reject: RCPT from /) {
+					$rbl++;
 				}
 			}
 		}
@@ -532,7 +538,10 @@ sub mail_update {
 	$gen[3] = int($spf_fail) unless !$gen_h[3];
 	$gen_h[3] = int($spf_fail) unless $gen_h[3];
 
-	$gen_h[4] = $gen[4] = 0;
+	# avoid initial peak
+	$gen[4] = int($rbl) unless !$gen_h[4];
+	$gen_h[4] = int($rbl) unless $gen_h[4];
+
 	$gen_h[5] = $gen[5] = 0;
 	$gen_h[6] = $gen[6] = int($gl_records) || 0;
 	$gen_h[7] = $gen[7] = int($gl_greylisted) || 0;
@@ -591,6 +600,7 @@ sub mail_update {
 	logger("$myself: $rrdata") if $debug;
 	my $err = RRDs::error;
 	logger("ERROR: while updating $rrd: $err") if $err;
+	print "rbl = $rbl\n";
 }
 
 sub mail_cgi {
@@ -789,6 +799,11 @@ sub mail_cgi {
 		push(@tmp, "GPRINT:rejtd:AVERAGE:    Avg\\: %5.2lf");
 		push(@tmp, "GPRINT:rejtd:MIN:    Min\\: %5.2lf");
 		push(@tmp, "GPRINT:rejtd:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "AREA:rbl#963C74:Rejected (RBL)");
+		push(@tmp, "GPRINT:rbl:LAST:    Cur\\: %5.2lf");
+		push(@tmp, "GPRINT:rbl:AVERAGE:    Avg\\: %5.2lf");
+		push(@tmp, "GPRINT:rbl:MIN:    Min\\: %5.2lf");
+		push(@tmp, "GPRINT:rbl:MAX:    Max\\: %5.2lf\\n");
 		push(@tmp, "AREA:recvd#448844:Received");
 		push(@tmp, "GPRINT:recvd:LAST:          Cur\\: %5.2lf");
 		push(@tmp, "GPRINT:recvd:AVERAGE:    Avg\\: %5.2lf");
@@ -830,6 +845,7 @@ sub mail_cgi {
 		push(@tmp, "GPRINT:delvd:MIN:    Min\\: %5.2lf");
 		push(@tmp, "GPRINT:delvd:MAX:    Max\\: %5.2lf\\n");
 		push(@tmp, "LINE1:rejtd#EE0000");
+		push(@tmp, "LINE1:rbl#963C74");
 		push(@tmp, "LINE1:recvd#1F881F");
 		push(@tmp, "LINE1:spam#EEEE00");
 		push(@tmp, "LINE1:virus#EE00EE");
@@ -838,9 +854,9 @@ sub mail_cgi {
 		push(@tmp, "LINE1:held#00EE00");
 		push(@tmp, "LINE1:n_forwrd#00EEEE");
 		push(@tmp, "LINE1:n_delvd#0000EE");
-		push(@tmp, "COMMENT: \\n");
 
 		push(@tmpz, "AREA:rejtd#EE4444:Rejected");
+		push(@tmpz, "AREA:rbl#963C74:Rejected (RBL)");
 		push(@tmpz, "AREA:recvd#448844:Received");
 		push(@tmpz, "AREA:spam#EEEE44:Spam");
 		push(@tmpz, "AREA:virus#EE44EE:Virus");
@@ -850,6 +866,7 @@ sub mail_cgi {
 		push(@tmpz, "AREA:n_forwrd#44EEEE:Forwarded");
 		push(@tmpz, "AREA:n_delvd#4444EE:Delivered");
 		push(@tmpz, "LINE1:rejtd#EE0000");
+		push(@tmpz, "LINE1:rbl#963C74");
 		push(@tmpz, "LINE1:recvd#1F881F");
 		push(@tmpz, "LINE1:spam#EEEE00");
 		push(@tmpz, "LINE1:virus#EE00EE");
@@ -902,7 +919,8 @@ sub mail_cgi {
 		"DEF:discrd=$rrd:mail_discrd:AVERAGE",
 		"DEF:held=$rrd:mail_held:AVERAGE",
 		"DEF:forwrd=$rrd:mail_forwrd:AVERAGE",
-		"CDEF:allvalues_p=in,out,recvd,delvd,rejtd,spam,virus,bouncd,discrd,held,forwrd,+,+,+,+,+,+,+,+,+,+",
+		"DEF:rbl=$rrd:mail_val05:AVERAGE",
+		"CDEF:allvalues_p=in,out,recvd,delvd,rejtd,spam,virus,bouncd,discrd,held,forwrd,rbl,+,+,+,+,+,+,+,+,+,+,+",
 		"CDEF:allvalues_m=allvalues_p,UN,-1,UNKN,IF",
 		@CDEF,
 		"CDEF:n_forwrd=forwrd,-1,*",
@@ -936,7 +954,8 @@ sub mail_cgi {
 			"DEF:discrd=$rrd:mail_discrd:AVERAGE",
 			"DEF:held=$rrd:mail_held:AVERAGE",
 			"DEF:forwrd=$rrd:mail_forwrd:AVERAGE",
-			"CDEF:allvalues_p=in,out,recvd,delvd,rejtd,spam,virus,bouncd,discrd,held,forwrd,+,+,+,+,+,+,+,+,+,+",
+			"DEF:rbl=$rrd:mail_val05:AVERAGE",
+			"CDEF:allvalues_p=in,out,recvd,delvd,rejtd,spam,virus,bouncd,discrd,held,forwrd,rbl,+,+,+,+,+,+,+,+,+,+,+",
 			"CDEF:allvalues_m=allvalues_p,UN,-1,UNKN,IF",
 			@CDEF,
 			"CDEF:n_forwrd=forwrd,-1,*",
