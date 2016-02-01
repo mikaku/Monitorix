@@ -159,10 +159,10 @@ sub phpapc_update {
 		}
 
 		$data =~ s/\n//g;
-		my ($msize, $msize_suffix) = ($data =~ m/<td class=td-0>apc.shm_size<\/td><td>(\d+)([MG])<\/td>/) && ($1 || 0);
+		my ($msize, $msize_suffix) = ($data =~ m/<td class=td-0>apc.shm_size<\/td><td>(\d+)([MG])<\/td>/);
 		# convert msize to KB
-		$msize *= 1024 * 1024 if ($msize_suffix || "") eq "GBytes";
-		$msize *= 1024 if ($msize_suffix || "") eq "MBytes";
+		$msize *= 1024 * 1024 if(grep {$_ eq $msize_suffix} ("G", "GBytes"));
+		$msize *= 1024 if(grep {$_ eq $msize_suffix} ("M", "MBytes"));
 
 		my ($free) = ($data =~ m/<\/span>Free:\s+.*?\((\d+\.\d+)%\)<\/td>/) && ($1 || 0);
 		my ($hits) = ($data =~ m/<\/span>Hits:\s+.*?\((\d+\.\d+)%\)<\/td>/) && ($1 || 0);
@@ -338,7 +338,7 @@ sub phpapc_cgi {
 		}
 		$data =~ s/\n//g;
 
-		my ($msize, $msize_suffix) = ($data =~ m/<td class=td-0>apc.shm_size<\/td><td>(\d+)([MG])<\/td>/) && ($1 || 0);
+		my ($msize, $msize_suffix) = ($data =~ m/<td class=td-0>apc.shm_size<\/td><td>(\d+)([MG])<\/td>/);
 		$msize .= ($msize_suffix || "") . "B";
 
 		my ($uptimeline) = ($data =~ m/Uptime<\/td><td>(.*?)<\/td>/) && ($1 || 0);
