@@ -192,7 +192,7 @@ EOF
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
   <style>
    body {
-   	background-color: $bgcolor;
+   	background-color: #$bgcolor;
    	color: #333;
    }
    body.black {
