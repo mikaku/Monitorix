@@ -181,68 +181,67 @@ EOF
 		die "unable to create '${config{base_dir}}index.html': $!";
 	}
 	print(OUT <<EOF);
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<!DOCTYPE html>
 <html>
  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>$config{title}</title>
   <link rel="shortcut icon" href="$base_url$config{favicon}">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <style>
+   body {
+   	background-color: $bgcolor;
+   	color: #333;
+   }
+   body.black {
+   	color: #ccc;
+   }
+   .logo {
+   	display: inline-block;
+   	text-align: right;
+   	margin-bottom: 30px;
+   }
  </head>
- <body bgcolor="$bgcolor" text="#888888" vlink="#888888" link="#888888">
+ <body class="$theme">
   $piwik_code
-  <center>
-  <p>
-  <br>
-  <font face="Verdana, sans-serif">
-  <table>
-    <tr>
-      <td>
-        <a href="$config{logo_top_url}"><img src="$base_url$config{logo_top}" border="0"></a>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <h2 align="right">v@{[VERSION]}</h2>
-      </td>
-    </tr>
-  </table>
-  <p>
-  <form action="${base_cgi}monitorix.cgi" method="get">
-    <table cellspacing="5" cellpadding="0" bgcolor="$table_back_color" border="1">
-      <tr>
-        <td bgcolor="$title_back_color">
-          <font color="$title_fore_color">
-<b>&nbsp;Hostname&nbsp;</b>
-          </font>
-       </td>
-        <td bgcolor="$title_back_color">
-          <font color="$title_fore_color">
-<b>&nbsp;Graph&nbsp;</b>
-          </font>
-       </td>
-     </tr>
-      <tr>
+  <div class="container">
+  	<div class="row">
+  		<div class="col-sm-12 text-center">
+  			<h2 class="logo">
+  				<a href="$config{logo_top_url}"><img src="$base_url$config{logo_top}" alt="Monitorix"></a><br>
+  				v@{[VERSION]}
+  			</h2>
+      	</div>
+    </div>
+    <div class="row">
+    	<div class="col-sm-10 col-sm-offset-1">
+		  <form class="form-horizontal" action="${base_cgi}monitorix.cgi" method="get">
+		    <div class="form-group">
+    			<label for="mode" class="col-sm-2 control-label">Hostname</label>
+    			<div class="col-sm-10">
 EOF
 
-	print(OUT "        <td bgcolor='$bgcolor'>\n");
-	print(OUT "          <select name='mode' size='1'>\n");
-	print(OUT "            <optgroup label='Local Host'>\n");
-	print(OUT "            <option value='localhost'>localhost</option>\n");
+	print(OUT "          <select class=\"form-control\" name=\"mode\" id=\"mode\">\n");
+	print(OUT "            <optgroup label='Localhost'>\n");
+	print(OUT "              <option value='localhost'>localhost</option>\n");
 	print(OUT "            </optgroup>\n");
 
 	if(scalar(my @remotehost_list = split(',', $config{multihost}->{remotehost_list})) && lc($config{multihost}->{enabled}) eq "y") {
 		print(OUT "            <optgroup label='Multihost'>\n");
-		print(OUT "            <option value='multihost.all'>All</option>\n");
+		print(OUT "              <option value='multihost.all'>All</option>\n");
 		for($n = 0; $n < scalar(@remotehost_list); $n++) {
-			print(OUT "              <option value='multihost.$n'>" . trim($remotehost_list[$n]) . "</option>\n");
+			print(OUT "                <option value='multihost.$n'>" . trim($remotehost_list[$n]) . "</option>\n");
                               }
 		print(OUT "            </optgroup>\n");
 
 		if(lc($config{multihost}->{groups}) eq "y" ) {
 			my @remotegroup_list = split(',', $config{multihost}->{remotegroup_list});
 			print(OUT "            <optgroup label='Multihost-Groups'>\n");
-			print(OUT "            <option value='multihost.group'>All Groups</option>\n");
+			print(OUT "              <option value='multihost.group'>All Groups</option>\n");
 			for($n = 0; $n < scalar(@remotegroup_list); $n++) {
-				print(OUT "              <option value='multihost.group$n'>" . trim($remotegroup_list[$n]) . "</option>\n");
+				print(OUT "                <option value='multihost.group$n'>" . trim($remotegroup_list[$n]) . "</option>\n");
 			}
 			print(OUT "            </optgroup>\n");
 		}
@@ -257,12 +256,12 @@ EOF
 		print(OUT "            </optgroup>\n");
 	}
 	print(OUT "          </select>\n");
-	print(OUT "        </td>\n");
-
-
-
-	print(OUT "        <td bgcolor='$bgcolor'>\n");
-	print(OUT "          <select name='graph' size='1'>\n");
+	print(OUT "        </div>\n");
+	print(OUT "      </div>\n");
+	print(OUT "      <div class=\"form-group\">");
+    print(OUT "        <label for=\"graph\" class=\"col-sm-2 control-label\">Graph</label>\n");
+	print(OUT "        <div class=\"col-sm-10\">");
+	print(OUT "          <select class=\"form-control\" name=\"graph\" id=\"graph\">\n");
 	print(OUT "            <option value='all'>All graphs</option>\n");
 	foreach (split(',', $config{graph_name})) {
 		my $g = trim($_);
@@ -345,57 +344,46 @@ EOF
 		}
 	}
 	print(OUT "          </select>\n");
-	print(OUT "        </td>\n");
-
-
+	print(OUT "        </div>\n");
+	print(OUT "      </div>\n");
 	print(OUT <<EOF);
-     </tr>
-    </table>
-    <p>
-    <table cellspacing="5" cellpadding="0" bgcolor="$table_back_color" border="1">
-     <tr>
-        <td bgcolor="$title_back_color">
-          <input type="radio" checked name="when" value="1day">
-            <font color="$title_fore_color"><b>Daily&nbsp;</b></font>
-        </td>
-        <td bgcolor="$title_back_color">
-          <input type="radio" name="when" value="1week">
-            <font color="$title_fore_color"><b>Weekly&nbsp;</b></font>
-        </td>
-        <td bgcolor="$title_back_color">
-          <input type="radio" name="when" value="1month">
-            <font color="$title_fore_color"><b>Monthly&nbsp;</b></font>
-        </td>
-        <td bgcolor="$title_back_color">
-          <input type="radio" name="when" value="1year">
-            <font color="$title_fore_color"><b>Yearly&nbsp;</b></font>
-        </td>
-      </tr>
+	<div class="form-group">
+	    <div class="col-sm-offset-2 col-sm-10">
+		    <div class="radio">
+		    	<label class="radio-inline">
+		    		<input type="radio" checked name="when" value="1day"> Daily
+		        </label>
+		        <label class="radio-inline">
+		    		<input type="radio" name="when" value="1week"> Weekly
+		        </label>
+		        <label class="radio-inline">
+		          	<input type="radio" name="when" value="1month"> Monthly
+		        </label>
+		        <label class="radio-inline">
+		          	<input type="radio" name="when" value="1year"> Yearly
+		        </label>
 EOF
-
-	if($config{max_historic_years} > 1) {
-		print(OUT "      <tr>\n");
-	}
 	for($n = 2; $n <= $config{max_historic_years}; $n++) {
 		print(OUT <<EOF);
-        <td bgcolor="$title_back_color">
-          <input type="radio" name="when" value="${n}year">
-            <font color="$title_fore_color"><b>$n Years&nbsp;</b></font>
-        </td>
+        		<label class="radio-inline">
+		          	<input type="radio" name="when" value="${n}year">$n Years
+		        </label>
 EOF
 	}
-	if($config{max_historic_years} > 1) {
-		print(OUT "      </tr>\n");
-	}
-
 	print(OUT <<EOF);
-    </table>
-    <p>
-    <input type="hidden" name="color" value="$theme">
-    <input type="submit" value="    Ok    ">
-  </form>
-  </font>
-  </center>
+				    </div>
+			    </div>
+			</div>
+		    <div class="form-group">
+			    <div class="col-sm-offset-2 col-sm-10">
+					<input type="hidden" name="color" value="$theme">
+			      	<button type="submit" class="btn btn-default">OK</button>
+			    </div>
+		  	</div>
+		  </form>
+		 </div>
+		</div>
+	</div>
  </body>
 </html>
 EOF
