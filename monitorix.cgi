@@ -169,20 +169,18 @@ sub multihost {
 sub graph_header {
 	my ($title, $colspan) = @_;
 	print("\n");
-	print("<!-- graph table begins -->\n");
-	print("  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors{graph_bg_color}' border='1'>\n");
-	print("    <tr>\n");
-	print("      <td bgcolor='$colors{title_bg_color}' colspan='$colspan'>\n");
-	print("        <font face='Verdana, sans-serif' color='$colors{title_fg_color}'>\n");
-	print("          <b>&nbsp;&nbsp;$title</b>\n");
-	print("        </font>\n");
-	print("      </td>\n");
-	print("    </tr>\n");
+	print("  <!-- graph table begins -->\n");
+	print("  <div class=\"panel panel-default\">\n");
+  	print("  	<div class=\"panel-heading\">\n");
+    print("  		<h3 class=\"panel-title\">$title</h3>\n");
+  	print("  	</div>\n");
+  	print("  	<div class=\"panel-body\">\n");
 }
 
 sub graph_footer {
-	print("  </table>\n");
-	print("<!-- graph table ends -->\n");
+	print("  	</div>\n");
+	print("  </div>\n");
+	print("  <!-- graph table ends -->\n");
 }
 
 
@@ -420,42 +418,40 @@ if(!$silent) {
 EOF
 	}
 
-	print("<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 3.2 Final//EN'>\n");
+	print("<!DOCTYPE html>\n");
 	print("<html>\n");
 	print("  <head>\n");
+	print("    <meta charset=\"utf-8\">");
+	print("    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">");
+	print("    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
 	print("    <title>$config{title}</title>\n");
-	print("    <link rel='shortcut icon' href='" . $config{url} . "/" . $config{favicon} . "'>\n");
+	print("    <link rel=\"shortcut icon\" href=\"" . $config{url} . "/" . $config{favicon} . "\">\n");
+	print("    <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\">\n");
 	if($config{refresh_rate}) {
-		print("    <meta http-equiv='Refresh' content='" . $config{refresh_rate} . "'>\n");
+		print("    <meta http-equiv=\"Refresh\" content=\"" . $config{refresh_rate} . "\">\n");
 	}
+	print("    <style>\n");
+	print("      body { background-color: $colors{bg_color}; color: $colors{fg_color}; }");
+	print("    </style>\n");
 	print("  </head>\n");
-	print("  <body bgcolor='" . $colors{bg_color} . "' vlink='#888888' link='#888888'>\n");
-	print("  $piwik_code\n");
-	print("  <center>\n");
-	print("  <table cellspacing='5' cellpadding='0' bgcolor='" . $colors{graph_bg_color} . "' border='1'>\n");
-	print("  <tr>\n");
+	print("  <body class=\"$color\">\n");
+	print("    $piwik_code\n");
+	print("    <div class=\"container\">\n");
+	print(" 	<div class=\"row\">\n");
+	print("  		<div class=\"col-sm-12 text-center\">\n");
+	print("  			<h2>\n");
 
 	if(($val ne "all" || $val ne "group") && $mode ne "multihost") {
-		print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
-		print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
-		print("    <font size='5'><b>&nbsp;&nbsp;Host:&nbsp;</b></font>\n");
-		print("  </font>\n");
-		print("  </td>\n");
+		print("Host: ");
 	}
 
 	if($val =~ m/group(\d+)/) {
 		my $gnum = $1;
 		my $gname = (split(',', $config{multihost}->{remotegroup_list}))[$gnum];
 		$gname = trim($gname);
-		print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
-		print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
-		print("    <font size='5'><b>&nbsp;&nbsp;$gname&nbsp;</b></font>\n");
-		print("  </font>\n");
-		print("  </td>\n");
+		print($gname);
 	}
 
-	print("  <td bgcolor='" . $colors{bg_color} . "'>\n");
-	print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "'>\n");
 	if($mode eq "localhost" || $mode eq "traffacct") {
 		$title = $config{hostname};
 	} elsif($mode eq "multihost") {
@@ -473,18 +469,10 @@ EOF
 		}
 	}
 	$title =~ s/ /&nbsp;/g;
-	print("    <font size='5'><b>&nbsp;&nbsp;$title&nbsp;&nbsp;</b></font>\n");
-	print("  </font>\n");
-	print("  </td>\n");
-		print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
-		print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
-		print("    <font size='5'><b>&nbsp;&nbsp;last&nbsp;$tf{twhen}&nbsp;&nbsp;</b></font>\n");
-		print("  </font>\n");
-		print("  </td>\n");
-	print("  </tr>\n");
-	print("  </table>\n");
-	print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "'>\n");
-	print("    <h4><font color='#888888'>" . strftime("%a %b %e %H:%M:%S %Z %Y", localtime) . "</font></h4>\n");
+	print(" <mark>$title</mark> ");
+	print("$tf{twhen}");
+	print("</h2>\n");
+	print("    		<h4>" . strftime("%a %b %e %H:%M:%S %Z %Y", localtime) . "</h4>\n");
 }
 
 
@@ -534,18 +522,19 @@ if($mode eq "localhost") {
 
 if(!$silent) {
 	print("\n");
-	print("  </font>\n");
-	print("  </center>\n");
-	print("<!-- footer begins -->\n");
-	print("  <p>\n");
-	print("  <a href='http://www.monitorix.org'><img src='" . $config{url} . "/" . $config{logo_bottom} . "' border='0'></a>\n");
-	print("  <br>\n");
-	print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "' size='-2'>\n");
-	print("Copyright &copy; 2005-2015 Jordi Sanfeliu\n");
-	print("  </font>\n");
+	print("  		</div>\n");
+	print("  	</div>\n");
+	print("		<!-- footer begins -->\n");
+	print("  	<footer class=\"row\">\n");
+	print("  	  <div class=\"col-sm-12 text-center\">\n");
+	print("  		<a href=\"http://www.monitorix.org\"><img src=\"" . $config{url} . "/" . $config{logo_bottom} . "\" alt=\"Monitorix\"></a>\n");
+	print("  		<p class=\"small\">Copyright &copy; 2005-2016 Jordi Sanfeliu</p>\n");
+	print("  	  </div>\n");
+	print("  	</footer>\n");
+	print("		<!-- footer ends -->\n");
+	print("    </div>\n");
 	print("  </body>\n");
 	print("</html>\n");
-	print("<!-- footer ends -->\n");
 }
 
 0;
