@@ -90,79 +90,42 @@ sub multihost {
 	}
 
 	$multihost->{graphs_per_row} = 1 unless $multihost->{graphs_per_row} > 1;
+	my $col_width = int(12 / $multihost->{graphs_per_row});
 	my $graph = ($cgi->{graph} eq "all" || $cgi->{graph} =~ m/group\[0-9]*/) ? "_system1" : $cgi->{graph};
 
 	if($cgi->{val} eq "all" || $cgi->{val} =~ m/group[0-9]*/) {
-		for($n = 0; $n < scalar(@host); $n += $multihost->{graphs_per_row}) {
-			print "<table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n";
-			print " <tr>\n";
-			for($n2 = 0; $n2 < $multihost->{graphs_per_row}; $n2++) {
-				if($n < scalar(@host)) {
-					print "  <td bgcolor='$colors->{title_bg_color}'>\n";
-					print "   <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
-					print "   <b>&nbsp;&nbsp;" . $host[$n] . "</b>\n";
-					print "   </font>\n";
-					print "  </td>\n";
-				}
-				$n++;
+		print "<div class=\"row\">\n";
+		for($n = 0; $n < scalar(@host); $n++) {
+			print "  <div class=\"col-sm-$col_width\">\n";
+			print "      <div class=\"panel panel-default\">\n";
+		  	print "  	<div class=\"panel-heading\">\n";
+		    	print "  	    <h3 class=\"panel-title\">" . $host[$n] . "</h3>\n";
+		  	print "  	</div>\n";
+		  	print "  	<div class=\"panel-body\">\n";
+			print "	 	    <iframe src=\"" . $url[$n] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetag\" height=\"201\" width=\"397\" frameborder=\"0\" marginwidth=\"0\" marginheight=\"0\" scrolling=\"no\"></iframe>\n";
+			print "		</div>\n";
+			if(lc($multihost->{footer_url}) eq "y") {
+				print "		<div class=\"panel-footer\">\n";
+				print "		    <a href=\"" . $foot_url[$n] . "\">$foot_url[$n]</a>\n";
+				print "		</div>\n";
 			}
-			print " </tr>\n";
-			print " <tr>\n";
-			for($n2 = 0, $n = $n - $multihost->{graphs_per_row}; $n2 < $multihost->{graphs_per_row}; $n2++) {
-				if($n < scalar(@host)) {
-					print "  <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
-					print "   <iframe src='" . $url[$n] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetag' height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
-					print "  </td>\n";
-
-				}
-				$n++;
-			}
-			print " </tr>\n";
-			print " <tr>\n";
-			for($n2 = 0, $n = $n - $multihost->{graphs_per_row}; $n2 < $multihost->{graphs_per_row}; $n2++) {
-				if($n < scalar(@host)) {
-				if(lc($multihost->{footer_url}) eq "y") {
-					print "  <td bgcolor='$colors->{title_bg_color}'>\n";
-					print "   <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
-					print "   <font size='-1'>\n";
-					print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$n] . "' style='color: " . $colors->{title_fg_color} . ";'>$foot_url[$n]</a></b>\n";
-					print "   </font></font>\n";
-					print "  </td>\n";
-				}
-				}
-				$n++;
-			}
-			$n = $n - $multihost->{graphs_per_row};
-			print " </tr>\n";
-			print "</table>\n";
-			print "<br>\n";
+			print "	     </div>\n";
+			print "	 </div>\n";
 		}
 	} else {
-		print "  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n";
-		print "   <tr>\n";
-		print "    <td bgcolor='$colors->{title_bg_color}'>\n";
-		print "    <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
-		print "    <b>&nbsp;&nbsp;" . $host[$cgi->{val}] . "</b>\n";
-		print "    </font>\n";
-		print "    </td>\n";
-		print "   </tr>\n";
-		print "   <tr>\n";
-		print "    <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
-		print "     <iframe src='" . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0] . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetagbig' height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
-		print "    </td>\n";
-		print "   </tr>\n";
-		print "   <tr>\n";
+		print "      <div class=\"panel panel-default\">\n";
+	  	print "  	<div class=\"panel-heading\">\n";
+	    	print "  	    <h3 class=\"panel-title\">" . $host[$cgi->{val}] . "</h3>\n";
+	  	print "  	</div>\n";
+	  	print "  	<div class=\"panel-body\">\n";
+		print "	 	    <iframe src=\"" . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0] . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetagbig\" height=\"249\" width=\"545\" frameborder=\"0\" marginwidth=\"0\" marginheight=\"0\" scrolling=\"no\"></iframe>\n";
+		print "		</div>\n";
 		if(lc($multihost->{footer_url}) eq "y") {
-			print "   <td bgcolor='$colors->{title_bg_color}'>\n";
-			print "    <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
-			print "    <font size='-1'>\n";
-			print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$cgi->{val}] . "' style='color: " . $colors->{title_fg_color} . ";'>$foot_url[$cgi->{val}]</a></b>\n";
-			print "    </font></font>\n";
-			print "   </td>\n";
+			print "		<div class=\"panel-footer\">\n";
+			print "		    <a href=\"" . $foot_url[$cgi->{val}] . "\">$foot_url[$cgi->{val}]</a>\n";
+			print "		</div>\n";
 		}
-		print "   </tr>\n";
-		print "  </table>\n";
-		print "  <br>\n";
+		print "	     </div>\n";
 	}
 }
 
@@ -172,12 +135,14 @@ sub graph_header {
 	print("  <!-- graph table begins -->\n");
 	print("  <div class=\"panel panel-default\">\n");
   	print("  	<div class=\"panel-heading\">\n");
-    print("  		<h3 class=\"panel-title\">$title</h3>\n");
+    	print("  	    <h3 class=\"panel-title\">$title</h3>\n");
   	print("  	</div>\n");
   	print("  	<div class=\"panel-body\">\n");
+  	print("  	    <div class=\"row\">\n");
 }
 
 sub graph_footer {
+	print("  	    </div>\n");
 	print("  	</div>\n");
 	print("  </div>\n");
 	print("  <!-- graph table ends -->\n");
@@ -302,10 +267,10 @@ if(!$config{theme}->{$color}) {
 	$color = "white";
 
 	$config{theme}->{$color}->{main_bg} = "FFFFFF";
-	$config{theme}->{$color}->{main_fg} = "000000";
-	$config{theme}->{$color}->{title_bg} = "777777";
-	$config{theme}->{$color}->{title_fg} = "CCCC00";
-	$config{theme}->{$color}->{graph_bg} = "CCCCCC";
+	$config{theme}->{$color}->{main_fg} = "333333";
+	$config{theme}->{$color}->{title_bg} = "F5F5F5";
+	$config{theme}->{$color}->{title_fg} = "333333";
+	$config{theme}->{$color}->{graph_bg} = "FFFFFF";
 	$config{theme}->{$color}->{gap} = "000000";
 }
 
@@ -431,10 +396,13 @@ EOF
 		print("    <meta http-equiv=\"Refresh\" content=\"" . $config{refresh_rate} . "\">\n");
 	}
 	print("    <style>\n");
-	print("      body { background-color: $colors{bg_color}; color: $colors{fg_color}; }");
+	print("      body, .panel-default { background-color: $colors{bg_color}; color: $colors{fg_color}; }\n");
+	print("      .panel-default > .panel-heading, .panel-footer { background-color: $colors{title_bg_color}; color: $colors{title_fg_color}; }\n");
+	print("      .container { max-width: 910px; }\n");
+	print("      img { max-width: 100%; height: auto; }\n");
 	print("    </style>\n");
 	print("  </head>\n");
-	print("  <body class=\"$color\">\n");
+	print("  <body>\n");
 	print("    $piwik_code\n");
 	print("    <div class=\"container\">\n");
 	print(" 	<div class=\"row\">\n");
@@ -469,10 +437,9 @@ EOF
 		}
 	}
 	$title =~ s/ /&nbsp;/g;
-	print(" <mark>$title</mark> ");
-	print("$tf{twhen}");
-	print("</h2>\n");
-	print("    		<h4>" . strftime("%a %b %e %H:%M:%S %Z %Y", localtime) . "</h4>\n");
+	print("				 <mark>$title</mark> last $tf{twhen}");
+	print("				</h2>\n");
+	print("    			<h4>" . strftime("%a %b %e %H:%M:%S %Z %Y", localtime) . "</h4>\n");
 }
 
 
