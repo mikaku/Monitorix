@@ -354,6 +354,18 @@ EOF
     <p>
     <table cellspacing="5" cellpadding="0" bgcolor="$table_back_color" border="1">
      <tr>
+EOF
+
+	if(lc($config{enable_hourly_view} || "") eq "y" ) {
+		print(OUT <<EOF);
+        <td bgcolor="$title_back_color">
+          <input type="radio" name="when" value="1hour">
+            <font color="$title_fore_color"><b>Hourly&nbsp;</b></font>
+        </td>
+EOF
+	}
+
+	print(OUT <<EOF);
         <td bgcolor="$title_back_color">
           <input type="radio" checked name="when" value="1day">
             <font color="$title_fore_color"><b>Daily&nbsp;</b></font>

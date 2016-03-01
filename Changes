@@ -12,9 +12,11 @@ N.N.N  - DD-MMM-2015
   	(suggested by Pete Perfetti, pete.perfetti AT protonmail.com)
 - Added the new option 'priority' to set the priority value in which Monitorix
   will run.
-- Added the new option "image_format" to specify the file format of each
+- Added the new option 'image_format' to specify the file format of each
   generated graph. [#132]
 - Added name substring match in 'process.pm'. [#136]
+- Added the new option 'enable_hourly_view' which enables the ability to select
+  the hourly view in the main page.
 - Fixed in 'libvirt.pm' limiting to 100 all CPU values greater than 100.
 - Fixed in 'libvirt.pm' to hide empty groups.
   	(thanks to Pavel Bauer, pbauer AT algotech.cz for pointing this out)
