@@ -95,6 +95,7 @@ EOF
 		# generate the graphs and get the html source
 		my $url = $prefix . $base_cgi . "/monitorix.cgi?mode=localhost&graph=_$g&when=$when&color=white";
 		my $ua = LWP::UserAgent->new(timeout => 120, $ssl);
+		$ua->agent($config->{user_agent_id}) if $config->{user_agent_id} || "";
 
 		my $response = $ua->request(HTTP::Request->new('GET', $url));
 

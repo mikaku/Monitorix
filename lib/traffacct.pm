@@ -369,6 +369,7 @@ sub traffacct_sendreports {
 			if lc($config->{accept_selfsigned_certs}) eq "y";
 
 		my $ua = LWP::UserAgent->new(timeout => 30, $ssl);
+		$ua->agent($config->{user_agent_id}) if $config->{user_agent_id} || "";
 		$ua->request(HTTP::Request->new('GET', $url));
 
 		$url = $traffacct->{reports}->{url_prefix} . $base_url . "/" . $imgs_dir . "traffacct" . $n . ".1month.$imgfmt_lc";

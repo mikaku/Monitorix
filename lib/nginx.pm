@@ -158,6 +158,7 @@ sub nginx_update {
 		$url = "http://127.0.0.1:" . $nginx->{port} . "/nginx_status";
 	}
 	my $ua = LWP::UserAgent->new(timeout => 30, $ssl);
+	$ua->agent($config->{user_agent_id}) if $config->{user_agent_id} || "";
 	my $response = $ua->request(HTTP::Request->new('GET', $url));
 	my $rrdata = "N";
 

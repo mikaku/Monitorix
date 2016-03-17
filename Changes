@@ -17,6 +17,9 @@ N.N.N  - DD-MMM-2015
 - Added name substring match in 'process.pm'. [#136]
 - Added the new option 'enable_hourly_view' which enables the ability to select
   the hourly view in the main page.
+- Added the new option 'user_agent_id' which is used to define the string to
+  identify Monitorix agent in the HTTP requests. That value is sent as the
+  "User-Agent" header.
 - Fixed in 'libvirt.pm' limiting to 100 all CPU values greater than 100.
 - Fixed in 'libvirt.pm' to hide empty groups.
   	(thanks to Pavel Bauer, pbauer AT algotech.cz for pointing this out)
