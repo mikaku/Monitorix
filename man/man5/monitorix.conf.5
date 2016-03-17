@@ -200,6 +200,13 @@ No .rrd file will change by selecting this option and the historical data won't 
 Default value: \fIn\fP
 .RE
 .P
+.BI user_agent_id
+.RS
+This option defines the string to be used to identify Monitorix in the HTTP requests. Its value will be sent as the "User-Agent" header.
+.P
+The default value will depend on the current Perl version in your system. An example would be \fIlibwww-perl/5.833\fP.
+.RE
+.P
 .BI base_dir
 .RS
 This is the absolute path to the directory where all the web elements are located:
