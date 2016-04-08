@@ -1,6 +1,7 @@
 N.N.N  - DD-MMM-2015
 ====================
 - Added a complete graph for Linux Traffic Control with the 'tc' command. [#74]
+- Added a complete graph for Chrony using the 'chronyc' command.
 - Added the option 'cmd' in 'libvirt.pm' in order to be able to execute a
   custom command like 'virsh -r -c qemu:///session'.
   	(suggested by Pavel Bauer, pbauer AT algotech.cz)
