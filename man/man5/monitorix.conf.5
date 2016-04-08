@@ -1975,6 +1975,17 @@ extra_args = "-4"
 .P
 Monitorix will add this extra argument to the NTP command which will become as "ntpq -pn -4".
 .RE
+.SS Chrony statistics (chrony.rrd)
+This graph is able to monitor an unlimited number of Chrony daemons.
+.P
+.BI list
+.RS
+This is a comma-separated list of hostnames with the network port running \fIchronyd\fP. The format is <hostname>:<port> being the port number optional.
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIchrony.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fIlocalhost\fP
+.RE
 .SS Fail2ban statistics (fail2ban.rrd)
 This graph is able to monitor an unlimited number of Fail2ban jails.
 .P
