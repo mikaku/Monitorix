@@ -397,15 +397,15 @@ sub chrony_cgi {
 		undef(@tmpz);
 		undef(@CDEF);
 		push(@tmp, "LINE2:loffset#44EEEE:Last offset");
-		push(@tmp, "GPRINT:loffset:LAST:Cur\\: %9.8lf");
-		push(@tmp, "GPRINT:loffset:AVERAGE:Avg\\: %9.8lf");
-		push(@tmp, "GPRINT:loffset:MIN:Min\\: %9.8lf");
-		push(@tmp, "GPRINT:loffset:MAX:Max\\: %9.8lf\\n");
+		push(@tmp, "GPRINT:loffset:LAST:Cur\\:% 9.8lf");
+		push(@tmp, "GPRINT:loffset:AVERAGE:Avg\\:% 9.8lf");
+		push(@tmp, "GPRINT:loffset:MIN:Min\\:% 9.8lf");
+		push(@tmp, "GPRINT:loffset:MAX:Max\\:% 9.8lf\\n");
 		push(@tmp, "LINE2:rmsoffs#44EE44:RMS offset");
-		push(@tmp, "GPRINT:rmsoffs:LAST: Cur\\: %9.8lf");
-		push(@tmp, "GPRINT:rmsoffs:AVERAGE: Avg\\: %9.8lf");
-		push(@tmp, "GPRINT:rmsoffs:MIN: Min\\: %9.8lf");
-		push(@tmp, "GPRINT:rmsoffs:MAX: Max\\: %9.8lf\\n");
+		push(@tmp, "GPRINT:rmsoffs:LAST: Cur\\:% 9.8lf");
+		push(@tmp, "GPRINT:rmsoffs:AVERAGE:Avg\\:% 9.8lf");
+		push(@tmp, "GPRINT:rmsoffs:MIN:Min\\:% 9.8lf");
+		push(@tmp, "GPRINT:rmsoffs:MAX:Max\\:% 9.8lf\\n");
 		push(@tmpz, "LINE2:loffset#44EEEE:Last offset");
 		push(@tmpz, "LINE2:rmsoffs#44EE44:RMS offset");
 		if(lc($config->{show_gaps}) eq "y") {
@@ -488,12 +488,12 @@ sub chrony_cgi {
 		undef(@tmpz);
 		undef(@CDEF);
 		push(@tmp, "LINE2:rootdel#4444EE:Root delay");
-		push(@tmp, "GPRINT:rootdel:LAST:      Cur\\: %8.6lf");
+		push(@tmp, "GPRINT:rootdel:LAST:     Cur\\: %8.6lf");
 		push(@tmp, "GPRINT:rootdel:AVERAGE:  Avg\\: %8.6lf");
 		push(@tmp, "GPRINT:rootdel:MIN:  Min\\: %8.6lf");
 		push(@tmp, "GPRINT:rootdel:MAX:  Max\\: %8.6lf\\n");
 		push(@tmp, "LINE2:rootdis#44EEEE:Root dispersion");
-		push(@tmp, "GPRINT:rootdis:LAST: Cur\\: %8.6lf");
+		push(@tmp, "GPRINT:rootdis:LAST:Cur\\: %8.6lf");
 		push(@tmp, "GPRINT:rootdis:AVERAGE:  Avg\\: %8.6lf");
 		push(@tmp, "GPRINT:rootdis:MIN:  Min\\: %8.6lf");
 		push(@tmp, "GPRINT:rootdis:MAX:  Max\\: %8.6lf\\n");
