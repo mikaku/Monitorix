@@ -389,6 +389,10 @@ EOF
 		print(OUT "      <tr>\n");
 	}
 	for($n = 2; $n <= $config{max_historic_years}; $n++) {
+		if($n > 2 && (($n - 2) % 4) == 0) {
+			print(OUT "      </tr>\n");
+			print(OUT "      <tr>\n");
+		}
 		print(OUT <<EOF);
         <td bgcolor="$title_back_color">
           <input type="radio" name="when" value="${n}year">
@@ -639,10 +643,6 @@ if(!$config{global_zoom}) {
 if(!$config{max_historic_years}) {
 	logger("WARNING: the 'max_historic_years' option doesn't exist. Please consider upgrading your configuration file.");
 	$config{max_historic_years} = 1;
-}
-if($config{max_historic_years} > 5) {
-	logger("WARNING: the 'max_historic_years' option exceeds the maximum years permitted (5).");
-	exit(0);
 }
 if(!$config{image_format}) {
 	logger("WARNING: the 'image_format' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
