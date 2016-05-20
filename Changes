@@ -23,6 +23,8 @@ N.N.N  - DD-MMM-2015
   "User-Agent" header.
 	(suggested by Dan Criel, dancriel AT gmail.com)
 - Removed 'max_historic_years' limitation of 5 years. [#145]
+- No longer needed to have also reports enabled in 'traffacct.pm' to generate
+  daily traffic counters.
 - Fixed in 'libvirt.pm' limiting to 100 all CPU values greater than 100.
 - Fixed in 'libvirt.pm' to hide empty groups.
   	(thanks to Pavel Bauer, pbauer AT algotech.cz for pointing this out)
