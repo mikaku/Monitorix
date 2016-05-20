@@ -683,7 +683,7 @@ while(1) {
 		}
 
 		# TRAFFACCT graph daily reports
-		if(lc($config{traffacct}->{enabled}) eq "y" && lc($config{traffacct}->{reports}->{enabled}) eq "y") {
+		if(lc($config{traffacct}->{enabled}) eq "y"
 			my $d = "traffacct";
 			undef($d) if(!grep {trim($_) eq $d} (@{$config{debug}}));
 
@@ -697,10 +697,12 @@ while(1) {
 				}
 
 				# send reports every first day of a month
-				if($mday == 1) {
-					eval { traffacct::traffacct_sendreports(\%config, $d); };
-					if($@) {
-						logger("traffacct::traffacct_sendreports(): $@");
+				if(lc($config{traffacct}->{reports}->{enabled}) eq "y") {
+					if($mday == 1) {
+						eval { traffacct::traffacct_sendreports(\%config, $d); };
+						if($@) {
+							logger("traffacct::traffacct_sendreports(): $@");
+						}
 					}
 				}
 			}
