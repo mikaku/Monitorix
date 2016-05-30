@@ -59,6 +59,7 @@ sub disk_init {
 				logger("$myself: ERROR: invalid or inexistent device name '$d'.");
 				if(lc($disk->{accept_invalid_disk}) ne "y") {
 					logger("$myself: 'accept_invalid_disk' option is not set.");
+					logger("$myself: WARNING: initialization aborted.");
 					return;
 				}
 			}
