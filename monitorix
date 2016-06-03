@@ -683,7 +683,7 @@ while(1) {
 		}
 
 		# TRAFFACCT graph daily reports
-		if(lc($config{traffacct}->{enabled}) eq "y"
+		if(lc($config{traffacct}->{enabled}) eq "y") {
 			my $d = "traffacct";
 			undef($d) if(!grep {trim($_) eq $d} (@{$config{debug}}));
 
