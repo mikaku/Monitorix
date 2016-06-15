@@ -252,6 +252,11 @@ sub libvirt_update {
 						}
 						close(IN);
 					}
+					if(!$vnet) {
+						logger("$myself: invalid MAC address '$vn' in '$vm'.");
+						next;
+					}
+
 					if(open(IN, "$libvirt->{cmd} domifstat $vm $vnet |")) {
 						my $r = 0;
 						my $w = 0;
