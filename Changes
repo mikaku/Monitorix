@@ -35,6 +35,7 @@ N.N.N  - DD-MMM-2015
 - Fixed to show the memory usage correctly in 'phpapc.pm'.
 - Fixed in 'zfs.pm' to convert FRAG to a numeric value if it's not used in the
   pool. [#138]
+- Fixed a possible uninitialized value in 'HTTPServer.pm' at line 37.
 
 
 3.8.1  - 13-Nov-2015
