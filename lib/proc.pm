@@ -290,7 +290,7 @@ sub proc_cgi {
 	$title = !$silent ? $title : "";
 
 	if($config->{os} eq "Linux") {
-		$ncpu = `grep -e '^processor[[:space:]]*: [0-9]*' /proc/cpuinfo | tail -1 | awk '{ print \$3 }'`
+		$ncpu = `grep -e '^processor[[:space:]]*: [0-9]*' /proc/cpuinfo | tail -1 | awk '{ print \$3 }'`;
 		chomp($ncpu);
 		$ncpu++;
 	} elsif($config->{os} eq "FreeBSD") {
