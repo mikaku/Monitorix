@@ -34,7 +34,7 @@ sub logger {
 
 	if(open(OUT, ">> $main::config{httpd_builtin}->{log_file}")) {
 		if($type eq "OK") {
-			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] \"$ENV{REQUEST_METHOD} $url - $ENV{HTTP_USER_AGENT}\"\n";
+			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] \"$ENV{REQUEST_METHOD} $url - " . ($ENV{HTTP_USER_AGENT} || "") . "\"\n";
 		} elsif($type eq "NOTEXIST") {
 			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] File does not exist: $url\n";
 		} elsif($type eq "AUTHERR") {

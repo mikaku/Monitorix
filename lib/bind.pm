@@ -303,6 +303,7 @@ sub bind_update {
 			if lc($config->{accept_selfsigned_certs}) eq "y";
 
 		my $ua = LWP::UserAgent->new(timeout => 30, $ssl);
+		$ua->agent($config->{user_agent_id}) if $config->{user_agent_id} || "";
 		my $response = $ua->request(HTTP::Request->new('GET', $l));
 		my $data = XMLin($response->content);
 		my $value;

@@ -124,7 +124,7 @@ This option defines the maximum number of years of historical data in all graphs
 .P
 WARNING: Every time this value is extended Monitorix will resize every \fI.rrd\fP file accordingly, removing all historical data.
 .P
-The maximum allowed is 5.
+There is no longer any upper limit for this value.
 .P
 Default value: \fI1\fP
 .RE
@@ -189,6 +189,22 @@ This option forces \fImonitorix.cgi\fP to bypass the URL building. This is speci
 An example would be: \fIhttp://myexternalwebsite.com\fP
 .P
 Default value:
+.RE
+.P
+.BI enable_hourly_view
+.RS
+This option enables or disables the ability to select the hourly view in the main page.
+.P
+No .rrd file will change by selecting this option and the historical data won't be affected.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI user_agent_id
+.RS
+This option defines the string to be used to identify Monitorix in the HTTP requests. Its value will be sent as the "User-Agent" header.
+.P
+The default value will depend on the current Perl version in your system. An example would be \fIlibwww-perl/5.833\fP.
 .RE
 .P
 .BI base_dir
@@ -1656,7 +1672,7 @@ Default value: \fIlocalhost\fP
 .RS
 This is the option where each entry specified in the list is described. Each definition consists of three parameters separated by comma: the port, the username and the password.
 .P
-An example would be:
+An example using the \fIhost\fP type would be:
 .RS
 <desc>
 .br
@@ -1664,6 +1680,8 @@ An example would be:
 .br
 </desc>
 .RE
+.P
+When using the \fIsocket\fP type the network port is, of course, irrelevant but its field is still mandatory. This means that you must respect the three comma-separated values.
 .P
 Some of the values shown in the graphs are the result of a calculation of two values from either \fISHOW [GLOBAL] STATUS\fP or \fISHOW VARIABLES\fP. The following is an explanation of them:
 .P
@@ -1958,6 +1976,17 @@ extra_args = "-4"
 .RE
 .P
 Monitorix will add this extra argument to the NTP command which will become as "ntpq -pn -4".
+.RE
+.SS Chrony statistics (chrony.rrd)
+This graph is able to monitor an unlimited number of Chrony daemons.
+.P
+.BI list
+.RS
+This is a comma-separated list of hostnames with the network port running \fIchronyd\fP. The format is <hostname>:<port> being the port number optional.
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIchrony.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fIlocalhost\fP
 .RE
 .SS Fail2ban statistics (fail2ban.rrd)
 This graph is able to monitor an unlimited number of Fail2ban jails.

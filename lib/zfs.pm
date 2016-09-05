@@ -270,7 +270,7 @@ sub zfs_update {
 				$fra = 0;
 			}
 			$cap =~ s/%//;
-			$fra =~ s/%//;
+			$fra =~ s/[%-]//g; $fra = $fra || 0;
 		}
 
 		$rrdata .= ":$free:$udata:$usnap:$cap:$fra:0:0:0:0:0";
