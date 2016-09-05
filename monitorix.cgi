@@ -396,10 +396,11 @@ EOF
 		print("    <meta http-equiv=\"Refresh\" content=\"" . $config{refresh_rate} . "\">\n");
 	}
 	print("    <style>\n");
-	print("      body, .panel-default { background-color: $colors{bg_color}; color: $colors{fg_color}; }\n");
-	print("      .panel-default > .panel-heading, .panel-footer { background-color: $colors{title_bg_color}; color: $colors{title_fg_color}; }\n");
+	print("      body, .panel-default { background-color: #$colors{bg_color}; color: #$colors{fg_color}; }\n");
+	print("      .panel-default > .panel-heading, .panel-footer { background-color: #$colors{title_bg_color}; color: #$colors{title_fg_color}; }\n");
 	print("      .container { max-width: 910px; }\n");
-	print("      img { max-width: 100%; height: auto; }\n");
+        print("      .panel .row { margin: 0; }\n");
+	print("      .panel img { float: left; max-width: 100%; height: auto; }\n");
 	print("    </style>\n");
 	print("  </head>\n");
 	print("  <body>\n");
