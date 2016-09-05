@@ -1672,7 +1672,7 @@ Default value: \fIlocalhost\fP
 .RS
 This is the option where each entry specified in the list is described. Each definition consists of three parameters separated by comma: the port, the username and the password.
 .P
-An example would be:
+An example using the \fIhost\fP type would be:
 .RS
 <desc>
 .br
@@ -1680,6 +1680,8 @@ An example would be:
 .br
 </desc>
 .RE
+.P
+When using the \fIsocket\fP type the network port is, of course, irrelevant but its field is still mandatory. This means that you must respect the three comma-separated values.
 .P
 Some of the values shown in the graphs are the result of a calculation of two values from either \fISHOW [GLOBAL] STATUS\fP or \fISHOW VARIABLES\fP. The following is an explanation of them:
 .P
