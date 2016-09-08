@@ -203,6 +203,7 @@ EOF
    	text-align: right;
    	margin-bottom: 30px;
    }
+  </style>
  </head>
  <body class="$theme">
   $piwik_code
