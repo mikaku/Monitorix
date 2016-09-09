@@ -30,6 +30,8 @@ N.N.N  - DD-MMM-2015
 - Added a message in 'libvirt.pm' if the MAC address of a VM is not found.
 - Added Slovak translation to monthly reports. [#157]
 - Improved a bit the documentation of socked type in MySQL. [#47]
+- Included the Status Word 'o' when selecting the peer in 'ntp.pm'.
+	(suggested by Jeroen Kik, monitorix AT steelyard.nl)
 - Fixed in 'libvirt.pm' limiting to 100 all CPU values greater than 100.
 - Fixed in 'libvirt.pm' to hide empty groups.
   	(thanks to Pavel Bauer, pbauer AT algotech.cz for pointing this out)

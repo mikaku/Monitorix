@@ -151,12 +151,13 @@ sub ntp_update {
 	my $e = 0;
 	foreach my $h (split(',', $ntp->{list})) {
 		$h = trim($h);
-		open(IN, "ntpq -pn $args $h |");
+		open(IN, "ntpqq -pn $args $h |");
 		@data = <IN>;
 		close(IN);
 		$cod = $str = $del = $off = $jit = 0;
 		foreach(@data) {
-			if(/^\*/) {
+			# select the first peer with Status Word as '*' or 'o'
+			if(/^[\*o]/) {
 				(undef, $cod, $str, undef, undef, undef, undef, $del, $off, $jit) = split(' ', $_);
 				$cod =~ s/\.//g;
 				chomp($jit);
