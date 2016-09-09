@@ -151,7 +151,7 @@ sub ntp_update {
 	my $e = 0;
 	foreach my $h (split(',', $ntp->{list})) {
 		$h = trim($h);
-		open(IN, "ntpqq -pn $args $h |");
+		open(IN, "ntpq -pn $args $h |");
 		@data = <IN>;
 		close(IN);
 		$cod = $str = $del = $off = $jit = 0;
