@@ -154,6 +154,8 @@ sub ntp_update {
 		open(IN, "ntpq -pn $args $h |");
 		@data = <IN>;
 		close(IN);
+		# sorts @data in reverse order to let 'o' take precedence over '*'.
+		@data = sort {$b cmp $a} @data;
 		$cod = $str = $del = $off = $jit = 0;
 		foreach(@data) {
 			# select the first peer with Status Word as '*' or 'o'
