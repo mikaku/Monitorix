@@ -32,6 +32,7 @@ N.N.N  - DD-MMM-2015
 - Improved a bit the documentation of socked type in MySQL. [#47]
 - Included the Status Word 'o' when selecting the peer in 'ntp.pm'.
 	(suggested by Jeroen Kik, monitorix AT steelyard.nl)
+- Added to show real names in 'lmsens.pm'. [#161]
 - Fixed in 'libvirt.pm' limiting to 100 all CPU values greater than 100.
 - Fixed in 'libvirt.pm' to hide empty groups.
   	(thanks to Pavel Bauer, pbauer AT algotech.cz for pointing this out)

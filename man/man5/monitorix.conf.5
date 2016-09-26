@@ -766,6 +766,24 @@ Up to 12 \fIvolt\fP keys (from volt0 to volt11).
 Up to 9 \fIgpu\fP keys (from gpu0 to gpu8).
 .RE
 .RE
+.P
+.BI desc
+.RS
+This list complements the \fBlist\fP option only for the graphs: MB and CPU temperatures, Fans speeds and GPU temperatures. It basically allows you to change the name that will appear in the graph, hiding the real name of the sensor. If no association is defined, then Monitorix will display the name of the key (left side) in the \fBdesc\fP option (in uppercase).
+.P
+.RS
+<desc>
+.br
+	mb0 = M/B
+.br
+	fan0 = CPUFan
+.br
+	gpu0 = ATI
+.br
+</desc>
+.RE
+.P
+Please note that in the default graph all names are limited to 5 characters, in order to fit up to 9 different values. In the zoomed graphs the limit is 8 characters.
 .SS NVIDIA temperatures and usage (nvidia.rrd)
 This graph requires to have installed the official NVIDIA drivers.
 .P
