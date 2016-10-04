@@ -134,8 +134,6 @@ sub du_update {
 	my $du = $config->{du};
 	my $args = $du->{extra_args} || "";
 
-	my $seek_pos;
-	my $logsize;
 	my @dirs;
 
 	my $n;
