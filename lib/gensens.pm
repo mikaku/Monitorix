@@ -143,12 +143,14 @@ sub gensens_update {
 			if($gensens->{desc}->{$str}) {
 				if(open(IN, $gensens->{desc}->{$str})) {
 					my $unit;
+					my $c;
 
 					$val = <IN>;
 					$val = trim($val);
 					$unit = $gensens->{unit}->{$str} || 0;
-					$val /= $unit if $unit > 1;
-					$val *= $unit if $unit > 0 && $unit < 1;
+					$c = () = $unit =~ /0/g;
+					$val /= 10**$c if $unit > 1;
+					$val *= 10**$c if $unit > 0 && $unit < 1;
 					close(IN);
 				} else {
 					logger("$myself: ERROR: unable to open '$gensens->{desc}->{$str}'.");
