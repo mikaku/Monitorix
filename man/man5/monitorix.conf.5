@@ -1,9 +1,9 @@
 .\" Monitorix manpage.
-.\" Copyright (C) 2005-2015 by Jordi Sanfeliu <jordi@fibranet.cat>
+.\" Copyright (C) 2005-2016 by Jordi Sanfeliu <jordi@fibranet.cat>
 .\"
 .\" This is the man page for the monitorix.conf configuration file.
 .\"
-.TH monitorix.conf 5 "Sep 2015" 3.8.0 "Monitorix configuration file"
+.TH monitorix.conf 5 "Oct 2016" 3.9.0 "Monitorix configuration file"
 .SH NAME
 monitorix.conf \- Configuration file for Monitorix.
 .SH DESCRIPTION
@@ -783,7 +783,86 @@ This list complements the \fBlist\fP option only for the graphs: MB and CPU temp
 </desc>
 .RE
 .P
-Please note that in the default graph all names are limited to 5 characters, in order to fit up to 9 different values. In the zoomed graphs the limit is 8 characters.
+Please note that in the default graph all names are limited to 5 characters in order to fit up to 9 different values. In the zoomed graphs the limit is 8 characters.
+.SS Generic sensors statistics (gensens.rrd)
+This graph is able to monitor up to 9 temperatures and CPU frequencies which, depending of your machine, should appear in the \fI/sys/devices\fP directory.
+.P
+.BI list
+.RS
+This is a fixed list that can only hold two keys (0 and 1). Each key though can hold up to 9 different entries separated by comma which corresponds to the names of the sensors present in your computer. The key 0 is only for temperature sensors and the key 1 is for CPU frequencies. All this is hard-coded and a bit rigid currently but it might change in the future.
+.P
+An example would be:
+.P
+.RS
+<list>
+.br
+	0 = temp0, temp1
+.br
+	1 = cpu0, cpu1, cpu2, cpu3
+.br
+</list>
+.RE
+.RE
+.BI desc
+.RS
+In this option you must associate the complete pathname of the file from where to get the value of each entry defined in the \fIBlist\fP. Following the settings in the example above:
+.P
+.RS
+<desc>
+.br
+	temp0 = /sys/devices/virtual/thermal/thermal_zone0/temp
+.br
+	temp1 = /sys/devices/virtual/thermal/thermal_zone1/temp
+.br
+	cpu0 = /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+.br
+	cpu1 = /sys/devices/system/cpu/cpu1/cpufreq/scaling_cur_freq
+.br
+	cpu2 = /sys/devices/system/cpu/cpu2/cpufreq/scaling_cur_freq
+.br
+	cpu3 = /sys/devices/system/cpu/cpu3/cpufreq/scaling_cur_freq
+.br
+</desc>
+.RE
+.RE
+.BI unit
+.RS
+With this option you can define the order of magnitude associated to a specific value. This is normally used only in temperatures because these sensors tend to give the value in 1000ths of degrees Celsius. Therefore you can define something like this:
+.P
+.RS
+<unit>
+.br
+	temp0 = 1000
+.br
+	temp1 = 1000
+.br
+</unit>
+.RE
+.RE
+.BI map
+.RS
+With this option you can optionally rename any of the sensor names defined in the \fBlist\fP option. Following the above example:
+.P
+.RS
+<map>
+.br
+	temp0 = Temperature Zone 0
+.br
+	temp1 = Temperature Zone 1
+.br
+	cpu0 = CPU0 frequency
+.br
+	cpu1 = CPU1 frequency
+.br
+	cpu2 = CPU2 frequency
+.br
+	cpu3 = CPU3 frequency
+.br
+</map>
+.RE
+.P
+All the names are limited to 20 characters.
+.RE
 .SS NVIDIA temperatures and usage (nvidia.rrd)
 This graph requires to have installed the official NVIDIA drivers.
 .P
@@ -2500,7 +2579,7 @@ This is where you can enter the upper-limit and lower-limit values (separated by
 .SH AUTHOR
 Monitorix is written by Jordi Sanfeliu <jordi@fibranet.cat>
 .SH COPYRIGHT
-Copyright \(co 2005-2015 Jordi Sanfeliu
+Copyright \(co 2005-2016 Jordi Sanfeliu
 .br
 Licensed under the GNU General Public License version 2 (GPLv2).
 .SH SEE ALSO
