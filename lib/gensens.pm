@@ -450,9 +450,9 @@ sub gensens_cgi {
 			$str = $gensens->{map}->{$str} ? $gensens->{map}->{$str} : $str;
 			$str = sprintf("%-20s", substr($str, 0, 20));
 			push(@tmp, "LINE2:gsen" . $n . $LC[$n] . ":$str");
-			push(@tmp, "GPRINT:gsen" . $n . ":LAST: Cur\\:%4.0lf%s");
-			push(@tmp, "GPRINT:gsen" . $n . ":MIN:  Min\\:%4.0lf%s");
-			push(@tmp, "GPRINT:gsen" . $n . ":MAX:  Max\\:%4.0lf%s\\n");
+			push(@tmp, "GPRINT:gsen" . $n . ":LAST: Cur\\:%3.0lf%shz");
+			push(@tmp, "GPRINT:gsen" . $n . ":MIN: Min\\:%3.0lf%shz");
+			push(@tmp, "GPRINT:gsen" . $n . ":MAX: Max\\:%3.0lf%shz\\n");
 			push(@tmpz, "LINE2:gsen" . $n . $LC[$n] . ":$str");
 			next;
 		}
