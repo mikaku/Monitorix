@@ -74,6 +74,7 @@ install-bin:
 	$(INSTALL_DATA) lib/fail2ban.pm "$(DESTDIR)$(LIBDIR)/fail2ban.pm"
 	$(INSTALL_DATA) lib/fs.pm "$(DESTDIR)$(LIBDIR)/fs.pm"
 	$(INSTALL_DATA) lib/ftp.pm "$(DESTDIR)$(LIBDIR)/ftp.pm"
+	$(INSTALL_DATA) lib/gensens.pm "$(DESTDIR)$(LIBDIR)/gensens.pm"
 	$(INSTALL_DATA) lib/hptemp.pm "$(DESTDIR)$(LIBDIR)/hptemp.pm"
 	$(INSTALL_DATA) lib/HTTPServer.pm "$(DESTDIR)$(LIBDIR)/HTTPServer.pm"
 	$(INSTALL_DATA) lib/icecast.pm "$(DESTDIR)$(LIBDIR)/icecast.pm"
