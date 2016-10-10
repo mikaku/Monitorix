@@ -43,6 +43,8 @@ N.N.N  - DD-MMM-2015
   pool. [#138]
 - Fixed a possible uninitialized value in 'HTTPServer.pm' at line 37.
 - Fixed wrong processor number value parsed in 'proc.pm'. [#155]
+- Fixed to convert the BIND's output when there is only one hit in 'incoming
+  queries' in 'bind.pm'.
 
 
 3.8.1  - 13-Nov-2015
