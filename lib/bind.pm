@@ -338,6 +338,17 @@ sub bind_update {
 
 		if($major eq "2") {
 			$value = $data->{bind}->{statistics}->{server}->{'queries-in'}->{rdtype};
+
+			# coverts BIND's output when there is only one hit
+			if($value->{name}) {
+				my $name = $value->{name};
+				my $counter = $value->{counter};
+
+				delete($value->{name});
+				delete($value->{counter});
+				$value->{$name}->{'counter'} = $counter;
+			}
+
 			foreach(keys %{$value}) {
 				$str = $n . "inq_$_";
 				$inq{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
