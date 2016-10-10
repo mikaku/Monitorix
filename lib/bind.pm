@@ -339,7 +339,7 @@ sub bind_update {
 		if($major eq "2") {
 			$value = $data->{bind}->{statistics}->{server}->{'queries-in'}->{rdtype};
 
-			# coverts BIND's output when there is only one hit
+			# converts BIND's output when there is only one hit
 			if($value->{name}) {
 				my $name = $value->{name};
 				my $counter = $value->{counter};
