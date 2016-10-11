@@ -332,7 +332,7 @@ $colors{graph_bg_color} = $config{theme}->{$color}->{graph_bg};
 $colors{gap} = $config{theme}->{$color}->{gap};
 
 
-($tf{twhen}) = ($when =~ m/^\d+(hour|day|week|month|year)$/);
+($tf{twhen}) = ($when =~ m/^\d+(minute|hour|day|week|month|year)$/);
 ($tf{nwhen} = $when) =~ s/$tf{twhen}// unless !$tf{twhen};
 $tf{nwhen} = 1 unless $tf{nwhen};
 $tf{twhen} = "day" unless $tf{twhen};
