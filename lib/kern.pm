@@ -327,12 +327,12 @@ sub kern_update {
 	$iow = 0 unless $iow;
 	$irq = 0 unless $irq;
 	$sirq = 0 unless $sirq;
-	$steal = 0 unless $sirq;
+	$steal = 0 unless $steal;
 	$guest = 0 unless $guest;
 	$lastiow = 0 unless $lastiow;
 	$lastirq = 0 unless $lastirq;
 	$lastsirq = 0 unless $lastsirq;
-	$laststeal = 0 unless $lastsirq;
+	$laststeal = 0 unless $laststeal;
 	$lastguest = 0 unless $lastguest;
 
 	if($user >= $lastuser && $nice >= $lastnice && $sys >= $lastsys && $idle >= $lastidle && $iow >= $lastiow && $irq >= $lastirq && $sirq >= $lastsirq && $steal >= $laststeal && $guest >= $lastguest) {
