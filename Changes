@@ -1,4 +1,4 @@
-N.N.N  - DD-MMM-2015
+3.9.0  - DD-Oct-2015
 ====================
 - Added a complete graph for Linux Traffic Control with the 'tc' command. [#74]
 - Added a complete graph for Chrony using the 'chronyc' command.
@@ -45,6 +45,8 @@ N.N.N  - DD-MMM-2015
 - Fixed wrong processor number value parsed in 'proc.pm'. [#155]
 - Fixed to convert the BIND's output when there is only one hit in 'incoming
   queries' in 'bind.pm'.
+- Fixed a long-standing pair of typos in 'kern.pm'.
+	(thanks to Tom Canty, from ServerCare, Inc. for pointing this out)
 
 
 3.8.1  - 13-Nov-2015
