@@ -1,4 +1,4 @@
-3.9.0  - DD-Oct-2015
+3.9.0  - 14-Oct-2016
 ====================
 - Added a complete graph for Linux Traffic Control with the 'tc' command. [#74]
 - Added a complete graph for Chrony using the 'chronyc' command.
