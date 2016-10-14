@@ -600,7 +600,6 @@ sub mail_update {
 	logger("$myself: $rrdata") if $debug;
 	my $err = RRDs::error;
 	logger("ERROR: while updating $rrd: $err") if $err;
-	print "rbl = $rbl\n";
 }
 
 sub mail_cgi {
