@@ -202,8 +202,8 @@ sub gensens_cgi {
 	my $str;
 	my $err;
 	my @LC = (
-		"#4444EE",
 		"#EEEE44",
+		"#4444EE",
 		"#44EEEE",
 		"#EE44EE",
 		"#888888",
