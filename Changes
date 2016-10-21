@@ -1,3 +1,8 @@
+3.N.N  - DD-MMM-YYYY
+====================
+- Fixed an undeclared global symbol "$imgfmt_lc" in 'traffacct.pm'.
+
+
 3.9.0  - 14-Oct-2016
 ====================
 - Added a complete graph for Linux Traffic Control with the 'tc' command. [#74]

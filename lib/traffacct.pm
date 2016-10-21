@@ -316,6 +316,7 @@ sub traffacct_sendreports {
 	my $myself = (caller(0))[3];
 	my ($config, $debug) = @_;
 	my $traffacct = $config->{traffacct};
+	my $imgfmt_lc = lc($config->{image_format});
 
 	my (undef, undef, undef, undef, $prev_month, $prev_year) = localtime(time - 3600);
 	my $n;
