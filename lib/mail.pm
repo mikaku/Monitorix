@@ -1360,9 +1360,9 @@ sub mail_cgi {
 	push(@tmp, "GPRINT:greylisted:LAST:           Current\\: %5.0lf\\n");
 	push(@tmp, "AREA:whitelisted#44EEEE:Whitelisted");
 	push(@tmp, "GPRINT:whitelisted:LAST:          Current\\: %5.0lf\\n");
-	push(@tmp, "LINE1:greylisted#0000EE");
-	push(@tmp, "LINE1:whitelisted#00EEEE");
-	push(@tmp, "LINE1:records#EE0000:Records");
+	push(@tmp, "LINE2:greylisted#0000EE");
+	push(@tmp, "LINE2:whitelisted#00EEEE");
+	push(@tmp, "LINE2:records#EE0000:Records");
 	push(@tmp, "GPRINT:records:LAST:              Current\\: %5.0lf\\n");
 	push(@tmpz, "AREA:greylisted#4444EE:Greylisted");
 	push(@tmpz, "AREA:whitelisted#44EEEE:Whitelisted");

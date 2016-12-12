@@ -1,5 +1,6 @@
 3.N.N  - DD-MMM-YYYY
 ====================
+- Changed to be more thickness the lines of Greylisting graph in 'mail.pm'.
 - Fixed an undeclared global symbol "$imgfmt_lc" in 'traffacct.pm'.
 
 
