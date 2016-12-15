@@ -88,8 +88,8 @@ sub system_init {
 				"DS:system_val01:GAUGE:120:0:U",
 				"DS:system_val02:GAUGE:120:0:U",
 				"DS:system_val03:GAUGE:120:0:U",
-				"DS:system_val04:GAUGE:120:0:U",
-				"DS:system_val05:GAUGE:120:0:U",
+				"DS:system_entrop:GAUGE:120:0:U",
+				"DS:system_uptime:GAUGE:120:0:U",
 				"RRA:AVERAGE:0.5:1:1440",
 				"RRA:AVERAGE:0.5:30:336",
 				"RRA:AVERAGE:0.5:60:744",
@@ -128,6 +128,12 @@ sub system_init {
 		}
 	}
 
+	# Since 3.10.0 two new values were included (entropy and uptime)
+	RRDs::tune($rrd,
+		"--data-source-rename=system_val04:system_entrop",
+		"--data-source-rename=system_val05:system_uptime",
+	);
+
 	$config->{system_hist_alert1} = 0;
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
@@ -158,26 +164,48 @@ sub system_update {
 	my $val01 = 0;
 	my $val02 = 0;
 	my $val03 = 0;
-	my $val04 = 0;
-	my $val05 = 0;
+	my $entropy = 0;
+	my $uptime = 0;
 
 	my $rrdata = "N";
 
-	$npwio = $npzom = $npstp = $npswp = 0;
-
 	if($config->{os} eq "Linux") {
+		my $dir;
+
 		open(IN, "/proc/loadavg");
 		while(<IN>) {
-			if(/^(\d+\.\d+) (\d+\.\d+) (\d+\.\d+) (\d+)\/(\d+)/) {
+			if(/^(\d+\.\d+) (\d+\.\d+) (\d+\.\d+) /) {
 				$load1 = $1;
 				$load5 = $2;
 				$load15 = $3;
-				$nprun = $4;
-				$npslp = $5;
 			}
 		}
 		close(IN);
-		$nproc = $npslp + $nprun;
+
+		foreach $dir (</proc/[0-9]*>) {
+			if(-d $dir) {
+				my $status = $dir . "/status";
+				if(-f $status) {
+					open(IN, $status);
+						while(<IN>) {
+							if(/^State:/) {
+								my @tmp = split(' ', $_);
+								my (undef, $state) = @tmp;
+								$nprun++ if $state eq "R";
+								$npslp++ if $state eq "S";
+								$npwio++ if $state eq "D";
+								$npzom++ if $state eq "Z";
+								$npstp++ if $state eq "T";
+								$npswp++ if $state eq "W";
+								last;
+							}
+						}
+					close(IN);
+				}
+			}
+		}
+
+		$nproc = $npslp + $nprun + $npwio + $npzom + $npstp + $npswp;
 
 		open(IN, "/proc/meminfo");
 		while(<IN>) {
@@ -200,6 +228,22 @@ sub system_update {
 		}
 		close(IN);
 		$macti = $minac = 0;
+
+		open(IN, "/proc/sys/kernel/random/entropy_avail");
+		while(<IN>) {
+			if(/^(\d+)$/) {
+				$entropy = $1;
+			}
+		}
+		close(IN);
+
+		open(IN, "/proc/uptime");
+		while(<IN>) {
+			if(/^(\d+)\./) {
+				$uptime = $1;
+			}
+		}
+		close(IN);
 	} elsif($config->{os} eq "FreeBSD") {
 		my $page_size;
 		open(IN, "sysctl -n vm.loadavg |");
@@ -238,6 +282,17 @@ sub system_update {
 		$mcach = ($page_size * $mcach) / 1024;
 		$macti = ($page_size * $macti) / 1024;
 		$minac = ($page_size * $minac) / 1024;
+
+		open(IN, "/sbin/sysctl -n kern.random.sys.seeded |");
+		$entropy = <IN>;
+		close(IN);
+		chomp($entropy);
+
+		open(IN, "/sbin/sysctl -n kern.boottime |");
+		(undef, undef, undef, $uptime) = split(' ', <IN>);
+		close(IN);
+		$uptime =~ s/,//;
+		$uptime = time - int($uptime);
 	} elsif($config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
 		open(IN, "sysctl -n vm.loadavg |");
 		while(<IN>) {
@@ -287,6 +342,12 @@ sub system_update {
 		$mtotl = `sysctl -n hw.physmem`;
 		chomp($mtotl);
 		$mtotl = $mtotl / 1024;
+
+		open(IN, "/sbin/sysctl -n kern.boottime |");
+		$uptime = <IN>;
+		close(IN);
+		chomp($uptime);
+		$uptime = time - int($uptime);
 	}
 
 	chomp(
@@ -306,6 +367,8 @@ sub system_update {
 		$mfree,
 		$macti,
 		$minac,
+		$entropy,
+		$uptime,
 	);
 
 	# SYSTEM alert
@@ -328,7 +391,7 @@ sub system_update {
 		}
 	}
 
-	$rrdata .= ":$load1:$load5:$load15:$nproc:$npslp:$nprun:$npwio:$npzom:$npstp:$npswp:$mtotl:$mbuff:$mcach:$mfree:$macti:$minac:$val01:$val02:$val03:$val04:$val05";
+	$rrdata .= ":$load1:$load5:$load15:$nproc:$npslp:$nprun:$npwio:$npzom:$npstp:$npswp:$mtotl:$mbuff:$mcach:$mfree:$macti:$minac:$val01:$val02:$val03:$entropy:$uptime";
 	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;
 	my $err = RRDs::error;
@@ -384,7 +447,6 @@ sub system_cgi {
 	} elsif(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 		$total_mem = `/sbin/sysctl -n hw.physmem`;	# in bytes
 		chomp($total_mem);
-		$total_mem = int($total_mem / 1024);		# in KB
 	}
 	$total_mem = int($total_mem / 1024);			# in MB
 
@@ -404,21 +466,21 @@ sub system_cgi {
 		$err = RRDs::error;
 		print("ERROR: while fetching $rrd: $err\n") if $err;
 		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
-		print("       CPU load average    Memory usage in MB     Processes\n");
-		print("Time   1min  5min 15min    Used  Cached Buffers   Total   Run\n");
-		print("------------------------------------------------------------- \n");
+		print("       CPU load average      Memory usage in MB                            Processes\n");
+		print("Time   1min  5min 15min    Used  Cached Buffers   Total   R    S    D    Z    T    W Entropy   Uptime\n");
+		print("----------------------------------------------------------------------------------------------------- \n");
 		my $line;
 		my @row;
 		my $time;
 		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
 			$line = @$data[$n];
-			my ($load1, $load5, $load15, $nproc, $npslp, $nprun, $mtotl, $buff, $cach, $free) = @$line;
+			my ($load1, $load5, $load15, $nproc, $npslp, $nprun, $npwio, $npzom, $npstp, $npswp, $mtotl, $buff, $cach, $free, $macti, $minac, $val01, $val02, $val03, $entropy, $uptime) = @$line;
 			$buff /= 1024;
 			$cach /= 1024;
 			$free /= 1024;
-			@row = ($load1, $load5, $load15, $total_mem - $free, $cach, $buff, $nproc, $nprun);
+			@row = ($load1, $load5, $load15, $total_mem - $free, $cach, $buff, $nproc, $nprun, $npslp, $npwio, $npzom, $npstp, $npswp, $entropy, $uptime);
 			$time = $time - (1 / $tf->{ts});
-			printf(" %2d$tf->{tc}   %4.1f  %4.1f  %4.1f  %6d  %6d  %6d   %5d %5d \n", $time, @row);
+			printf(" %2d$tf->{tc}   %4.1f  %4.1f  %4.1f  %6d  %6d  %6d   %4d %4d %4d %4d %4d %4d %4d  %6d %8d\n", $time, @row);
 		}
 		print("\n");
 		print(" system uptime: " . get_uptime($config) . "\n");
@@ -447,16 +509,24 @@ sub system_cgi {
 	my $IMG1 = $u . $package . "1." . $tf->{when} . ".$imgfmt_lc";
 	my $IMG2 = $u . $package . "2." . $tf->{when} . ".$imgfmt_lc";
 	my $IMG3 = $u . $package . "3." . $tf->{when} . ".$imgfmt_lc";
+	my $IMG4 = $u . $package . "4." . $tf->{when} . ".$imgfmt_lc";
+	my $IMG5 = $u . $package . "5." . $tf->{when} . ".$imgfmt_lc";
 	my $IMG1z = $u . $package . "1z." . $tf->{when} . ".$imgfmt_lc";
 	my $IMG2z = $u . $package . "2z." . $tf->{when} . ".$imgfmt_lc";
 	my $IMG3z = $u . $package . "3z." . $tf->{when} . ".$imgfmt_lc";
+	my $IMG4z = $u . $package . "4z." . $tf->{when} . ".$imgfmt_lc";
+	my $IMG5z = $u . $package . "5z." . $tf->{when} . ".$imgfmt_lc";
 	unlink ("$IMG_DIR" . "$IMG1",
 		"$IMG_DIR" . "$IMG2",
-		"$IMG_DIR" . "$IMG3");
+		"$IMG_DIR" . "$IMG3",
+		"$IMG_DIR" . "$IMG4",
+		"$IMG_DIR" . "$IMG5");
 	if(lc($config->{enable_zoom}) eq "y") {
 		unlink ("$IMG_DIR" . "$IMG1z",
 			"$IMG_DIR" . "$IMG2z",
-			"$IMG_DIR" . "$IMG3z");
+			"$IMG_DIR" . "$IMG3z",
+			"$IMG_DIR" . "$IMG4z",
+			"$IMG_DIR" . "$IMG5z");
 	}
 
 	if($title) {
@@ -469,7 +539,6 @@ sub system_cgi {
 	} else {
 		$uptimeline = "COMMENT:system uptime: " . get_uptime($config) . "\\c";
 	}
-
 	if($title) {
 		print("    <tr>\n");
 		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
@@ -571,93 +640,6 @@ sub system_cgi {
 		}
 	}
 
-	if($title) {
-		print("    </td>\n");
-		print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
-	}
-	@riglim = @{setup_riglim($rigid[1], $limit[1])};
-	undef(@tmp);
-	undef(@tmpz);
-	undef(@CDEF);
-	push(@tmp, "AREA:npslp#44AAEE:Sleeping");
-	push(@tmp, "AREA:nprun#EE4444:Running");
-	push(@tmp, "LINE1:nprun#EE0000");
-	push(@tmp, "LINE1:npslp#00EEEE");
-	push(@tmp, "LINE1:nproc#EEEE00:Processes");
-	if(lc($config->{show_gaps}) eq "y") {
-		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
-		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
-	}
-	($width, $height) = split('x', $config->{graph_size}->{small});
-	if($silent =~ /imagetag/) {
-		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
-		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
-		push(@tmp, "COMMENT: \\n");
-		push(@tmp, "COMMENT: \\n");
-	}
-	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG2",
-		"--title=$config->{graphs}->{_system2}  ($tf->{nwhen}$tf->{twhen})",
-		"--start=-$tf->{nwhen}$tf->{twhen}",
-		"--imgformat=$imgfmt_uc",
-		"--vertical-label=Processes",
-		"--width=$width",
-		"--height=$height",
-		@riglim,
-		$zoom,
-		@{$cgi->{version12}},
-		@{$cgi->{version12_small}},
-		@{$colors->{graph_colors}},
-		"DEF:nproc=$rrd:system_nproc:AVERAGE",
-		"DEF:npslp=$rrd:system_npslp:AVERAGE",
-		"DEF:nprun=$rrd:system_nprun:AVERAGE",
-		"CDEF:allvalues=nproc,npslp,nprun,+,+",
-		@CDEF,
-		@tmp,
-		"COMMENT: \\n");
-	$err = RRDs::error;
-	print("ERROR: while graphing $IMG_DIR" . "$IMG2: $err\n") if $err;
-	if(lc($config->{enable_zoom}) eq "y") {
-		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG2z",
-			"--title=$config->{graphs}->{_system2}  ($tf->{nwhen}$tf->{twhen})",
-			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=$imgfmt_uc",
-			"--vertical-label=Processes",
-			"--width=$width",
-			"--height=$height",
-			@riglim,
-			$zoom,
-			@{$cgi->{version12}},
-			@{$cgi->{version12_small}},
-			@{$colors->{graph_colors}},
-			"DEF:nproc=$rrd:system_nproc:AVERAGE",
-			"DEF:npslp=$rrd:system_npslp:AVERAGE",
-			"DEF:nprun=$rrd:system_nprun:AVERAGE",
-			"CDEF:allvalues=nproc,npslp,nprun,+,+",
-			@CDEF,
-			@tmp);
-		$err = RRDs::error;
-		print("ERROR: while graphing $IMG_DIR" . "$IMG2z: $err\n") if $err;
-	}
-	if($title || ($silent =~ /imagetag/ && $graph =~ /system2/)) {
-		if(lc($config->{enable_zoom}) eq "y") {
-			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
-			} else {
-				if($version eq "new") {
-					$picz_width = $picz->{image_width} * $config->{global_zoom};
-					$picz_height = $picz->{image_height} * $config->{global_zoom};
-				} else {
-					$picz_width = $width + 115;
-					$picz_height = $height + 100;
-				}
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
-			}
-		} else {
-			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "'>\n");
-		}
-	}
-
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -689,15 +671,15 @@ sub system_cgi {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 	}
-	($width, $height) = split('x', $config->{graph_size}->{small});
+	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
 		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
 		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 	}
-	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG3",
-		"--title=$config->{graphs}->{_system3} (${total_mem}MB)  ($tf->{nwhen}$tf->{twhen})",
+	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG2",
+		"--title=$config->{graphs}->{_system2} (${total_mem}MB)  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=$imgfmt_uc",
 		"--vertical-label=Megabytes",
@@ -728,11 +710,11 @@ sub system_cgi {
 		@tmp,
 		"COMMENT: \\n");
 	$err = RRDs::error;
-	print("ERROR: while graphing $IMG_DIR" . "$IMG3: $err\n") if $err;
+	print("ERROR: while graphing $IMG_DIR" . "$IMG2: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG3z",
-			"--title=$config->{graphs}->{_system3} (${total_mem}MB)  ($tf->{nwhen}$tf->{twhen})",
+		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG2z",
+			"--title=$config->{graphs}->{_system2} (${total_mem}MB)  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=$imgfmt_uc",
 			"--vertical-label=Megabytes",
@@ -762,6 +744,131 @@ sub system_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG2z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /system2/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
+			} else {
+				if($version eq "new") {
+					$picz_width = $picz->{image_width} * $config->{global_zoom};
+					$picz_height = $picz->{image_height} * $config->{global_zoom};
+				} else {
+					$picz_width = $width + 115;
+					$picz_height = $height + 100;
+				}
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "'>\n");
+		}
+	}
+
+	if($title) {
+		print("    </td>\n");
+		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
+	}
+
+	@riglim = @{setup_riglim($rigid[2], $limit[2])};
+	undef(@tmp);
+	undef(@tmpz);
+	undef(@CDEF);
+	if($config->{os} eq "Linux") {
+		push(@tmp, "LINE2:npslp#00EE00:Sleeping");
+		push(@tmp, "GPRINT:npslp:LAST:             Current\\:%5.0lf\\n");
+		push(@tmp, "LINE2:npwio#EE44EE:Wait I/O");
+		push(@tmp, "GPRINT:npwio:LAST:             Current\\:%5.0lf\\n");
+		push(@tmp, "LINE2:npzom#00EEEE:Zombie");
+		push(@tmp, "GPRINT:npzom:LAST:               Current\\:%5.0lf\\n");
+		push(@tmp, "LINE2:npstp#EEEE00:Stopped");
+		push(@tmp, "GPRINT:npstp:LAST:              Current\\:%5.0lf\\n");
+		push(@tmp, "LINE2:npswp#0000EE:Paging");
+		push(@tmp, "GPRINT:npswp:LAST:               Current\\:%5.0lf\\n");
+		push(@tmp, "LINE2:nprun#EE0000:Running");
+		push(@tmp, "GPRINT:nprun:LAST:              Current\\:%5.0lf\\n");
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "LINE2:nproc#888888:Total Processes");
+		push(@tmp, "GPRINT:nproc:LAST:      Current\\:%5.0lf\\n");
+		push(@tmpz, "LINE2:npslp#00EE00:Sleeping");
+		push(@tmpz, "LINE2:npwio#EE44EE:Wait I/O");
+		push(@tmpz, "LINE2:npzom#00EEEE:Zombie");
+		push(@tmpz, "LINE2:npstp#EEEE00:Stopped");
+		push(@tmpz, "LINE2:npswp#0000EE:Paging");
+		push(@tmpz, "LINE2:nprun#EE0000:Running");
+		push(@tmpz, "LINE2:nproc#888888:Total Processes");
+	} else {
+		push(@tmp, "AREA:npslp#44AAEE:Sleeping");
+		push(@tmp, "AREA:nprun#EE4444:Running");
+		push(@tmp, "LINE1:nprun#EE0000");
+		push(@tmp, "LINE1:npslp#00EEEE");
+		push(@tmp, "LINE1:nproc#EEEE00:Processes");
+		push(@tmpz, "AREA:npslp#44AAEE:Sleeping");
+		push(@tmpz, "AREA:nprun#EE4444:Running");
+		push(@tmpz, "LINE1:nprun#EE0000");
+		push(@tmpz, "LINE1:npslp#00EEEE");
+		push(@tmpz, "LINE1:nproc#EEEE00:Processes");
+	}
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
+	($width, $height) = split('x', $config->{graph_size}->{small});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+	}
+	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG3",
+		"--title=$config->{graphs}->{_system3}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=$imgfmt_uc",
+		"--vertical-label=Processes",
+		"--width=$width",
+		"--height=$height",
+		@riglim,
+		$zoom,
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
+		@{$colors->{graph_colors}},
+		"DEF:nproc=$rrd:system_nproc:AVERAGE",
+		"DEF:npslp=$rrd:system_npslp:AVERAGE",
+		"DEF:nprun=$rrd:system_nprun:AVERAGE",
+		"DEF:npwio=$rrd:system_npwio:AVERAGE",
+		"DEF:npzom=$rrd:system_npzom:AVERAGE",
+		"DEF:npstp=$rrd:system_npstp:AVERAGE",
+		"DEF:npswp=$rrd:system_npswp:AVERAGE",
+		"CDEF:allvalues=nproc,npslp,nprun,npwio,npzom,npstp,npswp,+,+,+,+,+,+",
+		@CDEF,
+		@tmp);
+	$err = RRDs::error;
+	print("ERROR: while graphing $IMG_DIR" . "$IMG3: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG3z",
+			"--title=$config->{graphs}->{_system3}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=$imgfmt_uc",
+			"--vertical-label=Processes",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			$zoom,
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:nproc=$rrd:system_nproc:AVERAGE",
+			"DEF:npslp=$rrd:system_npslp:AVERAGE",
+			"DEF:nprun=$rrd:system_nprun:AVERAGE",
+			"DEF:npwio=$rrd:system_npwio:AVERAGE",
+			"DEF:npzom=$rrd:system_npzom:AVERAGE",
+			"DEF:npstp=$rrd:system_npstp:AVERAGE",
+			"DEF:npswp=$rrd:system_npswp:AVERAGE",
+			"CDEF:allvalues=nproc,npslp,nprun,npwio,npzom,npstp,npswp,+,+,+,+,+,+",
+			@CDEF,
+			@tmpz);
+		$err = RRDs::error;
 		print("ERROR: while graphing $IMG_DIR" . "$IMG3z: $err\n") if $err;
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /system3/)) {
@@ -780,6 +887,160 @@ sub system_cgi {
 			}
 		} else {
 			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "'>\n");
+		}
+	}
+
+	@riglim = @{setup_riglim($rigid[3], $limit[3])};
+	undef(@tmp);
+	undef(@tmpz);
+	undef(@CDEF);
+	push(@tmp, "LINE2:entropy#EEEE00:Entropy");
+	push(@tmp, "GPRINT:entropy:LAST:              Current\\:%5.0lf\\n");
+	push(@tmpz, "LINE2:entropy#EEEE00:Entropy");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
+	($width, $height) = split('x', $config->{graph_size}->{small});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+	}
+	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG4",
+		"--title=$config->{graphs}->{_system4}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=$imgfmt_uc",
+		"--vertical-label=Size",
+		"--width=$width",
+		"--height=$height",
+		@riglim,
+		$zoom,
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
+		@{$colors->{graph_colors}},
+		"DEF:entropy=$rrd:system_entrop:AVERAGE",
+		"CDEF:allvalues=entropy",
+		@CDEF,
+		@tmp);
+	$err = RRDs::error;
+	print("ERROR: while graphing $IMG_DIR" . "$IMG4: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG4z",
+			"--title=$config->{graphs}->{_system4}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=$imgfmt_uc",
+			"--vertical-label=Size",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			$zoom,
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:entropy=$rrd:system_entrop:AVERAGE",
+			"CDEF:allvalues=entropy",
+			@CDEF,
+			@tmpz);
+		$err = RRDs::error;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG4z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /system4/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "' border='0'></a>\n");
+			} else {
+				if($version eq "new") {
+					$picz_width = $picz->{image_width} * $config->{global_zoom};
+					$picz_height = $picz->{image_height} * $config->{global_zoom};
+				} else {
+					$picz_width = $width + 115;
+					$picz_height = $height + 100;
+				}
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "'>\n");
+		}
+	}
+
+	@riglim = @{setup_riglim($rigid[4], $limit[4])};
+	undef(@tmp);
+	undef(@tmpz);
+	undef(@CDEF);
+	push(@tmp, "LINE2:uptime_days#EE44EE:Uptime");
+	push(@tmp, "GPRINT:uptime_days:LAST:(in days)      Current\\:%5.1lf\\n");
+	push(@tmpz, "LINE2:uptime_days#EE44EE:Uptime");
+	if(lc($config->{show_gaps}) eq "y") {
+		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+	}
+	($width, $height) = split('x', $config->{graph_size}->{small});
+	if($silent =~ /imagetag/) {
+		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+	}
+	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG5",
+		"--title=$config->{graphs}->{_system5}  ($tf->{nwhen}$tf->{twhen})",
+		"--start=-$tf->{nwhen}$tf->{twhen}",
+		"--imgformat=$imgfmt_uc",
+		"--vertical-label=Days",
+		"--width=$width",
+		"--height=$height",
+		@riglim,
+		$zoom,
+		@{$cgi->{version12}},
+		@{$cgi->{version12_small}},
+		@{$colors->{graph_colors}},
+		"DEF:uptime=$rrd:system_uptime:AVERAGE",
+		"CDEF:uptime_days=uptime,86400,/",
+		"CDEF:allvalues=uptime",
+		@CDEF,
+		@tmp);
+	$err = RRDs::error;
+	print("ERROR: while graphing $IMG_DIR" . "$IMG5: $err\n") if $err;
+	if(lc($config->{enable_zoom}) eq "y") {
+		($width, $height) = split('x', $config->{graph_size}->{zoom});
+		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG5z",
+			"--title=$config->{graphs}->{_system5}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=$imgfmt_uc",
+			"--vertical-label=Days",
+			"--width=$width",
+			"--height=$height",
+			@riglim,
+			$zoom,
+			@{$cgi->{version12}},
+			@{$cgi->{version12_small}},
+			@{$colors->{graph_colors}},
+			"DEF:uptime=$rrd:system_uptime:AVERAGE",
+			"CDEF:uptime_days=uptime,86400,/",
+			"CDEF:allvalues=uptime",
+			@CDEF,
+			@tmpz);
+		$err = RRDs::error;
+		print("ERROR: while graphing $IMG_DIR" . "$IMG5z: $err\n") if $err;
+	}
+	if($title || ($silent =~ /imagetag/ && $graph =~ /system5/)) {
+		if(lc($config->{enable_zoom}) eq "y") {
+			if(lc($config->{disable_javascript_void}) eq "y") {
+				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "' border='0'></a>\n");
+			} else {
+				if($version eq "new") {
+					$picz_width = $picz->{image_width} * $config->{global_zoom};
+					$picz_height = $picz->{image_height} * $config->{global_zoom};
+				} else {
+					$picz_width = $width + 115;
+					$picz_height = $height + 100;
+				}
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "' border='0'></a>\n");
+			}
+		} else {
+			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "'>\n");
 		}
 	}
 
