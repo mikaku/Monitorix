@@ -1,5 +1,8 @@
 3.N.N  - DD-MMM-YYYY
 ====================
+- Improved the 'system.pm' graph with more detailed information about processes
+  (sleeping, waiting I/O, zombie, stopped, paging and running). It also
+  includes two new graphs: entropy and uptime.
 - Changed to be more thickness the lines of Greylisting graph in 'mail.pm'.
 - Fixed an undeclared global symbol "$imgfmt_lc" in 'traffacct.pm'.
 
