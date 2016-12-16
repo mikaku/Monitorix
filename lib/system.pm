@@ -440,6 +440,7 @@ sub system_cgi {
 	$title = !$silent ? $title : "";
 
 	my $total_mem;
+	my $total_mem_bytes;
 
 	if($config->{os} eq "Linux") {
 		$total_mem = `grep -w MemTotal: /proc/meminfo | awk '{print \$2}'`;
@@ -448,6 +449,7 @@ sub system_cgi {
 		$total_mem = `/sbin/sysctl -n hw.physmem`;	# in bytes
 		chomp($total_mem);
 	}
+	$total_mem_bytes = int($total_mem * 1024);		# in bytes
 	$total_mem = int($total_mem / 1024);			# in MB
 
 
@@ -682,10 +684,10 @@ sub system_cgi {
 		"--title=$config->{graphs}->{_system2} (${total_mem}MB)  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=$imgfmt_uc",
-		"--vertical-label=Megabytes",
+		"--vertical-label=bytes",
 		"--width=$width",
 		"--height=$height",
-		"--upper-limit=$total_mem",
+		"--upper-limit=$total_mem_bytes",
 		"--lower-limit=0",
 		"--rigid",
 		"--base=1024",
@@ -699,12 +701,12 @@ sub system_cgi {
 		"DEF:mfree=$rrd:system_mfree:AVERAGE",
 		"DEF:macti=$rrd:system_macti:AVERAGE",
 		"DEF:minac=$rrd:system_minac:AVERAGE",
-		"CDEF:m_mtotl=mtotl,1024,/",
-		"CDEF:m_mbuff=mbuff,1024,/",
-		"CDEF:m_mcach=mcach,1024,/",
-		"CDEF:m_mused=m_mtotl,mfree,1024,/,-",
-		"CDEF:m_macti=macti,1024,/",
-		"CDEF:m_minac=minac,1024,/",
+		"CDEF:m_mtotl=mtotl,1024,*",
+		"CDEF:m_mbuff=mbuff,1024,*",
+		"CDEF:m_mcach=mcach,1024,*",
+		"CDEF:m_mused=m_mtotl,mfree,1024,*,-",
+		"CDEF:m_macti=macti,1024,*",
+		"CDEF:m_minac=minac,1024,*",
 		"CDEF:allvalues=mtotl,mbuff,mcach,mfree,macti,minac,+,+,+,+,+",
 		@CDEF,
 		@tmp,
@@ -717,10 +719,10 @@ sub system_cgi {
 			"--title=$config->{graphs}->{_system2} (${total_mem}MB)  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=$imgfmt_uc",
-			"--vertical-label=Megabytes",
+			"--vertical-label=bytes",
 			"--width=$width",
 			"--height=$height",
-			"--upper-limit=$total_mem",
+			"--upper-limit=$total_mem_bytes",
 			"--lower-limit=0",
 			"--rigid",
 			"--base=1024",
@@ -734,12 +736,12 @@ sub system_cgi {
 			"DEF:mfree=$rrd:system_mfree:AVERAGE",
 			"DEF:macti=$rrd:system_macti:AVERAGE",
 			"DEF:minac=$rrd:system_minac:AVERAGE",
-			"CDEF:m_mtotl=mtotl,1024,/",
-			"CDEF:m_mbuff=mbuff,1024,/",
-			"CDEF:m_mcach=mcach,1024,/",
-			"CDEF:m_mused=m_mtotl,mfree,1024,/,-",
-			"CDEF:m_macti=macti,1024,/",
-			"CDEF:m_minac=minac,1024,/",
+			"CDEF:m_mtotl=mtotl,1024,*",
+			"CDEF:m_mbuff=mbuff,1024,*",
+			"CDEF:m_mcach=mcach,1024,*",
+			"CDEF:m_mused=m_mtotl,mfree,1024,*,-",
+			"CDEF:m_macti=macti,1024,*",
+			"CDEF:m_minac=minac,1024,*",
 			"CDEF:allvalues=mtotl,mbuff,mcach,mfree,macti,minac,+,+,+,+,+",
 			@CDEF,
 			@tmp);
