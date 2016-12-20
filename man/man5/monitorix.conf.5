@@ -871,6 +871,61 @@ With this option you can optionally rename any of the sensor names defined in th
 .P
 All the names are limited to 20 characters.
 .RE
+.SS IPMI sensor statistics (ipmi.rrd)
+This graph is able to monitor an unlimited number of IPMI sensors (temperatures, fans and voltages).
+.P
+.BI list
+.RS
+This is a comma-separated list that describes the groups of sensors in \fBdesc\fP. Put one description for each group. For every group specified you need to specify its sensors in the \fBdesc\fP option.
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIipmi.rrd\fP file accordingly, removing all historical data.
+.P
+An example would be:
+.P
+list = Temperatures, Fans, Voltages
+.RE
+.P
+.BI desc
+.RS
+This is a list of sensors per group defined.
+.P
+<desc>
+.br
+	0 = CPU Temp, System Temp
+.br
+	1 = FAN 1
+.br
+	2 = Vcore, 3.3VCC, 12V, VDIMM, 5VCC, CPU VTT, VBAT, VSB, AVCC
+.br
+</desc>
+.P
+The maximum number of sensors allowed for each group is 9.
+.RE
+.P
+.BI units
+.RS
+This is the type of sensor in each group. It's important to not mix different type of sensors in a same group.
+.RE
+.P
+.BI map
+.RS
+This list complements the \fBdesc\fP option. It basically allows you to change the name that will appear in the graph, hiding the real name of the sensor. If no association is defined, then Monitorix will display the name specified in the \fBdesc\fP option.
+.RE
+.P
+.BI graphs_per_row
+.RS
+This is the number of graphs that will be put in a row.
+.P
+Default value: \fI2\fP
+.RE
+.P
+.BI extra_args
+.RS
+This option includes any extra argument to the \fIipmitool\fP command executed by Monitorix, which is "ipmitool sdr". This is specially useful if you need to monitor remote servers.
+.P
+.RS
+Default value: \fInone\fP
+.RE
 .SS NVIDIA temperatures and usage (nvidia.rrd)
 This graph requires to have installed the official NVIDIA drivers.
 .P
