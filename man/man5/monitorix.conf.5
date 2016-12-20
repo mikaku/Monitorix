@@ -1201,7 +1201,7 @@ IMPORTANT NOTE: The \fIdu\fP command makes intensive disk I/O access that might 
 .P
 .BI list
 .RS
-This is a comma-separated list that describes the groups of directories in \fBdesc\fP. Put one description for each group. For every group specified you need to specify its description in the \fBdesc\fP option.
+This is a comma-separated list that describes the groups of directories in \fBdesc\fP. Put one description for each group. For every group specified you need to specify its directories in the \fBdesc\fP option.
 .P
 WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIdu.rrd\fP file accordingly, removing all historical data.
 .P
@@ -1227,7 +1227,7 @@ The maximum number of directories allowed for each group is 9.
 .P
 .BI dirmap
 .RS
-This list complements the \fBlist\fP option. It basically allows you to change the name that will appear in the graph, hiding the real name of the directory. If no association is defined, then Monitorix will display the name specified in the \fBlist\fP option.
+This list complements the \fBdesc\fP option. It basically allows you to change the name that will appear in the graph, hiding the real name of the directory. If no association is defined, then Monitorix will display the name specified in the \fBdesc\fP option.
 .RE
 .P
 .BI graphs_per_row
