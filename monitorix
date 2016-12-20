@@ -275,6 +275,14 @@ EOF
 				}
 				next;
 			}
+			if($g eq "ipmi") {
+				for($n = 0; $n < scalar(my @ipmi_list = split(',', $config{ipmi}->{list})); $n++) {
+					my $name = trim($ipmi_list[$n]);
+					$gname = "_" . $g;
+					print(OUT "              <option value='" . $gname . $n . "'>" . $name . "</option>\n");
+				}
+				next;
+			}
 			if($g eq "fs" || $g eq "process") {
 				$n = 0;
 				foreach my $k (sort keys %{$config{graphs}}) {

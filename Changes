@@ -1,5 +1,7 @@
 3.N.N  - DD-MMM-YYYY
 ====================
+- Added a complete graph for IPMI sensors using the 'ipmitool' command.
+  	(suggested by Frank Dijcks, fd AT fdsystems.nl)
 - Improved the 'system.pm' graph with more detailed information about processes
   (sleeping, waiting I/O, zombie, stopped, paging and running). It also
   includes two new graphs: entropy and uptime.
