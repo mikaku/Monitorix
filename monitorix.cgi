@@ -435,6 +435,8 @@ EOF
 	print("  <table cellspacing='5' cellpadding='0' bgcolor='" . $colors{graph_bg_color} . "' border='1'>\n");
 	print("  <tr>\n");
 
+	print("  <span style='color:#888888;position:fixed;left:1em;font-size:32px;letter-spacing:-1px;'><a href='javascript:history.back()' style='text-decoration:none;'>&#9664;</a>\n");
+
 	if(($val ne "all" || $val ne "group") && $mode ne "multihost") {
 		print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
 		print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
