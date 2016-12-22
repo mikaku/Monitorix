@@ -909,7 +909,7 @@ This is the type of sensor in each group. It's important to not mix different ty
 .P
 .BI map
 .RS
-This list complements the \fBdesc\fP option. It basically allows you to change the name that will appear in the graph, hiding the real name of the sensor. If no association is defined, then Monitorix will display the name specified in the \fBdesc\fP option. Note, this only works with names that don't include whitespaces.
+This list complements the \fBdesc\fP option. It basically allows you to change the name that will appear in the graph, hiding the real name of the sensor. If no association is defined, then Monitorix will display the name specified in the \fBdesc\fP option. Note, this only works in names that don't include whitespaces.
 .RE
 .P
 .BI graphs_per_row
@@ -921,7 +921,13 @@ Default value: \fI2\fP
 .P
 .BI extra_args
 .RS
-This option includes any extra argument to the \fIipmitool\fP command executed by Monitorix, which is "ipmitool sdr". This is specially useful if you need to monitor remote servers.
+This option includes any extra argument to the \fIipmitool\fP command executed by Monitorix, which is "ipmitool <extra_args> sdr". This is specially useful if you need to monitor a remote server. An example would be:
+.RE
+.P
+.RS
+extra_args = -H <remote_ip> -U root -P <password>
+.br
+.RE
 .P
 .RS
 Default value: \fInone\fP
