@@ -2,6 +2,8 @@
 ====================
 - Added a complete graph for IPMI sensors using the 'ipmitool' command.
   	(suggested by Frank Dijcks, fd AT fdsystems.nl)
+- Added a back button in the upper-left corner to easily go to the main page
+  in browsers with fullscreen mode.
 - Improved the 'system.pm' graph with more detailed information about processes
   (sleeping, waiting I/O, zombie, stopped, paging and running). It also
   includes two new graphs: entropy and uptime.
