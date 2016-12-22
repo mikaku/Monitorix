@@ -77,7 +77,7 @@ sub ipmi_init {
 			push(@max, "RRA:MAX:0.5:1440:" . (365 * $n));
 			push(@last, "RRA:LAST:0.5:1440:" . (365 * $n));
 		}
-		for($n = 0; $n < scalar(my @fl = split(',', $ipmi->{list})); $n++) {
+		for($n = 0; $n < scalar(my @sl = split(',', $ipmi->{list})); $n++) {
 			push(@tmp, "DS:ipmi" . $n . "_s1:GAUGE:120:0:U");
 			push(@tmp, "DS:ipmi" . $n . "_s2:GAUGE:120:0:U");
 			push(@tmp, "DS:ipmi" . $n . "_s3:GAUGE:120:0:U");
@@ -140,7 +140,7 @@ sub ipmi_update {
 	my $str;
 	my $rrdata = "N";
 
-	if(!open(IN, "ipmitool sdr $args |")) {
+	if(!open(IN, "ipmitool $args sdr |")) {
 		logger("$myself: unable to execute 'ipmitool'. $!");
 		return;
 	}
