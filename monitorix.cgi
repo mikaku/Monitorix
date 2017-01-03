@@ -435,7 +435,7 @@ EOF
 	print("  <table cellspacing='5' cellpadding='0' bgcolor='" . $colors{graph_bg_color} . "' border='1'>\n");
 	print("  <tr>\n");
 
-	if(lc($config{enable_back_button} eq "y")) {
+	if(lc($config{enable_back_button} || "") eq "y") {
 		print("  <span style='color:#888888;position:fixed;left:1em;font-size:32px;letter-spacing:-1px;'><a href='javascript:history.back()' style='text-decoration:none;'>&#9664;</a>\n");
 	}
 
