@@ -11,6 +11,7 @@
 - Changed the way how scales the memory graph in 'system.pm', now the units are
   in bytes, so the y-axis will scale accordingly.
 - Changed to be more thickness the lines of Greylisting graph in 'mail.pm'.
+- Changed the colors of the main graph in 'ftp.pm'.
 - Fixed an undeclared global symbol "$imgfmt_lc" in 'traffacct.pm'.
 
 
