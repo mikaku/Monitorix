@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2016 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2017 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -426,22 +426,22 @@ sub ftp_cgi {
 		print("    <tr>\n");
 		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
 	}
-	push(@tmp, "LINE1:retr#FFA500:Files downloaded (RETR)");
+	push(@tmp, "LINE1:retr#44EE44:Files downloaded (RETR)");
 	push(@tmp, "GPRINT:retr:LAST: Current\\: %3.0lf");
 	push(@tmp, "GPRINT:retr:AVERAGE:   Average\\: %3.0lf");
 	push(@tmp, "GPRINT:retr:MIN:   Min\\: %3.0lf");
 	push(@tmp, "GPRINT:retr:MAX:   Max\\: %3.0lf\\n");
-	push(@tmp, "LINE1:stor#EEEE44:Files uploaded (STOR)");
+	push(@tmp, "LINE1:stor#4444EE:Files uploaded (STOR)");
 	push(@tmp, "GPRINT:stor:LAST:   Current\\: %3.0lf");
 	push(@tmp, "GPRINT:stor:AVERAGE:   Average\\: %3.0lf");
 	push(@tmp, "GPRINT:stor:MIN:   Min\\: %3.0lf");
 	push(@tmp, "GPRINT:stor:MAX:   Max\\: %3.0lf\\n");
-	push(@tmp, "LINE1:mkd#EE4444:Dirs created (MKD)");
+	push(@tmp, "LINE1:mkd#EEEE44:Dirs created (MKD)");
 	push(@tmp, "GPRINT:mkd:LAST:      Current\\: %3.0lf");
 	push(@tmp, "GPRINT:mkd:AVERAGE:   Average\\: %3.0lf");
 	push(@tmp, "GPRINT:mkd:MIN:   Min\\: %3.0lf");
 	push(@tmp, "GPRINT:mkd:MAX:   Max\\: %3.0lf\\n");
-	push(@tmp, "LINE1:rmd#44EE44:Dirs deleted (RMD)");
+	push(@tmp, "LINE1:rmd#EE4444:Dirs deleted (RMD)");
 	push(@tmp, "GPRINT:rmd:LAST:      Current\\: %3.0lf");
 	push(@tmp, "GPRINT:rmd:AVERAGE:   Average\\: %3.0lf");
 	push(@tmp, "GPRINT:rmd:MIN:   Min\\: %3.0lf");
