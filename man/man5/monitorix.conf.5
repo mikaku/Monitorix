@@ -1919,6 +1919,66 @@ Note that if you modify the value of \fItmp_table_size\fP in the MySQL configura
 Therefore this value helps to know how many tmp tables go to the disk instead than to the memory. Keep in mind that some large queries, involving TEXT and BLOB columns, are directly written to the disk instead than to the memory, because they would be too big. So you probably will want to avoid having a high % of tmp tables written to the disk, but you will never reach 0% on a big site, and this is fine.
 .br
 Lower is better ... but 0% is not reachable and you should not try to reach it, usually.
+.SS MongoDB statistics (mongodb.rrd)
+This graph is able to monitor an unlimited number of MongoDB servers.
+.P
+.BI list
+.RS
+This is a comma-separated list of names of MongoDB servers.
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fImongodb.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fIlocalhost\fP
+.RE
+.P
+.BI max_db
+.RS
+This is the maximum number of databases to be monitored in a MongoDB server. There is no limitation, just specify here the number of entries of the \fBdb_list\fP option that has the most entries.
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fImongodb.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fI1\fP
+.RE
+.P
+.BI desc
+.RS
+This is a list of blocks of names specified in the \fBlist\fP option.
+.P
+<desc>
+.br
+	<localhost>
+.br
+		host = 127.0.0.1
+.br
+		db_list = mydb
+.br
+	</localhost>
+.br
+</desc>
+.P
+The maximum number of mountpoints allowed for each URL is 9.
+.RE
+.P
+.BI host
+.RS
+This is the hostname or IP address of the MongoDB server specified in its block.
+.P
+Default value: \fI127.0.0.1\fP
+.RE
+.P
+.BI port
+.RS
+This is the port number of the MongoDB server specified in its block.
+.P
+Default value: \fI\fP
+.RE
+.P
+.BI db_list
+.RS
+This is a comma-separated list of databases to be monitored of the MongoDB server specified in its block.
+.P
+Default value: \fImydb\fP
+.RE
 .SS Varnish cache statistics (varnish.rrd)
 This graph monitors a local installation of the Varnish HTTP accelerator.
 .P
