@@ -86,6 +86,7 @@ install-bin:
 	$(INSTALL_DATA) lib/lmsens.pm "$(DESTDIR)$(LIBDIR)/lmsens.pm"
 	$(INSTALL_DATA) lib/mail.pm "$(DESTDIR)$(LIBDIR)/mail.pm"
 	$(INSTALL_DATA) lib/memcached.pm "$(DESTDIR)$(LIBDIR)/memcached.pm"
+	$(INSTALL_DATA) lib/mongodb.pm "$(DESTDIR)$(LIBDIR)/mongodb.pm"
 	$(INSTALL_DATA) lib/Monitorix.pm "$(DESTDIR)$(LIBDIR)/Monitorix.pm"
 	$(INSTALL_DATA) lib/mysql.pm "$(DESTDIR)$(LIBDIR)/mysql.pm"
 	$(INSTALL_DATA) lib/net.pm "$(DESTDIR)$(LIBDIR)/net.pm"
