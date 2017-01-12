@@ -2,6 +2,7 @@
 ====================
 - Added a complete graph for IPMI sensors using the 'ipmitool' command.
   	(suggested by Frank Dijcks, fd AT fdsystems.nl)
+- Added a complete graph for MongoDB. [#38]
 - Added a back button in the upper-left corner to easily go to the main page
   in browsers with fullscreen mode. The will depend if the new option called
   'enable_back_button' is enabled (disabled by default).
