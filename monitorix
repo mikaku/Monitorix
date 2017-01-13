@@ -27,7 +27,6 @@ use FindBin qw($Bin);
 use lib $Bin . "/lib", "/usr/lib/monitorix";
 
 use Monitorix;
-use HTTPServer;
 use POSIX qw(WNOHANG LC_TIME setlocale uname pause setsid);
 use Config::General;
 use Getopt::Std;
@@ -639,6 +638,7 @@ create_index();
 
 # start the HTTP built-in (if enabled)
 if(lc($config{httpd_builtin}->{enabled}) eq "y") {
+	require HTTPServer;
 	httpd_setup(\%config, $options{d});
 	logger("Started built-in HTTP server (pid $config{httpd_pid}).") if (defined($config{httpd_pid}));
 }
