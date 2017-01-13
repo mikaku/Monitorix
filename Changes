@@ -13,6 +13,9 @@
   in bytes, so the y-axis will scale accordingly.
 - Changed to be more thickness the lines of Greylisting graph in 'mail.pm'.
 - Changed the colors of the main graph in 'ftp.pm'.
+- From now on the perl-HTTP-Server-Simple module only is loaded if the HTTP
+  built-in is enabled. This will permit to separate the HTTP built-in in a
+  different package.
 - Fixed an undeclared global symbol "$imgfmt_lc" in 'traffacct.pm'.
 
 
