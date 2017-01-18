@@ -17,6 +17,9 @@
   built-in is enabled. This will permit to separate the HTTP built-in in a
   different package.
 - Fixed an undeclared global symbol "$imgfmt_lc" in 'traffacct.pm'.
+- Fixed the MIME type of graphs in 'emailreports.pm' and in 'traffacct.pm' to
+  honor the 'image_format' option. [#174]
+- Fixed in 'emailreports.pm' to name each attached graph correctly.
 
 
 3.9.0  - 14-Oct-2016
