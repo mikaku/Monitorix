@@ -32,6 +32,7 @@ sub emailreports_send {
 	my $myself = (caller(0))[3];
 	my ($config, $report, $when, $debug) = @_;
 	my $emailreports = $config->{emailreports};
+	my $imgfmt_lc = lc($config->{image_format});
 
 	my $base_cgi = $config->{base_cgi};
 	my $imgs_dir = $config->{imgs_dir};
@@ -131,14 +132,12 @@ EOF
 			$n = 1;
 			foreach (split('\n', $graph)) {
 				if(/<img src=/) {
-					push(@tmp, "<img src='cid:image_$g$e$n' border='0'>");
-					$images->{"image_$g$n"} = "";
-
+					push(@tmp, "<img src='cid:image_$g$e$n.$imgfmt_lc' border='0'>");
 					($url) = $_ =~ m/<img src='(.*?)' /;
 					my $uri = URI->new($url);
 					my $path = $uri->path || "";
 					$response = $ua->request(HTTP::Request->new('GET', "$prefix$path"));
-					$images->{"image_$g$e$n"} = $response->content;
+					$images->{"image_$g$e$n.$imgfmt_lc"} = $response->content;
 					$n++;
 				} else {
 					push(@tmp, $_);
@@ -199,7 +198,7 @@ EOF
 		);
 		while (my ($key, $val) = each(%{$images})) {
 			$msg->attach(
-				Type		=> $mime,
+				Type		=> "$mime; name=\"$key\"",
 				Id		=> $key,
 				Data		=> $val,
 			);
