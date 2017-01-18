@@ -36,6 +36,7 @@ sub emailreports_send {
 	my $base_cgi = $config->{base_cgi};
 	my $imgs_dir = $config->{imgs_dir};
 	my $images;
+	my $mime;
 	
 	logger("$myself: sending $report reports.");
 
@@ -47,6 +48,9 @@ sub emailreports_send {
 	my $port = $uri->port || "";
 
 	my $prefix = "$scheme://$userinfo$hostname:$port";
+
+	$mime = "image/png";
+	$mime = "image/svg+xml" if uc($config->{image_format}) eq "SVG";
 
 	my $html = <<"EOF";
 <html>
@@ -195,7 +199,7 @@ EOF
 		);
 		while (my ($key, $val) = each(%{$images})) {
 			$msg->attach(
-				Type		=> 'image/png',
+				Type		=> $mime,
 				Id		=> $key,
 				Data		=> $val,
 			);

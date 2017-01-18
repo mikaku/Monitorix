@@ -320,12 +320,16 @@ sub traffacct_sendreports {
 
 	my (undef, undef, undef, undef, $prev_month, $prev_year) = localtime(time - 3600);
 	my $n;
+	my $mime;
 
 	my $usage_dir = $config->{base_lib} . $config->{usage_dir};
 	my $report_dir = $config->{base_lib} . $config->{report_dir};
 	my $base_url = $config->{base_url};
 	my $base_cgi = $config->{base_cgi};
 	my $imgs_dir = $config->{imgs_dir};
+
+	$mime = "image/png";
+	$mime = "image/svg+xml" if uc($config->{image_format}) eq "SVG";
 
 	logger("Sending monthly network traffic reports.");
 
@@ -398,7 +402,7 @@ sub traffacct_sendreports {
 			Path		=> $config->{base_dir} . $config->{logo_bottom},
 		);
 		$msg->attach(
-			Type		=> 'image/png',
+			Type		=> $mime,
 			Id		=> 'image_02',
 			Data		=> $image->content,
 		);
