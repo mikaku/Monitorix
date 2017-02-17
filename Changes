@@ -1,14 +1,14 @@
-3.N.N  - DD-MMM-YYYY
+3.N.N  - DD-MMM-2017
 ====================
 - Added a complete graph for IPMI sensors using the 'ipmitool' command.
   	(suggested by Frank Dijcks, fd AT fdsystems.nl)
 - Added a complete graph for MongoDB. [#38]
 - Added a back button in the upper-left corner to easily go to the main page
-  in browsers with fullscreen mode. The will depend if the new option called
-  'enable_back_button' is enabled (disabled by default).
+  in browsers with fullscreen mode. The button will appear only if the new
+  option called 'enable_back_button' is enabled (disabled by default).
 - Improved the 'system.pm' graph with more detailed information about processes
   (sleeping, waiting I/O, zombie, stopped, paging and running). It also
-  includes two new graphs: entropy and uptime.
+  includes two new graphs to show entropy and uptime.
 - Changed the way how scales the memory graph in 'system.pm', now the units are
   in bytes, so the y-axis will scale accordingly.
 - Changed to be more thickness the lines of Greylisting graph in 'mail.pm'.
