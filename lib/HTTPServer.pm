@@ -55,7 +55,21 @@ sub check_passwd {
 
 	if(open(IN, $main::config{httpd_builtin}->{auth}->{htpasswd})) {
 		while(<IN>) {
-			my %pair = split(':', $_);
+			my $line = trim($_);
+
+			# append character ':' if not exist
+			if(index($line, ":") < 0) {
+				logger("Malformed line in " . $main::config{httpd_builtin}->{auth}->{htpasswd}, "ERROR");
+				$line .= ":" if index($line, ":") < 0;
+			}
+
+			# discard that line if password is missing
+			if(length($line) == index($line, ":") + 1) {
+				logger("Malformed line in " . $main::config{httpd_builtin}->{auth}->{htpasswd}, "ERROR");
+				next;
+			}
+
+			my %pair = split(':', $line);
 			if($pair{$user || ""}) {
 				chomp($pair{$user});
 				if(crypt($pass, $pair{$user}) ne $pair{$user}) {
