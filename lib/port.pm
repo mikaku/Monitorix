@@ -488,7 +488,7 @@ sub port_cgi {
 	while($n < $max) {
 		next unless $pl[$n];
 
-		# continue if port was listed by not defined
+		# continue if port was listed but not defined
 		if(!$port->{desc}->{$pl[$n]}) {
 			$n++;
 			next;
