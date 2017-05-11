@@ -1653,7 +1653,20 @@ If you see a red color in the background of a network port graph, it means that 
 .P
 .BI desc
 .RS
-This is the option where each network port specified in \fBlist\fP is described. Each port definition consists of five parameters separated by comma: the port description, the network protocol (\fItcp\fP or \fIudp\fP), the connection type (\fIin\fP, \fIout\fP or \fIin/out\fP) and the rigid and limit values.
+This is the option where each network port specified in \fBlist\fP is described. Each port definition consists of six parameters separated by comma:
+.RS
+- an small port description.
+.br
+- the network protocol (\fItcp\fP or \fIudp\fP).
+.br
+- the connection type (\fIin\fP, \fIout\fP or \fIin/out\fP).
+.br
+- the rigid value.
+.br
+- the limit value.
+.br
+- the \fIL\fP option which specifies that this port should be listening and Monitorix will advice it, by changing the background color of the graph to red, if finds it down.
+.RE
 .P
 There is also support (Linux only) for IPv6 network ports activity by using protocol names as \fItcp6\fP or \fIudp6\fP.
 .P
@@ -1663,13 +1676,13 @@ list = 25, 25ip6, 80, 53
 .br
 <desc>
 .br
-	25 = SMTP, tcp, in/out, 0, 1000
+	25 =    SMTP, tcp,  in/out, 0, 1000, L
 .br
-	25ip6 = SMTP, tcp6, in/out, 0, 1000
+	25ip6 = SMTP, tcp6, in/out, 0, 1000, L
 .br
-	80 = HTTP, tcp, in, 0, 1000
+	80 =    HTTP, tcp,  in,     0, 1000, L
 .br
-	53 = DNS, udp, in, 0, 1000
+	53 =    DNS,  udp,  in,     0, 1000, L
 .br
 </desc>
 .RE

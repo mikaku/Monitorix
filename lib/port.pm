@@ -516,41 +516,44 @@ sub port_cgi {
 			$pp =~ s/6//;
 			my $prig = trim((split(',', $port->{desc}->{$pl[$n]}))[3]);
 			my $plim = trim((split(',', $port->{desc}->{$pl[$n]}))[4]);
+			my $plis = trim((split(',', $port->{desc}->{$pl[$n]}))[5]);
 			@riglim = @{setup_riglim($prig, $plim)};
 
 			# check if the network port is still listening
 			undef(@warning);
-			if($config->{os} eq "Linux") {
-				open(IN, "netstat -nl --$pp |");
-				while(<IN>) {
-					(undef, undef, undef, $pnum) = split(' ', $_);
-					chomp($pnum);
-					$pnum =~ s/.*://;
-					if($pnum eq $num) {
-						last;
-					}
-				}
-				close(IN);
-			}
-			if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD")) {
-				open(IN, "netstat -anl -p $pp |");
-				while(<IN>) {
-					 my $stat;
-					(undef, undef, undef, $pnum, undef, $stat) = split(' ', $_);
-					chomp($stat);
-					if($stat eq "LISTEN") {
+			if(uc($plis) eq "L") {
+				if($config->{os} eq "Linux") {
+					open(IN, "netstat -nl --$pp |");
+					while(<IN>) {
+						(undef, undef, undef, $pnum) = split(' ', $_);
 						chomp($pnum);
-						($pnum) = ($pnum =~ m/^.*?(\.\d+$)/);
-						$pnum =~ s/\.//;
+						$pnum =~ s/.*://;
 						if($pnum eq $num) {
 							last;
 						}
 					}
+					close(IN);
 				}
-				close(IN);
-			}
-			if(lc($pcon) ne "out" && $pnum ne $num) {
-				push(@warning, $colors->{warning_color});
+				if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD")) {
+					open(IN, "netstat -anl -p $pp |");
+					while(<IN>) {
+					 	my $stat;
+						(undef, undef, undef, $pnum, undef, $stat) = split(' ', $_);
+						chomp($stat);
+						if($stat eq "LISTEN") {
+							chomp($pnum);
+							($pnum) = ($pnum =~ m/^.*?(\.\d+$)/);
+							$pnum =~ s/\.//;
+							if($pnum eq $num) {
+								last;
+							}
+						}
+					}
+					close(IN);
+				}
+				if(lc($pcon) ne "out" && $pnum ne $num) {
+					push(@warning, $colors->{warning_color});
+				}
 			}
 
 			$name = substr(uc($pcon) . "-" . $pn, 0, 15);
