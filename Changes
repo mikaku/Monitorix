@@ -15,6 +15,7 @@
 - Changed the colors of the main graph in 'ftp.pm'.
 - Added a new option in 'port.rrd' to enable/disable background red color for
   each port monitored. [#182]
+- Added to be able to change the real names in the Voltage graph. [#183]
 - From now on the perl-HTTP-Server-Simple module only is loaded if the HTTP
   built-in is enabled. This will permit to separate the HTTP built-in in a
   different package.
