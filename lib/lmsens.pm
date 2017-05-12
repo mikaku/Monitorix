@@ -593,7 +593,7 @@ sub lmsens_cgi {
 	for($n = 0; $n < 16; $n++) {
 		$str = "core" . $n;
 		if($lmsens->{list}->{$str}) {
-			$str = sprintf("Core %d", $n);
+			$str = $lmsens->{desc}->{$str} ? substr($lmsens->{desc}->{$str}, 0, 7) : sprintf("Core %2d", $n);
 			push(@tmpz, "LINE2:core_$n" . $LC[$n] . ":$str");
 		}
 	}
