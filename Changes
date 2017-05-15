@@ -19,6 +19,7 @@
 - From now on the perl-HTTP-Server-Simple module only is loaded if the HTTP
   built-in is enabled. This will permit to separate the HTTP built-in in a
   different package.
+- Added French translation to monthly reports.
 - Fixed an undeclared global symbol "$imgfmt_lc" in 'traffacct.pm'.
 - Fixed the MIME type of graphs in 'emailreports.pm' and in 'traffacct.pm' to
   honor the 'image_format' option. [#174]
