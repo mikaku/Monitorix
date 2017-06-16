@@ -366,28 +366,38 @@ EOF
 	if(lc($config{enable_hourly_view} || "") eq "y" ) {
 		print(OUT <<EOF);
         <td bgcolor="$title_back_color">
-          <input type="radio" name="when" value="1hour">
-            <font color="$title_fore_color"><b>Hourly&nbsp;</b></font>
+       	    <label>
+		<input type="radio" name="when" value="1hour">
+		<font color="$title_fore_color"><b>Hourly&nbsp;</b></font>
+	    </label>
         </td>
 EOF
 	}
 
 	print(OUT <<EOF);
         <td bgcolor="$title_back_color">
-          <input type="radio" checked name="when" value="1day">
-            <font color="$title_fore_color"><b>Daily&nbsp;</b></font>
+	    <label>
+          	<input type="radio" checked name="when" value="1day">
+            	<font color="$title_fore_color"><b>Daily&nbsp;</b></font>
+	    </label>
         </td>
         <td bgcolor="$title_back_color">
-          <input type="radio" name="when" value="1week">
-            <font color="$title_fore_color"><b>Weekly&nbsp;</b></font>
+       	    <label>
+          	<input type="radio" name="when" value="1week">
+            	<font color="$title_fore_color"><b>Weekly&nbsp;</b></font>
+	    </label>
         </td>
         <td bgcolor="$title_back_color">
-          <input type="radio" name="when" value="1month">
-            <font color="$title_fore_color"><b>Monthly&nbsp;</b></font>
+       	    <label>
+          	<input type="radio" name="when" value="1month">
+            	<font color="$title_fore_color"><b>Monthly&nbsp;</b></font>
+	    </label>
         </td>
         <td bgcolor="$title_back_color">
-          <input type="radio" name="when" value="1year">
-            <font color="$title_fore_color"><b>Yearly&nbsp;</b></font>
+       	    <label>
+          	<input type="radio" name="when" value="1year">
+            	<font color="$title_fore_color"><b>Yearly&nbsp;</b></font>
+	    </label>
         </td>
       </tr>
 EOF
@@ -402,8 +412,10 @@ EOF
 		}
 		print(OUT <<EOF);
         <td bgcolor="$title_back_color">
-          <input type="radio" name="when" value="${n}year">
-            <font color="$title_fore_color"><b>$n Years&nbsp;</b></font>
+       	    <label>
+          	<input type="radio" name="when" value="${n}year">
+            	<font color="$title_fore_color"><b>$n Years&nbsp;</b></font>
+	    </label>
         </td>
 EOF
 	}
