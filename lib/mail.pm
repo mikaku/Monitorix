@@ -400,6 +400,21 @@ sub mail_update {
 				if(/ postfix\/smtpd\[\d+\]: NOQUEUE: reject: RCPT from /) {
 					$rbl++;
 				}
+				# postgrey
+				if(lc($mail->{greylist}) eq "postgrey") {
+					if(/ action=greylist, reason=new, /) {
+						$gl_greylisted++;
+					}
+					if(/ action=greylist, reason=early-retry /) {
+						$gl_greylisted++;
+					}
+					if(/ action=pass, reason=triplet found, /) {
+						$gl_records++;
+					}
+					if(/ action=pass, reason=client whitelist, /) {
+						$gl_whitelisted++;
+					}
+				}
 			}
 		}
 		close(IN);
@@ -1356,19 +1371,32 @@ sub mail_cgi {
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
-	push(@tmp, "AREA:greylisted#4444EE:Greylisted");
-	push(@tmp, "GPRINT:greylisted:LAST:           Current\\: %5.0lf\\n");
-	push(@tmp, "AREA:whitelisted#44EEEE:Whitelisted");
-	push(@tmp, "GPRINT:whitelisted:LAST:          Current\\: %5.0lf\\n");
-	push(@tmp, "LINE2:greylisted#0000EE");
-	push(@tmp, "LINE2:whitelisted#00EEEE");
-	push(@tmp, "LINE2:records#EE0000:Records");
-	push(@tmp, "GPRINT:records:LAST:              Current\\: %5.0lf\\n");
-	push(@tmpz, "AREA:greylisted#4444EE:Greylisted");
-	push(@tmpz, "AREA:whitelisted#44EEEE:Whitelisted");
-	push(@tmpz, "LINE2:greylisted#0000EE");
-	push(@tmpz, "LINE2:whitelisted#00EEEE");
-	push(@tmpz, "LINE2:records#EE0000:Records");
+	if(lc($mail->{greylist}) eq "milter-greylist") {
+		push(@tmp, "AREA:greylisted#4444EE:Greylisted");
+		push(@tmp, "GPRINT:greylisted:LAST:           Current\\: %5.0lf\\n");
+		push(@tmp, "AREA:whitelisted#44EEEE:Whitelisted");
+		push(@tmp, "GPRINT:whitelisted:LAST:          Current\\: %5.0lf\\n");
+		push(@tmp, "LINE2:greylisted#0000EE");
+		push(@tmp, "LINE2:whitelisted#00EEEE");
+		push(@tmp, "LINE2:records#EE0000:Records");
+		push(@tmp, "GPRINT:records:LAST:              Current\\: %5.0lf\\n");
+		push(@tmpz, "AREA:greylisted#4444EE:Greylisted");
+		push(@tmpz, "AREA:whitelisted#44EEEE:Whitelisted");
+		push(@tmpz, "LINE2:greylisted#0000EE");
+		push(@tmpz, "LINE2:whitelisted#00EEEE");
+		push(@tmpz, "LINE2:records#EE0000:Records");
+	}
+	if(lc($mail->{greylist}) eq "postgrey") {
+		push(@tmp, "LINE2:greylisted#0000EE:Greylisted");
+		push(@tmp, "GPRINT:greylisted:LAST:           Current\\: %5.0lf\\n");
+		push(@tmp, "LINE2:whitelisted#00EEEE:Whitelisted");
+		push(@tmp, "GPRINT:whitelisted:LAST:          Current\\: %5.0lf\\n");
+		push(@tmp, "LINE2:records#EE00EE:Passed");
+		push(@tmp, "GPRINT:records:LAST:               Current\\: %5.0lf\\n");
+		push(@tmpz, "LINE2:greylisted#0000EE:Greylisted");
+		push(@tmpz, "LINE2:whitelisted#00EEEE:Whitelisted");
+		push(@tmpz, "LINE2:records#EE00EE:Passed");
+	}
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
