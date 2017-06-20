@@ -1368,6 +1368,7 @@ sub mail_cgi {
 	}
 
 	@riglim = @{setup_riglim($rigid[5], $limit[5])};
+	my $gl_label;
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -1385,6 +1386,7 @@ sub mail_cgi {
 		push(@tmpz, "LINE2:greylisted#0000EE");
 		push(@tmpz, "LINE2:whitelisted#00EEEE");
 		push(@tmpz, "LINE2:records#EE0000:Records");
+		$gl_label = "Messages";
 	}
 	if(lc($mail->{greylist}) eq "postgrey") {
 		push(@tmp, "LINE2:greylisted#0000EE:Greylisted");
@@ -1396,6 +1398,7 @@ sub mail_cgi {
 		push(@tmpz, "LINE2:greylisted#0000EE:Greylisted");
 		push(@tmpz, "LINE2:whitelisted#00EEEE:Whitelisted");
 		push(@tmpz, "LINE2:records#EE00EE:Passed");
+		$gl_label = "Messages/s";
 	}
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -1415,7 +1418,7 @@ sub mail_cgi {
 		"--title=$config->{graphs}->{_mail6}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=$imgfmt_uc",
-		"--vertical-label=Messages",
+		"--vertical-label=$gl_label",
 		"--width=$width",
 		"--height=$height",
 		@riglim,
@@ -1437,7 +1440,7 @@ sub mail_cgi {
 			"--title=$config->{graphs}->{_mail6}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=$imgfmt_uc",
-			"--vertical-label=Messages",
+			"--vertical-label=$gl_label",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
