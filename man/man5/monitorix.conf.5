@@ -1534,12 +1534,18 @@ Default value: \fIsendmail\fP
 .P
 .BI greylist
 .RS
-This option specifies the Greylisting implementation that Monitorix will use to collect statistical information. In the future more Greylisting software will be supported.
+This option specifies the Greylisting implementation that Monitorix will use to collect statistical information. 
 .P
-The currently supported Greylist software is:
+The currently supported Greylisting software is:
 .RS
 \fImilter-greylist\fP
+.br
+\fIpostgrey\fP
 .RE
+.P
+In the case of \fImilter-greylist\fP, Monitorix shows the same data that appears at the end of the file \fIgreylist.db\fP.
+.P
+In the case of \fIPostgrey\fP, Monitorix reads the \fBmail_log\fP file and searches for a specific type of lines. Lines of type "action=greylist, reason=new" and "action=greylist, reason=early-retry" are treated together and appear as Greylisted in the graph. Lines of type "action=pass, reason=triplet found" appear as Passed in the graph. And finally, lines of type "action=pass, reason=client whitelist" appear as Whitelisted in the graph.
 .P
 Default value: \fImilter-greylist\fP
 .RE
