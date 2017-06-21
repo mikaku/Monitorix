@@ -21,6 +21,7 @@
   different package.
 - Added French translation to monthly reports.
         (thanks to Sylvain Gomez, sylvaingomez AT free.fr)
+- Added support of Postgrey (Postfix Greylisting) in 'mail.pm'. [#102]
 - Fixed an undeclared global symbol "$imgfmt_lc" in 'traffacct.pm'.
 - Fixed the MIME type of graphs in 'emailreports.pm' and in 'traffacct.pm' to
   honor the 'image_format' option. [#174]
