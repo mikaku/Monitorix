@@ -181,9 +181,10 @@ sub mail_update {
 	my $spf_softfail;
 	my $spf_fail;
 	my $rbl;
-	my $gl_records;
+	my $gl_records;		# means 'passed' in Postgrey
 	my $gl_greylisted;
 	my $gl_whitelisted;
+	my $gl_delayed;		# specific for Postgrey
 	my @mta = (0) x 15;
 	my @gen = (0) x 10;
 	my @mta_h = (0) x 15;
@@ -318,7 +319,7 @@ sub mail_update {
 		}
 	}
 
-	$gl_records = $gl_greylisted = $gl_whitelisted = 0;
+	$gl_records = $gl_greylisted = $gl_whitelisted = $gl_delayed = 0;
 	if(lc($mail->{greylist}) eq "milter-greylist") {
 		if(-r $config->{milter_gl}) {
 			open(IN, $config->{milter_gl});
@@ -342,7 +343,8 @@ sub mail_update {
 	$rbl = 0;
 	if(-r $config->{mail_log}) {
 		my $date = strftime("%b %e", localtime);
-		open(IN, $config->{mail_log});
+#		open(IN, $config->{mail_log});
+		open(IN, "/tmp/postfix-mail.log");
 		if(!seek(IN, 0, 2)) {
 			logger("Couldn't seek to the end ($config->{mail_log}): $!");
 			return;
@@ -406,7 +408,7 @@ sub mail_update {
 						$gl_greylisted++;
 					}
 					if(/ action=greylist, reason=early-retry /) {
-						$gl_greylisted++;
+						$gl_delayed++;
 					}
 					if(/ action=pass, reason=triplet found, /) {
 						$gl_records++;
@@ -561,7 +563,7 @@ sub mail_update {
 	$gen_h[6] = $gen[6] = int($gl_records) || 0;
 	$gen_h[7] = $gen[7] = int($gl_greylisted) || 0;
 	$gen_h[8] = $gen[8] = int($gl_whitelisted) || 0;
-	$gen_h[9] = $gen[9] = 0;
+	$gen_h[9] = $gen[9] = int($gl_delayed) || 0;
 
 	$config->{mail_hist} = join(";", $mail_log_size, $sa_log_size, $clamav_log_size, @mta_h, @gen_h);
 	for($n = 0; $n < 15; $n++) {
@@ -1391,11 +1393,14 @@ sub mail_cgi {
 	if(lc($mail->{greylist}) eq "postgrey") {
 		push(@tmp, "LINE2:greylisted#0000EE:Greylisted");
 		push(@tmp, "GPRINT:greylisted:LAST:           Current\\: %5.0lf\\n");
+		push(@tmp, "LINE2:delayed#EEEE00:Delayed");
+		push(@tmp, "GPRINT:delayed:LAST:              Current\\: %5.0lf\\n");
 		push(@tmp, "LINE2:whitelisted#00EEEE:Whitelisted");
 		push(@tmp, "GPRINT:whitelisted:LAST:          Current\\: %5.0lf\\n");
 		push(@tmp, "LINE2:records#EE00EE:Passed");
 		push(@tmp, "GPRINT:records:LAST:               Current\\: %5.0lf\\n");
 		push(@tmpz, "LINE2:greylisted#0000EE:Greylisted");
+		push(@tmpz, "LINE2:delayed#EEEE00:Delayed");
 		push(@tmpz, "LINE2:whitelisted#00EEEE:Whitelisted");
 		push(@tmpz, "LINE2:records#EE00EE:Passed");
 		$gl_label = "Messages/s";
@@ -1429,7 +1434,8 @@ sub mail_cgi {
 		"DEF:records=$rrd:mail_val07:AVERAGE",
 		"DEF:greylisted=$rrd:mail_val08:AVERAGE",
 		"DEF:whitelisted=$rrd:mail_val09:AVERAGE",
-		"CDEF:allvalues=records,greylisted,whitelisted,+,+",
+		"DEF:delayed=$rrd:mail_val10:AVERAGE",
+		"CDEF:allvalues=records,greylisted,whitelisted,delayed,+,+,+",
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
@@ -1451,7 +1457,8 @@ sub mail_cgi {
 			"DEF:records=$rrd:mail_val07:AVERAGE",
 			"DEF:greylisted=$rrd:mail_val08:AVERAGE",
 			"DEF:whitelisted=$rrd:mail_val09:AVERAGE",
-			"CDEF:allvalues=records,greylisted,whitelisted,+,+",
+			"DEF:delayed=$rrd:mail_val10:AVERAGE",
+			"CDEF:allvalues=records,greylisted,whitelisted,delayed,+,+,+",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
