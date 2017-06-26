@@ -477,12 +477,14 @@ EOF
 		}
 	}
 	$title =~ s/ /&nbsp;/g;
+	my $twhen = $tf{nwhen} > 1 ? "$tf{nwhen} $tf{twhen}" : $tf{twhen};
+	$twhen .= "s" if $tf{nwhen} > 1;
 	print("    <font size='5'><b>&nbsp;&nbsp;$title&nbsp;&nbsp;</b></font>\n");
 	print("  </font>\n");
 	print("  </td>\n");
 		print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
 		print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
-		print("    <font size='5'><b>&nbsp;&nbsp;last&nbsp;$tf{twhen}&nbsp;&nbsp;</b></font>\n");
+		print("    <font size='5'><b>&nbsp;&nbsp;last&nbsp;$twhen&nbsp;&nbsp;</b></font>\n");
 		print("  </font>\n");
 		print("  </td>\n");
 	print("  </tr>\n");
