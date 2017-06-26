@@ -420,7 +420,7 @@ if(!$silent) {
 EOF
 	}
 
-	print("<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 3.2 Final//EN'>\n");
+	print("<!DOCTYPE html '-//W3C//DTD HTML 4.01 Final//EN'>\n");
 	print("<html>\n");
 	print("  <head>\n");
 	print("    <title>$config{title}</title>\n");

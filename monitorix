@@ -180,7 +180,7 @@ EOF
 		die "unable to create '${config{base_dir}}index.html': $!";
 	}
 	print(OUT <<EOF);
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<!DOCTYPE html "-//W3C//DTD HTML 4.01 Final//EN">
 <html>
  <head>
   <title>$config{title}</title>

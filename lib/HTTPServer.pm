@@ -191,7 +191,7 @@ sub handle_request {
 	$denied = ip_validity($ENV{REMOTE_ADDR}, $hosts_deny) if !$allowed;
 	if(!$allowed && $denied) {
 		http_header("403", "html");
-		print "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n";
+		print("<!DOCTYPE html '-//W3C//DTD HTML 4.01 Final//EN'>\r\n");
 		print "<html><head>\r\n";
 		print "<title>403 Forbidden</title>\r\n";
 		print "</head><body>\r\n";
@@ -244,7 +244,7 @@ sub handle_request {
 	if(scalar(@data)) {
 		if($auth eq "y") {
 			if(http_header("401", $mimetype)) {
-				print "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n";
+				print("<!DOCTYPE html '-//W3C//DTD HTML 4.01 Final//EN'>\r\n");
 				print "<html><head>\r\n";
 				print "<title>401 Authorization Required</title>\r\n";
 				print "</head><body>\r\n";
@@ -267,7 +267,7 @@ sub handle_request {
 		logger($url, "OK");
 	} else {
 		http_header("404", "html");
-		print "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n";
+		print("<!DOCTYPE html '-//W3C//DTD HTML 4.01 Final//EN'>\r\n");
 		print "<html><head>\r\n";
 		print "<title>404 Not Found</title>\r\n";
 		print "</head><body>\r\n";
