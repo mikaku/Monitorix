@@ -25,6 +25,8 @@
         (thanks to Malte Kubat, M.Kubat AT csb-it.de)
 - Updated to 4.01 the HTML DOCTYPE declarations.
 - Added more precision to the values in 'gensens.pm.
+- Added string encoding to avoid the message 'Wide character in print at
+  ./monitorix.cgi line ...'. [#186]
 - Fixed an undeclared global symbol "$imgfmt_lc" in 'traffacct.pm'.
 - Fixed the MIME type of graphs in 'emailreports.pm' and in 'traffacct.pm' to
   honor the 'image_format' option. [#174]
