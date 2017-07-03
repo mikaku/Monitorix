@@ -29,6 +29,7 @@ use CGI qw(:standard);
 use Config::General;
 use POSIX;
 use RRDs;
+use Encode;
 
 my %config;
 my %cgi;
@@ -490,7 +491,7 @@ EOF
 	print("  </tr>\n");
 	print("  </table>\n");
 	print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "'>\n");
-	print("    <h4><font color='#888888'>" . strftime("%a %b %e %H:%M:%S %Z %Y", localtime) . "</font></h4>\n");
+	print encode('utf-8', "    <h4><font color='#888888'>" . strftime("%a %b %e %H:%M:%S %Z %Y", localtime) . "</font></h4>\n");
 }
 
 
