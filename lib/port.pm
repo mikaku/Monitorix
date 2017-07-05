@@ -29,6 +29,7 @@ use Exporter 'import';
 our @EXPORT = qw(port_init port_update port_cgi);
 
 # Force a standard locale
+$ENV{LANG} = "";
 setlocale(LC_ALL, "C");
 
 sub port_init {
