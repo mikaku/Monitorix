@@ -24,9 +24,12 @@ use strict;
 use warnings;
 use Monitorix;
 use RRDs;
-use POSIX qw(strftime);
+use POSIX qw(strftime setlocale LC_ALL);
 use Exporter 'import';
 our @EXPORT = qw(port_init port_update port_cgi);
+
+# Force a standard locale
+setlocale(LC_ALL, "C");
 
 sub port_init {
 	my $myself = (caller(0))[3];
