@@ -343,8 +343,7 @@ sub mail_update {
 	$rbl = 0;
 	if(-r $config->{mail_log}) {
 		my $date = strftime("%b %e", localtime);
-#		open(IN, $config->{mail_log});
-		open(IN, "/tmp/postfix-mail.log");
+		open(IN, $config->{mail_log});
 		if(!seek(IN, 0, 2)) {
 			logger("Couldn't seek to the end ($config->{mail_log}): $!");
 			return;
