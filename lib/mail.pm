@@ -402,8 +402,7 @@ sub mail_update {
 					# postgrey
 					if(lc($mail->{greylist}) eq "postgrey") {
 						if(/ Recipient address rejected: Greylisted, /) {
-							$gl_greylisted++;
-							next;
+							next;	# line ignored
 						}
 					}
 					$rbl++;
