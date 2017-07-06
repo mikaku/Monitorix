@@ -399,6 +399,13 @@ sub mail_update {
 				}
 				# postfix RBL
 				if(/ postfix\/smtpd\[\d+\]: NOQUEUE: reject: RCPT from /) {
+					# postgrey
+					if(lc($mail->{greylist}) eq "postgrey") {
+						if(/ Recipient address rejected: Greylisted, /) {
+							$gl_greylisted++;
+							next;
+						}
+					}
 					$rbl++;
 				}
 				# postgrey
