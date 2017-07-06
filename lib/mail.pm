@@ -561,15 +561,37 @@ sub mail_update {
 	$gen[3] = int($spf_fail) unless !$gen_h[3];
 	$gen_h[3] = int($spf_fail) unless $gen_h[3];
 
-	# avoid initial peak
-	$gen[4] = int($rbl) unless !$gen_h[4];
-	$gen_h[4] = int($rbl) unless $gen_h[4];
+	$gen[4] = int($rbl) - ($gen_h[4] || 0);
+	$gen[4] = 0 unless $gen[4] != int($rbl);
+	$gen[4] /= 60;
+	$gen_h[4] = int($rbl);
 
-	$gen_h[5] = $gen[5] = 0;
-	$gen_h[6] = $gen[6] = int($gl_records) || 0;
-	$gen_h[7] = $gen[7] = int($gl_greylisted) || 0;
-	$gen_h[8] = $gen[8] = int($gl_whitelisted) || 0;
-	$gen_h[9] = $gen[9] = int($gl_delayed) || 0;
+	if(lc($mail->{greylist}) eq "milter-greylist") {
+		$gen_h[5] = $gen[5] = 0;
+		$gen_h[6] = $gen[6] = int($gl_records) || 0;
+		$gen_h[7] = $gen[7] = int($gl_greylisted) || 0;
+		$gen_h[8] = $gen[8] = int($gl_whitelisted) || 0;
+		$gen_h[9] = $gen[9] = int($gl_delayed) || 0;
+	}
+	if(lc($mail->{greylist}) eq "postgrey") {
+		$gen_h[5] = $gen[5] = 0;
+		$gen[6] = int($gl_records) - ($gen_h[6] || 0);
+		$gen[6] = 0 unless $gen[6] != int($gl_records);
+		$gen[6] /= 60;
+		$gen_h[6] = int($gl_records);
+		$gen[7] = int($gl_greylisted) - ($gen_h[7] || 0);
+		$gen[7] = 0 unless $gen[7] != int($gl_greylisted);
+		$gen[7] /= 60;
+		$gen_h[7] = int($gl_greylisted);
+		$gen[8] = int($gl_whitelisted) - ($gen_h[8] || 0);
+		$gen[8] = 0 unless $gen[8] != int($gl_whitelisted);
+		$gen[8] /= 60;
+		$gen_h[8] = int($gl_whitelisted);
+		$gen[9] = int($gl_delayed) - ($gen_h[9] || 0);
+		$gen[9] = 0 unless $gen[9] != int($gl_delayed);
+		$gen[9] /= 60;
+		$gen_h[9] = int($gl_delayed);
+	}
 
 	$config->{mail_hist} = join(";", $mail_log_size, $sa_log_size, $clamav_log_size, @mta_h, @gen_h);
 	for($n = 0; $n < 15; $n++) {
