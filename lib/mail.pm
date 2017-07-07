@@ -402,7 +402,7 @@ sub mail_update {
 					# postgrey
 					if(lc($mail->{greylist}) eq "postgrey") {
 						if(/ Recipient address rejected: Greylisted, /) {
-							next;	# line ignored
+							next;	# ignored
 						}
 					}
 					$rbl++;
@@ -1419,13 +1419,13 @@ sub mail_cgi {
 	}
 	if(lc($mail->{greylist}) eq "postgrey") {
 		push(@tmp, "LINE2:greylisted#0000EE:Greylisted");
-		push(@tmp, "GPRINT:greylisted:LAST:           Current\\: %5.0lf\\n");
+		push(@tmp, "GPRINT:greylisted:LAST:           Current\\: %5.1lf\\n");
 		push(@tmp, "LINE2:delayed#EEEE00:Delayed");
-		push(@tmp, "GPRINT:delayed:LAST:              Current\\: %5.0lf\\n");
+		push(@tmp, "GPRINT:delayed:LAST:              Current\\: %5.1lf\\n");
 		push(@tmp, "LINE2:whitelisted#00EEEE:Whitelisted");
-		push(@tmp, "GPRINT:whitelisted:LAST:          Current\\: %5.0lf\\n");
+		push(@tmp, "GPRINT:whitelisted:LAST:          Current\\: %5.1lf\\n");
 		push(@tmp, "LINE2:records#EE00EE:Passed");
-		push(@tmp, "GPRINT:records:LAST:               Current\\: %5.0lf\\n");
+		push(@tmp, "GPRINT:records:LAST:               Current\\: %5.1lf\\n");
 		push(@tmpz, "LINE2:greylisted#0000EE:Greylisted");
 		push(@tmpz, "LINE2:delayed#EEEE00:Delayed");
 		push(@tmpz, "LINE2:whitelisted#00EEEE:Whitelisted");
