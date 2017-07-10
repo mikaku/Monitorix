@@ -1550,6 +1550,22 @@ In the case of \fIPostgrey\fP, Monitorix reads the \fBmail_log\fP file and searc
 Default value: \fImilter-greylist\fP
 .RE
 .P
+.BI stats_rate
+.RS
+This option only affects the Mail Statistics and the Greylisting graphs, and it specifies the rate in which the values are saved and shown. This option has two possible values:
+.RS
+\fIreal\fP
+.br
+\fIper_second\fP
+.RE
+.P
+If it's set to its default value (\fIreal\fP), it will show the messages as in a 'per minute' rate. Since Monitorix collects data on every minute, this should be the preferred way to see the results.
+.P
+In the other hand, and in order to keep backwards compatibility, if this option is missing in the configuration file, it will act as if it was set up as \fIper_second\fP, which means that the number of messages collected in each minute will be divided by 60.
+.P
+Default value: \fIreal\fP
+.RE
+.P
 .BI delvd_enabled
 .RS
 This section enables or disables one of the alert capabilities for this graph; the alert for the number of delivered messages. It works as follows:

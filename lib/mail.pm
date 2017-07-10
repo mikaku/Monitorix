@@ -138,6 +138,10 @@ sub mail_init {
 			logger("$myself: ERROR: script '$mail->{alerts}->{mqueued_script}' doesn't exist or don't has execution permissions.");
 		}
 	}
+	if(!$mail->{stats_rate}) {
+		$mail->{stats_rate} = "per_second";
+		print("stats_rate set to 'per_second'\n");
+	}
 
 	# Since 3.6.0 all DS changed from COUNTER to GAUGE
 	RRDs::tune($rrd,
@@ -475,52 +479,52 @@ sub mail_update {
 
 	$mta[0] = int($in_conn) - ($mta_h[0] || 0);
 	$mta[0] = 0 unless $mta[0] != int($in_conn);
-	$mta[0] /= 60;
+	$mta[0] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 	$mta_h[0] = int($in_conn);
 
 	$mta[1] = int($out_conn) - ($mta_h[1] || 0);
 	$mta[1] = 0 unless $mta[1] != int($out_conn);
-	$mta[1] /= 60;
+	$mta[1] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 	$mta_h[1] = int($out_conn);
 
 	$mta[2] = int($recvd) - ($mta_h[2] || 0);
 	$mta[2] = 0 unless $mta[2] != int($recvd);
-	$mta[2] /= 60;
+	$mta[2] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 	$mta_h[2] = int($recvd);
 
 	$mta[3] = int($delvd) - ($mta_h[3] || 0);
 	$mta[3] = 0 unless $mta[3] != int($delvd);
-	$mta[3] /= 60;
+	$mta[3] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 	$mta_h[3] = int($delvd);
 
 	$mta[4] = int($bytes_recvd) - ($mta_h[4] || 0);
 	$mta[4] = 0 unless $mta[4] != int($bytes_recvd);
-	$mta[4] /= 60;
+	$mta[4] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 	$mta_h[4] = int($bytes_recvd);
 
 	$mta[5] = int($bytes_delvd) - ($mta_h[5] || 0);
 	$mta[5] = 0 unless $mta[5] != int($bytes_delvd);
-	$mta[5] /= 60;
+	$mta[5] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 	$mta_h[5] = int($bytes_delvd);
 
 	$mta[6] = int($rejtd) - ($mta_h[6] || 0);
 	$mta[6] = 0 unless $mta[6] != int($rejtd);
-	$mta[6] /= 60;
+	$mta[6] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 	$mta_h[6] = int($rejtd);
 
 	# avoid initial peak
 	$mta[7] = int($spam) unless !$mta_h[7];
 	$mta_h[7] = int($spam) unless $mta_h[7];
-	$mta[7] /= 60;
+	$mta[7] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 
 	# avoid initial peak
 	$mta[8] = int($virus) unless !$mta_h[8];
 	$mta_h[8] = int($virus) unless $mta_h[8];
-	$mta[8] /= 60;
+	$mta[8] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 
 	$mta[9] = int($bouncd) - ($mta_h[9] || 0);
 	$mta[9] = 0 unless $mta[9] != int($bouncd);
-	$mta[9] /= 60;
+	$mta[9] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 	$mta_h[9] = int($bouncd);
 
 	$mta[10] = int($queued) || 0;
@@ -528,17 +532,17 @@ sub mail_update {
 
 	$mta[11] = int($discrd) - ($mta_h[11] || 0);
 	$mta[11] = 0 unless $mta[11] != int($discrd);
-	$mta[11] /= 60;
+	$mta[11] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 	$mta_h[11] = int($discrd);
 
 	$mta[12] = int($held) - ($mta_h[12] || 0);
 	$mta[12] = 0 unless $mta[12] != int($held);
-	$mta[12] /= 60;
+	$mta[12] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 	$mta_h[12] = int($held);
 
 	$mta[13] = int($forwrd) - ($mta_h[13] || 0);
 	$mta[13] = 0 unless $mta[13] != int($forwrd);
-	$mta[13] /= 60;
+	$mta[13] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 	$mta_h[13] = int($forwrd);
 
 	$mta[14] = int($queues) || 0;
@@ -576,19 +580,19 @@ sub mail_update {
 		$gen_h[5] = $gen[5] = 0;
 		$gen[6] = int($gl_records) - ($gen_h[6] || 0);
 		$gen[6] = 0 unless $gen[6] != int($gl_records);
-		$gen[6] /= 60;
+		$gen[6] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 		$gen_h[6] = int($gl_records);
 		$gen[7] = int($gl_greylisted) - ($gen_h[7] || 0);
 		$gen[7] = 0 unless $gen[7] != int($gl_greylisted);
-		$gen[7] /= 60;
+		$gen[7] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 		$gen_h[7] = int($gl_greylisted);
 		$gen[8] = int($gl_whitelisted) - ($gen_h[8] || 0);
 		$gen[8] = 0 unless $gen[8] != int($gl_whitelisted);
-		$gen[8] /= 60;
+		$gen[8] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 		$gen_h[8] = int($gl_whitelisted);
 		$gen[9] = int($gl_delayed) - ($gen_h[9] || 0);
 		$gen[9] = 0 unless $gen[9] != int($gl_delayed);
-		$gen[9] /= 60;
+		$gen[9] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 		$gen_h[9] = int($gl_delayed);
 	}
 
@@ -673,6 +677,9 @@ sub mail_cgi {
 	my @riglim;
 	my $T = "B";
 	my $vlabel = "bytes/s";
+	my $rate_label = "Messages";
+	my $valform = "%5.0lf";
+	my $gl_valform = "%5.0lf";
 	my @tmp;
 	my @tmpz;
 	my @CDEF;
@@ -692,6 +699,14 @@ sub mail_cgi {
 	if(lc($config->{netstats_in_bps}) eq "y") {
 		$T = "b";
 		$vlabel = "bits/s";
+	}
+	if(!$mail->{stats_rate}) {
+		$mail->{stats_rate} = "per_second";
+	}
+	if(lc($mail->{stats_rate}) eq "per_second") {
+		$rate_label = "Messages/s";
+		$valform = "%5.2lf";
+		$gl_valform = "%5.1lf";
 	}
 
 
@@ -777,40 +792,40 @@ sub mail_cgi {
 	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	if(lc($mail->{mta}) eq "sendmail") {
 		push(@tmp, "AREA:in#44EE44:In Connections");
-		push(@tmp, "GPRINT:in:LAST:    Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:in:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:in:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:in:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:in:LAST:    Cur\\: $valform");
+		push(@tmp, "GPRINT:in:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:in:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:in:MAX:    Max\\: $valform\\n");
 		push(@tmp, "AREA:rejtd#EE4444:Rejected");
-		push(@tmp, "GPRINT:rejtd:LAST:          Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:rejtd:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:rejtd:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:rejtd:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:rejtd:LAST:          Cur\\: $valform");
+		push(@tmp, "GPRINT:rejtd:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:rejtd:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:rejtd:MAX:    Max\\: $valform\\n");
 		push(@tmp, "AREA:recvd#448844:Received");
-		push(@tmp, "GPRINT:recvd:LAST:          Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:recvd:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:recvd:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:recvd:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:recvd:LAST:          Cur\\: $valform");
+		push(@tmp, "GPRINT:recvd:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:recvd:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:recvd:MAX:    Max\\: $valform\\n");
 		push(@tmp, "AREA:spam#EEEE44:Spam");
-		push(@tmp, "GPRINT:spam:LAST:              Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:spam:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:spam:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:spam:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:spam:LAST:              Cur\\: $valform");
+		push(@tmp, "GPRINT:spam:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:spam:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:spam:MAX:    Max\\: $valform\\n");
 		push(@tmp, "AREA:virus#EE44EE:Virus");
-		push(@tmp, "GPRINT:virus:LAST:             Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:virus:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:virus:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:virus:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:virus:LAST:             Cur\\: $valform");
+		push(@tmp, "GPRINT:virus:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:virus:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:virus:MAX:    Max\\: $valform\\n");
 		push(@tmp, "AREA:n_delvd#4444EE:Delivered");
-		push(@tmp, "GPRINT:delvd:LAST:         Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:delvd:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:delvd:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:delvd:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:delvd:LAST:         Cur\\: $valform");
+		push(@tmp, "GPRINT:delvd:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:delvd:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:delvd:MAX:    Max\\: $valform\\n");
 		push(@tmp, "AREA:n_out#44EEEE:Out Connections");
-		push(@tmp, "GPRINT:out:LAST:   Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:out:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:out:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:out:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:out:LAST:   Cur\\: $valform");
+		push(@tmp, "GPRINT:out:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:out:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:out:MAX:    Max\\: $valform\\n");
 		push(@tmp, "LINE1:in#00EE00");
 		push(@tmp, "LINE1:rejtd#EE0000");
 		push(@tmp, "LINE1:recvd#1F881F");
@@ -838,55 +853,55 @@ sub mail_cgi {
 		push(@tmpz, "LINE1:n_out#00EEEE");
 	} elsif(lc($mail->{mta}) eq "postfix") {
 		push(@tmp, "AREA:rejtd#EE4444:Rejected");
-		push(@tmp, "GPRINT:rejtd:LAST:          Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:rejtd:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:rejtd:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:rejtd:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:rejtd:LAST:          Cur\\: $valform");
+		push(@tmp, "GPRINT:rejtd:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:rejtd:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:rejtd:MAX:    Max\\: $valform\\n");
 		push(@tmp, "AREA:rbl#963C74:Rejected (RBL)");
-		push(@tmp, "GPRINT:rbl:LAST:    Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:rbl:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:rbl:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:rbl:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:rbl:LAST:    Cur\\: $valform");
+		push(@tmp, "GPRINT:rbl:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:rbl:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:rbl:MAX:    Max\\: $valform\\n");
 		push(@tmp, "AREA:recvd#448844:Received");
-		push(@tmp, "GPRINT:recvd:LAST:          Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:recvd:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:recvd:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:recvd:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:recvd:LAST:          Cur\\: $valform");
+		push(@tmp, "GPRINT:recvd:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:recvd:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:recvd:MAX:    Max\\: $valform\\n");
 		push(@tmp, "AREA:spam#EEEE44:Spam");
-		push(@tmp, "GPRINT:spam:LAST:              Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:spam:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:spam:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:spam:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:spam:LAST:              Cur\\: $valform");
+		push(@tmp, "GPRINT:spam:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:spam:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:spam:MAX:    Max\\: $valform\\n");
 		push(@tmp, "AREA:virus#EE44EE:Virus");
-		push(@tmp, "GPRINT:virus:LAST:             Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:virus:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:virus:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:virus:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:virus:LAST:             Cur\\: $valform");
+		push(@tmp, "GPRINT:virus:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:virus:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:virus:MAX:    Max\\: $valform\\n");
 		push(@tmp, "AREA:bouncd#FFA500:Bounced");
-		push(@tmp, "GPRINT:bouncd:LAST:           Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:bouncd:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:bouncd:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:bouncd:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:bouncd:LAST:           Cur\\: $valform");
+		push(@tmp, "GPRINT:bouncd:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:bouncd:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:bouncd:MAX:    Max\\: $valform\\n");
 		push(@tmp, "AREA:discrd#CCCCCC:Discarded");
-		push(@tmp, "GPRINT:discrd:LAST:         Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:discrd:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:discrd:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:discrd:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:discrd:LAST:         Cur\\: $valform");
+		push(@tmp, "GPRINT:discrd:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:discrd:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:discrd:MAX:    Max\\: $valform\\n");
 		push(@tmp, "AREA:held#44EE44:Held");
-		push(@tmp, "GPRINT:held:LAST:              Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:held:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:held:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:held:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:held:LAST:              Cur\\: $valform");
+		push(@tmp, "GPRINT:held:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:held:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:held:MAX:    Max\\: $valform\\n");
 		push(@tmp, "AREA:n_forwrd#44EEEE:Forwarded");
-		push(@tmp, "GPRINT:forwrd:LAST:         Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:forwrd:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:forwrd:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:forwrd:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:forwrd:LAST:         Cur\\: $valform");
+		push(@tmp, "GPRINT:forwrd:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:forwrd:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:forwrd:MAX:    Max\\: $valform\\n");
 		push(@tmp, "AREA:n_delvd#4444EE:Delivered");
-		push(@tmp, "GPRINT:delvd:LAST:         Cur\\: %5.2lf");
-		push(@tmp, "GPRINT:delvd:AVERAGE:    Avg\\: %5.2lf");
-		push(@tmp, "GPRINT:delvd:MIN:    Min\\: %5.2lf");
-		push(@tmp, "GPRINT:delvd:MAX:    Max\\: %5.2lf\\n");
+		push(@tmp, "GPRINT:delvd:LAST:         Cur\\: $valform");
+		push(@tmp, "GPRINT:delvd:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:delvd:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:delvd:MAX:    Max\\: $valform\\n");
 		push(@tmp, "LINE1:rejtd#EE0000");
 		push(@tmp, "LINE1:rbl#963C74");
 		push(@tmp, "LINE1:recvd#1F881F");
@@ -944,7 +959,7 @@ sub mail_cgi {
 		"--title=$config->{graphs}->{_mail1}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=$imgfmt_uc",
-		"--vertical-label=Messages/s",
+		"--vertical-label=$rate_label",
 		"--width=$width",
 		"--height=$height",
 		@riglim,
@@ -979,7 +994,7 @@ sub mail_cgi {
 			"--title=$config->{graphs}->{_mail1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=$imgfmt_uc",
-			"--vertical-label=Messages/s",
+			"--vertical-label=$rate_label",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
@@ -1397,7 +1412,6 @@ sub mail_cgi {
 	}
 
 	@riglim = @{setup_riglim($rigid[5], $limit[5])};
-	my $gl_label;
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
@@ -1415,22 +1429,20 @@ sub mail_cgi {
 		push(@tmpz, "LINE2:greylisted#0000EE");
 		push(@tmpz, "LINE2:whitelisted#00EEEE");
 		push(@tmpz, "LINE2:records#EE0000:Records");
-		$gl_label = "Messages";
 	}
 	if(lc($mail->{greylist}) eq "postgrey") {
 		push(@tmp, "LINE2:greylisted#0000EE:Greylisted");
-		push(@tmp, "GPRINT:greylisted:LAST:           Current\\: %5.1lf\\n");
+		push(@tmp, "GPRINT:greylisted:LAST:           Current\\: $gl_valform\\n");
 		push(@tmp, "LINE2:delayed#EEEE00:Delayed");
-		push(@tmp, "GPRINT:delayed:LAST:              Current\\: %5.1lf\\n");
+		push(@tmp, "GPRINT:delayed:LAST:              Current\\: $gl_valform\\n");
 		push(@tmp, "LINE2:whitelisted#00EEEE:Whitelisted");
-		push(@tmp, "GPRINT:whitelisted:LAST:          Current\\: %5.1lf\\n");
+		push(@tmp, "GPRINT:whitelisted:LAST:          Current\\: $gl_valform\\n");
 		push(@tmp, "LINE2:records#EE00EE:Passed");
-		push(@tmp, "GPRINT:records:LAST:               Current\\: %5.1lf\\n");
+		push(@tmp, "GPRINT:records:LAST:               Current\\: $gl_valform\\n");
 		push(@tmpz, "LINE2:greylisted#0000EE:Greylisted");
 		push(@tmpz, "LINE2:delayed#EEEE00:Delayed");
 		push(@tmpz, "LINE2:whitelisted#00EEEE:Whitelisted");
 		push(@tmpz, "LINE2:records#EE00EE:Passed");
-		$gl_label = "Messages/s";
 	}
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -1450,7 +1462,7 @@ sub mail_cgi {
 		"--title=$config->{graphs}->{_mail6}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=$imgfmt_uc",
-		"--vertical-label=$gl_label",
+		"--vertical-label=$rate_label",
 		"--width=$width",
 		"--height=$height",
 		@riglim,
@@ -1473,7 +1485,7 @@ sub mail_cgi {
 			"--title=$config->{graphs}->{_mail6}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=$imgfmt_uc",
-			"--vertical-label=$gl_label",
+			"--vertical-label=$rate_label",
 			"--width=$width",
 			"--height=$height",
 			@riglim,
