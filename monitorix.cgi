@@ -169,21 +169,27 @@ sub multihost {
 
 sub graph_header {
 	my ($title, $colspan) = @_;
-	print("\n");
-	print("<!-- graph table begins -->\n");
-	print("  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors{graph_bg_color}' border='1'>\n");
-	print("    <tr>\n");
-	print("      <td bgcolor='$colors{title_bg_color}' colspan='$colspan'>\n");
-	print("        <font face='Verdana, sans-serif' color='$colors{title_fg_color}'>\n");
-	print("          <b>&nbsp;&nbsp;$title</b>\n");
-	print("        </font>\n");
-	print("      </td>\n");
-	print("    </tr>\n");
+	my @output;
+
+	push(@output, "\n");
+	push(@output, "<!-- graph table begins -->\n");
+	push(@output, "  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors{graph_bg_color}' border='1'>\n");
+	push(@output, "    <tr>\n");
+	push(@output, "      <td bgcolor='$colors{title_bg_color}' colspan='$colspan'>\n");
+	push(@output, "        <font face='Verdana, sans-serif' color='$colors{title_fg_color}'>\n");
+	push(@output, "          <b>&nbsp;&nbsp;$title</b>\n");
+	push(@output, "        </font>\n");
+	push(@output, "      </td>\n");
+	push(@output, "    </tr>\n");
+	return @output;
 }
 
 sub graph_footer {
-	print("  </table>\n");
-	print("<!-- graph table ends -->\n");
+	my @output;
+
+	push(@output, "  </table>\n");
+	push(@output, "<!-- graph table ends -->\n");
+	return @output;
 }
 
 
@@ -506,6 +512,9 @@ $cgi{val} = $val;
 $cgi{silent} = $silent;
 
 if($mode eq "localhost") {
+	my $children = 0;
+	my %outputs;	# a hash of arrays
+
 	foreach (split(',', $config{graph_name})) {
 		my $gn = trim($_);
 		my $g = "";
@@ -524,12 +533,46 @@ if($mode eq "localhost") {
 
 			if($graph eq "all" || $gn eq $g) {
 				no strict "refs";
-				&$cgi($gn, \%config, \%cgi);
+
+				if(lc($config{enable_parallelizing} || "") eq "y") {
+					pipe(CHILD_RDR, PARENT_WTR);
+					PARENT_WTR->autoflush(1);
+					$children++;
+
+					if(!fork()) {	# child
+						my @output;
+						close(CHILD_RDR);
+						@output = &$cgi($gn, \%config, \%cgi);
+						print(PARENT_WTR @output);
+						close(PARENT_WTR);
+						exit(0);
+					} else {	# parent
+						my @output;
+						close(PARENT_WTR);
+						@output = <CHILD_RDR>;
+						$outputs{$gn} = \@output;
+						close(CHILD_RDR);
+					}
+				} else {
+					my @output = &$cgi($gn, \%config, \%cgi);
+					print @output;
+				}
 			}
 		}
 	}
+	if(lc($config{enable_parallelizing} || "") eq "y") {
+		while($children--) {
+			waitpid(-1, 0);	# wait for all children
+		}
+		foreach (split(',', $config{graph_name})) {
+			my $gn = trim($_);
+			print @{$outputs{$gn}} if $outputs{$gn};
+		}
+	}
+
 } elsif($mode eq "multihost") {
 	multihost(\%config, \%colors, \%cgi);
+
 } elsif($mode eq "traffacct") {
 	eval "use $mode qw(traffacct_cgi)";
 	if($@) {

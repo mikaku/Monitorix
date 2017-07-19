@@ -13,6 +13,8 @@
   in bytes, so the y-axis will scale accordingly.
 - Changed to be more thickness the lines of Greylisting graph in 'mail.pm'.
 - Changed the colors of the main graph in 'ftp.pm'.
+- Introduced the option 'enable_parallelizing' in order to speed up the graph
+  generation in multi-core systems.
 - Added a new option in 'port.rrd' to enable/disable background red color for
   each port monitored. [#182]
 - Added to be able to change the real names in the Voltage graph. [#183]
