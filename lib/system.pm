@@ -779,7 +779,7 @@ sub system_cgi {
 	undef(@tmpz);
 	undef(@CDEF);
 	if($config->{os} eq "Linux") {
-		push(@tmp, "LINE2:npslp#00EE00:Sleeping");
+		push(@tmp, "AREA:npslp#448844:Sleeping");
 		push(@tmp, "GPRINT:npslp:LAST:             Current\\:%5.0lf\\n");
 		push(@tmp, "LINE2:npwio#EE44EE:Wait I/O");
 		push(@tmp, "GPRINT:npwio:LAST:             Current\\:%5.0lf\\n");
@@ -794,7 +794,7 @@ sub system_cgi {
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "LINE2:nproc#888888:Total Processes");
 		push(@tmp, "GPRINT:nproc:LAST:      Current\\:%5.0lf\\n");
-		push(@tmpz, "LINE2:npslp#00EE00:Sleeping");
+		push(@tmpz, "AREA:npslp#448844:Sleeping");
 		push(@tmpz, "LINE2:npwio#EE44EE:Wait I/O");
 		push(@tmpz, "LINE2:npzom#00EEEE:Zombie");
 		push(@tmpz, "LINE2:npstp#EEEE00:Stopped");
