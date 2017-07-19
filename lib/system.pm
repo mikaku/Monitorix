@@ -400,6 +400,7 @@ sub system_update {
 
 sub system_cgi {
 	my ($package, $config, $cgi) = @_;
+	my @output;
 
 	my $system = $config->{system};
 	my @rigid = split(',', ($system->{rigid} || ""));
@@ -457,20 +458,20 @@ sub system_cgi {
 	#
 	if(lc($config->{iface_mode}) eq "text") {
 		if($title) {
-			main::graph_header($title, 2);
-			print("    <tr>\n");
-			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, main::graph_header($title, 2));
+			push(@output, "    <tr>\n");
+			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch($rrd,
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"AVERAGE",
 			"-r $tf->{res}");
 		$err = RRDs::error;
-		print("ERROR: while fetching $rrd: $err\n") if $err;
-		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
-		print("       CPU load average      Memory usage in MB                            Processes\n");
-		print("Time   1min  5min 15min    Used  Cached Buffers   Total   R    S    D    Z    T    W Entropy   Uptime\n");
-		print("----------------------------------------------------------------------------------------------------- \n");
+		push(@output, "ERROR: while fetching $rrd: $err\n") if $err;
+		push(@output, "    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
+		push(@output, "       CPU load average      Memory usage in MB                            Processes\n");
+		push(@output, "Time   1min  5min 15min    Used  Cached Buffers   Total   R    S    D    Z    T    W Entropy   Uptime\n");
+		push(@output, "----------------------------------------------------------------------------------------------------- \n");
 		my $line;
 		my @row;
 		my $time;
@@ -482,18 +483,19 @@ sub system_cgi {
 			$free /= 1024;
 			@row = ($load1, $load5, $load15, $total_mem - $free, $cach, $buff, $nproc, $nprun, $npslp, $npwio, $npzom, $npstp, $npswp, $entropy, $uptime);
 			$time = $time - (1 / $tf->{ts});
-			printf(" %2d$tf->{tc}   %4.1f  %4.1f  %4.1f  %6d  %6d  %6d   %4d %4d %4d %4d %4d %4d %4d  %6d %8d\n", $time, @row);
+			push(@output, sprintf(" %2d$tf->{tc}   %4.1f  %4.1f  %4.1f  %6d  %6d  %6d   %4d %4d %4d %4d %4d %4d %4d  %6d %8d\n", $time, @row));
 		}
-		print("\n");
-		print(" system uptime: " . get_uptime($config) . "\n");
-		print("    </pre>\n");
+		push(@output, "\n");
+		push(@output, " system uptime: " . get_uptime($config) . "\n");
+		push(@output, "    </pre>\n");
 		if($title) {
-			print("    </td>\n");
-			print("    </tr>\n");
-			main::graph_footer();
+			my @footer;
+			push(@output, "    </td>\n");
+			push(@output, "    </tr>\n");
+			push(@output, main::graph_footer());
 		}
-		print("  <br>\n");
-		return;
+		push(@output, "  <br>\n");
+		return @output;
 	}
 
 
@@ -532,7 +534,7 @@ sub system_cgi {
 	}
 
 	if($title) {
-		main::graph_header($title, 2);
+		push(@output, main::graph_header($title, 2));
 	}
 	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	my $uptimeline;
@@ -542,8 +544,8 @@ sub system_cgi {
 		$uptimeline = "COMMENT:system uptime: " . get_uptime($config) . "\\c";
 	}
 	if($title) {
-		print("    <tr>\n");
-		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+		push(@output, "    <tr>\n");
+		push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
 	}
 	push(@tmp, "AREA:load1#4444EE: 1 min average");
 	push(@tmp, "GPRINT:load1:LAST:  Current\\: %4.2lf");
@@ -600,7 +602,7 @@ sub system_cgi {
 		"COMMENT: \\n",
 		$uptimeline);
 	$err = RRDs::error;
-	print("ERROR: while graphing $IMG_DIR" . "$IMG1: $err\n") if $err;
+	push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG1: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG1z",
@@ -621,12 +623,12 @@ sub system_cgi {
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
-		print("ERROR: while graphing $IMG_DIR" . "$IMG1z: $err\n") if $err;
+		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG1z: $err\n") if $err;
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /system1/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
+				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -635,10 +637,10 @@ sub system_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
+				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "'>\n");
+			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "'>\n");
 		}
 	}
 
@@ -712,7 +714,7 @@ sub system_cgi {
 		@tmp,
 		"COMMENT: \\n");
 	$err = RRDs::error;
-	print("ERROR: while graphing $IMG_DIR" . "$IMG2: $err\n") if $err;
+	push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG2: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG2z",
@@ -746,12 +748,12 @@ sub system_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $IMG_DIR" . "$IMG2z: $err\n") if $err;
+		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG2z: $err\n") if $err;
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /system2/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
+				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -760,16 +762,16 @@ sub system_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
+				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "'>\n");
+			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "'>\n");
 		}
 	}
 
 	if($title) {
-		print("    </td>\n");
-		print("    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		push(@output, "    </td>\n");
+		push(@output, "    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
 	}
 
 	@riglim = @{setup_riglim($rigid[2], $limit[2])};
@@ -845,7 +847,7 @@ sub system_cgi {
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
-	print("ERROR: while graphing $IMG_DIR" . "$IMG3: $err\n") if $err;
+	push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG3: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG3z",
@@ -871,12 +873,12 @@ sub system_cgi {
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
-		print("ERROR: while graphing $IMG_DIR" . "$IMG3z: $err\n") if $err;
+		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG3z: $err\n") if $err;
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /system3/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
+				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -885,10 +887,10 @@ sub system_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
+				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "'>\n");
+			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "'>\n");
 		}
 	}
 
@@ -927,7 +929,7 @@ sub system_cgi {
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
-	print("ERROR: while graphing $IMG_DIR" . "$IMG4: $err\n") if $err;
+	push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG4: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG4z",
@@ -947,12 +949,12 @@ sub system_cgi {
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
-		print("ERROR: while graphing $IMG_DIR" . "$IMG4z: $err\n") if $err;
+		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG4z: $err\n") if $err;
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /system4/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "' border='0'></a>\n");
+				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "' border='0'></a>\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -961,10 +963,10 @@ sub system_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "' border='0'></a>\n");
+				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "'>\n");
+			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "'>\n");
 		}
 	}
 
@@ -1004,7 +1006,7 @@ sub system_cgi {
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
-	print("ERROR: while graphing $IMG_DIR" . "$IMG5: $err\n") if $err;
+	push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG5: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG5z",
@@ -1025,12 +1027,12 @@ sub system_cgi {
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
-		print("ERROR: while graphing $IMG_DIR" . "$IMG5z: $err\n") if $err;
+		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG5z: $err\n") if $err;
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /system5/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "' border='0'></a>\n");
+				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "' border='0'></a>\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1039,20 +1041,20 @@ sub system_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "' border='0'></a>\n");
+				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "'>\n");
+			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "'>\n");
 		}
 	}
 
 	if($title) {
-		print("    </td>\n");
-		print("    </tr>\n");
-		main::graph_footer();
+		push(@output, "    </td>\n");
+		push(@output, "    </tr>\n");
+		push(@output, main::graph_footer());
 	}
-	print("  <br>\n");
-	return;
+	push(@output, "  <br>\n");
+	return @output;
 }
 
 sub get_uptime {
