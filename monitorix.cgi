@@ -2,7 +2,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2016 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2017 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -535,23 +535,33 @@ if($mode eq "localhost") {
 				no strict "refs";
 
 				if(lc($config{enable_parallelizing} || "") eq "y") {
-					pipe(CHILD_RDR, PARENT_WTR);
-					PARENT_WTR->autoflush(1);
 					$children++;
 
-					if(!fork()) {	# child
-						my @output;
-						close(CHILD_RDR);
-						@output = &$cgi($gn, \%config, \%cgi);
-						print(PARENT_WTR @output);
-						close(PARENT_WTR);
+					if(!fork()) {
+						my $child;
+
+						pipe(CHILD_RDR, PARENT_WTR);
+						PARENT_WTR->autoflush(1);
+
+						if(!($child = fork())) {	# child
+							my @output;
+							close(CHILD_RDR);
+							@output = &$cgi($gn, \%config, \%cgi);
+							print(PARENT_WTR @output);
+							close(PARENT_WTR);
+							exit(0);
+						} else {	# parent
+							my @output;
+							close(PARENT_WTR);
+							@output = <CHILD_RDR>;
+							close(CHILD_RDR);
+							waitpid($child, 0);
+							foreach (split(',', $config{graph_name})) {
+								my $g = trim($_);
+								print @output if $g eq $gn;
+							}
+						}
 						exit(0);
-					} else {	# parent
-						my @output;
-						close(PARENT_WTR);
-						@output = <CHILD_RDR>;
-						$outputs{$gn} = \@output;
-						close(CHILD_RDR);
 					}
 				} else {
 					my @output = &$cgi($gn, \%config, \%cgi);
@@ -564,10 +574,10 @@ if($mode eq "localhost") {
 		while($children--) {
 			waitpid(-1, 0);	# wait for all children
 		}
-		foreach (split(',', $config{graph_name})) {
-			my $gn = trim($_);
-			print @{$outputs{$gn}} if $outputs{$gn};
-		}
+#		foreach (split(',', $config{graph_name})) {
+#			my $gn = trim($_);
+#			print @{$outputs{$gn}} if $outputs{$gn};
+#		}
 	}
 
 } elsif($mode eq "multihost") {
@@ -591,7 +601,7 @@ if(!$silent) {
 	print("  <a href='http://www.monitorix.org'><img src='" . $config{url} . "/" . $config{logo_bottom} . "' border='0'></a>\n");
 	print("  <br>\n");
 	print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "' size='-2'>\n");
-	print("Copyright &copy; 2005-2016 Jordi Sanfeliu\n");
+	print("Copyright &copy; 2005-2017 Jordi Sanfeliu\n");
 	print("  </font>\n");
 	print("  </body>\n");
 	print("</html>\n");
