@@ -181,6 +181,9 @@ sub graph_header {
 	push(@output, "        </font>\n");
 	push(@output, "      </td>\n");
 	push(@output, "    </tr>\n");
+	if(lc($config{enable_parallelizing} || "") ne "y") {
+		print @output;
+	}
 	return @output;
 }
 
@@ -189,6 +192,9 @@ sub graph_footer {
 
 	push(@output, "  </table>\n");
 	push(@output, "<!-- graph table ends -->\n");
+	if(lc($config{enable_parallelizing} || "") ne "y") {
+		print @output;
+	}
 	return @output;
 }
 
@@ -574,10 +580,10 @@ if($mode eq "localhost") {
 		while($children--) {
 			waitpid(-1, 0);	# wait for all children
 		}
-#		foreach (split(',', $config{graph_name})) {
-#			my $gn = trim($_);
+		foreach (split(',', $config{graph_name})) {
+			my $gn = trim($_);
 #			print @{$outputs{$gn}} if $outputs{$gn};
-#		}
+		}
 	}
 
 } elsif($mode eq "multihost") {
