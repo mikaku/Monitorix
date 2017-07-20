@@ -518,8 +518,10 @@ $cgi{val} = $val;
 $cgi{silent} = $silent;
 
 if($mode eq "localhost") {
-	my $children = 0;
 	my %outputs;	# a hash of arrays
+	my @readers;	# array of file descriptors
+	my @writers;	# array of file descriptors
+	my $children = 0;
 
 	foreach (split(',', $config{graph_name})) {
 		my $gn = trim($_);
@@ -541,34 +543,41 @@ if($mode eq "localhost") {
 				no strict "refs";
 
 				if(lc($config{enable_parallelizing} || "") eq "y") {
-					$children++;
+					pipe($readers[$children], $writers[$children]);
+					$writers[$children]->autoflush(1);
 
 					if(!fork()) {
 						my $child;
 
+						close($readers[$children]);
+
 						pipe(CHILD_RDR, PARENT_WTR);
 						PARENT_WTR->autoflush(1);
 
-						if(!($child = fork())) {	# child
+						if(!($child = fork())) {
+							# child
 							my @output;
 							close(CHILD_RDR);
 							@output = &$cgi($gn, \%config, \%cgi);
 							print(PARENT_WTR @output);
 							close(PARENT_WTR);
 							exit(0);
-						} else {	# parent
-							my @output;
-							close(PARENT_WTR);
-							@output = <CHILD_RDR>;
-							close(CHILD_RDR);
-							waitpid($child, 0);
-							foreach (split(',', $config{graph_name})) {
-								my $g = trim($_);
-								print @output if $g eq $gn;
-							}
 						}
+
+						# parent
+						my @output;
+						close(PARENT_WTR);
+						@output = <CHILD_RDR>;
+						close(CHILD_RDR);
+						waitpid($child, 0);
+						my $fd = $writers[$children];
+						print($fd @output);
+						close($writers[$children]);
 						exit(0);
 					}
+					close($writers[$children]);
+					$children++;
+
 				} else {
 					my @output = &$cgi($gn, \%config, \%cgi);
 					print @output;
@@ -577,12 +586,16 @@ if($mode eq "localhost") {
 		}
 	}
 	if(lc($config{enable_parallelizing} || "") eq "y") {
-		while($children--) {
-			waitpid(-1, 0);	# wait for all children
-		}
-		foreach (split(',', $config{graph_name})) {
-			my $gn = trim($_);
-#			print @{$outputs{$gn}} if $outputs{$gn};
+		my $n;
+		my @output;
+
+		for($n = 0; $n < $children; $n++) {
+			my $fd = $readers[$n];
+			@output = <$fd>;
+			close($readers[$n]);
+			@{$outputs{$n}} = @output;
+			waitpid(-1, 0);	# wait for each child
+			print @{$outputs{$n}} if $outputs{$n};
 		}
 	}
 
