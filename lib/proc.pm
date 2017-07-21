@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2016 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2017 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -244,6 +244,7 @@ sub proc_update {
 
 sub proc_cgi {
 	my ($package, $config, $cgi) = @_;
+	my @output;
 
 	my $proc = $config->{proc};
 	my $kern = $config->{kern};
@@ -305,29 +306,29 @@ sub proc_cgi {
 	#
 	if(lc($config->{iface_mode}) eq "text") {
 		if($title) {
-			main::graph_header($title, 2);
-			print("    <tr>\n");
-			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, main::graph_header($title, 2));
+			push(@output, "    <tr>\n");
+			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"AVERAGE",
 			"-r $tf->{res}");
 		$err = RRDs::error;
-		print("ERROR: while fetching $rrd: $err\n") if $err;
-		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
+		push(@output, "ERROR: while fetching $rrd: $err\n") if $err;
+		push(@output, "    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
 		for($n = 0; $n < $ncpu; $n++) {
-			print("       Processor " . sprintf("%3d", $n) . "                                   ");
+			push(@output, "       Processor " . sprintf("%3d", $n) . "                                   ");
 		}
-		print("\nTime");
+		push(@output, "\nTime");
 		for($n = 0; $n < $ncpu; $n++) {
-			print("   User  Nice   Sys  Idle  I/Ow   IRQ  sIRQ Steal Guest");
+			push(@output, "   User  Nice   Sys  Idle  I/Ow   IRQ  sIRQ Steal Guest");
 		}
-		print(" \n----");
+		push(@output, " \n----");
 		for($n = 0; $n < $ncpu; $n++) {
-			print("-------------------------------------------------------");
+			push(@output, "-------------------------------------------------------");
 		}
-		print(" \n");
+		push(@output, " \n");
 		my $line;
 		my @row;
 		my $time;
@@ -336,24 +337,24 @@ sub proc_cgi {
 		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
 			$line = @$data[$n];
 			$time = $time - (1 / $tf->{ts});
-			printf(" %2d$tf->{tc} ", $time);
+			push(@output, sprintf(" %2d$tf->{tc} ", $time));
 			for($n2 = 0; $n2 < $ncpu; $n2++) {
 				$from = $n2 * $ncpu;
 				$to = $from + $ncpu;
 				my ($usr, $nic, $sys, $idle, $iow, $irq, $sirq, $steal, $guest,) = @$line[$from..$to];
 				@row = ($usr, $nic, $sys, $idle, $iow, $irq, $sirq, $steal, $guest);
-				printf(" %4.1f%% %4.1f%% %4.1f%% %4.1f%% %4.1f%% %4.1f%% %4.1f%% %4.1f%% %4.1f%% ", @row);
+				push(@output, sprintf(" %4.1f%% %4.1f%% %4.1f%% %4.1f%% %4.1f%% %4.1f%% %4.1f%% %4.1f%% %4.1f%% ", @row));
 			}
-			print("\n");
+			push(@output, "\n");
 		}
-		print("    </pre>\n");
+		push(@output, "    </pre>\n");
 		if($title) {
-			print("    </td>\n");
-			print("    </tr>\n");
-			main::graph_footer();
+			push(@output, "    </td>\n");
+			push(@output, "    </tr>\n");
+			push(@output, main::graph_footer());
 		}
-		print("  <br>\n");
-		return;
+		push(@output, "  <br>\n");
+		return @output;
 	}
 
 
@@ -384,14 +385,14 @@ sub proc_cgi {
 	while($n < $ncpu) {
 		if($title) {
 			if($n == 0) {
-				main::graph_header($title, $proc->{graphs_per_row});
+				push(@output, main::graph_header($title, $proc->{graphs_per_row}));
 			}
-			print("    <tr>\n");
+			push(@output, "    <tr>\n");
 		}
 		for($n2 = 0; $n2 < $proc->{graphs_per_row}; $n2++) {
 			last unless $n < $ncpu;
 			if($title) {
-				print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+				push(@output, "    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
 			}
 			undef(@tmp);
 			undef(@tmpz);
@@ -638,7 +639,7 @@ sub proc_cgi {
 				@CDEF,
 				@tmp);
 			$err = RRDs::error;
-			print("ERROR: while graphing $IMG_DIR" . "$IMG[$n]: $err\n") if $err;
+			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$n]: $err\n") if $err;
 			if(lc($config->{enable_zoom}) eq "y") {
 				($width, $height) = split('x', $config->{graph_size}->{zoom});
 				$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$n]",
@@ -665,12 +666,12 @@ sub proc_cgi {
 					@CDEF,
 					@tmpz);
 				$err = RRDs::error;
-				print("ERROR: while graphing $IMG_DIR" . "$IMGz[$n]: $err\n") if $err;
+				push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[$n]: $err\n") if $err;
 			}
 			if($title || ($silent =~ /imagetag/ && $graph =~ /proc$n/)) {
 				if(lc($config->{enable_zoom}) eq "y") {
 					if(lc($config->{disable_javascript_void}) eq "y") {
-						print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$n] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "' border='0'></a>\n");
+						push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$n] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "' border='0'></a>\n");
 					} else {
 						if($version eq "new") {
 							$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -679,26 +680,26 @@ sub proc_cgi {
 							$picz_width = $width + 115;
 							$picz_height = $height + 100;
 						}
-						print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$n] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "' border='0'></a>\n");
+						push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$n] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "' border='0'></a>\n");
 					}
 				} else {
-					print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "'>\n");
+					push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "'>\n");
 				}
 			}
 			if($title) {
-				print("    </td>\n");
+				push(@output, "    </td>\n");
 			}
 			$n++;
 		}
 		if($title) {
-			print("    </tr>\n");
+			push(@output, "    </tr>\n");
 		}
 	}
 	if($title) {
-		main::graph_footer();
+		push(@output, main::graph_footer());
 	}
-	print("  <br>\n");
-	return;
+	push(@output, "  <br>\n");
+	return @output;
 }
 
 1;
