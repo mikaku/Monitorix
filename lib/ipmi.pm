@@ -158,7 +158,6 @@ sub ipmi_update {
 			$unit = $ipmi->{units}->{$e};
 			foreach(@data) {
 				if(/^($str)\s+\|\s+(\d+\.*\d*)\s+$unit\s+/) {
-					print "'$1' '$2'\n";
 					$sens[$e][$e2] = $2;
 				}
 			}
