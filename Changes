@@ -26,13 +26,14 @@
 - Added support of Postgrey (Postfix Greylisting) in 'mail.pm'. [#102]
         (thanks to Malte Kubat, M.Kubat AT csb-it.de)
 - Updated to 4.01 the HTML DOCTYPE declarations.
-- Added more precision to the values in 'gensens.pm.
+- Added more precision to the values in 'gensens.pm'.
 - Added string encoding to avoid the message 'Wide character in print at
   ./monitorix.cgi line ...'. [#186]
 - Added to force a standard locale in 'port.pm'. in order to be able for
   Monitorix to read the output of system commands (netstat, ...). [#186]
 - Added the new option 'stats_rate' in 'mail.pm' to be able to choose between
   'real' (new default) and 'per_second'.
+- Added the ability to include an alert for each defined sensor in 'gensens.pm'.
 - Fixed an undeclared global symbol "$imgfmt_lc" in 'traffacct.pm'.
 - Fixed the MIME type of graphs in 'emailreports.pm' and in 'traffacct.pm' to
   honor the 'image_format' option. [#174]

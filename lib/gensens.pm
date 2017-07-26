@@ -119,6 +119,7 @@ sub gensens_init {
 		}
 	}
 
+	$config->{gensens_hist_alerts} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
 }
@@ -156,6 +157,33 @@ sub gensens_update {
 					logger("$myself: ERROR: unable to open '$gensens->{desc}->{$str}'.");
 				}
 			}
+
+			# check alerts for each sensor defined
+			my @al = split(',', $gensens->{alerts}->{$str} || "");
+			if(scalar(@al)) {
+				my $timeintvl = trim($al[0]);
+				my $threshold = trim($al[1]);
+				my $script = trim($al[2]);
+	
+				if(!$threshold || $val < $threshold) {
+					$config->{gensens_hist_alerts}->{$str} = 0;
+				} else {
+					if(!$config->{gensens_hist_alerts}->{$str}) {
+						$config->{gensens_hist_alerts}->{$str} = time;
+					}
+					if($config->{gensens_hist_alerts}->{$str} > 0 && (time - $config->{gensens_hist_alerts}->{$str}) >= $timeintvl) {
+						if(-x $script) {
+							logger("$myself: alert on Generic Sensor ($str): executing script '$script'.");
+							system($script . " " . $timeintvl . " " . $threshold . " " . $val);
+						} else {
+							logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+						}
+						$config->{gensens_hist_alerts}->{$str} = time;
+					}
+				}
+	
+			}
+
 			$rrdata .= ":$val";
 		}
 	}
