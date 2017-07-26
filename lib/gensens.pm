@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2016 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2017 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -168,6 +168,7 @@ sub gensens_update {
 
 sub gensens_cgi {
 	my ($package, $config, $cgi) = @_;
+	my @output;
 
 	my $gensens = $config->{gensens};
 	my @rigid = split(',', ($gensens->{rigid} || ""));
@@ -230,21 +231,21 @@ sub gensens_cgi {
 	#
 	if(lc($config->{iface_mode}) eq "text") {
 		if($title) {
-			main::graph_header($title, 2);
-			print("    <tr>\n");
-			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, main::graph_header($title, 2));
+			push(@output, "    <tr>\n");
+			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"AVERAGE",
 			"-r $tf->{res}");
 		$err = RRDs::error;
-		print("ERROR: while fetching $rrd: $err\n") if $err;
+		push(@output, "ERROR: while fetching $rrd: $err\n") if $err;
 		my $line1;
 		my $line2;
 		my $line3;
-		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
-		print("    ");
+		push(@output, "    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
+		push(@output, "    ");
 		for($n = 0; $n < 2; $n++) {
 			$line1 = "";
 			foreach my $i (split(',', $gensens->{list}->{$n})) {
@@ -258,12 +259,12 @@ sub gensens_cgi {
 			if($line1) {
 				my $i = length($line1);
 				$str = "_gensens" . ($n + 1);
-				printf(sprintf("%${i}s", sprintf("%s", trim($config->{graphs}->{$str}))));
+				push(@output, sprintf(sprintf("%${i}s", sprintf("%s", trim($config->{graphs}->{$str})))));
 			}
 		}
-		print("\n");
-		print("Time$line2\n");
-		print("----$line3 \n");
+		push(@output, "\n");
+		push(@output, "Time$line2\n");
+		push(@output, "----$line3 \n");
 		my $line;
 		my @row;
 		my $time;
@@ -274,7 +275,7 @@ sub gensens_cgi {
 		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
 			$line = @$data[$n];
 			$time = $time - (1 / $tf->{ts});
-			printf(" %2d$tf->{tc} ", $time);
+			push(@output, sprintf(" %2d$tf->{tc} ", $time));
 			for($n2 = 0; $n2 < 2; $n2++) {
 				$n3 = 0;
 				foreach my $i (split(',', $gensens->{list}->{$n2})) {
@@ -282,19 +283,19 @@ sub gensens_cgi {
 					$to = $from + 1;
 					my ($j) = @$line[$from..$to];
 					@row = ($j);
-					printf("%10d ", @row);
+					push(@output, sprintf("%10d ", @row));
 				}
 			}
-			print("\n");
+			push(@output, "\n");
 		}
-		print("    </pre>\n");
+		push(@output, "    </pre>\n");
 		if($title) {
-			print("    </td>\n");
-			print("    </tr>\n");
-			main::graph_footer();
+			push(@output, "    </td>\n");
+			push(@output, "    </tr>\n");
+			push(@output, main::graph_footer());
 		}
-		print("  <br>\n");
-		return;
+		push(@output, "  <br>\n");
+		return @output;
 	}
 
 
@@ -326,8 +327,8 @@ sub gensens_cgi {
 
 	# Temperatures
 	if($title) {
-		main::graph_header($title, 2);
-		print("    <tr>\n");
+		push(@output, main::graph_header($title, 2));
+		push(@output, "    <tr>\n");
 	}
 
 	@riglim = @{setup_riglim($rigid[0], $limit[0])};
@@ -354,7 +355,7 @@ sub gensens_cgi {
 		$n++;
 	}
 	if($title) {
-		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+		push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
 	}
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -386,7 +387,7 @@ sub gensens_cgi {
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
-	print("ERROR: while graphing $IMG_DIR" . "$IMG[0]: $err\n") if $err;
+	push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[0]: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[0]",
@@ -413,12 +414,12 @@ sub gensens_cgi {
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
-		print("ERROR: while graphing $IMG_DIR" . "$IMGz[0]: $err\n") if $err;
+		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[0]: $err\n") if $err;
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /gensens0/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[0] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[0] . "' border='0'></a>\n");
+				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[0] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[0] . "' border='0'></a>\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -427,15 +428,15 @@ sub gensens_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[0] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[0] . "' border='0'></a>\n");
+				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[0] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[0] . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[0] . "'>\n");
+			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[0] . "'>\n");
 		}
 	}
 
 	if($title) {
-		print("    </td>\n");
+		push(@output, "    </td>\n");
 	}
 
 	# CPU frequency
@@ -463,7 +464,7 @@ sub gensens_cgi {
 		$n++;
 	}
 	if($title) {
-		print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+		push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
 	}
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -495,7 +496,7 @@ sub gensens_cgi {
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
-	print("ERROR: while graphing $IMG_DIR" . "$IMG[1]: $err\n") if $err;
+	push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[1]: $err\n") if $err;
 	if(lc($config->{enable_zoom}) eq "y") {
 		($width, $height) = split('x', $config->{graph_size}->{zoom});
 		$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[1]",
@@ -522,12 +523,12 @@ sub gensens_cgi {
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
-		print("ERROR: while graphing $IMG_DIR" . "$IMGz[1]: $err\n") if $err;
+		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[1]: $err\n") if $err;
 	}
 	if($title || ($silent =~ /imagetag/ && $graph =~ /gensens1/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[1] . "' border='0'></a>\n");
+				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[1] . "' border='0'></a>\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -536,20 +537,20 @@ sub gensens_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[1] . "' border='0'></a>\n");
+				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[1] . "' border='0'></a>\n");
 			}
 		} else {
-			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[1] . "'>\n");
+			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[1] . "'>\n");
 		}
 	}
 
 	if($title) {
-		print("    </td>\n");
-		print("    </tr>\n");
-		main::graph_footer();
+		push(@output, "    </td>\n");
+		push(@output, "    </tr>\n");
+		push(@output, main::graph_footer());
 	}
-	print("  <br>\n");
-	return;
+	push(@output, "  <br>\n");
+	return @output;
 }
 
 1;
