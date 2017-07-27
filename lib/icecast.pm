@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2016 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2017 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -220,6 +220,7 @@ sub icecast_update {
 
 sub icecast_cgi {
 	my ($package, $config, $cgi) = @_;
+	my @output;
 
 	my $icecast = $config->{icecast};
 	my @rigid = split(',', ($icecast->{rigid} || ""));
@@ -290,22 +291,22 @@ sub icecast_cgi {
 	#
 	if(lc($config->{iface_mode}) eq "text") {
 		if($title) {
-			main::graph_header($title, 2);
-			print("    <tr>\n");
-			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, main::graph_header($title, 2));
+			push(@output, "    <tr>\n");
+			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"AVERAGE",
 			"-r $tf->{res}");
 		$err = RRDs::error;
-		print("ERROR: while fetching $rrd: $err\n") if $err;
+		push(@output, "ERROR: while fetching $rrd: $err\n") if $err;
 		my $line1;
 		my $line2;
 		my $line3;
 		my $line4;
-		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
-		print("    ");
+		push(@output, "    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
+		push(@output, "    ");
 		for($n = 0; $n < scalar(my @il = split(',', $icecast->{list})); $n++) {
 			my $l = trim($il[$n]);
 			$line1 = "  ";
@@ -320,14 +321,14 @@ sub icecast_cgi {
 			}
 			if($line1) {
 				my $i = length($line1);
-				printf(sprintf("%${i}s", sprintf("Icecast Server %2d", $n)));
+				push(@output, sprintf(sprintf("%${i}s", sprintf("Icecast Server %2d", $n))));
 			}
 		}
-		print("\n");
-		print("    $line2");
-		print("\n");
-		print("Time$line3\n");
-		print("----$line4 \n");
+		push(@output, "\n");
+		push(@output, "    $line2");
+		push(@output, "\n");
+		push(@output, "Time$line3\n");
+		push(@output, "----$line4 \n");
 		my $line;
 		my @row;
 		my $time;
@@ -338,29 +339,29 @@ sub icecast_cgi {
 		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
 			$line = @$data[$n];
 			$time = $time - (1 / $tf->{ts});
-			printf(" %2d$tf->{tc}", $time);
+			push(@output, sprintf(" %2d$tf->{tc}", $time));
 			for($n2 = 0; $n2 < scalar(my @il = split(',', $icecast->{list})); $n2++) {
 				my $ls = trim($il[$n2]);
-				print("  ");
+				push(@output, "  ");
 				$n3 = 0;
 				foreach my $i (split(',', $icecast->{desc}->{$ls})) {
 					$from = $n2 * 36 + ($n3++ * 4);
 					$to = $from + 4;
 					my ($l, $b, undef, undef) = @$line[$from..$to];
 					@row = ($l, $b);
-					printf("  %4d %4d", @row);
+					push(@output, sprintf("  %4d %4d", @row));
 				}
 			}
-			print("\n");
+			push(@output, "\n");
 		}
-		print("    </pre>\n");
+		push(@output, "    </pre>\n");
 		if($title) {
-			print("    </td>\n");
-			print("    </tr>\n");
-			main::graph_footer();
+			push(@output, "    </td>\n");
+			push(@output, "    </tr>\n");
+			push(@output, main::graph_footer());
 		}
-		print("  <br>\n");
-		return;
+		push(@output, "  <br>\n");
+		return @output;
 	}
 
 
@@ -396,10 +397,10 @@ sub icecast_cgi {
 	foreach my $url (my @il = split(',', $icecast->{list})) {
 		$url = trim($url);
 		if($e) {
-			print("   <br>\n");
+			push(@output, "   <br>\n");
 		}
 		if($title) {
-			main::graph_header($title, 2);
+			push(@output, main::graph_header($title, 2));
 		}
 		@riglim = @{setup_riglim($rigid[0], $limit[0])};
 		undef(@tmp);
@@ -431,8 +432,8 @@ sub icecast_cgi {
 		}
 
 		if($title) {
-			print("    <tr>\n");
-			print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+			push(@output, "    <tr>\n");
+			push(@output, "    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -464,7 +465,7 @@ sub icecast_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $IMG_DIR" . "$IMG[$e * 2]: $err\n") if $err;
+		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$e * 2]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
 			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 2]",
@@ -491,12 +492,12 @@ sub icecast_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 2]: $err\n") if $err;
+			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 2]: $err\n") if $err;
 		}
 		if($title || ($silent =~ /imagetag/ && $graph =~ /icecast$e/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2] . "' border='0'></a>\n");
+					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2] . "' border='0'></a>\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -505,14 +506,14 @@ sub icecast_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 2] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2] . "' border='0'></a>\n");
+					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 2] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2] . "'>\n");
+				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2] . "'>\n");
 			}
 		}
 		if($title) {
-			print("    </td>\n");
+			push(@output, "    </td>\n");
 		}
 
 		@riglim = @{setup_riglim($rigid[1], $limit[1])};
@@ -533,7 +534,7 @@ sub icecast_cgi {
 		}
 
 		if($title) {
-			print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+			push(@output, "    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -565,7 +566,7 @@ sub icecast_cgi {
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
-		print("ERROR: while graphing $IMG_DIR" . $IMG[$e * 2 + 1] . ": $err\n") if $err;
+		push(@output, "ERROR: while graphing $IMG_DIR" . $IMG[$e * 2 + 1] . ": $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
 			$picz = $rrd{$version}->("$IMG_DIR" . $IMGz[$e * 2 + 1],
@@ -592,12 +593,12 @@ sub icecast_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			print("ERROR: while graphing $IMG_DIR" . $IMGz[$e * 2 + 1] . ": $err\n") if $err;
+			push(@output, "ERROR: while graphing $IMG_DIR" . $IMGz[$e * 2 + 1] . ": $err\n") if $err;
 		}
 		if($title || ($silent =~ /imagetag/ && $graph =~ /icecast$e/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 2 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2 + 1] . "' border='0'></a>\n");
+					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 2 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2 + 1] . "' border='0'></a>\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -606,30 +607,30 @@ sub icecast_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 2 + 1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2 + 1] . "' border='0'></a>\n");
+					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 2 + 1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2 + 1] . "' border='0'></a>\n");
 				}
 			} else {
-				print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2 + 1] . "'>\n");
+				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 2 + 1] . "'>\n");
 			}
 		}
 		if($title) {
-			print("    </td>\n");
-			print("    </tr>\n");
+			push(@output, "    </td>\n");
+			push(@output, "    </tr>\n");
 	
-			print("    <tr>\n");
-			print "      <td bgcolor='$colors->{title_bg_color}' colspan='2'>\n";
-			print "       <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
-			print "       <font size='-1'>\n";
-			print "        <b>&nbsp;&nbsp;<a href='" . $url . "' style='color: " . $colors->{title_fg_color} . "'>$url</a><b>\n";
-			print "       </font></font>\n";
-			print "      </td>\n";
-			print("    </tr>\n");
-			main::graph_footer();
+			push(@output, "    <tr>\n");
+			push(@output, "      <td bgcolor='$colors->{title_bg_color}' colspan='2'>\n");
+			push(@output, "       <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n");
+			push(@output, "       <font size='-1'>\n");
+			push(@output, "        <b>&nbsp;&nbsp;<a href='" . $url . "' style='color: " . $colors->{title_fg_color} . "'>$url</a><b>\n");
+			push(@output, "       </font></font>\n");
+			push(@output, "      </td>\n");
+			push(@output, "    </tr>\n");
+			push(@output, main::graph_footer());
 		}
 		$e++;
 	}
-	print("  <br>\n");
-	return;
+	push(@output, "  <br>\n");
+	return @output;
 }
 
 1;
