@@ -147,7 +147,6 @@ sub ftp_update {
 	my $bytes_down = 0;
 	my $bytes_up = 0;
 
-	my @data;
 	my $rrdata = "N";
 
 	if(! -r $config->{ftp_log}) {
