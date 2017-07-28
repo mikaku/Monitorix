@@ -181,7 +181,6 @@ sub gensens_update {
 						$config->{gensens_hist_alerts}->{$str} = time;
 					}
 				}
-	
 			}
 
 			$rrdata .= ":$val";
