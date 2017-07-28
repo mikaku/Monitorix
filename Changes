@@ -34,6 +34,7 @@
 - Added the new option 'stats_rate' in 'mail.pm' to be able to choose between
   'real' (new default) and 'per_second'.
 - Added the ability to include an alert for each defined sensor in 'gensens.pm'.
+- Added the ability to include an alert for each defined sensor in 'hptemp.pm'.
 - Fixed an undeclared global symbol "$imgfmt_lc" in 'traffacct.pm'.
 - Fixed the MIME type of graphs in 'emailreports.pm' and in 'traffacct.pm' to
   honor the 'image_format' option. [#174]

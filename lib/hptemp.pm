@@ -132,8 +132,42 @@ sub hptemp_init {
 		}
 	}
 
+	$config->{hptemp_hist_alerts} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
+}
+
+sub hptemp_alerts {
+	my $myself = (caller(0))[3];
+	my $config = (shift);
+	my $sensor = (shift);
+	my $val = (shift);
+
+	my $hptemp = $config->{hptemp};
+	my @al = split(',', $hptemp->{alerts}->{$sensor} || "");
+
+	if(scalar(@al)) {
+		my $timeintvl = trim($al[0]);
+		my $threshold = trim($al[1]);
+		my $script = trim($al[2]);
+	
+		if(!$threshold || $val < $threshold) {
+			$config->{hptemp_hist_alerts}->{$sensor} = 0;
+		} else {
+			if(!$config->{hptemp_hist_alerts}->{$sensor}) {
+				$config->{hptemp_hist_alerts}->{$sensor} = time;
+			}
+			if($config->{hptemp_hist_alerts}->{$sensor} > 0 && (time - $config->{hptemp_hist_alerts}->{$sensor}) >= $timeintvl) {
+				if(-x $script) {
+					logger("$myself: alert on HP Temp ($sensor): executing script '$script'.");
+					system($script . " " . $timeintvl . " " . $threshold . " " . $val);
+				} else {
+					logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+				}
+				$config->{hptemp_hist_alerts}->{$sensor} = time;
+			}
+		}
+	}
 }
 
 sub hptemp_update {
@@ -165,6 +199,8 @@ sub hptemp_update {
 				chomp($temp);
 				$temp =~ s/C//;
 				push(@hptemp1, map {$_ eq "---" ? 0 : $_} ($temp));
+				# check alerts for each sensor defined
+				hptemp_alerts($config, $str, $temp);
 			}
 		}
 		foreach my $t (split(',', ($hptemp->{graph_1} || ""))) {
@@ -174,6 +210,8 @@ sub hptemp_update {
 				chomp($temp);
 				$temp =~ s/C//;
 				push(@hptemp2, map {$_ eq "---" ? 0 : $_} ($temp));
+				# check alerts for each sensor defined
+				hptemp_alerts($config, $str, $temp);
 			}
 		}
 		foreach my $t (split(',', ($hptemp->{graph_2} || ""))) {
@@ -183,6 +221,8 @@ sub hptemp_update {
 				chomp($temp);
 				$temp =~ s/C//;
 				push(@hptemp3, map {$_ eq "---" ? 0 : $_} ($temp));
+				# check alerts for each sensor defined
+				hptemp_alerts($config, $str, $temp);
 			}
 		}
 	}
