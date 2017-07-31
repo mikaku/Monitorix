@@ -123,6 +123,7 @@ sub ipmi_init {
 		}
 	}
 
+	$config->{ipmi_hist_alerts} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
 }
@@ -158,7 +159,34 @@ sub ipmi_update {
 			$unit = $ipmi->{units}->{$e};
 			foreach(@data) {
 				if(/^($str)\s+\|\s+(\d+\.*\d*)\s+$unit\s+/) {
-					$sens[$e][$e2] = $2;
+					my $val = $2;
+					$sens[$e][$e2] = $val;
+
+					# check alerts for each sensor defined
+					$str =~ s/ /_/;
+					my @al = split(',', $ipmi->{alerts}->{$str} || "");
+					if(scalar(@al)) {
+						my $timeintvl = trim($al[0]);
+						my $threshold = trim($al[1]);
+						my $script = trim($al[2]);
+			
+						if(!$threshold || $val < $threshold) {
+							$config->{ipmi_hist_alerts}->{$str} = 0;
+						} else {
+							if(!$config->{ipmi_hist_alerts}->{$str}) {
+								$config->{ipmi_hist_alerts}->{$str} = time;
+							}
+							if($config->{ipmi_hist_alerts}->{$str} > 0 && (time - $config->{ipmi_hist_alerts}->{$str}) >= $timeintvl) {
+								if(-x $script) {
+									logger("$myself: alert on IPMI Sensor ($str): executing script '$script'.");
+									system($script . " " . $timeintvl . " " . $threshold . " " . $val);
+								} else {
+									logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+								}
+								$config->{ipmi_hist_alerts}->{$str} = time;
+							}
+						}
+					}
 				}
 			}
 			$e2++;

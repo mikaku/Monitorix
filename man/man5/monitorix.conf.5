@@ -995,6 +995,45 @@ This is the type of sensor in each group. It's important to not mix different ty
 This list complements the \fBdesc\fP option. It basically allows you to change the name that will appear in the graph, hiding the real name of the sensor. If no association is defined, then Monitorix will display the name specified in the \fBdesc\fP option. Note, this only works in names that don't include whitespaces.
 .RE
 .P
+.BI alerts
+.RS
+This optional list enables the alert capabilities for this graph and complements with the \fBdesc\fP option. Each alert has three fields separated by comma: the \fItime interval\fP, the \fIthreshold\fP and the path to the \fIscript\fP to be executed.
+.P
+The \fItime interval\fP is the period of time (in seconds) that the \fIthreshold\fP needs to be exceeded before the external script is executed.
+.P
+The \fIthreshold\fP is the temperature that needs to be reached or exceeded within the specified time in \fItime interval\fP to execute the external script.
+.P
+The \fIscript\fP is the full path name of the script that will be executed by this alert.
+.P
+Each defined sensor has its own alert.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fImonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+The following is an example of an alert defined for the first temperature sensor:
+.P
+.RS
+<alerts>
+.br
+	CPU_Temp = 3600, 40, /path/to/script
+.br
+</alerts>
+.P
+Notice that the spaces in the sensor's name must be converted to underscores, since a variable can hold spaces in its name.
+.P
+.RE
+Such alert means that if the value of the sensor CPU_Temp reaches or exceeds 40 during at least one hour (3600 seconds) the script in \fI/path/to/script\fP will be executed.
+.P
+The external script will receive the following arguments:
+.P
+.RS
+1st - the value defined as \fItime interval\fP.
+.br
+2nd - the value defined as \fIthreshold\fP.
+.br
+3rd - the value of the sensor.
+.P
+.RE
+.RE
 .BI graphs_per_row
 .RS
 This is the number of graphs that will be put in a row.
