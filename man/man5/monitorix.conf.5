@@ -654,6 +654,43 @@ ID     TYPE        LOCATION      STATUS    CURRENT  THRESHOLD
 </list>
 .RE
 .RE
+.P
+.BI alerts
+.RS
+This optional list enables the alert capabilities for this graph and complements with the \fBlist\fP option. Each alert has three fields separated by comma: the \fItime interval\fP, the \fIthreshold\fP and the path to the \fIscript\fP to be executed.
+.P
+The \fItime interval\fP is the period of time (in seconds) that the \fIthreshold\fP needs to be exceeded before the external script is executed.
+.P
+The \fIthreshold\fP is the temperature that needs to be reached or exceeded within the specified time in \fItime interval\fP to execute the external script.
+.P
+The \fIscript\fP is the full path name of the script that will be executed by this alert.
+.P
+Each defined sensor has its own alert.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fImonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+The following is an example of an alert defined for the first temperature sensor:
+.P
+.RS
+<alerts>
+.br
+	2 = 3600, 40, /path/to/script
+.br
+</alerts>
+.P
+.RE
+Such alert means that if the value of the sensor number 2 reaches or exceeds 40 during at least one hour (3600 seconds) the script in \fI/path/to/script\fP will be executed.
+.P
+The external script will receive the following arguments:
+.P
+.RS
+1st - the value defined as \fItime interval\fP.
+.br
+2nd - the value defined as \fIthreshold\fP.
+.br
+3rd - the value of the sensor.
+.P
+.RE
 .SS LM-Sensors and GPU temperatures (lmsens.rrd)
 .BI list
 .RS
