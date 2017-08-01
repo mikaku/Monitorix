@@ -156,8 +156,42 @@ sub lmsens_init {
 		}
 	}
 
+	$config->{lmsens_hist_alerts} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
+}
+
+sub lmsens_alerts {
+	my $myself = (caller(0))[3];
+	my $config = (shift);
+	my $sensor = (shift);
+	my $val = (shift);
+
+	my $lmsens = $config->{lmsens};
+	my @al = split(',', $lmsens->{alerts}->{$sensor} || "");
+
+	if(scalar(@al)) {
+		my $timeintvl = trim($al[0]);
+		my $threshold = trim($al[1]);
+		my $script = trim($al[2]);
+	
+		if(!$threshold || $val < $threshold) {
+			$config->{lmsens_hist_alerts}->{$sensor} = 0;
+		} else {
+			if(!$config->{lmsens_hist_alerts}->{$sensor}) {
+				$config->{lmsens_hist_alerts}->{$sensor} = time;
+			}
+			if($config->{lmsens_hist_alerts}->{$sensor} > 0 && (time - $config->{lmsens_hist_alerts}->{$sensor}) >= $timeintvl) {
+				if(-x $script) {
+					logger("$myself: alert on LM-Sensor ($sensor): executing script '$script'.");
+					system($script . " " . $timeintvl . " " . $threshold . " " . $val);
+				} else {
+					logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+				}
+				$config->{lmsens_hist_alerts}->{$sensor} = time;
+			}
+		}
+	}
 }
 
 sub lmsens_update {
@@ -203,6 +237,8 @@ sub lmsens_update {
 							$value = $1;
 						}
 						$mb[$n] = int($value);
+						# check alerts for each sensor defined
+						lmsens_alerts($config, $str, $value);
 					}
 				}
 				for($n = 0; $n < 4; $n++) {
@@ -220,6 +256,8 @@ sub lmsens_update {
 							$value = $1;
 						}
 						$cpu[$n] = int($value);
+						# check alerts for each sensor defined
+						lmsens_alerts($config, $str, $value);
 					}
 				}
 				for($n = 0; $n < 9; $n++) {
@@ -234,6 +272,8 @@ sub lmsens_update {
 						}
 						my ($value, undef) = split(' ', $tmp);
 						$fan[$n] = int($value);
+						# check alerts for each sensor defined
+						lmsens_alerts($config, $str, $value);
 					}
 				}
 				for($n = 0; $n < 16; $n++) {
@@ -251,6 +291,8 @@ sub lmsens_update {
 							$value = $1;
 						}
 						$core[$n] = int($value);
+						# check alerts for each sensor defined
+						lmsens_alerts($config, $str, $value);
 					}
 				}
 				for($n = 0; $n < 12; $n++) {
@@ -265,6 +307,8 @@ sub lmsens_update {
 						}
 						my ($value, undef) = split(' ', $tmp);
 						$volt[$n] = $value;
+						# check alerts for each sensor defined
+						lmsens_alerts($config, $str, $value);
 					}
 				}
 			}
@@ -296,12 +340,16 @@ sub lmsens_update {
 								if(int($value) > 0) {
 									$gpu[$n] = int($value);
 								}
+								# check alerts for each sensor defined
+								lmsens_alerts($config, $str, $value);
 							}
 						}
 					}
 				}
 				if($lmsens->{list}->{$str} eq "ati") {
 					$gpu[$n] = get_ati_data($n);
+					# check alerts for each sensor defined
+					lmsens_alerts($config, $str, $gpu[$n]);
 				}
 			}
 		}
