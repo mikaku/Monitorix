@@ -194,6 +194,7 @@ sub mail_update {
 	my @gen_h = (0) x 10;
 
 	my $n;
+	my $first_read;
 	my $mail_log_seekpos;
 	my $mail_log_size = 0;
 	my $sa_log_seekpos;
@@ -207,6 +208,7 @@ sub mail_update {
 	$mail_log_seekpos = defined($mail_log_seekpos) ? int($mail_log_seekpos) : 0;
 	$sa_log_seekpos = defined($sa_log_seekpos) ? int($sa_log_seekpos) : 0;
 	$clamav_log_seekpos = defined($clamav_log_seekpos) ? int($clamav_log_seekpos) : 0;
+	$first_read = $mail_log_seekpos ? 0 : 1;
 
 	$recvd = $delvd = $bytes_recvd = $bytes_delvd = 0;
 	$in_conn = $out_conn = $rejtd = 0;
@@ -421,7 +423,7 @@ sub mail_update {
 					if(/ action=pass, reason=triplet found, /) {
 						$gl_records++;
 					}
-					if(/ action=pass, reason=client whitelist, /) {
+					if(/ action=pass, reason=client (whitelist|AWL), /) {
 						$gl_whitelisted++;
 					}
 				}
@@ -512,14 +514,17 @@ sub mail_update {
 	$mta_h[6] = int($rejtd);
 
 	# avoid initial peak
-	$mta[7] = int($spam) unless !$mta_h[7];
-	$mta_h[7] = int($spam) unless $mta_h[7];
-	$mta[7] /= 60 if lc($mail->{stats_rate}) eq "per_second";
-
+	$mta_h[7] = 0;
+	if(!$first_read) {
+		$mta[7] = int($spam);
+		$mta[7] /= 60 if lc($mail->{stats_rate}) eq "per_second";
+	}
 	# avoid initial peak
-	$mta[8] = int($virus) unless !$mta_h[8];
-	$mta_h[8] = int($virus) unless $mta_h[8];
-	$mta[8] /= 60 if lc($mail->{stats_rate}) eq "per_second";
+	$mta_h[8] = 0;
+	if(!$first_read) {
+		$mta[8] = int($virus);
+		$mta[8] /= 60 if lc($mail->{stats_rate}) eq "per_second";
+	}
 
 	$mta[9] = int($bouncd) - ($mta_h[9] || 0);
 	$mta[9] = 0 unless $mta[9] != int($bouncd);
@@ -548,25 +553,31 @@ sub mail_update {
 	$mta_h[14] = 0;
 
 	# avoid initial peak
-	$gen[0] = int($spf_none) unless !$gen_h[0];
-	$gen_h[0] = int($spf_none) unless $gen_h[0];
-
+	$gen_h[0] = 0;
+	if(!$first_read) {
+		$gen[0] = int($spf_none);
+	}
 	# avoid initial peak
-	$gen[1] = int($spf_pass) unless !$gen_h[1];
-	$gen_h[1] = int($spf_pass) unless $gen_h[1];
-
+	$gen_h[1] = 0;
+	if(!$first_read) {
+		$gen[1] = int($spf_pass);
+	}
 	# avoid initial peak
-	$gen[2] = int($spf_softfail) unless !$gen_h[2];
-	$gen_h[2] = int($spf_softfail) unless $gen_h[2];
-
+	$gen_h[2] = 0;
+	if(!$first_read) {
+		$gen[2] = int($spf_softfail);
+	}
 	# avoid initial peak
-	$gen[3] = int($spf_fail) unless !$gen_h[3];
-	$gen_h[3] = int($spf_fail) unless $gen_h[3];
-
-	$gen[4] = int($rbl) - ($gen_h[4] || 0);
-	$gen[4] = 0 unless $gen[4] != int($rbl);
-	$gen[4] /= 60;
-	$gen_h[4] = int($rbl);
+	$gen_h[3] = 0;
+	if(!$first_read) {
+		$gen[3] = int($spf_fail);
+	}
+	# avoid initial peak
+	$gen_h[4] = 0;
+	if(!$first_read) {
+		$gen[4] = int($rbl);
+		$gen[4] /= 60 if lc($mail->{stats_rate}) eq "per_second";;
+	}
 
 	if(lc($mail->{greylist}) eq "milter-greylist") {
 		$gen_h[5] = $gen[5] = 0;
@@ -577,22 +588,30 @@ sub mail_update {
 	}
 	if(lc($mail->{greylist}) eq "postgrey") {
 		$gen_h[5] = $gen[5] = 0;
-		$gen[6] = int($gl_records) - ($gen_h[6] || 0);
-		$gen[6] = 0 unless $gen[6] != int($gl_records);
-		$gen[6] /= 60 if lc($mail->{stats_rate}) eq "per_second";
-		$gen_h[6] = int($gl_records);
-		$gen[7] = int($gl_greylisted) - ($gen_h[7] || 0);
-		$gen[7] = 0 unless $gen[7] != int($gl_greylisted);
-		$gen[7] /= 60 if lc($mail->{stats_rate}) eq "per_second";
-		$gen_h[7] = int($gl_greylisted);
-		$gen[8] = int($gl_whitelisted) - ($gen_h[8] || 0);
-		$gen[8] = 0 unless $gen[8] != int($gl_whitelisted);
-		$gen[8] /= 60 if lc($mail->{stats_rate}) eq "per_second";
-		$gen_h[8] = int($gl_whitelisted);
-		$gen[9] = int($gl_delayed) - ($gen_h[9] || 0);
-		$gen[9] = 0 unless $gen[9] != int($gl_delayed);
-		$gen[9] /= 60 if lc($mail->{stats_rate}) eq "per_second";
-		$gen_h[9] = int($gl_delayed);
+		$gen_h[6] = $gen[6] = 0;
+		$gen_h[7] = $gen[7] = 0;
+		$gen_h[8] = $gen[8] = 0;
+		$gen_h[9] = $gen[9] = 0;
+		# avoid initial peak
+		if(!$first_read) {
+			$gen[6] = int($gl_records);
+			$gen[6] /= 60 if lc($mail->{stats_rate}) eq "per_second";
+		}
+		# avoid initial peak
+		if(!$first_read) {
+			$gen[7] = int($gl_greylisted);
+			$gen[7] /= 60 if lc($mail->{stats_rate}) eq "per_second";
+		}
+		# avoid initial peak
+		if(!$first_read) {
+			$gen[8] = int($gl_whitelisted);
+			$gen[8] /= 60 if lc($mail->{stats_rate}) eq "per_second";
+		}
+		# avoid initial peak
+		if(!$first_read) {
+			$gen[9] = int($gl_delayed);
+			$gen[9] /= 60 if lc($mail->{stats_rate}) eq "per_second";
+		}
 	}
 
 	$config->{mail_hist} = join(";", $mail_log_size, $sa_log_size, $clamav_log_size, @mta_h, @gen_h);
