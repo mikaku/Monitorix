@@ -140,7 +140,6 @@ sub mail_init {
 	}
 	if(!$mail->{stats_rate}) {
 		$mail->{stats_rate} = "per_second";
-		print("stats_rate set to 'per_second'\n");
 	}
 
 	# Since 3.6.0 all DS changed from COUNTER to GAUGE
