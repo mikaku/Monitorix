@@ -181,9 +181,6 @@ sub graph_header {
 	push(@output, "        </font>\n");
 	push(@output, "      </td>\n");
 	push(@output, "    </tr>\n");
-	if(lc($config{enable_parallelizing} || "") ne "y") {
-		print @output;
-	}
 	return @output;
 }
 
@@ -192,9 +189,6 @@ sub graph_footer {
 
 	push(@output, "  </table>\n");
 	push(@output, "<!-- graph table ends -->\n");
-	if(lc($config{enable_parallelizing} || "") ne "y") {
-		print @output;
-	}
 	return @output;
 }
 
