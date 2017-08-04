@@ -133,8 +133,42 @@ sub nvidia_init {
 		}
 	}
 
+	$config->{nvidia_hist_alerts} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
+}
+
+sub nvidia_alerts {
+	my $myself = (caller(0))[3];
+	my $config = (shift);
+	my $sensor = (shift);
+	my $val = (shift);
+
+	my $nvidia = $config->{nvidia};
+	my @al = split(',', $nvidia->{alerts}->{$sensor} || "");
+
+	if(scalar(@al)) {
+		my $timeintvl = trim($al[0]);
+		my $threshold = trim($al[1]);
+		my $script = trim($al[2]);
+	
+		if(!$threshold || $val < $threshold) {
+			$config->{nvidia_hist_alerts}->{$sensor} = 0;
+		} else {
+			if(!$config->{nvidia_hist_alerts}->{$sensor}) {
+				$config->{nvidia_hist_alerts}->{$sensor} = time;
+			}
+			if($config->{nvidia_hist_alerts}->{$sensor} > 0 && (time - $config->{nvidia_hist_alerts}->{$sensor}) >= $timeintvl) {
+				if(-x $script) {
+					logger("$myself: alert on NVIDIA ($sensor): executing script '$script'.");
+					system($script . " " . $timeintvl . " " . $threshold . " " . $val);
+				} else {
+					logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+				}
+				$config->{nvidia_hist_alerts}->{$sensor} = time;
+			}
+		}
+	}
 }
 
 sub nvidia_update {
@@ -216,12 +250,18 @@ sub nvidia_update {
 	}
 
 	for($n = 0; $n < scalar(@temp); $n++) {
+		# check alerts for each sensor defined
+		nvidia_alerts($config, "temp$n", $temp[$n]);
 		$rrdata .= ":$temp[$n]";
 	}
 	for($n = 0; $n < scalar(@gpu); $n++) {
+		# check alerts for each sensor defined
+		nvidia_alerts($config, "gpu$n", $gpu[$n]);
 		$rrdata .= ":$gpu[$n]";
 	}
 	for($n = 0; $n < scalar(@mem); $n++) {
+		# check alerts for each sensor defined
+		nvidia_alerts($config, "mem$n", $mem[$n]);
 		$rrdata .= ":$mem[$n]";
 	}
 
