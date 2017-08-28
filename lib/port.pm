@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2016 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2017 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -324,6 +324,7 @@ sub port_update {
 
 sub port_cgi {
 	my ($package, $config, $cgi) = @_;
+	my @output;
 
 	my $port = $config->{port};
 	my $tf = $cgi->{tf};
@@ -379,34 +380,34 @@ sub port_cgi {
 	#
 	if(lc($config->{iface_mode}) eq "text") {
 		if($title) {
-			main::graph_header($title, 2);
-			print("    <tr>\n");
-			print("    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, main::graph_header($title, 2));
+			push(@output, "    <tr>\n");
+			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"AVERAGE",
 			"-r $tf->{res}");
 		$err = RRDs::error;
-		print("ERROR: while fetching $rrd: $err\n") if $err;
+		push(@output, "ERROR: while fetching $rrd: $err\n") if $err;
 		my $line1;
 		my $line2;
-		print("    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
-		print("    ");
+		push(@output, "    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
+		push(@output, "    ");
 		my $max = min($port->{max}, scalar(my @pl = split(',', $port->{list})));
 		for($n = 0; $n < $max; $n++) {
 			$pl[$n] = trim($pl[$n]);
 			my $pn = trim((split(',', $port->{desc}->{$pl[$n]}))[0]);
 			my $pc = trim((split(',', $port->{desc}->{$pl[$n]}))[2]);
 			foreach(split('/', $pc)) {
-				printf("   %-5s %10s", $pl[$n], uc(trim($_)) . "-" . $pn);
+				push(@output, sprintf("   %-5s %10s", $pl[$n], uc(trim($_)) . "-" . $pn));
 				$line1 .= "    K$T/s_I   K$T/s_O";
 				$line2 .= "-------------------";
 			}
 		}
-		print("\n");
-		print("Time$line1\n");
-		print("----$line2 \n");
+		push(@output, "\n");
+		push(@output, "Time$line1\n");
+		push(@output, "----$line2 \n");
 		my $line;
 		my @row;
 		my $time;
@@ -416,7 +417,7 @@ sub port_cgi {
 		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
 			$line = @$data[$n];
 			$time = $time - (1 / $tf->{ts});
-			printf(" %2d$tf->{tc} ", $time);
+			push(@output, sprintf(" %2d$tf->{tc} ", $time));
 			for($n2 = 0; $n2 < $max; $n2++) {
 				$pl[$n2] = trim($pl[$n2]);
 				my $pc = trim((split(',', $port->{desc}->{$pl[$n2]}))[2]);
@@ -437,24 +438,24 @@ sub port_cgi {
 				foreach(split('/', $pc)) {
 					if(lc($_) eq "in") {
 						@row = ($k_i_in, $k_i_out);
-						printf("   %6d   %6d ", @row);
+						push(@output, sprintf("   %6d   %6d ", @row));
 					}
 					if(lc($_) eq "out") {
 						@row = ($k_o_in, $k_o_out);
-						printf("   %6d   %6d ", @row);
+						push(@output, sprintf("   %6d   %6d ", @row));
 					}
 				}
 			}
-			print("\n");
+			push(@output, "\n");
 		}
-		print("    </pre>\n");
+		push(@output, "    </pre>\n");
 		if($title) {
-			print("    </td>\n");
-			print("    </tr>\n");
-			main::graph_footer();
+			push(@output, "    </td>\n");
+			push(@output, "    </tr>\n");
+			push(@output, main::graph_footer());
 		}
-		print("  <br>\n");
-		return;
+		push(@output, "  <br>\n");
+		return @output;
 	}
 
 
@@ -500,17 +501,17 @@ sub port_cgi {
 
 		if($title) {
 			if($n == 0) {
-				main::graph_header($title, $port->{graphs_per_row});
+				push(@output, main::graph_header($title, $port->{graphs_per_row}));
 			}
 			if($n2 == 1) {
-				print("    <tr>\n");
+				push(@output, "    <tr>\n");
 			}
 		}
 
 		my $pc = trim((split(',', $port->{desc}->{$pl[$n]}))[2]);
 		foreach my $pcon (split('/', $pc)) {
 			if($title) {
-				print("    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+				push(@output, "    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
 			}
 			my $pnum;
 			$pl[$n] = trim($pl[$n]);
@@ -640,7 +641,7 @@ sub port_cgi {
 				@CDEF,
 				@tmp);
 			$err = RRDs::error;
-			print("ERROR: while graphing $IMG_DIR" . "$IMG[$n3]: $err\n") if $err;
+			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$n3]: $err\n") if $err;
 			if(lc($config->{enable_zoom}) eq "y") {
 				($width, $height) = split('x', $config->{graph_size}->{zoom});
 				$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$n3]",
@@ -664,12 +665,12 @@ sub port_cgi {
 					@CDEF,
 					@tmpz);
 				$err = RRDs::error;
-				print("ERROR: while graphing $IMG_DIR" . "$IMGz[$n3]: $err\n") if $err;
+				push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[$n3]: $err\n") if $err;
 			}
 			if($title || ($silent =~ /imagetag/ && $graph =~ /port$n3/)) {
 				if(lc($config->{enable_zoom}) eq "y") {
 					if(lc($config->{disable_javascript_void}) eq "y") {
-						print("      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$n3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n3] . "' border='0'></a>\n");
+						push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$n3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n3] . "' border='0'></a>\n");
 					} else {
 						if($version eq "new") {
 							$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -678,21 +679,21 @@ sub port_cgi {
 							$picz_width = $width + 115;
 							$picz_height = $height + 100;
 						}
-						print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$n3] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n3] . "' border='0'></a>\n");
+						push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$n3] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n3] . "' border='0'></a>\n");
 					}
 				} else {
-					print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n3] . "'>\n");
+					push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n3] . "'>\n");
 				}
 			}
 			if($title) {
-				print("    </td>\n");
+				push(@output, "    </td>\n");
 			}
 
 			if($n2 < $port->{graphs_per_row} && $n2 < $max) {
 				$n2++;
 			} else {
 				if($title) {
-					print("    </tr>\n");
+					push(@output, "    </tr>\n");
 				}
 				$n2 = 1;
 			}
@@ -701,10 +702,10 @@ sub port_cgi {
 		$n++;
 	}
 	if($title) {
-		main::graph_footer();
+		push(@output, main::graph_footer());
 	}
-	print("  <br>\n");
-	return;
+	push(@output, "  <br>\n");
+	return @output;
 }
 
 1;
