@@ -1413,6 +1413,14 @@ extra_args = "-x"
 .P
 IMPORTANT NOTICE: Keep in mind that including certain flags like '-h' (which gives results in human readable format) could make Monitorix unable to interpret the results.
 .SS Network traffic and usage (net.rrd)
+.P
+.BI max
+.RS
+This is the maximum number of network interfaces that you can define in \fBlist\fP. There is no limit, but keep in mind that every time this number changes, Monitorix will resize the \fInet.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fI10\fP
+.P
+.RE
 .BI list
 .RS
 This is a comma-separated list of network interfaces that you may want to monitor. An example would be:
@@ -1421,8 +1429,6 @@ This is a comma-separated list of network interfaces that you may want to monito
 list = eth0, eth1
 .br
 .RE
-.P
-The maximum number of entries allowed is 10.
 .RE
 .P
 .BI desc
@@ -1440,8 +1446,6 @@ Put one description for each interface listed. An example would be:
 .br
 </desc>
 .RE
-.P
-The maximum number of entries allowed is 10.
 .RE
 .P
 .BI gateway

@@ -589,6 +589,16 @@ if($config{os} eq "Linux") {
 	}
 }
 
+# make sure that some options are correctly defined
+if(!$config{max_historic_years}) {
+	logger("WARNING: the 'max_historic_years' option doesn't exist. Please consider upgrading your configuration file.");
+	$config{max_historic_years} = 1;
+}
+if(!$config{net}->{max}) {
+	logger("WARNING: the 'max' option in 'net.pm' doesn't exist. Please consider upgrading your configuration file.");
+	$config{net}->{max} = 10;
+}
+
 # make sure that there aren't residual Monitorix iptables rules
 flush_accounting_rules(\%config, $options{d});
 
@@ -659,10 +669,6 @@ if(lc($config{httpd_builtin}->{enabled}) eq "y") {
 if(!$config{global_zoom}) {
 	logger("WARNING: the 'global_zoom' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
 	# it's set in 'monitorix.cgi'
-}
-if(!$config{max_historic_years}) {
-	logger("WARNING: the 'max_historic_years' option doesn't exist. Please consider upgrading your configuration file.");
-	$config{max_historic_years} = 1;
 }
 if(!$config{image_format}) {
 	logger("WARNING: the 'image_format' option is not valid or doesn't exist. Please consider upgrading your configuration file.");

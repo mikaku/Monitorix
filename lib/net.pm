@@ -31,8 +31,10 @@ sub net_init {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $net = $config->{net};
 
 	my $info;
+	my @ds;
 	my @rra;
 	my @tmp;
 	my $n;
@@ -45,11 +47,20 @@ sub net_init {
 	if(-e $rrd) {
 		$info = RRDs::info($rrd);
 		for my $key (keys %$info) {
+			if(index($key, 'ds[') == 0) {
+				if(index($key, '.type') != -1) {
+					push(@ds, substr($key, 3, index($key, ']') - 3));
+				}
+			}
 			if(index($key, 'rra[') == 0) {
 				if(index($key, '.rows') != -1) {
 					push(@rra, substr($key, 4, index($key, ']') - 4));
 				}
 			}
+		}
+		if(scalar(@ds) / 6 != $net->{max}) {
+			logger("$myself: Detected size mismatch between 'max = $net->{max}' and $rrd (" . scalar(@ds) / 6 . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
+			rename($rrd, "$rrd.bak");
 		}
 		if(scalar(@rra) < 12 + (4 * $config->{max_historic_years})) {
 			logger("$myself: Detected size mismatch between 'max_historic_years' (" . $config->{max_historic_years} . ") and $rrd (" . ((scalar(@rra) -12) / 4) . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
@@ -65,69 +76,18 @@ sub net_init {
 			push(@max, "RRA:MAX:0.5:1440:" . (365 * $n));
 			push(@last, "RRA:LAST:0.5:1440:" . (365 * $n));
 		}
+		for($n = 0; $n < $net->{max}; $n++) {
+			push(@tmp, "DS:net" . $n . "_bytes_in:GAUGE:120:0:U"),
+			push(@tmp, "DS:net" . $n . "_bytes_out:GAUGE:120:0:U"),
+			push(@tmp, "DS:net" . $n . "_packs_in:GAUGE:120:0:U"),
+			push(@tmp, "DS:net" . $n . "_packs_out:GAUGE:120:0:U"),
+			push(@tmp, "DS:net" . $n . "_error_in:GAUGE:120:0:U"),
+			push(@tmp, "DS:net" . $n . "_error_out:GAUGE:120:0:U"),
+		}
 		eval {
 			RRDs::create($rrd,
 				"--step=60",
-				"DS:net0_bytes_in:GAUGE:120:0:U",
-				"DS:net0_bytes_out:GAUGE:120:0:U",
-				"DS:net0_packs_in:GAUGE:120:0:U",
-				"DS:net0_packs_out:GAUGE:120:0:U",
-				"DS:net0_error_in:GAUGE:120:0:U",
-				"DS:net0_error_out:GAUGE:120:0:U",
-				"DS:net1_bytes_in:GAUGE:120:0:U",
-				"DS:net1_bytes_out:GAUGE:120:0:U",
-				"DS:net1_packs_in:GAUGE:120:0:U",
-				"DS:net1_packs_out:GAUGE:120:0:U",
-				"DS:net1_error_in:GAUGE:120:0:U",
-				"DS:net1_error_out:GAUGE:120:0:U",
-				"DS:net2_bytes_in:GAUGE:120:0:U",
-				"DS:net2_bytes_out:GAUGE:120:0:U",
-				"DS:net2_packs_in:GAUGE:120:0:U",
-				"DS:net2_packs_out:GAUGE:120:0:U",
-				"DS:net2_error_in:GAUGE:120:0:U",
-				"DS:net2_error_out:GAUGE:120:0:U",
-				"DS:net3_bytes_in:GAUGE:120:0:U",
-				"DS:net3_bytes_out:GAUGE:120:0:U",
-				"DS:net3_packs_in:GAUGE:120:0:U",
-				"DS:net3_packs_out:GAUGE:120:0:U",
-				"DS:net3_error_in:GAUGE:120:0:U",
-				"DS:net3_error_out:GAUGE:120:0:U",
-				"DS:net4_bytes_in:GAUGE:120:0:U",
-				"DS:net4_bytes_out:GAUGE:120:0:U",
-				"DS:net4_packs_in:GAUGE:120:0:U",
-				"DS:net4_packs_out:GAUGE:120:0:U",
-				"DS:net4_error_in:GAUGE:120:0:U",
-				"DS:net4_error_out:GAUGE:120:0:U",
-				"DS:net5_bytes_in:GAUGE:120:0:U",
-				"DS:net5_bytes_out:GAUGE:120:0:U",
-				"DS:net5_packs_in:GAUGE:120:0:U",
-				"DS:net5_packs_out:GAUGE:120:0:U",
-				"DS:net5_error_in:GAUGE:120:0:U",
-				"DS:net5_error_out:GAUGE:120:0:U",
-				"DS:net6_bytes_in:GAUGE:120:0:U",
-				"DS:net6_bytes_out:GAUGE:120:0:U",
-				"DS:net6_packs_in:GAUGE:120:0:U",
-				"DS:net6_packs_out:GAUGE:120:0:U",
-				"DS:net6_error_in:GAUGE:120:0:U",
-				"DS:net6_error_out:GAUGE:120:0:U",
-				"DS:net7_bytes_in:GAUGE:120:0:U",
-				"DS:net7_bytes_out:GAUGE:120:0:U",
-				"DS:net7_packs_in:GAUGE:120:0:U",
-				"DS:net7_packs_out:GAUGE:120:0:U",
-				"DS:net7_error_in:GAUGE:120:0:U",
-				"DS:net7_error_out:GAUGE:120:0:U",
-				"DS:net8_bytes_in:GAUGE:120:0:U",
-				"DS:net8_bytes_out:GAUGE:120:0:U",
-				"DS:net8_packs_in:GAUGE:120:0:U",
-				"DS:net8_packs_out:GAUGE:120:0:U",
-				"DS:net8_error_in:GAUGE:120:0:U",
-				"DS:net8_error_out:GAUGE:120:0:U",
-				"DS:net9_bytes_in:GAUGE:120:0:U",
-				"DS:net9_bytes_out:GAUGE:120:0:U",
-				"DS:net9_packs_in:GAUGE:120:0:U",
-				"DS:net9_packs_out:GAUGE:120:0:U",
-				"DS:net9_error_in:GAUGE:120:0:U",
-				"DS:net9_error_out:GAUGE:120:0:U",
+				@tmp,
 				"RRA:AVERAGE:0.5:1:1440",
 				"RRA:AVERAGE:0.5:30:336",
 				"RRA:AVERAGE:0.5:60:744",
@@ -159,8 +119,12 @@ sub net_init {
 		}
 	}
 
+	if(scalar(my @pls = split(',', $net->{list})) > $net->{max}) {
+		logger("$myself: WARNING: 'max' option indicates less interfaces than really defined in 'list'.");
+	}
+
 	# Since 3.6.0 all DS changed from COUNTER to GAUGE
-	for($n = 0; $n < 10; $n++) {
+	for($n = 0; $n < $net->{max}; $n++) {
 		RRDs::tune($rrd,
 			"--data-source-type=net" . $n . "_bytes_in:GAUGE",
 			"--data-source-type=net" . $n . "_bytes_out:GAUGE",
@@ -185,7 +149,7 @@ sub net_update {
 	my $n;
 	my $rrdata = "N";
 
-	for($n = 0; $n < 10 ; $n++) {
+	for($n = 0; $n < $net->{max} ; $n++) {
 		my ($bytes_in, $bi) = (0, 0);
 		my ($bytes_out, $bo) = (0, 0);
 		my ($packs_in, $pi) = (0, 0);
