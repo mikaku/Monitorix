@@ -38,6 +38,7 @@
 - Added the ability to include an alert for each defined sensor in 'ipmi.pm'.
 - Added alert capabilities to 'lmsens.pm'. [#171]
 - Added the ability to include an alert for each defined sensor in 'nvidia.pm'.
+- Added the ability to monitor unlimited network interfaces in 'net.pm'. [#188]
 - Fixed an undeclared global symbol "$imgfmt_lc" in 'traffacct.pm'.
 - Fixed the MIME type of graphs in 'emailreports.pm' and in 'traffacct.pm' to
   honor the 'image_format' option. [#174]
