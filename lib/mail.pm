@@ -576,7 +576,7 @@ sub mail_update {
 	$gen_h[4] = 0;
 	if(!$first_read) {
 		$gen[4] = int($rbl);
-		$gen[4] /= 60 if lc($mail->{stats_rate}) eq "per_second";;
+		$gen[4] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 	}
 
 	if(lc($mail->{greylist}) eq "milter-greylist") {
@@ -624,7 +624,8 @@ sub mail_update {
 
 	# MAIL alert
 	if(lc($mail->{alerts}->{delvd_enabled}) eq "y") {
-		my $val = int($mta[3] * 60 + 0.5);
+		my $val = int($mta[3]);
+		$val *= 60 + 0.5 if lc($mail->{stats_rate}) eq "per_second"
 		if(!$mail->{alerts}->{delvd_threshold} || $val < $mail->{alerts}->{delvd_threshold}) {
 			$config->{mail_hist_alert1} = 0;
 		} else {
