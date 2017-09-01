@@ -625,7 +625,7 @@ sub mail_update {
 	# MAIL alert
 	if(lc($mail->{alerts}->{delvd_enabled}) eq "y") {
 		my $val = int($mta[3]);
-		$val *= 60 + 0.5 if lc($mail->{stats_rate}) eq "per_second"
+		$val *= 60 + 0.5 if lc($mail->{stats_rate}) eq "per_second";
 		if(!$mail->{alerts}->{delvd_threshold} || $val < $mail->{alerts}->{delvd_threshold}) {
 			$config->{mail_hist_alert1} = 0;
 		} else {
