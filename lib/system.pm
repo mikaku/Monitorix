@@ -223,11 +223,18 @@ sub system_update {
 			}
 			if(/^Cached:\s+(\d+) kB$/) {
 				$mcach = $1;
+				next;
+			}
+			if(/^Active:\s+(\d+) kB$/) {
+				$macti = $1;
+				next;
+			}
+			if(/^Inactive:\s+(\d+) kB$/) {
+				$minac = $1;
 				last;
 			}
 		}
 		close(IN);
-		$macti = $minac = 0;
 
 		open(IN, "/proc/sys/kernel/random/entropy_avail");
 		while(<IN>) {
@@ -469,9 +476,9 @@ sub system_cgi {
 		$err = RRDs::error;
 		push(@output, "ERROR: while fetching $rrd: $err\n") if $err;
 		push(@output, "    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
-		push(@output, "       CPU load average      Memory usage in MB                            Processes\n");
-		push(@output, "Time   1min  5min 15min    Used  Cached Buffers   Total   R    S    D    Z    T    W Entropy   Uptime\n");
-		push(@output, "----------------------------------------------------------------------------------------------------- \n");
+		push(@output, "       CPU load average                      Memory usage in MB                           Processes\n");
+		push(@output, "Time   1min  5min 15min    Used  Cached Buffers  Active Inactiv  Total   R    S    D    Z    T    W Entropy   Uptime\n");
+		push(@output, "-------------------------------------------------------------------------------------------------------------------- \n");
 		my $line;
 		my @row;
 		my $time;
@@ -481,9 +488,9 @@ sub system_cgi {
 			$buff /= 1024;
 			$cach /= 1024;
 			$free /= 1024;
-			@row = ($load1, $load5, $load15, $total_mem - $free, $cach, $buff, $nproc, $nprun, $npslp, $npwio, $npzom, $npstp, $npswp, $entropy, $uptime);
+			@row = ($load1, $load5, $load15, $total_mem - $free, $cach, $buff, $macti, $minac, $nproc, $nprun, $npslp, $npwio, $npzom, $npstp, $npswp, $entropy, $uptime);
 			$time = $time - (1 / $tf->{ts});
-			push(@output, sprintf(" %2d$tf->{tc}   %4.1f  %4.1f  %4.1f  %6d  %6d  %6d   %4d %4d %4d %4d %4d %4d %4d  %6d %8d\n", $time, @row));
+			push(@output, sprintf(" %2d$tf->{tc}   %4.1f  %4.1f  %4.1f  %6d  %6d  %6d  %6d  %6d  %4d %4d %4d %4d %4d %4d %4d  %6d %8d\n", $time, @row));
 		}
 		push(@output, "\n");
 		push(@output, " system uptime: " . get_uptime($config) . "\n");
@@ -647,29 +654,22 @@ sub system_cgi {
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
-	if($config->{os} eq "Linux") {
+	if($config->{os} eq "Linux" || $config->{os} eq "FreeBSD") {
 		push(@tmp, "AREA:m_mused#EE4444:Used");
 		push(@tmp, "AREA:m_mcach#44EE44:Cached");
 		push(@tmp, "AREA:m_mbuff#CCCCCC:Buffers");
-		push(@tmp, "LINE1:m_mbuff#888888");
-		push(@tmp, "LINE1:m_mcach#00EE00");
-		push(@tmp, "LINE1:m_mused#EE0000");
-	} elsif($config->{os} eq "FreeBSD") {
-		push(@tmp, "AREA:m_mused#EE4444:Used");
-		push(@tmp, "AREA:m_mcach#44EE44:Cached");
-		push(@tmp, "AREA:m_mbuff#CCCCCC:Buffers");
-		push(@tmp, "AREA:m_macti#EEEE44:Active");
-		push(@tmp, "AREA:m_minac#4444EE:Inactive");
-		push(@tmp, "LINE1:m_minac#0000EE");
-		push(@tmp, "LINE1:m_macti#EEEE00");
-		push(@tmp, "LINE1:m_mbuff#888888");
-		push(@tmp, "LINE1:m_mcach#00EE00");
-		push(@tmp, "LINE1:m_mused#EE0000");
+		push(@tmp, "AREA:m_macti#E29136:Active");
+		push(@tmp, "AREA:m_minac#448844:Inactive");
+		push(@tmp, "LINE2:m_minac#008800");
+		push(@tmp, "LINE2:m_macti#E29136");
+		push(@tmp, "LINE2:m_mbuff#888888");
+		push(@tmp, "LINE2:m_mcach#00EE00");
+		push(@tmp, "LINE2:m_mused#EE0000");
 	} elsif($config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
 		push(@tmp, "AREA:m_mused#EE4444:Used");
 		push(@tmp, "AREA:m_macti#44EE44:Active");
-		push(@tmp, "LINE1:m_macti#00EE00");
-		push(@tmp, "LINE1:m_mused#EE0000");
+		push(@tmp, "LINE2:m_macti#00EE00");
+		push(@tmp, "LINE2:m_mused#EE0000");
 	}
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
