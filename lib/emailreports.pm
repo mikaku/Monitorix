@@ -82,7 +82,7 @@ EOF
   <a href='http://www.monitorix.org'><img src='cid:image_logo' border='0'></a>
   <br>
   <font face='Verdana, sans-serif' color='000000' size='-2'>
-Copyright &copy; 2005-2016 Jordi Sanfeliu
+Copyright &copy; 2005-2017 Jordi Sanfeliu
   </font>
   </body>
 </html>
