@@ -45,8 +45,8 @@ $SIG{'TERM'} = 'INT_handler';
 $SIG{'CHLD'} = 'CHLD_handler';
 $SIG{'HUP' } = 'HUP_handler';
 
-use constant VERSION	=> "3.9.0";
-use constant RELDATE	=> "14-Oct-2016";
+use constant VERSION	=> "3.10.0";
+use constant RELDATE	=> "25-Sep-2017";
 
 my @suppsys = ("Linux", "FreeBSD", "OpenBSD", "NetBSD");
 our %config;

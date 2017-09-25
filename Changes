@@ -1,4 +1,4 @@
-3.N.N  - DD-MMM-2017
+3.10.0 - 25-Sep-2017
 ====================
 - Added a complete graph for IPMI sensors using the 'ipmitool' command.
   	(suggested by Frank Dijcks, fd AT fdsystems.nl)
