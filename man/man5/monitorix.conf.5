@@ -492,6 +492,13 @@ This enables or disables the monitoring of each graph. Placing a \fIy\fP on a de
 .SS System load average and usage (system.rrd)
 This graph shows information about system load average (classical UNIX triplet), memory allocation, active processes (on Linux brought directly from the /proc directory), entropy and the system uptime.
 .P
+.BI graph_mode
+.RS
+This option permits to toggle between the modes \fBreal\fP and \fBinterpreted\fP the way how the memory graph is represented. The main difference between both modes is how is calculated the used memory. Currently it's the result of subtracting the \fIbuffer\fP and \fIcache\fP values from \fIused\fP.
+.P
+Default value: \fIreal\fP
+.RE
+.P
 .BI loadavg_enabled
 .RS
 This section enables or disables the alert capabilities for this graph. Only the alert for the average CPU load is currently implemented. It works as follows:
