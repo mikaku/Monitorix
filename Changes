@@ -1,3 +1,10 @@
+3.NN.N - DD-MMM-2017
+====================
+- Added a new option called 'graph_mode' to view the memory graph in two
+  different modes: 'real' (being the default) and 'interpreted'.
+  	(suggested by Łukasz "Cyber Killer" Korpalski, cyberkiller8 AT gmail.com)
+
+
 3.10.0 - 25-Sep-2017
 ====================
 - Added a complete graph for IPMI sensors using the 'ipmitool' command.
