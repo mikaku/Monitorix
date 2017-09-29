@@ -570,15 +570,11 @@ sub nvidia_cgi {
 	push(@tmp, "GPRINT:gpu5:LAST:\\:%3.0lf%%");
 	push(@tmp, "LINE2:gpu8#963C74:Card 8\\g");
 	push(@tmp, "GPRINT:gpu8:LAST:\\:%3.0lf%%\\n");
-	push(@tmpz, "LINE2:gpu0#FFA500:Card 0");
-	push(@tmpz, "LINE2:gpu3#4444EE:Card 3");
-	push(@tmpz, "LINE2:gpu6#EE44EE:Card 6");
-	push(@tmpz, "LINE2:gpu1#44EEEE:Card 1");
-	push(@tmpz, "LINE2:gpu4#448844:Card 4");
-	push(@tmpz, "LINE2:gpu7#EEEE44:Card 7");
-	push(@tmpz, "LINE2:gpu2#44EE44:Card 2");
-	push(@tmpz, "LINE2:gpu5#EE4444:Card 5");
-	push(@tmpz, "LINE2:gpu8#963C74:Card 8");
+        for($n = 0; $n < 9; $n++) {
+                if($n < $nvidia->{max}) {
+                        push(@tmpz, "LINE2:gpu" . $n . $LC[$n] . ":Card $n");
+                }
+        }
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -688,15 +684,11 @@ sub nvidia_cgi {
 	push(@tmp, "GPRINT:mem5:LAST:\\:%3.0lf%%");
 	push(@tmp, "LINE2:mem8#963C74:Card 8\\g");
 	push(@tmp, "GPRINT:mem8:LAST:\\:%3.0lf%%\\n");
-	push(@tmpz, "LINE2:mem0#FFA500:Card 0");
-	push(@tmpz, "LINE2:mem3#4444EE:Card 3");
-	push(@tmpz, "LINE2:mem6#EE44EE:Card 6");
-	push(@tmpz, "LINE2:mem1#44EEEE:Card 1");
-	push(@tmpz, "LINE2:mem4#448844:Card 4");
-	push(@tmpz, "LINE2:mem7#EEEE44:Card 7");
-	push(@tmpz, "LINE2:mem2#44EE44:Card 2");
-	push(@tmpz, "LINE2:mem5#EE4444:Card 5");
-	push(@tmpz, "LINE2:mem8#963C74:Card 8");
+        for($n = 0; $n < 9; $n++) {
+                if($n < $nvidia->{max}) {
+                        push(@tmpz, "LINE2:mem" . $n . $LC[$n] . ":Card $n");
+                }
+        }
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
