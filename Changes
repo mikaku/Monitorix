@@ -3,6 +3,7 @@
 - Added a new option called 'graph_mode' to view the memory graph in two
   different modes: 'real' (being the default) and 'interpreted'.
   	(suggested by Łukasz "Cyber Killer" Korpalski, cyberkiller8 AT gmail.com)
+- Fixed a bad memory scaling in *BSD systems.
 
 
 3.10.0 - 25-Sep-2017

@@ -456,6 +456,7 @@ sub system_cgi {
 	} elsif(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 		$total_mem = `/sbin/sysctl -n hw.physmem`;	# in bytes
 		chomp($total_mem);
+		$total_mem = int($total_mem / 1024);		# in KB
 	}
 	$total_mem_bytes = int($total_mem * 1024);		# in bytes
 	$total_mem = int($total_mem / 1024);			# in MB
