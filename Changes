@@ -4,6 +4,7 @@
   different modes: 'real' (being the default) and 'interpreted'.
   	(suggested by Łukasz "Cyber Killer" Korpalski, cyberkiller8 AT gmail.com)
 - Fixed a bad memory scaling in *BSD systems.
+- Fixed in 'process.pm' to fully honour the option 'netstats_in_bps'.
 
 
 3.10.0 - 25-Sep-2017
