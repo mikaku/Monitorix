@@ -7,6 +7,8 @@
 - Fixed in 'process.pm' to fully honour the option 'netstats_in_bps'.
 - Fixed to force Monitorix to be started at the end of boot in systemd-based
   systems. This should fix a problem with 'traffacct.pm' and iptables.
+- Fixed the missing declaration of 'allvalues' in 'gensens.pm' which prevented
+  graphs generation if 'show_gaps' option was enabled.
 
 
 3.10.0 - 25-Sep-2017

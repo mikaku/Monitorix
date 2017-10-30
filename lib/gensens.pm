@@ -411,6 +411,7 @@ sub gensens_cgi {
 		"DEF:gsen6=$rrd:gensens0_s7:AVERAGE",
 		"DEF:gsen7=$rrd:gensens0_s8:AVERAGE",
 		"DEF:gsen8=$rrd:gensens0_s9:AVERAGE",
+		"CDEF:allvalues=gsen0,gsen1,gsen2,gsen3,gsen4,gsen5,gsen6,gsen7,gsen8,+,+,+,+,+,+,+,+",
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
@@ -438,6 +439,7 @@ sub gensens_cgi {
 			"DEF:gsen6=$rrd:gensens0_s7:AVERAGE",
 			"DEF:gsen7=$rrd:gensens0_s8:AVERAGE",
 			"DEF:gsen8=$rrd:gensens0_s9:AVERAGE",
+			"CDEF:allvalues=gsen0,gsen1,gsen2,gsen3,gsen4,gsen5,gsen6,gsen7,gsen8,+,+,+,+,+,+,+,+",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
@@ -520,6 +522,7 @@ sub gensens_cgi {
 		"DEF:gsen6=$rrd:gensens1_s7:AVERAGE",
 		"DEF:gsen7=$rrd:gensens1_s8:AVERAGE",
 		"DEF:gsen8=$rrd:gensens1_s9:AVERAGE",
+		"CDEF:allvalues=gsen0,gsen1,gsen2,gsen3,gsen4,gsen5,gsen6,gsen7,gsen8,+,+,+,+,+,+,+,+",
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
@@ -547,6 +550,7 @@ sub gensens_cgi {
 			"DEF:gsen6=$rrd:gensens1_s7:AVERAGE",
 			"DEF:gsen7=$rrd:gensens1_s8:AVERAGE",
 			"DEF:gsen8=$rrd:gensens1_s9:AVERAGE",
+			"CDEF:allvalues=gsen0,gsen1,gsen2,gsen3,gsen4,gsen5,gsen6,gsen7,gsen8,+,+,+,+,+,+,+,+",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
