@@ -304,7 +304,6 @@ sub ipmi_cgi {
 		push(@output, "Time$line2\n");
 		push(@output, "----$line3 \n");
 		my $line;
-		my @row;
 		my $time;
 		my $n2;
 		my $n3;
@@ -315,13 +314,12 @@ sub ipmi_cgi {
 			$time = $time - (1 / $tf->{ts});
 			push(@output, sprintf(" %2d$tf->{tc} ", $time));
 			for($n2 = 0; $n2 < scalar(my @sl = split(',', $ipmi->{list})); $n2++) {
-				$n3 = 0;
+				$n3 = $n2 * 9;
 				foreach my $i (split(',', $ipmi->{desc}->{$n2})) {
-					$from = $n2 * 9 + $n3++;
+					$from = $n3++;
 					$to = $from + 1;
 					my ($j) = @$line[$from..$to];
-					@row = ($j);
-					push(@output, sprintf("%7.1lf ", @row));
+					push(@output, sprintf("%7.1lf ", $j || 0));
 				}
 			}
 			push(@output, "\n");
