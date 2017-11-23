@@ -656,7 +656,7 @@ sub system_cgi {
 	undef(@tmpz);
 	undef(@CDEF);
 	if($config->{os} eq "Linux" || $config->{os} eq "FreeBSD") {
-		if(lc($system->{graph_mode} || "") eq "interpreted") {
+		if(lc($system->{memory_mode} || "") eq "interpreted") {
 			push(@tmp, "AREA:m_mcach#44EE44:Cached");
 			push(@tmp, "AREA:m_mbuff#CCCCCC:Buffers");
 			push(@tmp, "AREA:m_macti#E29136:Active");
