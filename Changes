@@ -1,6 +1,6 @@
 3.NN.N - DD-MMM-2017
 ====================
-- Added a new option called 'graph_mode' to view the memory graph in two
+- Added a new option called 'memory_mode' to view the memory graph in two
   different modes: 'real' (being the default) and 'interpreted'.
   	(suggested by Łukasz "Cyber Killer" Korpalski, cyberkiller8 AT gmail.com)
 - Fixed a bad memory scaling in *BSD systems.
@@ -9,6 +9,7 @@
   systems. This should fix a problem with 'traffacct.pm' and iptables.
 - Fixed the missing declaration of 'allvalues' in 'gensens.pm' which prevented
   graphs generation if 'show_gaps' option was enabled.
+- Fixed to correctly represent the values in text mode in 'ipmi.pm'.
 
 
 3.10.0 - 25-Sep-2017
