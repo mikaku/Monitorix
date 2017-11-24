@@ -3,6 +3,7 @@
 - Added a new option called 'memory_mode' to view the memory graph in two
   different modes: 'real' (being the default) and 'interpreted'.
   	(suggested by Łukasz "Cyber Killer" Korpalski, cyberkiller8 AT gmail.com)
+- Added a complete graph to support external ambient sensors ('ambsens.pm').
 - Fixed a bad memory scaling in *BSD systems.
 - Fixed in 'process.pm' to fully honour the option 'netstats_in_bps'.
 - Fixed to force Monitorix to be started at the end of boot in systemd-based
