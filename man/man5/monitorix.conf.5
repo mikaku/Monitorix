@@ -683,12 +683,12 @@ The following is an example of an alert defined for the first temperature sensor
 .RS
 <alerts>
 .br
-	2 = 3600, 40, /path/to/script
+	2 = 3600, 40, /path/to/script.sh
 .br
 </alerts>
 .P
 .RE
-Such alert means that if the value of the sensor number 2 reaches or exceeds 40 during at least one hour (3600 seconds) the script in \fI/path/to/script\fP will be executed.
+Such alert means that if the value of the sensor number 2 reaches or exceeds 40 during at least one hour (3600 seconds) the script in \fI/path/to/script.sh\fP will be executed.
 .P
 The external script will receive the following arguments:
 .P
@@ -860,12 +860,12 @@ The following is an example of an alert defined for the first temperature sensor
 .RS
 <alerts>
 .br
-	core0 = 3600, 40, /path/to/script
+	core0 = 3600, 40, /path/to/script.sh
 .br
 </alerts>
 .P
 .RE
-Such alert means that if the value of the sensor core0 reaches or exceeds 40 during at least one hour (3600 seconds) the script in \fI/path/to/script\fP will be executed.
+Such alert means that if the value of the sensor core0 reaches or exceeds 40 during at least one hour (3600 seconds) the script in \fI/path/to/script.sh\fP will be executed.
 .P
 The external script will receive the following arguments:
 .P
@@ -984,12 +984,12 @@ The following is an example of an alert defined for the first temperature sensor
 .RS
 <alerts>
 .br
-	temp0 = 3600, 40, /path/to/script
+	temp0 = 3600, 40, /path/to/script.sh
 .br
 </alerts>
 .P
 .RE
-Such alert means that if the value of the sensor temp0 reaches or exceeds 40 during at least one hour (3600 seconds) the script in \fI/path/to/script\fP will be executed.
+Such alert means that if the value of the sensor temp0 reaches or exceeds 40 during at least one hour (3600 seconds) the script in \fI/path/to/script.sh\fP will be executed.
 .P
 The external script will receive the following arguments:
 .P
@@ -1061,14 +1061,14 @@ The following is an example of an alert defined for the first temperature sensor
 .RS
 <alerts>
 .br
-	CPU_Temp = 3600, 40, /path/to/script
+	CPU_Temp = 3600, 40, /path/to/script.sh
 .br
 </alerts>
 .P
 Notice that the spaces in the sensor's name must be converted to underscores, since a variable can hold spaces in its name.
 .P
 .RE
-Such alert means that if the value of the sensor CPU_Temp reaches or exceeds 40 during at least one hour (3600 seconds) the script in \fI/path/to/script\fP will be executed.
+Such alert means that if the value of the sensor CPU_Temp reaches or exceeds 40 during at least one hour (3600 seconds) the script in \fI/path/to/script.sh\fP will be executed.
 .P
 The external script will receive the following arguments:
 .P
@@ -1100,6 +1100,93 @@ extra_args = -H <remote_ip> -U root -P <password>
 .P
 .RS
 Default value: \fInone\fP
+.RE
+.SS Ambient sensor statistics (ambsens.rrd)
+This graph is able to monitor an unlimited number of ambient sensors (temperatures, humidity, barometer, etc.).
+.P
+.BI list
+.RS
+This is a comma-separated list that describes the type of sensors in \fBdesc\fP. Put one description for each type. For every type specified you need to specify its sensors in the \fBdesc\fP option. Each one most be referenced as a numeric value starting from zero in the \fBdesc\fP option. There you will define all the sensors than come with that type of sensor. 
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIambsens.rrd\fP file accordingly, removing all historical data.
+.P
+An example would be:
+.P
+list = Ambient temperature, Humidity
+.RE
+.P
+.BI desc
+.RS
+This is a list of sensors per type defined. The name is irrelevant. 
+.P
+<desc>
+.br
+	0 = at1, at2, at3
+.br
+	1 = h0
+.br
+</desc>
+.P
+The maximum number of sensors allowed for each type is 9.
+.RE
+.P
+.BI units
+.RS
+This is the class of sensor for each type. It's important to not mix different type of sensors in a same group. This value is informative only, it's mostly used as a title for the y-axis in the graphs.
+.RE
+.P
+.BI cmd
+.RS
+This list complements the \fBdesc\fP option. It basically allows you to associate a script or program that will be executed to retrieve the value for each sensor.
+.RE
+.P
+.BI map
+.RS
+This list complements the \fBdesc\fP option. It basically allows you to change the name that will appear in the graph, hiding the real name of the sensor. If no association is defined, then Monitorix will display the name specified in the \fBdesc\fP option. Note, this only works in names that don't include whitespaces.
+.RE
+.P
+.BI alerts
+.RS
+This optional list enables the alert capabilities for this graph and complements with the \fBdesc\fP option. Each alert has three fields separated by comma: the \fItime interval\fP, the \fIthreshold\fP and the path to the \fIscript\fP to be executed.
+.P
+The \fItime interval\fP is the period of time (in seconds) that the \fIthreshold\fP needs to be exceeded before the external script is executed.
+.P
+The \fIthreshold\fP is the temperature that needs to be reached or exceeded within the specified time in \fItime interval\fP to execute the external script.
+.P
+The \fIscript\fP is the full path name of the script that will be executed by this alert.
+.P
+Each defined sensor has its own alert.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fImonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+The following is an example of an alert defined for the first temperature sensor:
+.P
+.RS
+<alerts>
+.br
+	at1 = 3600, 40, /path/to/script.sh
+.br
+</alerts>
+.P
+.RE
+Such alert means that if the value of the sensor \fIat1\fP reaches or exceeds 40 during at least one hour (3600 seconds) the script in \fI/path/to/script.sh\fP will be executed.
+.P
+The external script will receive the following arguments:
+.P
+.RS
+1st - the value defined as \fItime interval\fP.
+.br
+2nd - the value defined as \fIthreshold\fP.
+.br
+3rd - the value of the sensor.
+.P
+.RE
+.RE
+.BI graphs_per_row
+.RS
+This is the number of graphs that will be put in a row.
+.P
+Default value: \fI2\fP
 .RE
 .SS NVIDIA temperatures and usage (nvidia.rrd)
 This graph requires to have installed the official NVIDIA drivers.
@@ -1338,12 +1425,12 @@ The following is an example of an alert defined for the root filesystem:
 .RS
 <alerts>
 .br
-	/ = 3600, 98, /path/to/script
+	/ = 3600, 98, /path/to/script.sh
 .br
 </alerts>
 .P
 .RE
-Such alert means that if the percentage of disk space used in the root filesystem reaches or exceeds 98 (more than 98) during at least one hour (3600 seconds) the script in \fI/path/to/script\fP will be executed.
+Such alert means that if the percentage of disk space used in the root filesystem reaches or exceeds 98 (more than 98) during at least one hour (3600 seconds) the script in \fI/path/to/script.sh\fP will be executed.
 .P
 The external script will receive the following arguments:
 .P
@@ -1948,12 +2035,12 @@ The following is an example of an alert defined for the local Apache:
 .RS
 <alerts>
 .br
-	http://localhost/server-status?auto = 3600, 5, /path/to/script
+	http://localhost/server-status?auto = 3600, 5, /path/to/script.sh
 .br
 </alerts>
 .P
 .RE
-Such alert means that if the remaining free slots reaches or exceeds 5 (less than 5) during at least one hour (3600 seconds) the script in \fI/path/to/script\fP will be executed.
+Such alert means that if the remaining free slots reaches or exceeds 5 (less than 5) during at least one hour (3600 seconds) the script in \fI/path/to/script.sh\fP will be executed.
 .P
 The external script will receive the following arguments:
 .P
