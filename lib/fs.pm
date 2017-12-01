@@ -980,7 +980,7 @@ sub fs_cgi {
 					$color = $LC[$n2++];
 				}
 				push(@tmpz, "LINE2:fs" . $n . $color . ":$str");
-				$str = sprintf("%-23s", $str);
+				$str = sprintf("%-23s", substr($str, 0, 23));
 				push(@tmp, "LINE2:fs" . $n . $color . ":$str");
 				push(@tmp, "GPRINT:fs" . $n . ":LAST:Cur\\: %4.1lf%%");
 				push(@tmp, "GPRINT:fs" . $n . ":MIN: Min\\: %4.1lf%%");
@@ -1097,7 +1097,7 @@ sub fs_cgi {
 					$color = $LC[$n2++];
 				}
 				push(@tmpz, "LINE2:ioa" . $n . $color . ":$str");
-				$str = sprintf("%-23s", $str);
+				$str = sprintf("%-23s", substr($str, 0, 23));
 				push(@tmp, "LINE2:ioa" . $n . $color . ":$str");
 				push(@tmp, "GPRINT:ioa" . $n . ":LAST:Cur\\: %4.0lf");
 				push(@tmp, "GPRINT:ioa" . $n . ":MIN: Min\\: %4.0lf");
@@ -1209,7 +1209,7 @@ sub fs_cgi {
 					$color = $LC[$n2++];
 				}
 				push(@tmpz, "LINE2:fs" . $n . $color . ":$str");
-				$str = sprintf("%-23s", $str);
+				$str = sprintf("%-23s", substr($str, 0, 23));
 				push(@tmp, "LINE2:fs" . $n . $color . ":$str");
 				push(@tmp, "GPRINT:fs" . $n . ":LAST:Cur\\: %4.1lf%%");
 				push(@tmp, "GPRINT:fs" . $n . ":MIN: Min\\: %4.1lf%%");
@@ -1334,7 +1334,7 @@ sub fs_cgi {
 						$color = $LC[$n2++];
 					}
 					push(@tmpz, "LINE2:tim" . $n . $color . ":$str");
-					$str = sprintf("%-23s", $str);
+					$str = sprintf("%-23s", substr($str, 0, 23));
 					push(@tmp, "LINE2:tim" . $n . $color . ":$str");
 					push(@tmp, "GPRINT:stim" . $n . ":LAST:Cur\\: %4.1lfs");
 					push(@tmp, "GPRINT:stim" . $n . ":MIN:Min\\: %4.1lfs");
@@ -1360,7 +1360,7 @@ sub fs_cgi {
 						$color = $LC[$n2++];
 					}
 					push(@tmpz, "LINE2:tim" . $n . $color . ":$str");
-					$str = sprintf("%-23s", $str);
+					$str = sprintf("%-23s", substr($str, 0, 23));
 					push(@tmp, "LINE2:tim" . $n . $color . ":$str");
 					push(@tmp, "GPRINT:tim" . $n . ":LAST:Cur\\: %4.0lf");
 					push(@tmp, "GPRINT:tim" . $n . ":MIN: Min\\: %4.0lf");
