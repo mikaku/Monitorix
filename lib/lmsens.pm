@@ -984,14 +984,14 @@ sub lmsens_cgi {
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
-	$str = $lmsens->{desc}->{'mb0'} ? sprintf("%5s", substr($lmsens->{desc}->{'mb0'}, 0, 5)) : "MB 0";
+	$str = $lmsens->{desc}->{'mb0'} ? sprintf("%5s", substr($lmsens->{desc}->{'mb0'}, 0, 5)) : "MB  0";
 	push(@tmp, ("LINE2:mb_0#FFA500:$str\\g", "GPRINT:mb_0:LAST:\\:%3.0lf   "));
 	$str = $lmsens->{desc}->{'cpu0'} ? sprintf("%5s", substr($lmsens->{desc}->{'cpu0'}, 0, 5)) : "CPU 0";
 	push(@tmp, ("LINE2:cpu_0#4444EE:$str\\g", "GPRINT:cpu_0:LAST:\\:%3.0lf   ")) unless !$lmsens->{list}->{'cpu0'};
 	$str = $lmsens->{desc}->{'cpu2'} ? sprintf("%5s", substr($lmsens->{desc}->{'cpu2'}, 0, 5)) : "CPU 2";
 	push(@tmp, ("LINE2:cpu_2#EE44EE:$str\\g", "GPRINT:cpu_2:LAST:\\:%3.0lf\\g")) unless !$lmsens->{list}->{'cpu2'};
 	push(@tmp, "COMMENT: \\n");
-	$str = $lmsens->{desc}->{'mb1'} ? sprintf("%5s", substr($lmsens->{desc}->{'mb1'}, 0, 5)) : "MB 1";
+	$str = $lmsens->{desc}->{'mb1'} ? sprintf("%5s", substr($lmsens->{desc}->{'mb1'}, 0, 5)) : "MB  1";
 	push(@tmp, ("LINE2:mb_1#44EEEE:$str\\g", "GPRINT:mb_1:LAST:\\:%3.0lf   ")) unless !$lmsens->{list}->{'mb1'};
 	$str = $lmsens->{desc}->{'cpu1'} ? sprintf("%5s", substr($lmsens->{desc}->{'cpu1'}, 0, 5)) : "CPU 1";
 	push(@tmp, ("LINE2:cpu_1#EEEE44:$str\\g", "GPRINT:cpu_1:LAST:\\:%3.0lf   ")) unless !$lmsens->{list}->{'cpu1'};

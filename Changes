@@ -12,6 +12,7 @@
 - Fixed the missing declaration of 'allvalues' in 'gensens.pm' which prevented
   graphs generation if 'show_gaps' option was enabled.
 - Fixed to correctly represent the values in text mode in 'ipmi.pm'.
+- Fixed a missalignment of the MB & CPU temperatures values in 'lmsens.pm'.
 
 
 3.10.0 - 25-Sep-2017
