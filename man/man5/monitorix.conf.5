@@ -15,6 +15,8 @@ Every time \fBmonitorix\fP is started it reads the configuration file from the p
 .P
 It also creates a file called \fI<base_dir>/cgi/monitorix.conf.path\fP that includes the absolute path of the configuration file. This file will be read by \fBmonitorix.cgi\fP to determine the exact location of the configuration file.
 .SH CONFIGURATION OPTIONS
+IMPORTANT NOTE: these options have default values that might vary depending on your operating system. Please check the configuration files in \fI/etc/monitorix/conf.d\fP.
+.P
 Blank lines are ignored, and whitespace before and after a token or value is ignored as well as tabulators, although a value can contain whitespace within. Lines which begin with a # are considered comments and ignored.
 .P
 If you want to comment out a large block you can use C-style comments. A /* signals the begin of a comment block and the */ signals the end of the comment block.
