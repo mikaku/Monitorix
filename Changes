@@ -17,6 +17,7 @@
 - Fixed to correctly represent the values in text mode in 'ipmi.pm'.
 - Fixed a missalignment of the MB & CPU temperatures values in 'lmsens.pm'.
 - Fixed to limit the length of the device names in 'fs.pm'.
+- Fixed a missing gap colouring in some zoomed graphs of 'system.pm'.
 
 
 3.10.0 - 25-Sep-2017
