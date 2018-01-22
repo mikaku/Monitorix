@@ -180,7 +180,7 @@ sub netstat_update {
 
 	if($config->{os} eq "Linux") {
 		if (`which ss`) {
-			if(open(IN, "ss -Hna -f inet |")) {
+			if(open(IN, "ss -na -f inet |")) {
 				while(<IN>) {
 					m/^(\S+)\s+(\S+)/;
 					my $proto = $1 || '';
@@ -204,7 +204,7 @@ sub netstat_update {
 				}
 				close(IN);
 			}
-			if(open(IN, "ss -Hna -f inet6 |")) {
+			if(open(IN, "ss -na -f inet6 |")) {
 				while(<IN>) {
 					m/^(\S+)\s+(\S+)/;
 					my $proto = $1 || '';
