@@ -179,65 +179,116 @@ sub netstat_update {
 	my $rrdata = "N";
 
 	if($config->{os} eq "Linux") {
-		if(open(IN, "netstat -tn -A inet |")) {
-			while(<IN>) {
-				my $last = (split(' ', $_))[-1];
-				$i4_closed++ if trim($last) eq "CLOSED";
-				$i4_synsent++ if trim($last) eq "SYN_SENT";
-				$i4_synrecv++ if trim($last) eq "SYN_RECV";
-				$i4_estblshd++ if trim($last) eq "ESTABLISHED";
-				$i4_finwait1++ if trim($last) eq "FIN_WAIT1";
-				$i4_finwait2++ if trim($last) eq "FIN_WAIT2";
-				$i4_closing++ if trim($last) eq "CLOSING";
-				$i4_timewait++ if trim($last) eq "TIME_WAIT";
-				$i4_closewait++ if trim($last) eq "CLOSE_WAIT";
-				$i4_lastack++ if trim($last) eq "LAST_ACK";
-				$i4_unknown++ if trim($last) eq "UNKNOWN";
+		if (`which ss`) {
+			if(open(IN, "ss -Hna -f inet |")) {
+				while(<IN>) {
+					m/^(\S+)\s+(\S+)/;
+					my $proto = $1 || '';
+					my $state = $2 || '';
+					if ($proto eq 'tcp') {
+						if    ($state eq "LISTEN")     { $i4_listen++ }
+						elsif ($state eq "ESTAB")      { $i4_estblshd++ }
+						elsif ($state eq "TIME-WAIT")  { $i4_timewait++ }
+						elsif ($state eq "CLOSE-WAIT") { $i4_closewait++ }
+						elsif ($state eq "FIN-WAIT1")  { $i4_finwait1++ }
+						elsif ($state eq "FIN-WAIT2")  { $i4_finwait2++ }
+						elsif ($state eq "SYN-SENT")   { $i4_synsent++ }
+						elsif ($state eq "SYN-RECV")   { $i4_synrecv++ }
+						elsif ($state eq "CLOSING")    { $i4_closing++ }
+						elsif ($state eq "LAST-ACK")   { $i4_lastack++ }
+						elsif ($state eq "UNCONN")     { $i4_closed++ }
+						elsif ($state eq "UNKNOWN")    { $i4_unknown++ }
+					} elsif ($proto eq 'udp') {
+						$i4_udp++;
+					}
+				}
+				close(IN);
 			}
-			close(IN);
-		}
-		if(open(IN, "netstat -ltn -A inet |")) {
-			while(<IN>) {
-				my $last = (split(' ', $_))[-1];
-				$i4_listen++ if trim($last) eq "LISTEN";
+			if(open(IN, "ss -Hna -f inet6 |")) {
+				while(<IN>) {
+					m/^(\S+)\s+(\S+)/;
+					my $proto = $1 || '';
+					my $state = $2 || '';
+					if ($proto eq 'tcp') {
+						if    ($state eq "LISTEN")     { $i6_listen++ }
+						elsif ($state eq "ESTAB")      { $i6_estblshd++ }
+						elsif ($state eq "TIME-WAIT")  { $i6_timewait++ }
+						elsif ($state eq "CLOSE-WAIT") { $i6_closewait++ }
+						elsif ($state eq "FIN-WAIT1")  { $i6_finwait1++ }
+						elsif ($state eq "FIN-WAIT2")  { $i6_finwait2++ }
+						elsif ($state eq "SYN-SENT")   { $i6_synsent++ }
+						elsif ($state eq "SYN-RECV")   { $i6_synrecv++ }
+						elsif ($state eq "CLOSING")    { $i6_closing++ }
+						elsif ($state eq "LAST-ACK")   { $i6_lastack++ }
+						elsif ($state eq "UNCONN")     { $i6_closed++ }
+						elsif ($state eq "UNKNOWN")    { $i6_unknown++ }
+					} elsif ($proto eq 'udp') {
+						$i6_udp++;
+					}
+				}
+				close(IN);
 			}
-			close(IN);
-		}
-		if(open(IN, "netstat -lun -A inet |")) {
-			while(<IN>) {
-				$i4_udp++ if /^udp\s+/;
+		} else {
+			if(open(IN, "netstat -tn -A inet |")) {
+				while(<IN>) {
+					my $last = (split(' ', $_))[-1];
+					$i4_closed++ if trim($last) eq "CLOSED";
+					$i4_synsent++ if trim($last) eq "SYN_SENT";
+					$i4_synrecv++ if trim($last) eq "SYN_RECV";
+					$i4_estblshd++ if trim($last) eq "ESTABLISHED";
+					$i4_finwait1++ if trim($last) eq "FIN_WAIT1";
+					$i4_finwait2++ if trim($last) eq "FIN_WAIT2";
+					$i4_closing++ if trim($last) eq "CLOSING";
+					$i4_timewait++ if trim($last) eq "TIME_WAIT";
+					$i4_closewait++ if trim($last) eq "CLOSE_WAIT";
+					$i4_lastack++ if trim($last) eq "LAST_ACK";
+					$i4_unknown++ if trim($last) eq "UNKNOWN";
+				}
+				close(IN);
 			}
-			close(IN);
-		}
-		if(open(IN, "netstat -tn -A inet6 |")) {
-			while(<IN>) {
-				my $last = (split(' ', $_))[-1];
-				$i6_closed++ if trim($last) eq "CLOSED";
-				$i6_synsent++ if trim($last) eq "SYN_SENT";
-				$i6_synrecv++ if trim($last) eq "SYN_RECV";
-				$i6_estblshd++ if trim($last) eq "ESTABLISHED";
-				$i6_finwait1++ if trim($last) eq "FIN_WAIT1";
-				$i6_finwait2++ if trim($last) eq "FIN_WAIT2";
-				$i6_closing++ if trim($last) eq "CLOSING";
-				$i6_timewait++ if trim($last) eq "TIME_WAIT";
-				$i6_closewait++ if trim($last) eq "CLOSE_WAIT";
-				$i6_lastack++ if trim($last) eq "LAST_ACK";
-				$i6_unknown++ if trim($last) eq "UNKNOWN";
+			if(open(IN, "netstat -ltn -A inet |")) {
+				while(<IN>) {
+					my $last = (split(' ', $_))[-1];
+					$i4_listen++ if trim($last) eq "LISTEN";
+				}
+				close(IN);
 			}
-			close(IN);
-		}
-		if(open(IN, "netstat -ltn -A inet6 |")) {
-			while(<IN>) {
-				my $last = (split(' ', $_))[-1];
-				$i6_listen++ if trim($last) eq "LISTEN";
+			if(open(IN, "netstat -lun -A inet |")) {
+				while(<IN>) {
+					$i4_udp++ if /^udp\s+/;
+				}
+				close(IN);
 			}
-			close(IN);
-		}
-		if(open(IN, "netstat -lun -A inet6 |")) {
-			while(<IN>) {
-				$i6_udp++ if /^udp[ 6]\s+/;
+			if(open(IN, "netstat -tn -A inet6 |")) {
+				while(<IN>) {
+					my $last = (split(' ', $_))[-1];
+					$i6_closed++ if trim($last) eq "CLOSED";
+					$i6_synsent++ if trim($last) eq "SYN_SENT";
+					$i6_synrecv++ if trim($last) eq "SYN_RECV";
+					$i6_estblshd++ if trim($last) eq "ESTABLISHED";
+					$i6_finwait1++ if trim($last) eq "FIN_WAIT1";
+					$i6_finwait2++ if trim($last) eq "FIN_WAIT2";
+					$i6_closing++ if trim($last) eq "CLOSING";
+					$i6_timewait++ if trim($last) eq "TIME_WAIT";
+					$i6_closewait++ if trim($last) eq "CLOSE_WAIT";
+					$i6_lastack++ if trim($last) eq "LAST_ACK";
+					$i6_unknown++ if trim($last) eq "UNKNOWN";
+				}
+				close(IN);
 			}
-			close(IN);
+			if(open(IN, "netstat -ltn -A inet6 |")) {
+				while(<IN>) {
+					my $last = (split(' ', $_))[-1];
+					$i6_listen++ if trim($last) eq "LISTEN";
+				}
+				close(IN);
+			}
+			if(open(IN, "netstat -lun -A inet6 |")) {
+				while(<IN>) {
+					$i6_udp++ if /^udp[ 6]\s+/;
+				}
+				close(IN);
+			}
 		}
 	} elsif(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD")) {
 		if(open(IN, "netstat -na -p tcp -f inet |")) {
