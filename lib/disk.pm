@@ -236,6 +236,11 @@ sub disk_update {
 						$temp = $tmp[3] unless $temp;
 						chomp($temp);
 					}
+					if(/^Temperature: /) {
+                                                my @tmp = split(' ', $_);
+                                                $temp = $tmp[1] unless $temp;
+                                                chomp($temp);
+                                        }
 				}
 				close(IN);
 				if(!$temp) {
