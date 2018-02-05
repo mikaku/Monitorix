@@ -1,3 +1,6 @@
+# The following is the syntax for nano(1) text editor, which should make the
+# configuration process easier.
+
 syntax "monitorix" "monitorix.conf$"
 color red "=*[[:space:]]n$"
 color brightgreen "=*[[:space:]]y$"
@@ -8,3 +11,4 @@ icolor magenta "^[[:space:]]*[.A-Z_0-9]*"
 color cyan  start="<" end=">"
 color green "^#.*"
 icolor brightgreen "^#.**[[:space:]]*--"
+
