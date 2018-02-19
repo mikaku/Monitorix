@@ -150,28 +150,28 @@ sub apcupsd_update {
 
 	my $e = 0;
 	foreach(my @al = split(',', $apcupsd->{list})) {
-		my $linev = 0;
-		my $loadc = 0;
-		my $bchar = 0;
-		my $timel = 0;
-		my $mbatc = 0;
-		my $ovolt = 0;
-		my $ltran = 0;
-		my $htran = 0;
-		my $itemp = 0;
-		my $battv = 0;
-		my $linef = 0;
-		my $nxfer = 0;
-		my $nomov = 0;
-		my $minti = 0;
-		my $nomba = 0;
-		my $humid = 0;
-		my $atemp = 0;
-		my $val01 = 0;
-		my $val02 = 0;
-		my $val03 = 0;
-		my $val04 = 0;
-		my $val05 = 0;
+		my $linev;
+		my $loadc;
+		my $bchar;
+		my $timel;
+		my $mbatc;
+		my $ovolt;
+		my $ltran;
+		my $htran;
+		my $itemp;
+		my $battv;
+		my $linef;
+		my $nxfer;
+		my $nomov;
+		my $minti;
+		my $nomba;
+		my $humid;
+		my $atemp;
+		my $val01;
+		my $val02;
+		my $val03;
+		my $val04;
+		my $val05;
 
 		my $data;
 		if(open(EXEC, $apcupsd->{cmd} . " status " . $al[$e] . " |")) {
@@ -181,9 +181,13 @@ sub apcupsd_update {
 
 		if(!$data) {
 			logger("$myself: unable to execute '" . $apcupsd->{cmd} . "' command or invalid connection.");
-			$rrdata .= ":$linev:$loadc:$bchar:$timel:$mbatc:$ovolt:$ltran:$htran:$itemp:$battv:$linef:$nxfer:$nomov:$minti:$nomba:$humid:$atemp:0:0:0:0:0";
+			$rrdata .= "::::::::::::::::::::::";
 			next;
 		}
+
+		($linev, $loadc, $bchar, $timel, $mbatc, $ovolt, $ltran,
+		 $htran, $itemp, $battv, $linef, $nxfer, $nomov, $minti,
+		 $nomba, $humid, $atemp) = (0) x 17;
 
 		foreach(my @l = split('\n', $data)) {
 			if(/^LINEV\s*:\s*(\d+\.\d+)\s+Volts/) {
