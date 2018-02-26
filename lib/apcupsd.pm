@@ -181,7 +181,7 @@ sub apcupsd_update {
 
 		if(!$data) {
 			logger("$myself: unable to execute '" . $apcupsd->{cmd} . "' command or invalid connection.");
-			$rrdata .= "::::::::::::::::::::::";
+			$rrdata .= ":U:U:U:U:U:U:U:U:U:U:U:U:U:U:U:U:U:U:U:U:U:U";
 			next;
 		}
 
