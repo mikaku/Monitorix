@@ -8,6 +8,10 @@
 - Added an advice in monitorix.conf(5) as a reminder that some default values
   are overwritten in the configuration files on certain systems.
   	(suggested by Sander Bos)
+- Changed the alert in 'system.pm' to use the minimum value between the second
+  and the third load averages to obtain a more symmetric curve and a sooner
+  cancellation of the alert.
+  	(suggested by Michael Tosch)
 - Fixed a bad memory scaling in *BSD systems.
 - Fixed in 'process.pm' to fully honour the option 'netstats_in_bps'.
 - Fixed to force Monitorix to be started at the end of boot in systemd-based

@@ -505,7 +505,9 @@ Default value: \fIreal\fP
 .RS
 This section enables or disables the alert capabilities for this graph. Only the alert for the average CPU load is currently implemented. It works as follows:
 .P
-The CPU load average uses the third value (the one that represents the last 15 minutes of the load average), and if it reaches the \fBloadavg_threshold\fP value for the interval of time defined in \fBloadavg_timeintvl\fP, Monitorix will execute the external alert script defined in \fBloadavg_script\fP.
+This alert uses the minimum value between the second and the third load averages (those that represent the last 5 and 15 minutes), and if it reaches the \fBloadavg_threshold\fP value for the interval of time defined in \fBloadavg_timeintvl\fP, Monitorix will execute the external alert script defined in \fBloadavg_script\fP.
+.P
+The idea to use \fImin(load5, load15)\fP is to obtain a more symmetric curve and a sooner cancellation of the alert.
 .P
 The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
 .P

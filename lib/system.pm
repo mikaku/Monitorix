@@ -380,7 +380,10 @@ sub system_update {
 
 	# SYSTEM alert
 	if(lc($system->{alerts}->{loadavg_enabled}) eq "y") {
-		if(!$system->{alerts}->{loadavg_threshold} || $load15 < $system->{alerts}->{loadavg_threshold}) {
+		my $load;
+
+		$load = min($load5, $load15);
+		if(!$system->{alerts}->{loadavg_threshold} || $load < $system->{alerts}->{loadavg_threshold}) {
 			$config->{system_hist_alert1} = 0;
 		} else {
 			if(!$config->{system_hist_alert1}) {
@@ -389,7 +392,7 @@ sub system_update {
 			if($config->{system_hist_alert1} > 0 && (time - $config->{system_hist_alert1}) >= $system->{alerts}->{loadavg_timeintvl}) {
 				if(-x $system->{alerts}->{loadavg_script}) {
 					logger("$myself: ALERT: executing script '$system->{alerts}->{loadavg_script}'.");
-					system($system->{alerts}->{loadavg_script} . " " .$system->{alerts}->{loadavg_timeintvl} . " " . $system->{alerts}->{loadavg_threshold} . " " . $load15);
+					system($system->{alerts}->{loadavg_script} . " " .$system->{alerts}->{loadavg_timeintvl} . " " . $system->{alerts}->{loadavg_threshold} . " " . $load);
 				} else {
 					logger("$myself: ERROR: script '$system->{alerts}->{loadavg_script}' doesn't exist or don't has execution permissions.");
 				}
