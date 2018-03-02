@@ -285,6 +285,23 @@ if($mode ne "localhost") {
 	($mode, $val)  = split(/\./, $mode);
 }
 
+# this should disarm all XSS and Cookie Injection attempts
+my $OK_CHARS='-a-zA-Z0-9_';	# a restrictive list of valid chars
+$graph =~ s/[^$OK_CHARS]/_/go;	# only $OK_CHARS are allowed
+$mode =~ s/[^$OK_CHARS]/_/go;	# only $OK_CHARS are allowed
+$when =~ s/[^$OK_CHARS]/_/go;	# only $OK_CHARS are allowed
+$color =~ s/[^$OK_CHARS]/_/go;	# only $OK_CHARS are allowed
+$val =~ s/[^$OK_CHARS]/_/go;	# only $OK_CHARS are allowed
+$silent =~ s/[^$OK_CHARS]/_/go;	# only $OK_CHARS are allowed
+
+#$graph =~ s/\&/&amp;/g;
+#$graph =~ s/\</&lt;/g;
+#$graph =~ s/\>/&gt;/g;
+#$graph =~ s/\"/&quot;/g;
+#$graph =~ s/\'/&#x27;/g;
+#$graph =~ s/\(/&#x28;/g;
+#$graph =~ s/\)/&#x29;/g;
+#$graph =~ s/\//&#x2F;/g;
 
 if(lc($config{httpd_builtin}->{enabled}) ne "y") {
 	print("Content-Type: text/html\n");
