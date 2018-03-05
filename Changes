@@ -1,4 +1,4 @@
-3.NN.N - DD-MMM-2017
+3.NN.N - DD-MMM-2018
 ====================
 - Added a complete graph to support external ambient sensors ('ambsens.pm').
   	(suggested by Zdenko Dolar, zdenko.dolar AT gmail.com)
@@ -23,6 +23,8 @@
 - Fixed to limit the length of the device names in 'fs.pm'.
 - Fixed a missing gap colouring in some zoomed graphs of 'system.pm'.
 - Fixed to save missing values as 'unknown' in 'apcupsd.pm'. [#201]
+- Fixed XSS vulnerability in CGI variables. [#203]
+	(thanks to Sebastian Gilon from http://testarmy.com/, who pointed this out)
 
 
 3.10.0 - 25-Sep-2017
