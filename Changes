@@ -30,6 +30,8 @@
   	(thanks to Sander Bos for pointing this out)
 - Fixed to disable 'echo' when typing the password in './htpasswd.pl'.
   	(thanks to Sander Bos for pointing this out)
+- Fixed to set permissions 0600 to log files.
+  	(thanks to Sander Bos for pointing this out)
 
 
 3.10.0 - 25-Sep-2017

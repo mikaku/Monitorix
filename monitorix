@@ -82,12 +82,14 @@ sub HUP_handler {
 	close(STDERR);
 	open(STDOUT, ">> $config{log_file}") || logger("Can't write to LOG: $!");
 	open(STDERR, ">> $config{log_file}") || logger("Can't write to LOG: $!");
+	chmod(0600, $config{log_file});
 	logger("$myself: opening a new log file.");
 
 	# create the HTTPd logfile
 	open(OUT, "> " . $config{httpd_builtin}->{log_file});
 	close(OUT);
 	chown($uid, $gid, $config{httpd_builtin}->{log_file});
+	chmod(0600, $config{httpd_builtin}->{log_file});
 }
 
 sub daemonize {
