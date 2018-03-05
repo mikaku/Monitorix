@@ -23,7 +23,7 @@ package Monitorix;
 use strict;
 use warnings;
 use Exporter 'import';
-use POSIX qw(setuid setgid setsid);
+use POSIX qw(setuid setgid setsid getgid getuid);
 use Socket;
 our @EXPORT = qw(logger trim min max celsius_to uptime2str setup_riglim httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
 
@@ -135,7 +135,15 @@ sub httpd_setup {
 	chown($uid, $gid, $config->{httpd_builtin}->{log_file});
 
 	setgid($gid);
+	if(getgid() != $gid) {
+		logger("WARNING: $myself: unable to setgid($gid).");
+		exit(1);
+	}
 	setuid($uid);
+	if(getuid() != $uid) {
+		logger("WARNING: $myself: unable to setuid($uid).");
+		exit(1);
+	}
 	setsid();
 	$SIG{$_} = 'DEFAULT' for keys %SIG;		# reset all sighandlers
 	$0 = "monitorix-httpd listening on $port";	# change process' name
