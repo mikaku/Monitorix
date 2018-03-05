@@ -27,6 +27,7 @@
 	(thanks to Sebastian Gilon from http://testarmy.com/, who pointed this out)
 - Fixed to check if setgid() and setuid() functions were successful before
   starting the HTTP built-in.
+  	(thanks to Sander Bos for pointing this out)
 
 
 3.10.0 - 25-Sep-2017
