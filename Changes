@@ -22,6 +22,7 @@
 - Fixed a missalignment of the MB & CPU temperatures values in 'lmsens.pm'.
 - Fixed to limit the length of the device names in 'fs.pm'.
 - Fixed a missing gap colouring in some zoomed graphs of 'system.pm'.
+- Fixed to save missing values as 'unknown' in 'apcupsd.pm'. [#201]
 
 
 3.10.0 - 25-Sep-2017
