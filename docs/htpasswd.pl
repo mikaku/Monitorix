@@ -20,7 +20,9 @@ my $word;
 if(!$ARGV[0]) {
 	my $salt = join('', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64]);
 	print "Password to encrypt: ";
+	system("stty -echo");
 	chomp($word = <STDIN>);
+	system("stty echo");
 	print crypt($word, $salt) . "\n";
 } else {
 	system("stty -echo");
