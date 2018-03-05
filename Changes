@@ -25,6 +25,8 @@
 - Fixed to save missing values as 'unknown' in 'apcupsd.pm'. [#201]
 - Fixed XSS vulnerability in CGI variables. [#203]
 	(thanks to Sebastian Gilon from http://testarmy.com/, who pointed this out)
+- Fixed to check if setgid() and setuid() functions were successful before
+  starting the HTTP built-in.
 
 
 3.10.0 - 25-Sep-2017
