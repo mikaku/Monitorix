@@ -160,12 +160,12 @@ sub disk_init {
 	}
 
 	# check dependencies
-	if(lc($disk->{alerts}->{realloc_enabled}) eq "y") {
+	if(lc($disk->{alerts}->{realloc_enabled} || "") eq "y") {
 		if(! -x $disk->{alerts}->{realloc_script}) {
 			logger("$myself: ERROR: script '$disk->{alerts}->{realloc_script}' doesn't exist or don't has execution permissions.");
 		}
 	}
-	if(lc($disk->{alerts}->{pendsect_enabled}) eq "y") {
+	if(lc($disk->{alerts}->{pendsect_enabled} || "") eq "y") {
 		if(! -x $disk->{alerts}->{pendsect_script}) {
 			logger("$myself: ERROR: script '$disk->{alerts}->{pendsect_script}' doesn't exist or don't has execution permissions.");
 		}

@@ -147,7 +147,7 @@ sub create_index {
 	}
 
 	# Piwik tracking code
-	if(lc($config{piwik_tracking}->{enabled}) eq "y") {
+	if(lc($config{piwik_tracking}->{enabled} || "") eq "y") {
 		$piwik_url = $config{piwik_tracking}->{url} || "";
 		$piwik_sid = $config{piwik_tracking}->{sid} || "";
 		$piwik_img = $config{piwik_tracking}->{img} || "";
@@ -230,7 +230,7 @@ EOF
 	print(OUT "            <option value='localhost'>localhost</option>\n");
 	print(OUT "            </optgroup>\n");
 
-	if(scalar(my @remotehost_list = split(',', $config{multihost}->{remotehost_list})) && lc($config{multihost}->{enabled}) eq "y") {
+	if(scalar(my @remotehost_list = split(',', $config{multihost}->{remotehost_list})) && lc($config{multihost}->{enabled} || "") eq "y") {
 		print(OUT "            <optgroup label='Multihost'>\n");
 		print(OUT "            <option value='multihost.all'>All</option>\n");
 		for($n = 0; $n < scalar(@remotehost_list); $n++) {
@@ -249,7 +249,7 @@ EOF
 		}
 	}
 
-	if(scalar(my @tal = split(',', $config{traffacct}->{list})) && lc($config{traffacct}->{enabled}) eq "y") {
+	if(scalar(my @tal = split(',', $config{traffacct}->{list})) && lc($config{traffacct}->{enabled} || "") eq "y") {
 		print(OUT "            <optgroup label='Traffic Accounting'>\n");
 		print(OUT "              <option value='traffacct.all'>All</option>\n");
 		for($n = 0; $n < scalar(@tal); $n++) {
@@ -616,7 +616,7 @@ logger("Initializing graphs.");
 
 # check for inconsistencies between enabled graphs and defined graphs
 foreach my $g (sort keys %{$config{graph_enable}}) {
-	if(lc($config{graph_enable}->{$g}) eq "y") {
+	if(lc($config{graph_enable}->{$g} || "") eq "y") {
 		if(!grep {trim($_) eq $g} (split(',', $config{graph_name}))) {
 			logger("WARNING: inconsitency between '<graph_enable>' and 'graph_name' options; '$g' doesn't exist.");
 		}
@@ -629,9 +629,9 @@ foreach (split(',', $config{graph_name} . ", traffacct")) {
 	my $e = "n";
 
 	if($g eq "traffacct") {
-		$e = lc($config{$g}->{enabled});
+		$e = lc($config{$g}->{enabled} || "");
 	} else {
-		$e = lc($config{graph_enable}->{$g});
+		$e = lc($config{graph_enable}->{$g} || "");
 	}
 
 	if($e eq "y") {
