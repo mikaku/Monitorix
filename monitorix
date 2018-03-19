@@ -77,7 +77,7 @@ sub HUP_handler {
 
 	logger("SIG$signal caught.");
 
-	# upon receiving a SIGHUP signal a new logfile opened
+	# upon receiving SIGHUP a new logfile is opened
 	close(STDOUT);
 	close(STDERR);
 	open(STDOUT, ">> $config{log_file}") || logger("Can't write to LOG: $!");

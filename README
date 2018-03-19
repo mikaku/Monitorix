@@ -8,7 +8,8 @@ well.
 
 It consists mainly of two programs: a collector, called monitorix, which
 is a Perl daemon that is started automatically like any other system service,
-and a CGI script called monitorix.cgi. Since 3.0 version Monitorix includes its own HTTP server built in, so you don't need to install any web server to use it.
+and a CGI script called monitorix.cgi. Since 3.0 version Monitorix includes its
+own HTTP server built in, so you don't need to install any web server to use it.
 
 Every time 'monitorix' is started it reads the configuration file from the path
 specified in the command line (using the -c option), and once checked, it
