@@ -23,7 +23,7 @@
 - Fixed to limit the length of the device names in 'fs.pm'.
 - Fixed a missing gap colouring in some zoomed graphs of 'system.pm'.
 - Fixed to save missing values as 'unknown' in 'apcupsd.pm'. [#201]
-- Fixed XSS vulnerability in CGI variables. [#203]
+- Fixed a XSS vulnerability in CGI variables. [#203]
 	(thanks to Sebastian Gilon from http://testarmy.com/, who pointed this out)
 - Fixed to check if setgid() and setuid() functions were successful before
   starting the HTTP built-in.
@@ -32,6 +32,8 @@
   	(thanks to Sander Bos for pointing this out)
 - Fixed to set permissions 0600 to log files.
   	(thanks to Sander Bos for pointing this out)
+- Fixed in 'zfs.pm' the way how is collected pool's data.
+	(thanks to Derek Dongray, derek AT valedon.co.uk)
 
 
 3.10.0 - 25-Sep-2017
