@@ -2,12 +2,10 @@
 ====================
 - Added a complete graph to support external ambient sensors ('ambsens.pm').
   	(suggested by Zdenko Dolar, zdenko.dolar AT gmail.com)
-- Added a new option called 'memory_mode' to view the memory graph in two
-  different modes: 'real' (being the default) and 'interpreted'.
-  	(suggested by Łukasz "Cyber Killer" Korpalski, cyberkiller8 AT gmail.com)
 - Added an advice in monitorix.conf(5) as a reminder that some default values
   are overwritten in the configuration files on certain systems.
   	(suggested by Sander Bos)
+- Changed the way how the Used value in Memory graph is calculated. [#204]
 - Changed the alert in 'system.pm' to use the minimum value between the second
   and the third load averages to obtain a more symmetric curve and a sooner
   cancellation of the alert.

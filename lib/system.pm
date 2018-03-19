@@ -167,6 +167,7 @@ sub system_update {
 	my $entropy = 0;
 	my $uptime = 0;
 
+	my $srecl = 0;
 	my $rrdata = "N";
 
 	if($config->{os} eq "Linux") {
@@ -233,8 +234,13 @@ sub system_update {
 				$minac = $1;
 				last;
 			}
+			if(/^SReclaimable:\s+(\d+) kB$/) {
+				$srecl = $1;
+				last;
+			}
 		}
 		close(IN);
+		$mfree -= $srecl;	# SReclaimable is subtracted here
 
 		open(IN, "/proc/sys/kernel/random/entropy_avail");
 		while(<IN>) {
@@ -492,7 +498,7 @@ sub system_cgi {
 			$buff /= 1024;
 			$cach /= 1024;
 			$free /= 1024;
-			@row = ($load1, $load5, $load15, $total_mem - $free, $cach, $buff, $macti, $minac, $nproc, $nprun, $npslp, $npwio, $npzom, $npstp, $npswp, $entropy, $uptime);
+			@row = ($load1, $load5, $load15, ($total_mem - $free - $buff - $cach), $cach, $buff, $macti, $minac, $nproc, $nprun, $npslp, $npwio, $npzom, $npstp, $npswp, $entropy, $uptime);
 			$time = $time - (1 / $tf->{ts});
 			push(@output, sprintf(" %2d$tf->{tc}   %4.1f  %4.1f  %4.1f  %6d  %6d  %6d  %6d  %6d  %4d %4d %4d %4d %4d %4d %4d  %6d %8d\n", $time, @row));
 		}
@@ -659,29 +665,16 @@ sub system_cgi {
 	undef(@tmpz);
 	undef(@CDEF);
 	if($config->{os} eq "Linux" || $config->{os} eq "FreeBSD") {
-		if(lc($system->{memory_mode} || "") eq "interpreted") {
-			push(@tmp, "AREA:m_mcach#44EE44:Cached");
-			push(@tmp, "AREA:m_mbuff#CCCCCC:Buffers");
-			push(@tmp, "AREA:m_macti#E29136:Active");
-			push(@tmp, "AREA:m_minac#448844:Inactive");
-			push(@tmp, "AREA:m_mused_i#EE4444:Used");
-			push(@tmp, "LINE2:m_mused_i#EE0000");
-			push(@tmp, "LINE2:m_minac#008800");
-			push(@tmp, "LINE2:m_macti#E29136");
-			push(@tmp, "LINE2:m_mbuff#888888");
-			push(@tmp, "LINE2:m_mcach#00EE00");
-		} else {
-			push(@tmp, "AREA:m_mused#EE4444:Used");
-			push(@tmp, "AREA:m_mcach#44EE44:Cached");
-			push(@tmp, "AREA:m_mbuff#CCCCCC:Buffers");
-			push(@tmp, "AREA:m_macti#E29136:Active");
-			push(@tmp, "AREA:m_minac#448844:Inactive");
-			push(@tmp, "LINE2:m_minac#008800");
-			push(@tmp, "LINE2:m_macti#E29136");
-			push(@tmp, "LINE2:m_mbuff#888888");
-			push(@tmp, "LINE2:m_mcach#00EE00");
-			push(@tmp, "LINE2:m_mused#EE0000");
-		}
+		push(@tmp, "AREA:m_mused#EE4444:Used");
+		push(@tmp, "AREA:m_mcach#44EE44:Cached");
+		push(@tmp, "AREA:m_mbuff#CCCCCC:Buffers");
+		push(@tmp, "AREA:m_macti#E29136:Active");
+		push(@tmp, "AREA:m_minac#448844:Inactive");
+		push(@tmp, "LINE2:m_minac#008800");
+		push(@tmp, "LINE2:m_macti#E29136");
+		push(@tmp, "LINE2:m_mbuff#888888");
+		push(@tmp, "LINE2:m_mcach#00EE00");
+		push(@tmp, "LINE2:m_mused#EE0000");
 	} elsif($config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
 		push(@tmp, "AREA:m_mused#EE4444:Used");
 		push(@tmp, "AREA:m_macti#44EE44:Active");
@@ -723,8 +716,7 @@ sub system_cgi {
 		"CDEF:m_mtotl=mtotl,1024,*",
 		"CDEF:m_mbuff=mbuff,1024,*",
 		"CDEF:m_mcach=mcach,1024,*",
-		"CDEF:m_mused=m_mtotl,mfree,1024,*,-",
-		"CDEF:m_mused_i=m_mtotl,mfree,1024,*,-,m_mbuff,-,m_mcach,-",
+		"CDEF:m_mused=m_mtotl,mfree,1024,*,-,m_mbuff,-,m_mcach,-",
 		"CDEF:m_macti=macti,1024,*",
 		"CDEF:m_minac=minac,1024,*",
 		"CDEF:allvalues=mtotl,mbuff,mcach,mfree,macti,minac,+,+,+,+,+",
@@ -759,8 +751,7 @@ sub system_cgi {
 			"CDEF:m_mtotl=mtotl,1024,*",
 			"CDEF:m_mbuff=mbuff,1024,*",
 			"CDEF:m_mcach=mcach,1024,*",
-			"CDEF:m_mused=m_mtotl,mfree,1024,*,-",
-			"CDEF:m_mused_i=m_mtotl,mfree,1024,*,-,m_mbuff,-,m_mcach,-",
+			"CDEF:m_mused=m_mtotl,mfree,1024,*,-,m_mbuff,-,m_mcach,-",
 			"CDEF:m_macti=macti,1024,*",
 			"CDEF:m_minac=minac,1024,*",
 			"CDEF:allvalues=mtotl,mbuff,mcach,mfree,macti,minac,+,+,+,+,+",
