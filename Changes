@@ -10,6 +10,8 @@
   and the third load averages to obtain a more symmetric curve and a sooner
   cancellation of the alert.
   	(suggested by Michael Tosch)
+- Added two new graphs (operations and bandwidth) for each pool in 'zfs.pm' to
+  show iostats. [#190]
 - Fixed a bad memory scaling in *BSD systems.
 - Fixed in 'process.pm' to fully honour the option 'netstats_in_bps'.
 - Fixed to force Monitorix to be started at the end of boot in systemd-based
