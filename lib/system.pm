@@ -296,10 +296,10 @@ sub system_update {
 		$macti = ($page_size * $macti) / 1024;
 		$minac = ($page_size * $minac) / 1024;
 
-		open(IN, "/sbin/sysctl -n kern.random.sys.seeded |");
-		$entropy = <IN>;
-		close(IN);
-		chomp($entropy);
+#		open(IN, "/sbin/sysctl -n kern.random.sys.seeded |");
+#		$entropy = <IN>;
+#		close(IN);
+#		chomp($entropy);
 
 		open(IN, "/sbin/sysctl -n kern.boottime |");
 		(undef, undef, undef, $uptime) = split(' ', <IN>);
