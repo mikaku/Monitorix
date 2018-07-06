@@ -462,7 +462,7 @@ if(!$options{c}) {
 	usage();
 	exit(1);
 }
-$options{c} = abs_path($options{c}) unless $^V lt 5.6.2;
+$options{c} = (abs_path($options{c}) || $options{c}) unless $^V lt 5.6.2;
 if(!stat($options{c})) {
 	die "can't open file '$options{c}': $!";
 }
