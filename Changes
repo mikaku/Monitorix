@@ -12,6 +12,10 @@
   	(suggested by Michael Tosch)
 - Added two new graphs (operations and bandwidth) for each pool in 'zfs.pm' to
   show iostats. [#190]
+- Removed the 777 permissions bits in docs/monitorix.spec and Makefile for the
+  'imgs/' directory. At the same time, when HTTP built-in is enabled, forced to
+  setup the owner, group and permission bits to that directory every time
+  Monitorix is started.
 - Fixed a bad memory scaling in *BSD systems.
 - Fixed in 'process.pm' to fully honour the option 'netstats_in_bps'.
 - Fixed to force Monitorix to be started at the end of boot in systemd-based
