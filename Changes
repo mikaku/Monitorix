@@ -16,6 +16,7 @@
   'imgs/' directory. At the same time, when HTTP built-in is enabled, forced to
   setup the owner, group and permission bits to that directory every time
   Monitorix is started.
+  	(thanks to Sander Bos for pointing this out)
 - Fixed a bad memory scaling in *BSD systems.
 - Fixed in 'process.pm' to fully honour the option 'netstats_in_bps'.
 - Fixed to force Monitorix to be started at the end of boot in systemd-based
