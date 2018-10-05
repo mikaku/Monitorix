@@ -39,6 +39,9 @@
   	(thanks to Sander Bos for pointing this out)
 - Fixed in 'zfs.pm' the way how is collected pool's data.
 	(thanks to Derek Dongray, derek AT valedon.co.uk)
+- Fixed in HTTP built-in to force authentication (when enabled) always, even on
+  non-existing pages.
+  	(thanks to Sander Bos for pointing this out)
 
 
 3.10.0 - 25-Sep-2017
