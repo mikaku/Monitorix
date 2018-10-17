@@ -72,6 +72,8 @@ sub HUP_handler {
 	my ($signal) = @_;
 	my $myself = (caller(0))[3];
 
+	return if $options{n};	# only continue if it's a daemon
+
 	my (undef, undef, $uid) = getpwnam($config{httpd_builtin}->{user});
 	my (undef, undef, $gid) = getgrnam($config{httpd_builtin}->{group});
 
@@ -85,11 +87,16 @@ sub HUP_handler {
 	chmod(0600, $config{log_file});
 	logger("$myself: opening a new log file.");
 
-	# create the HTTPd logfile
-	open(OUT, "> " . $config{httpd_builtin}->{log_file});
-	close(OUT);
-	chown($uid, $gid, $config{httpd_builtin}->{log_file});
-	chmod(0600, $config{httpd_builtin}->{log_file});
+	# restart HTTP built-in
+	if(lc($config{httpd_builtin}->{enabled}) eq "y") {
+		if(defined($config{httpd_pid})) {
+			require HTTPServer;
+			kill(15, $config{httpd_pid});
+			kill(9, $config{httpd_pid});
+			httpd_setup(\%config, $options{d});
+			logger("Restarted built-in HTTP server (pid $config{httpd_pid}).") if (defined($config{httpd_pid}));
+		}
+	}
 }
 
 sub daemonize {
