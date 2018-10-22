@@ -133,7 +133,7 @@ sub httpd_setup {
 	open(OUT, ">> " . $config->{httpd_builtin}->{log_file});
 	close(OUT);
 	chown($uid, $gid, $config->{httpd_builtin}->{log_file});
-	chmod(0600, $config{httpd_builtin}->{log_file});
+	chmod(0600, $config->{httpd_builtin}->{log_file});
 
 	setgid($gid);
 	if(getgid() != $gid) {
