@@ -1484,6 +1484,27 @@ This is a list of directories per group defined.
 The maximum number of directories allowed for each group is 9.
 .RE
 .P
+.BI type
+.RS
+This specifies the information that will be presented for each directory specified in each list. It accepts two possible values:
+.P
+.RS
+\fIsize\fP   for the directory size (which is the default option).
+.br
+\fIfiles\fP  for the number of files inside the directory.
+.RE
+.P
+An example would be:
+.P
+<type>
+.br
+	0 = size
+.br
+	1 = files
+.br
+</type>
+.RE
+.P
 .BI dirmap
 .RS
 This list complements the \fBdesc\fP option. It basically allows you to change the name that will appear in the graph, hiding the real name of the directory. If no association is defined, then Monitorix will display the name specified in the \fBdesc\fP option.

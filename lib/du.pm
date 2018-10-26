@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2017 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2018 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -142,16 +142,32 @@ sub du_update {
 
 	my $e = 0;
 	while($e < scalar(my @dl = split(',', $du->{list}))) {
+		my $type;
 		my $e2 = 0;
+
+		$type = lc($du->{type}->{$e} || "");
+
+		# default type is 'size'
+		$type = "size" if $type eq "";
+
 		foreach my $i (split(',', $du->{desc}->{$e})) {
 			my $line;
 
 			$dirs[$e][$e2] = 0 unless defined $dirs[$e][$e2];
 			$str = trim($i);
 			if(-d $str) {
-				$line = `du -ks $args "$str"`;	# in KB
-				if($line =~ /(^\d+)\s+/) {
-					$dirs[$e][$e2] = $1;
+				if($type eq "size") {
+					$line = `du -ks $args "$str"`;	# in KB
+					if($line =~ /(^\d+)\s+/) {
+						$dirs[$e][$e2] = $1;
+					}
+				} elsif($type eq "files") {
+					$line = `ls "$str"/* | wc -l`;
+					if($line =~ /(^\d+)$/) {
+						$dirs[$e][$e2] = $1;
+					}
+				} else {
+					logger("$myself: ERROR: unrecognized type '$type'.");
 				}
 			} else {
 				logger("$myself: ERROR: '$str' is not a directory");
@@ -222,6 +238,7 @@ sub du_cgi {
 		"#448844",
 		"#EE4444",
 	);
+	my $type_label;
 
 	$version = "old" if $RRDs::VERSION < 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
@@ -336,6 +353,10 @@ sub du_cgi {
 			push(@output, "    <tr>\n");
 		}
 		for($n2 = 0; $n2 < $du->{graphs_per_row}; $n2++) {
+			my $type;
+			my @DEF0;
+			my @CDEF0;
+
 			last unless $n < scalar(my @dl = split(',', $du->{list}));
 			if($title) {
 				push(@output, "    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
@@ -344,12 +365,54 @@ sub du_cgi {
 			undef(@tmpz);
 			undef(@CDEF);
 			my $e = 0;
+
+			$type = lc($du->{type}->{$n} || "");
+
+			if($type eq "files") {
+				$type_label = "files";
+				push(@DEF0, "DEF:d1=$rrd:du" . $n . "_d1:AVERAGE");
+				push(@DEF0, "DEF:d2=$rrd:du" . $n . "_d2:AVERAGE");
+				push(@DEF0, "DEF:d3=$rrd:du" . $n . "_d3:AVERAGE");
+				push(@DEF0, "DEF:d4=$rrd:du" . $n . "_d4:AVERAGE");
+				push(@DEF0, "DEF:d5=$rrd:du" . $n . "_d5:AVERAGE");
+				push(@DEF0, "DEF:d6=$rrd:du" . $n . "_d6:AVERAGE");
+				push(@DEF0, "DEF:d7=$rrd:du" . $n . "_d7:AVERAGE");
+				push(@DEF0, "DEF:d8=$rrd:du" . $n . "_d8:AVERAGE");
+				push(@DEF0, "DEF:d9=$rrd:du" . $n . "_d9:AVERAGE");
+			# default type is 'bytes'
+			} else {
+				$type_label = "bytes";
+				push(@DEF0, "DEF:dk1=$rrd:du" . $n . "_d1:AVERAGE");
+				push(@DEF0, "DEF:dk2=$rrd:du" . $n . "_d2:AVERAGE");
+				push(@DEF0, "DEF:dk3=$rrd:du" . $n . "_d3:AVERAGE");
+				push(@DEF0, "DEF:dk4=$rrd:du" . $n . "_d4:AVERAGE");
+				push(@DEF0, "DEF:dk5=$rrd:du" . $n . "_d5:AVERAGE");
+				push(@DEF0, "DEF:dk6=$rrd:du" . $n . "_d6:AVERAGE");
+				push(@DEF0, "DEF:dk7=$rrd:du" . $n . "_d7:AVERAGE");
+				push(@DEF0, "DEF:dk8=$rrd:du" . $n . "_d8:AVERAGE");
+				push(@DEF0, "DEF:dk9=$rrd:du" . $n . "_d9:AVERAGE");
+				push(@CDEF0, "CDEF:allvalues=dk1,dk2,dk3,dk4,dk5,dk6,dk7,dk8,dk9,+,+,+,+,+,+,+,+");
+				push(@CDEF0, "CDEF:d1=dk1,1024,*");
+				push(@CDEF0, "CDEF:d2=dk2,1024,*");
+				push(@CDEF0, "CDEF:d3=dk3,1024,*");
+				push(@CDEF0, "CDEF:d4=dk4,1024,*");
+				push(@CDEF0, "CDEF:d5=dk5,1024,*");
+				push(@CDEF0, "CDEF:d6=dk6,1024,*");
+				push(@CDEF0, "CDEF:d7=dk7,1024,*");
+				push(@CDEF0, "CDEF:d8=dk8,1024,*");
+				push(@CDEF0, "CDEF:d9=dk9,1024,*");
+			}
+
 			foreach my $i (split(',', $du->{desc}->{$n})) {
 				$i = trim($i);
 				$str = $du->{dirmap}->{$i} || $i;
 				$str = sprintf("%-40s", substr($str, 0, 40));
 				push(@tmp, "LINE2:d" . ($e + 1) . $LC[$e] . ":$str");
-				push(@tmp, "GPRINT:d" . ($e + 1) . ":LAST: Current\\:%7.1lf%s\\n");
+				if($type eq "files") {
+					push(@tmp, "GPRINT:d" . ($e + 1) . ":LAST: Current\\:%7.0lf%s\\n");
+				} else {
+					push(@tmp, "GPRINT:d" . ($e + 1) . ":LAST: Current\\:%7.1lf%s\\n");
+				}
 				push(@tmpz, "LINE2:d" . ($e + 1) . $LC[$e] . ":$str");
 				$e++;
 			}
@@ -368,7 +431,7 @@ sub du_cgi {
 				"--title=$str  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=$imgfmt_uc",
-				"--vertical-label=bytes",
+				"--vertical-label=$type_label",
 				"--width=$width",
 				"--height=$height",
 				@riglim,
@@ -376,25 +439,8 @@ sub du_cgi {
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
-				"DEF:dk1=$rrd:du" . $n . "_d1:AVERAGE",
-				"DEF:dk2=$rrd:du" . $n . "_d2:AVERAGE",
-				"DEF:dk3=$rrd:du" . $n . "_d3:AVERAGE",
-				"DEF:dk4=$rrd:du" . $n . "_d4:AVERAGE",
-				"DEF:dk5=$rrd:du" . $n . "_d5:AVERAGE",
-				"DEF:dk6=$rrd:du" . $n . "_d6:AVERAGE",
-				"DEF:dk7=$rrd:du" . $n . "_d7:AVERAGE",
-				"DEF:dk8=$rrd:du" . $n . "_d8:AVERAGE",
-				"DEF:dk9=$rrd:du" . $n . "_d9:AVERAGE",
-				"CDEF:allvalues=dk1,dk2,dk3,dk4,dk5,dk6,dk7,dk8,dk9,+,+,+,+,+,+,+,+",
-				"CDEF:d1=dk1,1024,*",
-				"CDEF:d2=dk2,1024,*",
-				"CDEF:d3=dk3,1024,*",
-				"CDEF:d4=dk4,1024,*",
-				"CDEF:d5=dk5,1024,*",
-				"CDEF:d6=dk6,1024,*",
-				"CDEF:d7=dk7,1024,*",
-				"CDEF:d8=dk8,1024,*",
-				"CDEF:d9=dk9,1024,*",
+				@DEF0,
+				@CDEF0,
 				@CDEF,
 				@tmp);
 			$err = RRDs::error;
@@ -405,7 +451,7 @@ sub du_cgi {
 					"--title=$str  ($tf->{nwhen}$tf->{twhen})",
 					"--start=-$tf->{nwhen}$tf->{twhen}",
 					"--imgformat=$imgfmt_uc",
-					"--vertical-label=bytes",
+					"--vertical-label=$type_label",
 					"--width=$width",
 					"--height=$height",
 					@riglim,
@@ -413,25 +459,8 @@ sub du_cgi {
 					@{$cgi->{version12}},
 					@{$cgi->{version12_small}},
 					@{$colors->{graph_colors}},
-					"DEF:dk1=$rrd:du" . $n . "_d1:AVERAGE",
-					"DEF:dk2=$rrd:du" . $n . "_d2:AVERAGE",
-					"DEF:dk3=$rrd:du" . $n . "_d3:AVERAGE",
-					"DEF:dk4=$rrd:du" . $n . "_d4:AVERAGE",
-					"DEF:dk5=$rrd:du" . $n . "_d5:AVERAGE",
-					"DEF:dk6=$rrd:du" . $n . "_d6:AVERAGE",
-					"DEF:dk7=$rrd:du" . $n . "_d7:AVERAGE",
-					"DEF:dk8=$rrd:du" . $n . "_d8:AVERAGE",
-					"DEF:dk9=$rrd:du" . $n . "_d9:AVERAGE",
-					"CDEF:allvalues=dk1,dk2,dk3,dk4,dk5,dk6,dk7,dk8,dk9,+,+,+,+,+,+,+,+",
-					"CDEF:d1=dk1,1024,*",
-					"CDEF:d2=dk2,1024,*",
-					"CDEF:d3=dk3,1024,*",
-					"CDEF:d4=dk4,1024,*",
-					"CDEF:d5=dk5,1024,*",
-					"CDEF:d6=dk6,1024,*",
-					"CDEF:d7=dk7,1024,*",
-					"CDEF:d8=dk8,1024,*",
-					"CDEF:d9=dk9,1024,*",
+					@DEF0,
+					@CDEF0,
 					@CDEF,
 					@tmpz);
 				$err = RRDs::error;
