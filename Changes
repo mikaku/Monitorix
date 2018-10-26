@@ -20,6 +20,7 @@
 - Added to restart the HTTP built-in every time Monitorix receives the SIGHUP
   signal. This should also fix sporadic hangups in the HTTP and a truncation in
   the rotated logfile.
+- Added in 'du.pm' the ability to count files in every directory defined. [#112]
 - Fixed a bad memory scaling in *BSD systems.
 - Fixed in 'process.pm' to fully honour the option 'netstats_in_bps'.
 - Fixed to force Monitorix to be started at the end of boot in systemd-based
