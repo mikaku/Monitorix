@@ -2,7 +2,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2017 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2019 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -139,31 +139,35 @@ sub multihost {
 			print "<br>\n";
 		}
 	} else {
-		print "  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n";
-		print "   <tr>\n";
-		print "    <td bgcolor='$colors->{title_bg_color}'>\n";
-		print "    <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
-		print "    <b>&nbsp;&nbsp;" . $host[$cgi->{val}] . "</b>\n";
-		print "    </font>\n";
-		print "    </td>\n";
-		print "   </tr>\n";
-		print "   <tr>\n";
-		print "    <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
-		print "     <iframe src='" . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0] . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetagbig' height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
-		print "    </td>\n";
-		print "   </tr>\n";
-		print "   <tr>\n";
-		if(lc($multihost->{footer_url}) eq "y") {
-			print "   <td bgcolor='$colors->{title_bg_color}'>\n";
-			print "    <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
-			print "    <font size='-1'>\n";
-			print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$cgi->{val}] . "' style='color: " . $colors->{title_fg_color} . ";'>$foot_url[$cgi->{val}]</a></b>\n";
-			print "    </font></font>\n";
-			print "   </td>\n";
+		if($cgi->{graph} eq "all") {
+			print "     <iframe src='" . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0] . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=all&color=$cgi->{color}' height=100% width=100% frameborder=0 marginwidth=0 marginheight=0 scrolling=yes></iframe>\n";
+		} else {
+			print "  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n";
+			print "   <tr>\n";
+			print "    <td bgcolor='$colors->{title_bg_color}'>\n";
+			print "    <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
+			print "    <b>&nbsp;&nbsp;" . $host[$cgi->{val}] . "</b>\n";
+			print "    </font>\n";
+			print "    </td>\n";
+			print "   </tr>\n";
+			print "   <tr>\n";
+			print "    <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
+			print "     <iframe src='" . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0] . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetagbig' height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+			print "    </td>\n";
+			print "   </tr>\n";
+			print "   <tr>\n";
+			if(lc($multihost->{footer_url}) eq "y") {
+				print "   <td bgcolor='$colors->{title_bg_color}'>\n";
+				print "    <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
+				print "    <font size='-1'>\n";
+				print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$cgi->{val}] . "' style='color: " . $colors->{title_fg_color} . ";'>$foot_url[$cgi->{val}]</a></b>\n";
+				print "    </font></font>\n";
+				print "   </td>\n";
+			}
+			print "   </tr>\n";
+			print "  </table>\n";
+			print "  <br>\n";
 		}
-		print "   </tr>\n";
-		print "  </table>\n";
-		print "  <br>\n";
 	}
 }
 
@@ -412,6 +416,7 @@ if($RRDs::VERSION > 1.2) {
 if(!$silent) {
 	my $title;
 	my $str;
+	my @output;
 
 	my $piwik_code = "";
 	my ($piwik_url, $piwik_sid, $piwik_img);
@@ -456,65 +461,73 @@ EOF
 	print("  <body bgcolor='" . $colors{bg_color} . "' vlink='#888888' link='#888888'>\n");
 	print("  $piwik_code\n");
 	print("  <center>\n");
-	print("  <table cellspacing='5' cellpadding='0' bgcolor='" . $colors{graph_bg_color} . "' border='1'>\n");
-	print("  <tr>\n");
+	push(@output, "  <table cellspacing='5' cellpadding='0' bgcolor='" . $colors{graph_bg_color} . "' border='1'>\n");
+	push(@output, "  <tr>\n");
 
 	if(lc($config{enable_back_button} || "") eq "y") {
-		print("  <span style='color:#888888;position:fixed;left:1em;font-size:32px;letter-spacing:-1px;'><a href='javascript:history.back()' style='text-decoration:none;'>&#9664;</a>\n");
+		push(@output, "  <span style='color:#888888;position:fixed;left:1em;font-size:32px;letter-spacing:-1px;'><a href='javascript:history.back()' style='text-decoration:none;'>&#9664;</a>\n");
 	}
 
 	if(($val ne "all" || $val ne "group") && $mode ne "multihost") {
-		print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
-		print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
-		print("    <font size='5'><b>&nbsp;&nbsp;Host:&nbsp;</b></font>\n");
-		print("  </font>\n");
-		print("  </td>\n");
+		push(@output, "  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
+		push(@output, "  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
+		push(@output, "    <font size='5'><b>&nbsp;&nbsp;Host:&nbsp;</b></font>\n");
+		push(@output, "  </font>\n");
+		push(@output, "  </td>\n");
 	}
 
 	if($val =~ m/group(\d+)/) {
 		my $gnum = $1;
 		my $gname = (split(',', $config{multihost}->{remotegroup_list}))[$gnum];
 		$gname = trim($gname);
-		print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
-		print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
-		print("    <font size='5'><b>&nbsp;&nbsp;$gname&nbsp;</b></font>\n");
-		print("  </font>\n");
-		print("  </td>\n");
+		push(@output, "  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
+		push(@output, "  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
+		push(@output, "    <font size='5'><b>&nbsp;&nbsp;$gname&nbsp;</b></font>\n");
+		push(@output, "  </font>\n");
+		push(@output, "  </td>\n");
 	}
 
-	print("  <td bgcolor='" . $colors{bg_color} . "'>\n");
-	print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "'>\n");
+	push(@output, "  <td bgcolor='" . $colors{bg_color} . "'>\n");
+	push(@output, "  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "'>\n");
 	if($mode eq "localhost" || $mode eq "traffacct") {
 		$title = $config{hostname};
 	} elsif($mode eq "multihost") {
-		$graph = $graph eq "all" ? "_system1" : $graph;
-		my ($g1, $g2) = ($graph =~ /(_\D+).*?(\d)$/);
-		if($g1 eq "_port") {
-			$title = $config{graphs}->{$g1};
-			$g2 = trim((split(',', $config{port}->{list}))[$g2]);
-			$title .= " " . $g2;
-			$g2 = (split(',', $config{port}->{desc}->{$g2}))[0];
-			$title .= " (" . trim($g2) . ")";
+#		$graph = $graph eq "all" ? "_system1" : $graph;
+		if($graph ne "all") {
+			my ($g1, $g2) = ($graph =~ /(_\D+).*?(\d)$/);
+			if($g1 eq "_port") {
+				$title = $config{graphs}->{$g1};
+				$g2 = trim((split(',', $config{port}->{list}))[$g2]);
+				$title .= " " . $g2;
+				$g2 = (split(',', $config{port}->{desc}->{$g2}))[0];
+				$title .= " (" . trim($g2) . ")";
+			} else {
+				$g2 = "" if $g1 eq "_proc";	# '_procn' must be converted to '_proc'
+				$title = $config{graphs}->{$g1 . $g2};
+			}
 		} else {
-			$g2 = "" if $g1 eq "_proc";	# '_procn' must be converted to '_proc'
-			$title = $config{graphs}->{$g1 . $g2};
+			$title = $graph eq "all" ? $config{graphs}->{_system1} : $graph;
 		}
 	}
 	$title =~ s/ /&nbsp;/g;
 	my $twhen = $tf{nwhen} > 1 ? "$tf{nwhen} $tf{twhen}" : $tf{twhen};
 	$twhen .= "s" if $tf{nwhen} > 1;
-	print("    <font size='5'><b>&nbsp;&nbsp;$title&nbsp;&nbsp;</b></font>\n");
-	print("  </font>\n");
-	print("  </td>\n");
-		print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
-		print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
-		print("    <font size='5'><b>&nbsp;&nbsp;last&nbsp;$twhen&nbsp;&nbsp;</b></font>\n");
+
+	if($mode ne "multihost" || $graph ne "all" || $val eq "all") {
+		print @output;
+		print("    <font size='5'><b>&nbsp;&nbsp;$title&nbsp;&nbsp;</b></font>\n");
 		print("  </font>\n");
 		print("  </td>\n");
-	print("  </tr>\n");
-	print("  </table>\n");
-	print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "'>\n");
-	print encode('utf-8', "    <h4><font color='#888888'>" . strftime("%a %b %e %H:%M:%S %Z %Y", localtime) . "</font></h4>\n");
+			print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
+			print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
+			print("    <font size='5'><b>&nbsp;&nbsp;last&nbsp;$twhen&nbsp;&nbsp;</b></font>\n");
+			print("  </font>\n");
+			print("  </td>\n");
+		print("  </tr>\n");
+		print("  </table>\n");
+		print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "'>\n");
+		print encode('utf-8', "    <h4><font color='#888888'>" . strftime("%a %b %e %H:%M:%S %Z %Y", localtime) . "</font></h4>\n");
+	}
 }
 
 
@@ -623,16 +636,18 @@ if($mode eq "localhost") {
 }
 
 if(!$silent) {
-	print("\n");
-	print("  </font>\n");
-	print("  </center>\n");
-	print("<!-- footer begins -->\n");
-	print("  <p>\n");
-	print("  <a href='http://www.monitorix.org'><img src='" . $config{url} . "/" . $config{logo_bottom} . "' border='0'></a>\n");
-	print("  <br>\n");
-	print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "' size='-2'>\n");
-	print("Copyright &copy; 2005-2017 Jordi Sanfeliu\n");
-	print("  </font>\n");
+	if($mode ne "multihost" || $graph ne "all" || $val eq "all") {
+		print("\n");
+		print("  </font>\n");
+		print("  </center>\n");
+		print("<!-- footer begins -->\n");
+		print("  <p>\n");
+		print("  <a href='http://www.monitorix.org'><img src='" . $config{url} . "/" . $config{logo_bottom} . "' border='0'></a>\n");
+		print("  <br>\n");
+		print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "' size='-2'>\n");
+		print("Copyright &copy; 2005-2017 Jordi Sanfeliu\n");
+		print("  </font>\n");
+	}
 	print("  </body>\n");
 	print("</html>\n");
 	print("<!-- footer ends -->\n");
