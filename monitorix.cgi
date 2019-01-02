@@ -492,7 +492,6 @@ EOF
 	if($mode eq "localhost" || $mode eq "traffacct") {
 		$title = $config{hostname};
 	} elsif($mode eq "multihost") {
-#		$graph = $graph eq "all" ? "_system1" : $graph;
 		if($graph ne "all") {
 			my ($g1, $g2) = ($graph =~ /(_\D+).*?(\d)$/);
 			if($g1 eq "_port") {
