@@ -23,6 +23,8 @@
 - Added in 'du.pm' the ability to count files in every directory defined. [#112]
 - Added the ability to show all graphs of a single server in Multihost mode,
   instead of showing only the System Load graph. [#216]
+- Added the ability to show all graphs of all remote servers in Multihost mode,
+  instead of showing only the System Load graphs. [#216]
 - Fixed a bad memory scaling in *BSD systems.
 - Fixed in 'process.pm' to fully honour the option 'netstats_in_bps'.
 - Fixed to force Monitorix to be started at the end of boot in systemd-based
