@@ -94,49 +94,82 @@ sub multihost {
 	my $graph = ($cgi->{graph} eq "all" || $cgi->{graph} =~ m/group\[0-9]*/) ? "_system1" : $cgi->{graph};
 
 	if($cgi->{val} eq "all" || $cgi->{val} =~ m/group[0-9]*/) {
-		for($n = 0; $n < scalar(@host); $n += $multihost->{graphs_per_row}) {
+		if($cgi->{graph} eq "all") {
 			print "<table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n";
-			print " <tr>\n";
-			for($n2 = 0; $n2 < $multihost->{graphs_per_row}; $n2++) {
-				if($n < scalar(@host)) {
-					print "  <td bgcolor='$colors->{title_bg_color}'>\n";
-					print "   <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
-					print "   <b>&nbsp;&nbsp;" . $host[$n] . "</b>\n";
-					print "   </font>\n";
-					print "  </td>\n";
+			my $g = 0;
+			foreach (split(',', $config{graph_name})) {
+				my $gn = trim($_);
+				if(lc($config{graph_enable}->{$gn}) eq "y") {
+					if(!$g) {
+						print " <tr>\n";
+						for($n = 0; $n < scalar(@host); $n++) {
+							print "  <td bgcolor='$colors->{title_bg_color}'>\n";
+							print "   <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
+							print "   <b>&nbsp;&nbsp;" . $host[$n] . "</b>\n";
+							print "   </font>\n";
+							print "  </td>\n";
+						}
+						print " </tr>\n";
+					}
+					print " <tr>\n";
+					for(my $sg = 1; $config{graphs}->{"_$gn$sg"}; $sg++) {
+					for($n = 0; $n < scalar(@host); $n++) {
+						print "  <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
+						print "   <iframe src='" . $url[$n] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=_${gn}$sg&color=$cgi->{color}&silent=imagetag' height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+						print "  </td>\n";
+					}
+					print " </tr>\n";
+					}
 				}
-				$n++;
+				$g++;
 			}
-			print " </tr>\n";
-			print " <tr>\n";
-			for($n2 = 0, $n = $n - $multihost->{graphs_per_row}; $n2 < $multihost->{graphs_per_row}; $n2++) {
-				if($n < scalar(@host)) {
-					print "  <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
-					print "   <iframe src='" . $url[$n] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetag' height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
-					print "  </td>\n";
-
-				}
-				$n++;
-			}
-			print " </tr>\n";
-			print " <tr>\n";
-			for($n2 = 0, $n = $n - $multihost->{graphs_per_row}; $n2 < $multihost->{graphs_per_row}; $n2++) {
-				if($n < scalar(@host)) {
-				if(lc($multihost->{footer_url}) eq "y") {
-					print "  <td bgcolor='$colors->{title_bg_color}'>\n";
-					print "   <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
-					print "   <font size='-1'>\n";
-					print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$n] . "' style='color: " . $colors->{title_fg_color} . ";'>$foot_url[$n]</a></b>\n";
-					print "   </font></font>\n";
-					print "  </td>\n";
-				}
-				}
-				$n++;
-			}
-			$n = $n - $multihost->{graphs_per_row};
-			print " </tr>\n";
 			print "</table>\n";
 			print "<br>\n";
+		} else {
+			for($n = 0; $n < scalar(@host); $n += $multihost->{graphs_per_row}) {
+				print "<table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n";
+				print " <tr>\n";
+				for($n2 = 0; $n2 < $multihost->{graphs_per_row}; $n2++) {
+					if($n < scalar(@host)) {
+						print "  <td bgcolor='$colors->{title_bg_color}'>\n";
+						print "   <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
+						print "   <b>&nbsp;&nbsp;" . $host[$n] . "</b>\n";
+						print "   </font>\n";
+						print "  </td>\n";
+					}
+					$n++;
+				}
+				print " </tr>\n";
+				print " <tr>\n";
+				for($n2 = 0, $n = $n - $multihost->{graphs_per_row}; $n2 < $multihost->{graphs_per_row}; $n2++) {
+					if($n < scalar(@host)) {
+						print "  <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
+						print "   <iframe src='" . $url[$n] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetag' height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+						print "  </td>\n";
+	
+					}
+					$n++;
+				}
+				print " </tr>\n";
+				print " <tr>\n";
+				for($n2 = 0, $n = $n - $multihost->{graphs_per_row}; $n2 < $multihost->{graphs_per_row}; $n2++) {
+					if($n < scalar(@host)) {
+					if(lc($multihost->{footer_url}) eq "y") {
+						print "  <td bgcolor='$colors->{title_bg_color}'>\n";
+						print "   <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
+						print "   <font size='-1'>\n";
+						print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$n] . "' style='color: " . $colors->{title_fg_color} . ";'>$foot_url[$n]</a></b>\n";
+						print "   </font></font>\n";
+						print "  </td>\n";
+					}
+					}
+					$n++;
+				}
+				$n = $n - $multihost->{graphs_per_row};
+				print " </tr>\n";
+				print "</table>\n";
+				print "<br>\n";
+			}
 		}
 	} else {
 		if($cgi->{graph} eq "all") {
@@ -505,7 +538,7 @@ EOF
 				$title = $config{graphs}->{$g1 . $g2};
 			}
 		} else {
-			$title = $graph eq "all" ? $config{graphs}->{_system1} : $graph;
+			$title = $graph eq "all" ? "all graphs" : $graph;
 		}
 	}
 	$title =~ s/ /&nbsp;/g;
