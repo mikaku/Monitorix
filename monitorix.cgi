@@ -113,12 +113,12 @@ sub multihost {
 					}
 					print " <tr>\n";
 					for(my $sg = 1; $config{graphs}->{"_$gn$sg"}; $sg++) {
-					for($n = 0; $n < scalar(@host); $n++) {
-						print "  <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
-						print "   <iframe src='" . $url[$n] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=_${gn}$sg&color=$cgi->{color}&silent=imagetag' height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
-						print "  </td>\n";
-					}
-					print " </tr>\n";
+						for($n = 0; $n < scalar(@host); $n++) {
+							print "  <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
+							print "   <iframe src='" . $url[$n] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=_${gn}$sg&color=$cgi->{color}&silent=imagetag' height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+							print "  </td>\n";
+						}
+						print " </tr>\n";
 					}
 				}
 				$g++;
