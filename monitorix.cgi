@@ -21,6 +21,7 @@
 
 use strict;
 use warnings;
+use File::Basename;
 use FindBin qw($Bin);
 use lib $Bin . "/lib", "/usr/lib/monitorix";
 
@@ -236,7 +237,7 @@ sub graph_footer {
 
 # MAIN
 # ----------------------------------------------------------------------------
-open(IN, "< monitorix.conf.path");
+open(IN, dirname(__FILE__)."/monitorix.conf.path");
 my $config_path = <IN>;
 chomp($config_path);
 close(IN);
