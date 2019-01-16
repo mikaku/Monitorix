@@ -25,6 +25,7 @@
   instead of showing only the System Load graph. [#216]
 - Added the ability to show all graphs of all remote servers in Multihost mode,
   instead of showing only the System Load graphs. [#216]
+- Added in 'ipmi.pm' the ability to save negative values. [#218]
 - Fixed a bad memory scaling in *BSD systems.
 - Fixed in 'process.pm' to fully honour the option 'netstats_in_bps'.
 - Fixed to force Monitorix to be started at the end of boot in systemd-based
@@ -50,6 +51,8 @@
 - Fixed in HTTP built-in to force authentication (when enabled) always, even on
   non-existing pages.
   	(thanks to Sander Bos for pointing this out)
+- Fixed to load correctly the file 'monitorix.conf.path' when 'monitorix.cgi' is
+  called from the command line outside of its own directory. [#218]
 
 
 3.10.0 - 25-Sep-2017
