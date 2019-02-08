@@ -5,7 +5,7 @@
 
 MAILTO="root@localhost"
 
-if [ $# != 3 ] ; then
+if [ $# != 3 ] && [ $# != 4 ] ; then
 	echo "$0: Wrong number of arguments."
 	exit 1
 fi
@@ -13,12 +13,13 @@ fi
 ALERT_TIMEINTVL=$1
 ALERT_THRESHOLD=$2
 current_value=$3
+ALERT_WHEN=$4
 
 (
 cat << EOF
 Message from hostname '$HOSTNAME'.
 
-This system is reaching/exceeding the defined threshold value ($ALERT_THRESHOLD) during the last '$ALERT_TIMEINTVL' seconds.
+This system is reaching/exceeding ($ALERT_WHEN) the defined threshold value ($ALERT_THRESHOLD) during the last '$ALERT_TIMEINTVL' seconds.
 
 The current value is: $current_value
 

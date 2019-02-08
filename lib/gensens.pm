@@ -164,22 +164,38 @@ sub gensens_update {
 				my $timeintvl = trim($al[0]);
 				my $threshold = trim($al[1]);
 				my $script = trim($al[2]);
-	
-				if(!$threshold || $val < $threshold) {
-					$config->{gensens_hist_alerts}->{$str} = 0;
-				} else {
-					if(!$config->{gensens_hist_alerts}->{$str}) {
-						$config->{gensens_hist_alerts}->{$str} = time;
-					}
-					if($config->{gensens_hist_alerts}->{$str} > 0 && (time - $config->{gensens_hist_alerts}->{$str}) >= $timeintvl) {
-						if(-x $script) {
-							logger("$myself: alert on Generic Sensor ($str): executing script '$script'.");
-							system($script . " " . $timeintvl . " " . $threshold . " " . $val);
+				my $when = lc(trim($al[3] || ""));
+				my @range = split('-', $threshold);
+				$when = "above" if !$when;	# 'above' is the default
+				$threshold = 0 if !$threshold;
+				if(scalar(@range) == 1) {
+					if($when eq "above" && $val < $threshold) {
+						$config->{gensens_hist_alerts}->{$str} = 0;
+					} elsif($when eq "below" && $val > $threshold) {
+						$config->{gensens_hist_alerts}->{$str} = 0;
+					} else {
+						if($when eq "above" || $when eq "below") {
+							if(!$config->{gensens_hist_alerts}->{$str}) {
+								$config->{gensens_hist_alerts}->{$str} = time;
+							}
+							if($config->{gensens_hist_alerts}->{$str} > 0 && (time - $config->{gensens_hist_alerts}->{$str}) >= $timeintvl) {
+								if(-x $script) {
+									logger("$myself: alert on Generic Sensor ($str): executing script '$script'.");
+									system($script . " " . $timeintvl . " " . $threshold . " " . $val . " " . $when);
+								} else {
+									logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+								}
+								$config->{gensens_hist_alerts}->{$str} = time;
+							}
 						} else {
-							logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+							logger("$myself: ERROR: invalid when value '$when'");
 						}
-						$config->{gensens_hist_alerts}->{$str} = time;
 					}
+				} elsif(scalar(@range) == 2) {
+					print "range = $range[0] - $range[1]\n";
+					print "not supported yet\n";
+				} else {
+					logger("$myself: ERROR: invalid threshold value '$threshold'");
 				}
 			}
 
