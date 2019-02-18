@@ -1,4 +1,4 @@
-3.NN.N - DD-MMM-2018
+3.NN.N - DD-MMM-2019
 ====================
 - Added a complete graph to support external ambient sensors ('ambsens.pm').
   	(suggested by Zdenko Dolar, zdenko.dolar AT gmail.com)
@@ -28,6 +28,7 @@
 - Added in 'ipmi.pm' the ability to save negative values. [#218]
 - Added the ability in the alerts of 'gensens.pm' to specify when the alert will
   be triggered 'above' or 'below' the threshold. [#221]
+- Drop entropy support for FreeBSD in 'system.pm'. [#226]
 - Fixed a bad memory scaling in *BSD systems.
 - Fixed in 'process.pm' to fully honour the option 'netstats_in_bps'.
 - Fixed to force Monitorix to be started at the end of boot in systemd-based
