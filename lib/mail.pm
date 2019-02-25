@@ -322,6 +322,45 @@ sub mail_update {
 			}
 			close(IN);
 		}
+	} elsif(lc($mail->{mta}) eq "exim") {
+		if(open(IN, "eximstats -h0 -ne -nr -t0 /var/log/exim/mainlog |")) {
+			while(<IN>) {
+				if(/^  Received\s+(\d+)(\S\S)\s+(\d+).*?$/) {
+					$bytes_recvd = $1;
+					$bytes_recvd = $1 * 1024 if $2 eq "KB";
+					$bytes_recvd = $1 * 1024 * 1024 if $2 eq "MB";
+					$recvd = $3;
+				}
+				if(/^  Delivered\s+(\d+)(\S\S)\s+(\d+).*?$/) {
+					$bytes_delvd = $1;
+					$bytes_delvd = $1 * 1024 if $2 eq "KB";
+					$bytes_delvd = $1 * 1024 * 1024 if $2 eq "MB";
+					$delvd = $3;
+				}
+				if(/^  Rejects\s+(\d+).*?$/) {
+					$rejtd = $1;
+				}
+				if(/^  remote_smtp\s+\d+\S*\s+(\d+)$/) {
+					$out_conn = $1;
+				}
+			}
+			close(IN);
+			$in_conn = $recvd - $rejtd;
+			$delvd -= $out_conn;
+		}
+		if(open(IN, "exim -bp |")) {
+			while(<IN>) {
+				# discard blank lines and lines with recipients
+				if(!/^$/ && !/^\s{10}\S+$/) {
+					my ($size, undef, $unit) = ($_ =~ m/^\s*\d+.\s+(\d(.\d)?)(\S*)\s.*?$/);
+					$queues += int($size) if !$unit;
+					$queues += int($size * 1024) if $unit eq "K";
+					$queues += int($size * 1024 * 1024) if $unit eq "M";
+					$queued++;
+				}  
+			}
+			close(IN);
+		}
 	}
 
 	$gl_records = $gl_greylisted = $gl_whitelisted = $gl_delayed = 0;
@@ -953,6 +992,67 @@ sub mail_cgi {
 		push(@tmpz, "LINE1:held#00EE00");
 		push(@tmpz, "LINE1:n_forwrd#00EEEE");
 		push(@tmpz, "LINE1:n_delvd#0000EE");
+	} elsif(lc($mail->{mta}) eq "exim") {
+		push(@tmp, "AREA:in#44EE44:In Connections");
+		push(@tmp, "GPRINT:in:LAST:    Cur\\: $valform");
+		push(@tmp, "GPRINT:in:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:in:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:in:MAX:    Max\\: $valform\\n");
+		push(@tmp, "AREA:rejtd#EE4444:Rejected");
+		push(@tmp, "GPRINT:rejtd:LAST:          Cur\\: $valform");
+		push(@tmp, "GPRINT:rejtd:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:rejtd:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:rejtd:MAX:    Max\\: $valform\\n");
+		push(@tmp, "AREA:recvd#448844:Received");
+		push(@tmp, "GPRINT:recvd:LAST:          Cur\\: $valform");
+		push(@tmp, "GPRINT:recvd:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:recvd:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:recvd:MAX:    Max\\: $valform\\n");
+		push(@tmp, "AREA:spam#EEEE44:Spam");
+		push(@tmp, "GPRINT:spam:LAST:              Cur\\: $valform");
+		push(@tmp, "GPRINT:spam:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:spam:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:spam:MAX:    Max\\: $valform\\n");
+		push(@tmp, "AREA:virus#EE44EE:Virus");
+		push(@tmp, "GPRINT:virus:LAST:             Cur\\: $valform");
+		push(@tmp, "GPRINT:virus:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:virus:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:virus:MAX:    Max\\: $valform\\n");
+		push(@tmp, "AREA:n_delvd#4444EE:Delivered");
+		push(@tmp, "GPRINT:delvd:LAST:         Cur\\: $valform");
+		push(@tmp, "GPRINT:delvd:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:delvd:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:delvd:MAX:    Max\\: $valform\\n");
+		push(@tmp, "AREA:n_out#44EEEE:Out Connections");
+		push(@tmp, "GPRINT:out:LAST:   Cur\\: $valform");
+		push(@tmp, "GPRINT:out:AVERAGE:    Avg\\: $valform");
+		push(@tmp, "GPRINT:out:MIN:    Min\\: $valform");
+		push(@tmp, "GPRINT:out:MAX:    Max\\: $valform\\n");
+		push(@tmp, "LINE1:in#00EE00");
+		push(@tmp, "LINE1:rejtd#EE0000");
+		push(@tmp, "LINE1:recvd#1F881F");
+		push(@tmp, "LINE1:spam#EEEE00");
+		push(@tmp, "LINE1:virus#EE00EE");
+		push(@tmp, "LINE1:n_delvd#0000EE");
+		push(@tmp, "LINE1:n_out#00EEEE");
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+		push(@tmp, "COMMENT: \\n");
+
+		push(@tmpz, "AREA:in#44EE44:In Connections");
+		push(@tmpz, "AREA:rejtd#EE4444:Rejected");
+		push(@tmpz, "AREA:recvd#448844:Received");
+		push(@tmpz, "AREA:spam#EEEE44:Spam");
+		push(@tmpz, "AREA:virus#EE44EE:Virus");
+		push(@tmpz, "AREA:n_delvd#4444EE:Delivered");
+		push(@tmpz, "AREA:n_out#44EEEE:Out Connections");
+		push(@tmpz, "LINE1:in#00EE00");
+		push(@tmpz, "LINE1:rejtd#EE0000");
+		push(@tmpz, "LINE1:recvd#1F881F");
+		push(@tmpz, "LINE1:spam#EEEE00");
+		push(@tmpz, "LINE1:virus#EE00EE");
+		push(@tmpz, "LINE1:n_delvd#0000EE");
+		push(@tmpz, "LINE1:n_out#00EEEE");
 	}
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata_p#$colors->{gap}:");

@@ -29,6 +29,7 @@
 - Added the ability in the alerts of 'gensens.pm' to specify when the alert will
   be triggered 'above' or 'below' the threshold. [#221]
 - Drop entropy support for FreeBSD in 'system.pm'. [#226]
+- Added Exim support in 'mail.pm'. [#96]
 - Fixed a bad memory scaling in *BSD systems.
 - Fixed in 'process.pm' to fully honour the option 'netstats_in_bps'.
 - Fixed to force Monitorix to be started at the end of boot in systemd-based
