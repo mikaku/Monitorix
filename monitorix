@@ -42,7 +42,6 @@ $SIG{'QUIT'} = 'INT_handler';
 $SIG{'TRAP'} = 'INT_handler';
 $SIG{'STOP'} = 'INT_handler';
 $SIG{'TERM'} = 'INT_handler';
-$SIG{'CHLD'} = 'CHLD_handler';
 $SIG{'HUP' } = 'HUP_handler';
 
 use constant VERSION	=> "3.10.0";
@@ -62,10 +61,6 @@ sub INT_handler {
 	}
 	logger("Exiting.");
 	exit(0);
-}
-
-sub CHLD_handler {
-	my $pid = waitpid(-1, WNOHANG);
 }
 
 sub HUP_handler {
@@ -615,6 +610,22 @@ if(!$config{net}->{max}) {
 	logger("WARNING: the 'max' option in 'net.pm' doesn't exist. Please consider upgrading your configuration file.");
 	$config{net}->{max} = 10;
 }
+if(!$config{global_zoom}) {
+	logger("WARNING: the 'global_zoom' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
+	# it's set in 'monitorix.cgi'
+}
+if(!$config{image_format}) {
+	logger("WARNING: the 'image_format' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
+	# it's set in 'monitorix.cgi'
+}
+if(!defined($config{logo_top_url})) {
+	logger("WARNING: the 'logo_top_url' option doesn't exist. Please consider upgrading your configuration file.");
+	$config{logo_top_url} = "http://www.monitorix.org/";
+}
+if(!$config{httpd_builtin}->{autocheck_responsiveness}) {
+	logger("WARNING: the 'autocheck_responsiveness' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
+	$config{httpd_builtin}->{autocheck_responsiveness} = "y";
+}
 
 # make sure that there aren't residual Monitorix iptables rules
 flush_accounting_rules(\%config, $options{d});
@@ -669,10 +680,6 @@ if(!scalar($config{func_update})) {
 }
 
 logger("Generating the 'index.html' file.");
-if(!defined($config{logo_top_url})) {
-	logger("WARNING: the 'logo_top_url' option doesn't exist. Please consider upgrading your configuration file.");
-	$config{logo_top_url} = "http://www.monitorix.org/";
-}
 create_index();
 
 # start the HTTP built-in (if enabled)
@@ -687,17 +694,6 @@ if(lc($config{httpd_builtin}->{enabled}) eq "y") {
 	httpd_setup(\%config, $options{d});
 	logger("Started built-in HTTP server (pid $config{httpd_pid}).") if (defined($config{httpd_pid}));
 }
-
-# make sure that some options are correctly defined
-if(!$config{global_zoom}) {
-	logger("WARNING: the 'global_zoom' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
-	# it's set in 'monitorix.cgi'
-}
-if(!$config{image_format}) {
-	logger("WARNING: the 'image_format' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
-	# it's set in 'monitorix.cgi'
-}
-
 
 setpriority(0, 0, $config{priority} || 0);
 logger("Ok, ready.");
@@ -812,5 +808,36 @@ while(1) {
 				}
 			}
 		}
+
+		# check if the HTTP built-in server is responsive
+		if(lc($config{httpd_builtin}->{enabled}) eq "y") {
+			if(lc($config{httpd_builtin}->{autocheck_responsiveness}) eq "y") {
+				use LWP::UserAgent;
+				my $pid = fork();
+				if(!$pid) {
+					my $url = "http://localhost:" . $config{httpd_builtin}->{port} . $config{base_url};
+					my $ua = LWP::UserAgent->new(timeout => 30);
+					my $response = $ua->request(HTTP::Request->new('GET', $url));
+					if(!$response->is_success) {
+						logger("WARNING: unable to connect to HTTP built-in server '$url'.");
+						exit(1);
+					}
+					exit(0);
+				}
+				waitpid($pid, 0);
+				# waitpid sets the child's status in $?
+				if($? != 0) {
+					# restart HTTP built-in server
+					if(defined($config{httpd_pid})) {
+						require HTTPServer;
+						kill(15, $config{httpd_pid});
+						kill(9, $config{httpd_pid});
+						httpd_setup(\%config, $options{d});
+						logger("Restarted HTTP built-in server (pid $config{httpd_pid}).") if defined($config{httpd_pid});
+					}
+				}
+			}
+		}
 	}
+	waitpid(-1, WNOHANG);
 }
