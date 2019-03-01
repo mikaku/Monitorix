@@ -159,22 +159,37 @@ sub ambsens_update {
 						my $timeintvl = trim($al[0]);
 						my $threshold = trim($al[1]);
 						my $script = trim($al[2]);
-			
-						if(!$threshold || $val < $threshold) {
-							$config->{ambsens_hist_alerts}->{$str} = 0;
-						} else {
-							if(!$config->{ambsens_hist_alerts}->{$str}) {
-								$config->{ambsens_hist_alerts}->{$str} = time;
-							}
-							if($config->{ambsens_hist_alerts}->{$str} > 0 && (time - $config->{ambsens_hist_alerts}->{$str}) >= $timeintvl) {
-								if(-x $script) {
-									logger("$myself: alert on Ambient Sensor ($str): executing script '$script'.");
-									system($script . " " . $timeintvl . " " . $threshold . " " . $val);
+						my $when = lc(trim($al[3] || ""));
+						my @range = split('-', $threshold);
+						$when = "above" if !$when;	# 'above' is the default
+						$threshold = 0 if !$threshold;
+						if(scalar(@range) == 1) {
+							if($when eq "above" && $val < $threshold) {
+								$config->{ambsens_hist_alerts}->{$str} = 0;
+							} elsif($when eq "below" && $val > $threshold) {
+								$config->{ambsens_hist_alerts}->{$str} = 0;
+							} else {
+								if($when eq "above" || $when eq "below") {
+									if(!$config->{ambsens_hist_alerts}->{$str}) {
+										$config->{ambsens_hist_alerts}->{$str} = time;
+									}
+									if($config->{ambsens_hist_alerts}->{$str} > 0 && (time - $config->{ambsens_hist_alerts}->{$str}) >= $timeintvl) {
+										if(-x $script) {
+											logger("$myself: alert on Ambient Sensor ($str): executing script '$script'.");
+											system($script . " " . $timeintvl . " " . $threshold . " " . $val);
+										} else {
+											logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+										}
+										$config->{ambsens_hist_alerts}->{$str} = time;
+									}
 								} else {
-									logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+									logger("$myself: ERROR: invalid when value '$when'");
 								}
-								$config->{ambsens_hist_alerts}->{$str} = time;
 							}
+						} elsif(scalar(@range) == 2) {
+							logger("$myself: range values are not supported yet.");
+						} else {
+							logger("$myself: ERROR: invalid threshold value '$threshold'");
 						}
 					}
 				} else {

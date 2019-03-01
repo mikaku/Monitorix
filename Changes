@@ -27,6 +27,8 @@
 - Added in 'ipmi.pm' the ability to save negative values. [#218]
 - Added the ability in the alerts of 'gensens.pm' to specify when the alert will
   be triggered 'above' or 'below' the threshold. [#221]
+- Added the ability in the alerts of 'ambsens.pm' to specify when the alert will
+  be triggered 'above' or 'below' the threshold. [#221]
 - Drop entropy support for FreeBSD in 'system.pm'. [#226]
 - Added Exim support in 'mail.pm'. [#96]
 - Added an autocheck to control the responsiveness of the HTTP built-in server,
