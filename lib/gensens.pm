@@ -192,8 +192,7 @@ sub gensens_update {
 						}
 					}
 				} elsif(scalar(@range) == 2) {
-					print "range = $range[0] - $range[1]\n";
-					print "not supported yet\n";
+					logger("$myself: range values are not supported yet.");
 				} else {
 					logger("$myself: ERROR: invalid threshold value '$threshold'");
 				}
