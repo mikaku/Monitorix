@@ -191,8 +191,8 @@ sub netstat_update {
 						elsif ($state eq "ESTAB")      { $i4_estblshd++ }
 						elsif ($state eq "TIME-WAIT")  { $i4_timewait++ }
 						elsif ($state eq "CLOSE-WAIT") { $i4_closewait++ }
-						elsif ($state eq "FIN-WAIT1")  { $i4_finwait1++ }
-						elsif ($state eq "FIN-WAIT2")  { $i4_finwait2++ }
+						elsif ($state eq "FIN-WAIT-1")  { $i4_finwait1++ }
+						elsif ($state eq "FIN-WAIT-2")  { $i4_finwait2++ }
 						elsif ($state eq "SYN-SENT")   { $i4_synsent++ }
 						elsif ($state eq "SYN-RECV")   { $i4_synrecv++ }
 						elsif ($state eq "CLOSING")    { $i4_closing++ }
@@ -215,8 +215,8 @@ sub netstat_update {
 						elsif ($state eq "ESTAB")      { $i6_estblshd++ }
 						elsif ($state eq "TIME-WAIT")  { $i6_timewait++ }
 						elsif ($state eq "CLOSE-WAIT") { $i6_closewait++ }
-						elsif ($state eq "FIN-WAIT1")  { $i6_finwait1++ }
-						elsif ($state eq "FIN-WAIT2")  { $i6_finwait2++ }
+						elsif ($state eq "FIN-WAIT-1")  { $i6_finwait1++ }
+						elsif ($state eq "FIN-WAIT-2")  { $i6_finwait2++ }
 						elsif ($state eq "SYN-SENT")   { $i6_synsent++ }
 						elsif ($state eq "SYN-RECV")   { $i6_synrecv++ }
 						elsif ($state eq "CLOSING")    { $i6_closing++ }
