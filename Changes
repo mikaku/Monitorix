@@ -17,6 +17,7 @@
   setup the owner, group and permission bits to that directory every time
   Monitorix is started.
   	(thanks to Sander Bos for pointing this out)
+- Added support to include the 'ss' command in 'netstat.pm'. [#196]
 - Added to restart the HTTP built-in every time Monitorix receives the SIGHUP
   signal. This should fix a truncation in the recently rotated logfile.
 - Added in 'du.pm' the ability to count files in every directory defined. [#112]

@@ -1585,7 +1585,19 @@ This is where the network interface that acts as the gateway for this server is 
 .SS Netstat statistics (netstat.rrd)
 This graph shows the state of the all IPv4 and IPv6 network connections.
 .P
-Only the limit and rigid values can be set here.
+Only the command to be used can be set here, besides the limit and rigid values.
+.P
+.BI cmd
+.RS
+This is the command that will be used to gather statistics. There are two possible values:
+.P
+.RS
+\fIss\fP
+.br
+\fInetstat\fP
+.RE
+.P
+Default value: \fIss\fP
 .SS Traffic Control statistics (tc.rrd)
 This graph is able to monitor an unlimited number of network interfaces managed by the \fItc\fP command.
 .P
