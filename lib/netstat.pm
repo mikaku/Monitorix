@@ -179,7 +179,8 @@ sub netstat_update {
 	my $rrdata = "N";
 
 	if($config->{os} eq "Linux") {
-		if (`which ss`) {
+		my $cmd = $config->{netstat}->{cmd} || "";
+		if(!$cmd || $cmd eq "ss") {
 			if(open(IN, "ss -na -f inet |")) {
 				while(<IN>) {
 					m/^(\S+)\s+(\S+)/;
@@ -228,7 +229,8 @@ sub netstat_update {
 				}
 				close(IN);
 			}
-		} else {
+		}
+		if($cmd eq "netstat") {
 			if(open(IN, "netstat -tn -A inet |")) {
 				while(<IN>) {
 					my $last = (split(' ', $_))[-1];
