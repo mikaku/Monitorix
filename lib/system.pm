@@ -232,7 +232,7 @@ sub system_update {
 			}
 			if(/^Inactive:\s+(\d+) kB$/) {
 				$minac = $1;
-				last;
+				next;
 			}
 			if(/^SReclaimable:\s+(\d+) kB$/) {
 				$srecl = $1;
