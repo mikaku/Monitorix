@@ -168,6 +168,7 @@ sub system_update {
 	my $uptime = 0;
 
 	my $srecl = 0;
+	my $snorecl = 0;
 	my $rrdata = "N";
 
 	if($config->{os} eq "Linux") {
@@ -236,11 +237,19 @@ sub system_update {
 			}
 			if(/^SReclaimable:\s+(\d+) kB$/) {
 				$srecl = $1;
+				next;
+			}
+			if(/^SUnreclaim:\s+(\d+) kB$/) {
+				$snorecl = $1;
 				last;
 			}
 		}
 		close(IN);
-		$mfree -= $srecl;	# SReclaimable is subtracted here
+
+		# SReclaimable and SUnreclaim values are added to 'mfree'
+		# in order to be also included in the subtraction later.
+		$mfree += $srecl;
+		$mfree += $snorecl;
 
 		open(IN, "/proc/sys/kernel/random/entropy_avail");
 		while(<IN>) {
