@@ -122,6 +122,9 @@ sub create_index {
 	my $title_fore_color;
 	my $piwik_code = "";
 	my ($piwik_url, $piwik_sid, $piwik_img);
+	my $text_when_all;
+	my $value_when_all;
+	my $when_all_code = "";
 
 	# keep backwards compatibility for v3.2.1 and less
 	if(ref($config{theme}) ne "HASH") {
@@ -147,6 +150,35 @@ sub create_index {
 		$title_back_color = $config{theme}->{$theme}->{title_bg};
 		$title_fore_color = $config{theme}->{$theme}->{title_fg};
 	}
+
+	# Default option in 'Graph' list when 'All' is selected in 'Hostname' list.
+	#
+	# The following small JavaScript function is intended to avoid to select to view
+	# accidentally (unless explicitly selected by the user) a huge amount of remote
+	# images that will hang the browser for a while.
+	$text_when_all = $config{multihost}->{default_option_when_all};
+	my @match = grep { $config{graphs}{$_} eq $text_when_all } keys %{$config{graphs}};
+	$value_when_all = $match[0] || "";
+	if(!$value_when_all) {
+		logger("$myself: ERROR: invalid value in 'default_option_when_all' option ('$text_when_all').");
+		$value_when_all = "_system1";
+	}
+	$when_all_code = <<"EOF";
+<!-- Default option code when 'All' is selected in 'Hostname' list -->
+<script type="text/javascript">
+   function auto_select() {
+      var host = document.getElementById("hostname");
+      var h = host.options[host.selectedIndex].text;
+      var graph = document.getElementById("graph");
+      var g = graph.options[graph.selectedIndex].text;
+      if(h == "All" && g == "All graphs") {
+         document.getElementById("graph").value = "$value_when_all";
+      }
+      return true;
+   }
+</script>
+<!-- End Default option code when 'All' is selected in 'Hostname' list -->
+EOF
 
 	# Piwik tracking code
 	if(lc($config{piwik_tracking}->{enabled} || "") eq "y") {
@@ -192,6 +224,7 @@ EOF
  </head>
  <body bgcolor="$bgcolor" text="#888888" vlink="#888888" link="#888888">
   $piwik_code
+  $when_all_code
   <center>
   <p>
   <br>
@@ -227,7 +260,7 @@ EOF
 EOF
 
 	print(OUT "        <td bgcolor='$bgcolor'>\n");
-	print(OUT "          <select name='mode' size='1'>\n");
+	print(OUT "          <select name='mode' size='1' id='hostname' onchange='auto_select()'>\n");
 	print(OUT "            <optgroup label='Local Host'>\n");
 	print(OUT "            <option value='localhost'>localhost</option>\n");
 	print(OUT "            </optgroup>\n");
@@ -265,7 +298,7 @@ EOF
 
 
 	print(OUT "        <td bgcolor='$bgcolor'>\n");
-	print(OUT "          <select name='graph' size='1'>\n");
+	print(OUT "          <select name='graph' size='1' id='graph'>\n");
 	print(OUT "            <option value='all'>All graphs</option>\n");
 	foreach (split(',', $config{graph_name})) {
 		my $g = trim($_);
@@ -625,6 +658,10 @@ if(!defined($config{logo_top_url})) {
 if(!$config{httpd_builtin}->{autocheck_responsiveness}) {
 	logger("WARNING: the 'autocheck_responsiveness' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
 	$config{httpd_builtin}->{autocheck_responsiveness} = "y";
+}
+if(!$config{multihost}->{default_option_when_all}) {
+	logger("WARNING: the 'default_option_when_all' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
+	$config{multihost}->{default_option_when_all} = "System load";
 }
 
 # make sure that there aren't residual Monitorix iptables rules

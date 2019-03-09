@@ -2862,6 +2862,17 @@ If your horizontal screen resolution is pretty wide, you may want to increase th
 Default value: \fI2\fP
 .RE
 .P
+.BI default_option_when_all
+.RS
+If the user has defined a considerable amount of remote servers and it selects the option "\fIAll\fP" in the \fIHostname\fP list and "\fIAll graphs\fP" in the \fIGraph\fP list, the browser may hang for a while due to the huge amount of images to download remotely from different servers.
+.P
+This option prevents precisely that this happens accidentally by setting a default value in the \fIGraph\fP list. Of course, the user is able to change it to "\fIAll graphs\fP" at any moment.
+.P
+The value of this option may be any of the ones that appear in the \fI<graphs>\fP section (near the end) of the \fImonitorix.conf\fP file.
+.P
+Default value: "\fISystem load\fP"
+.RE
+.P
 .BI remotehost_list
 .RS
 This is a comma-separated list with descriptive names of remote servers with Monitorix already installed and working that you plan to monitor from here.
