@@ -25,6 +25,7 @@
   instead of showing only the System Load graph. [#216]
 - Added the ability to show all graphs of all remote servers in Multihost mode,
   instead of showing only the System Load graphs. [#216]
+- Added the new option 'default_option_when_all' in Multihost mode. [#216]
 - Added in 'ipmi.pm' the ability to save negative values. [#218]
 - Added the ability in the alerts of 'gensens.pm' to specify when the alert will
   be triggered 'above' or 'below' the threshold. [#221]
