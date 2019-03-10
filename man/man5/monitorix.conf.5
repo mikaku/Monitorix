@@ -337,6 +337,15 @@ This will force to use the prefix \fIhttps://\fP in all links. This is special u
 .P
 Default value: n
 .RE
+.P
+.BI autocheck_responsiveness
+.RS
+There is a well known problem with the HTTP built-in server that Monitorix implements using the Perl module 'HTTP::Server::Simple'. It looks like it's pretty weak to the common attacks that any web server receives every day. As a consequence of that, it just hangs, and when you want to see the stats of your server, you just see your browser waiting for a response that never comes, which ends up with a timeout. In these cases, you are forced to login to your server and restart Monitorix, in order to refresh the HTTP built-in server.
+.P
+So in order to mitigate (hopefully) all this annoying hangups, this options acts like an autocheck to control the responsiveness of the HTTP server on every minute, and in case of no response then it will be restarted automatically.
+.P
+Default value: \fIy\fP
+.RE
 .SS Built-in HTTP server with access authentication
 .BI enabled
 .RS
