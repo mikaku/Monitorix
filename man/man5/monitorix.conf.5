@@ -15,7 +15,7 @@ Every time \fBmonitorix\fP is started it reads the configuration file from the p
 .P
 It also creates a file called \fI<base_dir>/cgi/monitorix.conf.path\fP that includes the absolute path of the configuration file. This file will be read by \fBmonitorix.cgi\fP to determine the exact location of the configuration file.
 .SH CONFIGURATION OPTIONS
-IMPORTANT NOTE: these options have default values that might vary depending on your operating system. Please check the configuration files in \fI/etc/monitorix/conf.d\fP.
+IMPORTANT NOTE: these options have default values that might vary depending on your operating system. Please check the configuration files in \fI/etc/monitorix/conf.d/\fP.
 .P
 Blank lines are ignored, and whitespace before and after a token or value is ignored as well as tabulators, although a value can contain whitespace within. Lines which begin with a # are considered comments and ignored.
 .P
@@ -1822,6 +1822,8 @@ This option specifies the MTA that Monitorix will use to collect mail statistics
 \fISendmail\fP
 .br
 \fIPostfix\fP
+.br
+\fIExim\fP
 .RE
 .P
 NOTE: the \fIpflogsumm\fP utility is required when using the \fBPostfix\fP MTA.
