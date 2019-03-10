@@ -491,7 +491,7 @@ Default value: \fIn\fP
 .RS
 This enables or disables the monitoring of each graph. Placing a \fIy\fP on a desired graph and restarting Monitorix will automatically create the RRD file for that graph and start gathering information according to its settings.
 .RE
-.SS System load average and usage (system.rrd)
+.SS System load average and usage (system.pm)
 This graph shows information about system load average (classical UNIX triplet), memory allocation, active processes (on Linux brought directly from the /proc directory), entropy and the system uptime.
 .P
 .BI loadavg_enabled
@@ -537,7 +537,7 @@ It will receive the following three parameters:
 .P
 Default value: \fI/path/to/script.sh\fP
 .RE
-.SS Global kernel usage (kern.rrd)
+.SS Global kernel usage (kern.pm)
 Note that the VFS graph is just informative of how the kernel is balancing its tables.
 .BI graph_mode
 .RS
@@ -550,7 +550,7 @@ Default value: \fIr\fP
 .RS
 This is the list of values offered in modern Linux kernels. Older Linux kernels or other Operating Systems may not have all of them. Placing a \fIy\fP or an \fIn\fP will enable or disable the value in the graph.
 .RE
-.SS Kernel usage per processor (proc.rrd)
+.SS Kernel usage per processor (proc.pm)
 .BI max
 .RS
 This is the number of processors or cores that your system has. There is no limit, however keep in mind that every time this number is changed Monitorix will resize the \fIproc.rrd\fP file accordingly, removing all historical data.
@@ -593,7 +593,7 @@ This option will completely enable or disable the legend in the processor graphs
 .P
 Default value: \fIy\fP
 .RE
-.SS HP ProLiant System Health (hptemp.rrd)
+.SS HP ProLiant System Health (hptemp.pm)
 .BI list
 .RS
 This list will hold the defined temperature sensors for each graph. You must have installed the command \fIhplog\fP that comes with HP ProLiant System Health Application and Command Line Utilities.
@@ -697,7 +697,7 @@ The external script will receive the following arguments:
 3rd - the value of the sensor.
 .P
 .RE
-.SS LM-Sensors and GPU temperatures (lmsens.rrd)
+.SS LM-Sensors and GPU temperatures (lmsens.pm)
 .BI list
 .RS
 In this list you may specify the sensors you want to monitor with the same names as they appear in your \fIsensors\fP(1) command.
@@ -874,7 +874,7 @@ The external script will receive the following arguments:
 3rd - the value of the sensor.
 .P
 .RE
-.SS Generic sensors statistics (gensens.rrd)
+.SS Generic sensors statistics (gensens.pm)
 This graph is able to monitor up to 9 temperatures and CPU frequencies which, depending of your machine, should appear in the \fI/sys/devices\fP directory.
 .P
 .BI list
@@ -1006,7 +1006,7 @@ The external script will receive the following arguments:
 4th - the direction or when that alert was triggered by (above or below).
 .P
 .RE
-.SS IPMI sensor statistics (ipmi.rrd)
+.SS IPMI sensor statistics (ipmi.pm)
 This graph is able to monitor an unlimited number of IPMI sensors (temperatures, fans and voltages).
 .P
 .BI list
@@ -1106,7 +1106,7 @@ extra_args = -H <remote_ip> -U root -P <password>
 .RS
 Default value: \fInone\fP
 .RE
-.SS Ambient sensor statistics (ambsens.rrd)
+.SS Ambient sensor statistics (ambsens.pm)
 This graph is able to monitor an unlimited number of ambient sensors (temperatures, humidity, barometer, etc.).
 .P
 .BI list
@@ -1201,7 +1201,7 @@ This is the number of graphs that will be put in a row.
 .P
 Default value: \fI2\fP
 .RE
-.SS NVIDIA temperatures and usage (nvidia.rrd)
+.SS NVIDIA temperatures and usage (nvidia.pm)
 This graph requires to have installed the official NVIDIA drivers.
 .P
 .BI max
@@ -1212,7 +1212,7 @@ The maximum allowed is 9.
 .P
 Default value: \fI1\fP
 .RE
-.SS Disk drive temperatures and health (disk.rrd)
+.SS Disk drive temperatures and health (disk.pm)
 This graph is able to monitor an unlimited number of disk drives.
 .P
 .BI list
@@ -1332,7 +1332,7 @@ This option changes this behavior and permits to continue working even if the de
 .P
 Default value: \fIn\fP
 .RE
-.SS Filesystem usage and I/O activity (fs.rrd)
+.SS Filesystem usage and I/O activity (fs.pm)
 This graph is able to monitor an unlimited number of filesystems.
 .P
 .BI list
@@ -1455,7 +1455,7 @@ The external script will receive the following arguments:
 3rd - the filesystem disk usage.
 .P
 .RE
-.SS ZFS statistics (zfs.rrd)
+.SS ZFS statistics (zfs.pm)
 This graph is able to monitor an unlimited number of pools.
 .P
 .BI max_pools
@@ -1469,7 +1469,7 @@ Default value: \fI5\fP
 .RS
 This is a comma-separated list of pool names. The number of pool names defined here can't be greater than the number defined in \fBmax_pools\fP.
 .RE
-.SS Directory usage statistics (du.rrd)
+.SS Directory usage statistics (du.pm)
 This graph is able to monitor the usage of an unlimited number of directories.
 .P
 IMPORTANT NOTE: The \fIdu\fP command makes intensive disk I/O access that might slow down the whole system. Moreover, continued executions of this command will affect the buffer cache mechanism and this will also increase the system response time.
@@ -1542,7 +1542,7 @@ extra_args = "-x"
 .RE
 .P
 IMPORTANT NOTICE: Keep in mind that including certain flags like '-h' (which gives results in human readable format) could make Monitorix unable to interpret the results.
-.SS Network traffic and usage (net.rrd)
+.SS Network traffic and usage (net.pm)
 .P
 .BI max
 .RS
@@ -1582,7 +1582,7 @@ Put one description for each interface listed. An example would be:
 .RS
 This is where the network interface that acts as the gateway for this server is defined. This is mainly used if you plan to monitor network traffic usage of your devices/networks using the \fBtraffacct\fP graph below.
 .RE
-.SS Netstat statistics (netstat.rrd)
+.SS Netstat statistics (netstat.pm)
 This graph shows the state of the all IPv4 and IPv6 network connections.
 .P
 Only the command to be used can be set here, besides the limit and rigid values.
@@ -1598,7 +1598,7 @@ This is the command that will be used to gather statistics. There are two possib
 .RE
 .P
 Default value: \fIss\fP
-.SS Traffic Control statistics (tc.rrd)
+.SS Traffic Control statistics (tc.pm)
 This graph is able to monitor an unlimited number of network interfaces managed by the \fItc\fP command.
 .P
 .BI list
@@ -1658,7 +1658,7 @@ An example would be:
 </map>
 .RE
 .RE
-.SS Libvirt statistics (libvirt.rrd)
+.SS Libvirt statistics (libvirt.pm)
 This graph is able to monitor an unlimited number of virtual machines managed by Libvirt.
 .P
 .BI cmd
@@ -1750,7 +1750,7 @@ vnet3      network    default    virtio      52:54:00:45:d0:e7
 .br
 .P
 This option also allows you to change the name that will appear in the graph, hiding the real name of the virtual machine. If no association is defined, then Monitorix will display the name specified in the \fBlist\fP option.
-.SS Process statistics (process.rrd)
+.SS Process statistics (process.pm)
 This graph is able to monitor an unlimited number of processes. This graph requires a Linux kernel version 2.6.20 at least to support process I/O accounting. Some systems with older kernels might also have been ported it though.
 .P
 .BI list
@@ -1797,7 +1797,7 @@ This list complements the \fBlist\fP option. It basically allows you to change t
 .RE
 .P
 You can define as much entries as you want.
-.SS System services demand (serv.rrd)
+.SS System services demand (serv.pm)
 This graph requires either \fIMailScanner\fP or \fIamavisd-new\fP mail scanners in order to account spam and virus emails.
 .P
 .BI mode
@@ -1812,7 +1812,7 @@ This option toggles the way the System Services Demand data is represented in th
 .P
 Default value: \fIi\fP
 .RE
-.SS Mail statistics (mail.rrd)
+.SS Mail statistics (mail.pm)
 This graph requires either \fIMailScanner\fP or \fIamavisd-new\fP mail scanners in order to account spam and virus emails. Spamassassin and Clamav antivirus are also used for spam and virus email accounting.
 .P
 .BI mta
@@ -1946,7 +1946,7 @@ It will receive the following three parameters:
 .P
 Default value: \fI/path/to/script.sh\fP
 .RE
-.SS Network port traffic (port.rrd)
+.SS Network port traffic (port.pm)
 This graph requires the \fIiptables\fP(8) command and optionally the \fIip6tables\fP(8) command on Linux systems and the \fIipfw\fP command on *BSD systems.
 .P
 .BI max
@@ -2015,9 +2015,9 @@ This is the number of graphs that will be put in a row. Consider the interaction
 .P
 Default value: \fI3\fP
 .RE
-.SS Users using the system (user.rrd)
+.SS Users using the system (user.pm)
 Only the limit and rigid values can be set here.
-.SS FTP statistics (ftp.rrd)
+.SS FTP statistics (ftp.pm)
 This graph supports currently ProFTPD, vsftpd and Pure-FTPd log file formats.
 .P
 For best results with the ProFTPD server I recommend to add the following line in its configuration file:
@@ -2048,7 +2048,7 @@ This option lists the different names (separated by comma) that can adopt the An
 .P
 Default value: \fIanonymous, ftp\fP
 .RE
-.SS Apache statistics (apache.rrd)
+.SS Apache statistics (apache.pm)
 This graph requires that \fImod_status\fP be loaded and \fIExtendedStatus\fP option set to \fIOn\fP in order to collect full status information of the Apache web server.
 .P
 This graph is able to monitor an unlimited number of local and remote Apache web servers.
@@ -2098,7 +2098,7 @@ The external script will receive the following arguments:
 3rd - the remaining free slots.
 .P
 .RE
-.SS Nginx statistics (nginx.rrd)
+.SS Nginx statistics (nginx.pm)
 This graph may require adding some lines in the configuration file \fInginx.conf\fP. Please see the \fIREADME.nginx\fP file to determine the exact steps needed to configure Nginx to get status information.
 .P
 This graph requires the \fIiptables\fP(8) command on Linux systems, and the \fIipfw\fP command on *BSD systems.
@@ -2123,7 +2123,7 @@ This is the rule number that Monitorix will use when using the \fIipfw\fP comman
 .P
 Default value: \fI24100\fP
 .RE
-.SS Lighttpd statistics (lighttpd.rrd)
+.SS Lighttpd statistics (lighttpd.pm)
 This graph requires that \fImod_status\fP is loaded in order to collect status information from the Lighttpd web server.
 .P
 This graph is able to monitor an unlimited number of local and remote Lighttpd web servers.
@@ -2136,7 +2136,7 @@ WARNING: Every time the number of entries of this option changes, Monitorix will
 .P
 Default value: \fIhttp://localhost/server-status?auto\fP
 .RE
-.SS MySQL statistics (mysql.rrd)
+.SS MySQL statistics (mysql.pm)
 This graph requires that you create a password protected MySQL user that is NOT granted privileges on any DB.
 .P
 Example:
@@ -2250,7 +2250,7 @@ Note that if you modify the value of \fItmp_table_size\fP in the MySQL configura
 Therefore this value helps to know how many tmp tables go to the disk instead than to the memory. Keep in mind that some large queries, involving TEXT and BLOB columns, are directly written to the disk instead than to the memory, because they would be too big. So you probably will want to avoid having a high % of tmp tables written to the disk, but you will never reach 0% on a big site, and this is fine.
 .br
 Lower is better ... but 0% is not reachable and you should not try to reach it, usually.
-.SS MongoDB statistics (mongodb.rrd)
+.SS MongoDB statistics (mongodb.pm)
 This graph is able to monitor an unlimited number of MongoDB servers.
 .P
 .BI list
@@ -2310,11 +2310,11 @@ This is a comma-separated list of databases to be monitored of the MongoDB serve
 .P
 Default value: \fImydb\fP
 .RE
-.SS Varnish cache statistics (varnish.rrd)
+.SS Varnish cache statistics (varnish.pm)
 This graph monitors a local installation of the Varnish HTTP accelerator.
 .P
 Only the limit and rigid values can be set here.
-.SS PageSpeed Module statistics (pagespeed.rrd)
+.SS PageSpeed Module statistics (pagespeed.pm)
 This graph is able to monitor an unlimited number of PageSpeed installations.
 .P
 .BI list
@@ -2327,7 +2327,7 @@ Default value: \fIhttp://modpagespeed.com/mod_pagespeed_statistics\fP
 .RE
 .P
 For more information please refer to https://developers.google.com/speed/pagespeed/module and http://stackoverflow.com/questions/9115595/what-do-the-mod-pagespeed-statistics-mean
-.SS Squid Proxy Web Cache (squid.rrd)
+.SS Squid Proxy Web Cache (squid.pm)
 .P
 .BI cmd
 .RS
@@ -2346,7 +2346,7 @@ For more information about the list of all the result and status codes, please r
 .P
 Each graph has a limit number of 9 entries.
 .RE
-.SS NFS server statistics (nfss.rrd)
+.SS NFS server statistics (nfss.pm)
 .P
 .BI version
 .RS
@@ -2374,7 +2374,7 @@ These three lists hold the defined NFS server activity statistics to be shown in
 .P
 Each graph has a limit number of 10 entries.
 .RE
-.SS NFS client statistics (nfsc.rrd)
+.SS NFS client statistics (nfsc.pm)
 .P
 .BI version
 .RS
@@ -2416,7 +2416,7 @@ Each graph has the following limit number of entries:
 .br
 \fBgraph_5\fP up to 4 entries.
 .RE
-.SS BIND statistics (bind.rrd)
+.SS BIND statistics (bind.pm)
 This graph requires a BIND server with version 9.5 or higher, and in order to see all statistics provided by BIND you must configure the \fIstatistics-channels\fP option like this:
 .P
 statistics-channels {
@@ -2502,7 +2502,7 @@ This is a comma-separated list of RR (Resource Records) types for each BIND serv
 .P
 The maximum number of RR types allowed for this graph is 20.
 .RE
-.SS NTP statistics (ntp.rrd)
+.SS NTP statistics (ntp.pm)
 This graph is able to monitor an unlimited number of NTP servers.
 .P
 .BI list
@@ -2543,7 +2543,7 @@ extra_args = "-4"
 .P
 Monitorix will add this extra argument to the NTP command which will become as "ntpq -pn -4".
 .RE
-.SS Chrony statistics (chrony.rrd)
+.SS Chrony statistics (chrony.pm)
 This graph is able to monitor an unlimited number of Chrony daemons.
 .P
 .BI list
@@ -2554,7 +2554,7 @@ WARNING: Every time the number of entries in this option changes, Monitorix will
 .P
 Default value: \fIlocalhost\fP
 .RE
-.SS Fail2ban statistics (fail2ban.rrd)
+.SS Fail2ban statistics (fail2ban.pm)
 This graph is able to monitor an unlimited number of Fail2ban jails.
 .P
 .BI list
@@ -2589,7 +2589,7 @@ This is the number of fail2ban graphs that will be put in a row.
 .P
 Default value: \fI2\fP
 .RE
-.SS Icecast Streaming Media Server (icecast.rrd)
+.SS Icecast Streaming Media Server (icecast.pm)
 This graph is able to monitor an unlimited number of Icecast servers.
 .P
 .BI list
@@ -2620,7 +2620,7 @@ This changes the layout of the listeners graph, the possible values are \fIr\fP 
 .P
 Default value: \fIr\fP
 .RE
-.SS Raspberry Pi sensor statistics (raspberrypi.rrd)
+.SS Raspberry Pi sensor statistics (raspberrypi.pm)
 .P
 For more information please refer to http://elinux.org/RPI_vcgencmd_usage.
 .P
@@ -2652,7 +2652,7 @@ volts = core, sdram_c, sdram_i, sdram_p
 .P
 The maximum number of clocks allowed is 6.
 .RE
-.SS Alternative PHP Cache statistics (phpapc.rrd)
+.SS Alternative PHP Cache statistics (phpapc.pm)
 This graph is able to monitor an unlimited number of PHP-APC installations.
 .P
 .BI list
@@ -2663,7 +2663,7 @@ WARNING: Every time the number of entries in this option changes, Monitorix will
 .P
 Default value: \fIhttp://localhost/apc.php?auto\fP
 .RE
-.SS Memcached statistics (memcached.rrd)
+.SS Memcached statistics (memcached.pm)
 This graph is able to monitor an unlimited number of Memcached installations.
 .P
 .BI list
@@ -2674,7 +2674,7 @@ WARNING: Every time the number of entries in this option changes, Monitorix will
 .P
 Default value: \fIlocalhost:11211\fP
 .RE
-.SS APC UPS statistics (apcupsd.rrd)
+.SS APC UPS statistics (apcupsd.pm)
 This graph is able to monitor an unlimited number of APC UPS (apcupsd) installations.
 .P
 .BI cmd
@@ -2692,7 +2692,7 @@ WARNING: Every time the number of entries in this option changes, Monitorix will
 .P
 Default value: \fIlocalhost:3551\fP
 .RE
-.SS Network UPS Tools statistics (nut.rrd)
+.SS Network UPS Tools statistics (nut.pm)
 This graph is able to monitor an unlimited number of Network UPS Tools (upsc) installations.
 .P
 .BI list
@@ -2705,7 +2705,7 @@ WARNING: Every time the number of entries in this option changes, Monitorix will
 .P
 Default value: \fIups@localhost\fP
 .RE
-.SS Wowza Media Server (wowza.rrd)
+.SS Wowza Media Server (wowza.pm)
 This graph is able to monitor an unlimited number of Wowza servers.
 .P
 .BI list
@@ -2729,11 +2729,11 @@ This is a comma-separated list of applications configured for every URL specifie
 .P
 The maximum number of applications allowed for each URL is 8.
 .RE
-.SS Devices interrupt activity (int.rrd)
+.SS Devices interrupt activity (int.pm)
 Only the limit and rigid values can be set here.
-.SS Verlihub statistics (verlihub.rrd)
+.SS Verlihub statistics (verlihub.pm)
 This graph monitors the Verlihub software for DC++ network.
-.SS Monitoring the Internet traffic of your LAN (traffacct.rrd)
+.SS Monitoring the Internet traffic of your LAN (traffacct.pm)
 If your server acts as the gateway for a group of PCs, devices or even whole networks in your local LAN, you may want to know how much Internet traffic each one is generating.
 .P
 This graph requires the \fIiptables\fP(8) command on GNU/Linux systems, and the \fIipfw\fP command on *BSD systems.
@@ -2794,7 +2794,7 @@ An example would be:
 </desc
 .RE
 .RE
-.SS Monthly reports of Internet traffic (traffacct.rrd)
+.SS Monthly reports of Internet traffic (traffacct.pm)
 .BI enabled
 .RS
 If this option is set to \fIy\fP, Monitorix will send a report of all the monthly Internet activity of the defined devices in \fBlist\fP to the specified email address on the first day of each month.
