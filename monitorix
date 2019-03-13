@@ -89,7 +89,7 @@ sub HUP_handler {
 			kill(15, $config{httpd_pid});
 			kill(9, $config{httpd_pid});
 			httpd_setup(\%config, $options{d});
-			logger("Restarted built-in HTTP server (pid $config{httpd_pid}).") if (defined($config{httpd_pid}));
+			logger("Restarted HTTP built-in server (pid $config{httpd_pid}).") if (defined($config{httpd_pid}));
 		}
 	}
 }
@@ -729,7 +729,7 @@ if(lc($config{httpd_builtin}->{enabled}) eq "y") {
 
 	require HTTPServer;
 	httpd_setup(\%config, $options{d});
-	logger("Started built-in HTTP server (pid $config{httpd_pid}).") if (defined($config{httpd_pid}));
+	logger("Started HTTP built-in server (pid $config{httpd_pid}).") if (defined($config{httpd_pid}));
 }
 
 setpriority(0, 0, $config{priority} || 0);
