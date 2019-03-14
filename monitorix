@@ -2,7 +2,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2018 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2019 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -44,8 +44,8 @@ $SIG{'STOP'} = 'INT_handler';
 $SIG{'TERM'} = 'INT_handler';
 $SIG{'HUP' } = 'HUP_handler';
 
-use constant VERSION	=> "3.10.0";
-use constant RELDATE	=> "25-Sep-2017";
+use constant VERSION	=> "3.11.0";
+use constant RELDATE	=> "14-Mar-2019";
 
 my @suppsys = ("Linux", "FreeBSD", "OpenBSD", "NetBSD");
 our %config;

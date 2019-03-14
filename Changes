@@ -1,4 +1,4 @@
-3.NN.N - DD-MMM-2019
+3.11.0 - 14-Mar-2019
 ====================
 - Added a complete graph to support external ambient sensors ('ambsens.pm').
   	(suggested by Zdenko Dolar, zdenko.dolar AT gmail.com)
