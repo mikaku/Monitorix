@@ -1,3 +1,11 @@
+3.NN.N - DD-MMM-2019
+====================
+- Fixed the copyright year in 'monitorix.cgi'.
+- Fixed in 'mail.pm to use the option 'mail_log' instead the hard coded path I
+forgot to remove when adding the Exim support.
+  	(thanks to Jean-Marc Didelot, jm.didelot AT teraneo.fr for pointing this out)
+
+
 3.11.0 - 14-Mar-2019
 ====================
 - Added a complete graph to support external ambient sensors ('ambsens.pm').
