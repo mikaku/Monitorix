@@ -323,7 +323,7 @@ sub mail_update {
 			close(IN);
 		}
 	} elsif(lc($mail->{mta}) eq "exim") {
-		if(open(IN, "eximstats -h0 -ne -nr -t0 /var/log/exim/mainlog |")) {
+		if(open(IN, "eximstats -h0 -ne -nr -t0 $config->{mail_log} |")) {
 			while(<IN>) {
 				if(/^  Received\s+(\d+)(\S\S)\s+(\d+).*?$/) {
 					$bytes_recvd = $1;
