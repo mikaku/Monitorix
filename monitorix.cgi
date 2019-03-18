@@ -682,7 +682,7 @@ if(!$silent) {
 		print("  <a href='http://www.monitorix.org'><img src='" . $config{url} . "/" . $config{logo_bottom} . "' border='0'></a>\n");
 		print("  <br>\n");
 		print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "' size='-2'>\n");
-		print("Copyright &copy; 2005-2017 Jordi Sanfeliu\n");
+		print("Copyright &copy; 2005-2019 Jordi Sanfeliu\n");
 		print("  </font>\n");
 	}
 	print("  </body>\n");
