@@ -737,9 +737,8 @@ logger("Ok, ready.");
 
 # main loop
 while(1) {
-	local $SIG{'ALRM'} = sub { };
-	alarm(1);
-	pause();
+
+	select undef, undef, undef, 1.0;
 
 	my ($sec, $min, $hour, $mday, $mon, undef, $wday) = localtime(time);
 
