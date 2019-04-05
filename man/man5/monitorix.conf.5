@@ -2685,6 +2685,85 @@ WARNING: Every time the number of entries in this option changes, Monitorix will
 .P
 Default value: \fIlocalhost:11211\fP
 .RE
+.SS PHP-FPM statistics (phpfpm.pm)
+This graph is able to monitor an unlimited number of PHP-FPM pools.
+.P
+.BI group
+.RS
+This is a list of names (separated by comma) of the groups of pools that you want to monitor. The pools included in each group will be defined in the \fBlist\fP option. You can define unlimited number of groups.
+.P
+WARNING: Every time the number of groups changes, Monitorix will resize the \fIphpfpm.rrd\fP file accordingly, removing all historical data.
+.P
+An example of this option would be:
+.P
+.RS
+<group>
+.br
+	0 = First group of domains
+.br
+	1 = Second group of domains
+.br
+</group>
+.RE
+.RE
+.P
+.BI list
+.RS
+This is a list of pool names that you want to monitor for each group defined in \fBgroup\fP.
+.P
+An example of this option would be:
+.P
+.RS
+<list>
+.br
+	0 = example1, example2, example3
+.br
+	1 = example10, example11
+.br
+</list>
+.RE
+.P
+The maximum number of pools allowed per group is 8.
+.RE
+.P
+.BI desc
+.RS
+This list complements the \fBlist\fP option, it defines where and how Monitorix must gather the statistics for each pool defined.
+.P
+An example of this option would be:
+.P
+.RS
+<desc>
+.br
+	example1 = http://www.example1.com/php_fpm_status
+.br
+	example2 = http://www.example2.com/php_fpm_status
+.br
+	example3 = http://www.example3.com/php_fpm_status
+.br
+	example10 = http://www.example10.com/php_fpm_status
+.br
+	example11 = http://www.example11.com/php_fpm_status
+.br
+</desc>
+.RE
+.RE
+.P
+.BI map
+.RS
+This list also complements the \fBlist\fP option. It basically allows you to change the name that will appear in the graph, hiding the real name of the pool. If no association is defined, then Monitorix will display the name specified in the \fBlist\fP option.
+.P
+An example of this option would be:
+.P
+.RS
+<map>
+.br
+	example1 = DOMAIN4
+.br
+	example12 = DOMAIN55
+.br
+</map>
+.RE
 .SS APC UPS statistics (apcupsd.pm)
 This graph is able to monitor an unlimited number of APC UPS (apcupsd) installations.
 .P
