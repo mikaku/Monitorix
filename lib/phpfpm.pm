@@ -393,8 +393,24 @@ sub phpfpm_cgi {
 		$n++;
 	}
 
+	my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
+		"--start=-1min",
+		"AVERAGE",
+		"-r 60");
+	my $line = @$data[0];
+	my ($uptime) = @$line[0];	# all pools have the same uptime
+	my $uptimeline;
+	if($RRDs::VERSION > 1.2) {
+		$uptimeline = "COMMENT:uptime\\: " . uptime2str($uptime) . "\\c";
+	} else {
+		$uptimeline = "COMMENT:uptime: " . uptime2str($uptime) . "\\c";
+	}
+
 	$e = 0;
 	foreach my $pfg (sort keys %{$phpfpm->{group}}) {
+		# skip empty lists
+		next if !$phpfpm->{list}->{$pfg};
+
 		if($e) {
 			push(@output, "   <br>\n");
 		}
@@ -403,24 +419,11 @@ sub phpfpm_cgi {
 		}
 
 		@riglim = @{setup_riglim($rigid[0], $limit[0])};
-		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
-			"--start=-1min",
-			"AVERAGE",
-			"-r 60");
-		my $line = @$data[0];
-		my ($uptime) = @$line[$e * 144];
-		my $uptimeline;
-		if($RRDs::VERSION > 1.2) {
-			$uptimeline = "COMMENT:uptime\\: " . uptime2str($uptime) . "\\c";
-		} else {
-			$uptimeline = "COMMENT:uptime: " . uptime2str($uptime) . "\\c";
-		}
-
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
-		my $comments;
-		for($n = 0; $n < scalar(my @pfl = split(',', $phpfpm->{list}->{$pfg})); $n++) {
+		my @pfl;
+		for($n = 0; $n < scalar(@pfl = split(',', $phpfpm->{list}->{$pfg})); $n++) {
 			$str = trim($pfl[$n]);
 			$str = $phpfpm->{map}->{$str} ? $phpfpm->{map}->{$str} : $str;
 			my $dstr = sprintf("%-25s", substr($str, 0, 25));
@@ -430,7 +433,6 @@ sub phpfpm_cgi {
 			push(@tmp, "GPRINT:acon" . $e . "_$n" . ":AVERAGE:  Avg\\:%5.2lf");
 			push(@tmp, "GPRINT:acon" . $e . "_$n" . ":MIN:  Min\\:%5.2lf");
 			push(@tmp, "GPRINT:acon" . $e . "_$n" . ":MAX:  Max\\:%5.2lf\\n");
-			$comments = 8 - scalar(@pfl);
 		}
 
 		if($title) {
@@ -442,7 +444,7 @@ sub phpfpm_cgi {
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
 			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
-		for($n = 0; $n < $comments / 2; $n++) {
+		for($n = 0; $n < scalar(@pfl) / 2; $n++) {
 			push(@tmp, "COMMENT: \\n");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
@@ -522,7 +524,7 @@ sub phpfpm_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
-		for($n = 0; $n < scalar(my @pfl = split(',', $phpfpm->{list}->{$pfg})); $n++) {
+		for($n = 0; $n < scalar(@pfl = split(',', $phpfpm->{list}->{$pfg})); $n++) {
 			$str = trim($pfl[$n]);
 			$str = $phpfpm->{map}->{$str} ? $phpfpm->{map}->{$str} : $str;
 			my $dstr = sprintf("%-25s", substr($str, 0, 25));
@@ -532,14 +534,13 @@ sub phpfpm_cgi {
 			push(@tmp, "GPRINT:aproc" . $e . "_$n" . ":AVERAGE:  Avg\\:%5.2lf");
 			push(@tmp, "GPRINT:aproc" . $e . "_$n" . ":MIN:  Min\\:%5.2lf");
 			push(@tmp, "GPRINT:aproc" . $e . "_$n" . ":MAX:  Max\\:%5.2lf\\n");
-			$comments = 8 - scalar(@pfl);
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
 			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
-		for($n = 0; $n < $comments / 2; $n++) {
+		for($n = 0; $n < scalar(@pfl) / 2; $n++) {
 			push(@tmp, "COMMENT: \\n");
 		}
 		($width, $height) = split('x', $config->{graph_size}->{main});
