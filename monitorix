@@ -856,7 +856,7 @@ while(1) {
 					my $ua = LWP::UserAgent->new(timeout => 30);
 					my $response = $ua->request(HTTP::Request->new('GET', $url));
 					if(!$response->is_success) {
-						logger("WARNING: unable to connect to HTTP built-in server '$url'.");
+						logger("WARNING: HTTP built-in server not responding at '$url'.");
 						exit(1);
 					}
 					exit(0);
