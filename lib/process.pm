@@ -162,7 +162,7 @@ sub process_update {
 			my $ics = 0;
 
 			my $str;
-			my @pid;
+			my @pids;
 			my $p = trim($lp[$n] || "");
 			my $val;
 			my $s_usage = 0;
@@ -172,23 +172,23 @@ sub process_update {
 				while(<IN>) {
 					if(m/^\s*(\d+)\s+(\S+)\s+(.*?)$/) {
 						if($p eq trim($2)) {
-							push(@pid, $1);
+							push(@pids, $1);
 							$pro++;
 							next;
 						}
 						if($p eq trim($3)) {
-							push(@pid, $1);
+							push(@pids, $1);
 							$pro++;
 							next;
 						}
 						if(index($3, $p) != -1) {
-							push(@pid, $1);
+							push(@pids, $1);
 							$pro++;
 							next;
 						}
 					}
 					if(substr($p, 0, 15) eq substr($_, 6, 15)) {
-						push(@pid, $1);
+						push(@pids, $1);
 						$pro++;
 						next;
 					}
@@ -208,8 +208,8 @@ sub process_update {
 			}
 
 			my $p_usage = 0;
-			foreach my $p (@pid) {
-				if(open(IN, "/proc/$p/stat")) {
+			foreach my $pid (@pids) {
+				if(open(IN, "/proc/$pid/stat")) {
 					my $utime = 0;
 					my $stime = 0;
 					my $v_nth = 0;
@@ -219,11 +219,15 @@ sub process_update {
 					# since a process name can include spaces an 'split(' ', <IN>)' wouldn't work here,
 					# therefore we discard the first part of the process information (pid, comm and state).
 					(undef, $rest) = <IN> =~ m/^(\d+\s\(.*?\)\s\S\s)(.*?)$/;
-					(undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, $utime, $stime, undef, undef, undef, undef, $v_nth, undef, undef, undef, $v_mem) = split(' ', $rest);
 					close(IN);
-					$mem += ($v_mem *= 4096);
-					$nth += ($v_nth - 1);
-					$p_usage += $utime + $stime;
+					if($rest) {
+						(undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, $utime, $stime, undef, undef, undef, undef, $v_nth, undef, undef, undef, $v_mem) = split(' ', $rest);
+						$mem += ($v_mem *= 4096);
+						$nth += ($v_nth - 1);
+						$p_usage += $utime + $stime;
+					} else {
+						logger("$myself: WARNING: PID $pid ('$p') has vanished while accounting!");
+					}
 				}
 			}
 			$str = $e . "_cpu" . $n;
@@ -233,8 +237,8 @@ sub process_update {
 
 			my $v_dsk = 0;
 			my $v_net = 0;
-			foreach my $p (@pid) {
-				if(open(IN, "/proc/$p/io")) {
+			foreach my $pid (@pids) {
+				if(open(IN, "/proc/$pid/io")) {
 					my $rchar = 0;
 					my $wchar = 0;
 					my $readb = 0;
@@ -264,14 +268,14 @@ sub process_update {
 
 			my $v_vcs = 0;
 			my $v_ics = 0;
-			foreach my $p (@pid) {
-				if(opendir(DIR, "/proc/$p/fdinfo")) {
+			foreach my $pid (@pids) {
+				if(opendir(DIR, "/proc/$pid/fdinfo")) {
 					my @files = grep { !/^[.]/ } readdir(DIR);
 					$nof += scalar(@files);
 					closedir(DIR);
 				}
 
-				if(open(IN, "/proc/$p/status")) {
+				if(open(IN, "/proc/$pid/status")) {
 					while(<IN>) {
 						if(/^voluntary_ctxt_switches:\s+(\d+)$/) {
 							$v_vcs += $1;
