@@ -5,6 +5,7 @@
 - Fixed in 'mail.pm to use the option 'mail_log' instead the hard coded path I
 forgot to remove when adding the Exim support.
   	(thanks to Jean-Marc Didelot, jm.didelot AT teraneo.fr for pointing this out)
+- Added a warning if a process vanished during the accouting in 'process.pm'
 
 
 3.11.0 - 14-Mar-2019
