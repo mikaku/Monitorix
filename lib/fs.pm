@@ -395,7 +395,7 @@ sub fs_init {
 						}
 					};
 					alarm($config->{timeout});
-					$pid = open(IN, "df -P $f |");
+					$pid = open(IN, "df -P '$f' |");
 					while(<IN>) {
 						if(/ $f$/) {
 							($d) = split(' ', $_);
@@ -638,7 +638,7 @@ sub fs_update {
 						@tmp = (0, 0, 0, 0);
 					};
 					alarm($config->{timeout});
-					$pid = open(IN, "df -P $f |");
+					$pid = open(IN, "df -P '$f' |");
 					while(<IN>) {
 						if(/ $f$/) {
 							@tmp = split(' ', $_);
@@ -665,9 +665,9 @@ sub fs_update {
 					};
 					alarm($config->{timeout});
 					if($config->{os} eq "Linux") {
-						$pid = open(IN, "df -P -i $f |");
+						$pid = open(IN, "df -P -i '$f' |");
 					} elsif($config->{os} eq "FreeBSD" || $config->{os} eq "OpenBSD") {
-						$pid = open(IN, "df -i $f |");
+						$pid = open(IN, "df -i '$f' |");
 					}
 					while(<IN>) {
 						if(/ $f$/) {
@@ -745,7 +745,7 @@ sub fs_update {
 						$write_sec =~ s/\).*$//;
 					}
 				} elsif($config->{os} eq "FreeBSD") {
-					@tmp = split(' ', `iostat -xI $d | grep -w $d`);
+					@tmp = split(' ', `iostat -xI '$d' | grep -w '$d'`);
 					if(@tmp) {
 						(undef, $read_cnt, $write_cnt, $read_sec, $write_sec) = @tmp;
 						$read_cnt = int($read_cnt);
