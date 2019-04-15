@@ -526,7 +526,7 @@ sub port_cgi {
 
 			# check if the network port is still listening
 			undef(@warning);
-			if(uc($plis) eq "L") {
+			if(uc($plis || "") eq "L") {
 				if($config->{os} eq "Linux") {
 					open(IN, "netstat -nl --$pp |");
 					while(<IN>) {

@@ -8,6 +8,7 @@ forgot to remove when adding the Exim support.
   	(thanks to Jean-Marc Didelot, jm.didelot AT teraneo.fr for pointing this out)
 - Fixed to support to show the usage and disk I/O on filesystem names that
   contain spaces. [#234]
+- Fixed to ensure that the 'L' option in port.pm is optional.
 
 
 3.11.0 - 14-Mar-2019
