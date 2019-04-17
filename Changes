@@ -4,11 +4,13 @@
 - Added a warning if a process vanished during the accouting in 'process.pm'
 - Fixed the copyright year in 'monitorix.cgi'.
 - Fixed in 'mail.pm to use the option 'mail_log' instead the hard coded path I
-forgot to remove when adding the Exim support.
+  forgot to remove when adding the Exim support.
   	(thanks to Jean-Marc Didelot, jm.didelot AT teraneo.fr for pointing this out)
 - Fixed to support to show the usage and disk I/O on filesystem names that
   contain spaces. [#234]
 - Fixed to ensure that the 'L' option in port.pm is optional.
+- Fixed to make sure that a maximum of 9 values is accepted in the 'graph_0'
+  and 'graph_1' options of 'squid.pm'; warn user otherwise. [#235]
 
 
 3.11.0 - 14-Mar-2019

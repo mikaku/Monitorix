@@ -228,15 +228,29 @@ sub squid_update {
 		}
 	}
 	close(IN);
-	foreach my $code (my @sl = split(',', $squid->{graph_0})) {
-		$code = trim($code);
+	my @sl = split(',', $squid->{graph_0});
+	if(scalar(@sl) > 9) {
+		logger("$myself: WARNING: a maximum of 9 values is allowed in 'graph_0' option.");
+	}
+	for($n = 0; $n < 9 && $sl[$n]; $n++) {
+		my $code = trim($sl[$n]);
 		$rrdata .= ":";
 		$rrdata .= defined($g12{$code}) ? int($g12{$code}) : 0;
 	}
-	foreach my $code (my @sl = split(',', $squid->{graph_1})) {
-		$code = trim($code);
+	for(; $n < 9; $n++) {
+		$rrdata .= ":0";
+	}
+	@sl = split(',', $squid->{graph_0});
+	if(scalar(@sl) > 9) {
+		logger("$myself: WARNING: a maximum of 9 values is allowed in 'graph_1' option.");
+	}
+	for($n = 0; $n < 9 && $sl[$n]; $n++) {
+		my $code = trim($sl[$n]);
 		$rrdata .= ":";
 		$rrdata .= defined($g12{$code}) ? int($g12{$code}) : 0;
+	}
+	for(; $n < 9; $n++) {
+		$rrdata .= ":0";
 	}
 	$config->{squid_hist}->{'seek_pos'} = $logsize;
 
