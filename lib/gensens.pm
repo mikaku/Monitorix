@@ -192,7 +192,43 @@ sub gensens_update {
 						}
 					}
 				} elsif(scalar(@range) == 2) {
-					logger("$myself: range values are not supported yet.");
+					if($when) {
+						logger("$myself: the forth parameter ('$when') in '$str' is irrelevant when there are range values defined.");
+					}
+					if($range[0] == $range[1]) {
+						logger("$myself: ERROR: range values are identical.");
+					} else {
+						if($val <= $range[0]) {
+							$config->{gensens_hist_alerts}->{$str}->{above} = 0;
+							if($val < $range[0] && !$config->{gensens_hist_alerts}->{$str}->{below}) {
+								$config->{gensens_hist_alerts}->{$str}->{below} = time;
+							}
+						}
+						if($val >= $range[1]) {
+							$config->{gensens_hist_alerts}->{$str}->{below} = 0;
+							if($val > $range[1] && !$config->{gensens_hist_alerts}->{$str}->{above}) {
+								$config->{gensens_hist_alerts}->{$str}->{above} = time;
+							}
+						}
+						if($config->{gensens_hist_alerts}->{$str}->{below} > 0 && (time - $config->{gensens_hist_alerts}->{$str}->{below}) >= $timeintvl) {
+							if(-x $script) {
+								logger("$myself: alert on Generic Sensor ($str): executing script '$script'.");
+								system($script . " " . $timeintvl . " " . $threshold . " " . $val);
+							} else {
+								logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+							}
+							$config->{gensens_hist_alerts}->{$str}->{below} = time;
+						}
+						if($config->{gensens_hist_alerts}->{$str}->{above} > 0 && (time - $config->{gensens_hist_alerts}->{$str}->{above}) >= $timeintvl) {
+							if(-x $script) {
+								logger("$myself: alert on Generic Sensor ($str): executing script '$script'.");
+								system($script . " " . $timeintvl . " " . $threshold . " " . $val);
+							} else {
+								logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+							}
+							$config->{gensens_hist_alerts}->{$str}->{above} = time;
+						}
+					}
 				} else {
 					logger("$myself: ERROR: invalid threshold value '$threshold'");
 				}
