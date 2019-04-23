@@ -166,9 +166,9 @@ sub gensens_update {
 				my $script = trim($al[2]);
 				my $when = lc(trim($al[3] || ""));
 				my @range = split('-', $threshold);
-				$when = "above" if !$when;	# 'above' is the default
 				$threshold = 0 if !$threshold;
 				if(scalar(@range) == 1) {
+					$when = "above" if !$when;	# 'above' is the default
 					if($when eq "above" && $val < $threshold) {
 						$config->{gensens_hist_alerts}->{$str} = 0;
 					} elsif($when eq "below" && $val > $threshold) {
