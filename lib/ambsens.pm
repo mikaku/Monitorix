@@ -161,9 +161,9 @@ sub ambsens_update {
 						my $script = trim($al[2]);
 						my $when = lc(trim($al[3] || ""));
 						my @range = split('-', $threshold);
-						$when = "above" if !$when;	# 'above' is the default
 						$threshold = 0 if !$threshold;
 						if(scalar(@range) == 1) {
+							$when = "above" if !$when;	# 'above' is the default
 							if($when eq "above" && $val < $threshold) {
 								$config->{ambsens_hist_alerts}->{$str} = 0;
 							} elsif($when eq "below" && $val > $threshold) {
@@ -187,7 +187,43 @@ sub ambsens_update {
 								}
 							}
 						} elsif(scalar(@range) == 2) {
-							logger("$myself: range values are not supported yet.");
+							if($when) {
+								logger("$myself: the forth parameter ('$when') in '$str' is irrelevant when there are range values defined.");
+							}
+							if($range[0] == $range[1]) {
+								logger("$myself: ERROR: range values are identical.");
+							} else {
+								if($val <= $range[0]) {
+									$config->{ambsens_hist_alerts}->{$str}->{above} = 0;
+									if($val < $range[0] && !$config->{ambsens_hist_alerts}->{$str}->{below}) {
+										$config->{ambsens_hist_alerts}->{$str}->{below} = time;
+									}
+								}
+								if($val >= $range[1]) {
+									$config->{ambsens_hist_alerts}->{$str}->{below} = 0;
+									if($val > $range[1] && !$config->{ambsens_hist_alerts}->{$str}->{above}) {
+										$config->{ambsens_hist_alerts}->{$str}->{above} = time;
+									}
+								}
+								if($config->{ambsens_hist_alerts}->{$str}->{below} > 0 && (time - $config->{ambsens_hist_alerts}->{$str}->{below}) >= $timeintvl) {
+									if(-x $script) {
+										logger("$myself: alert on Ambient Sensor ($str): executing script '$script'.");
+										system($script . " " . $timeintvl . " " . $threshold . " " . $val);
+									} else {
+										logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+									}
+									$config->{ambsens_hist_alerts}->{$str}->{below} = time;
+								}
+								if($config->{ambsens_hist_alerts}->{$str}->{above} > 0 && (time - $config->{ambsens_hist_alerts}->{$str}->{above}) >= $timeintvl) {
+									if(-x $script) {
+										logger("$myself: alert on Ambient Sensor ($str): executing script '$script'.");
+										system($script . " " . $timeintvl . " " . $threshold . " " . $val);
+									} else {
+										logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+									}
+									$config->{ambsens_hist_alerts}->{$str}->{above} = time;
+								}
+							}
 						} else {
 							logger("$myself: ERROR: invalid threshold value '$threshold'");
 						}

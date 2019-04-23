@@ -1169,11 +1169,11 @@ This optional list enables the alert capabilities for this graph and complements
 .P
 The \fItime interval\fP is the period of time (in seconds) that the \fIthreshold\fP needs to be exceeded before the external script is executed.
 .P
-The \fIthreshold\fP is the value (either temperature or HZ) that needs to be reached or exceeded within the specified time in \fItime interval\fP to execute the external script.
+The \fIthreshold\fP is the value (either temperature or HZ) that needs to be reached or exceeded within the specified time in \fItime interval\fP to execute the external script. It can be specified as a unique value or as a range of two values separated by a dash.
 .P
 The \fIscript\fP is the full path name of the script that will be executed by this alert.
 .P
-The \fIwhen\fP value specifies when the alert must be triggered (\fIabove\fP or \fIbelow\fP) the threshold, being \fIabove\fP the default value when it's not specified.
+The \fIwhen\fP value specifies when the alert must be triggered (\fIabove\fP or \fIbelow\fP) the threshold, being \fIabove\fP the default value when it's not specified. This forth parameter is only relevant when the \fIthreshold\fP value is not a range.
 .P
 Each defined sensor has its own alert.
 .P
@@ -1188,12 +1188,16 @@ The following is an example of an alert defined for the first temperature sensor
 .br
 	temp1 = 3600, 10, /path/to/script.sh, below
 .br
+	temp2 = 3600, 40-60, /path/to/script.sh
+.br
 </alerts>
 .P
 .RE
 The first alert means that if the value of the sensor temp0 exceeds above 40 during at least one hour (3600 seconds) the script in \fI/path/to/script.sh\fP will be executed.
 .P
 The second alert means that if the value of the sensor temp1 exceeds below 10 during at least one hour (3600 seconds) the script in \fI/path/to/script.sh\fP will be executed.
+.P
+The third alert means that if the value of the sensor temp2 either exceeds below 40 or above of 60 during at least one hour (3600 seconds) the script in \fI/path/to/script.sh\fP will be executed.
 .P
 The external script will receive the following arguments:
 .P

@@ -3,7 +3,9 @@
 - Added a complete graph to support PHP-FPM statistics ('phpfpm.pm'). [#167]
 - Added a warning if a process vanished during the accouting in 'process.pm'
 - Added the ability, in the alerts of 'gensens.pm', to support a range of two
-  values separated by a dash in the threshold. [#221]
+  values, separated by a dash, in the threshold. [#221]
+- Added the ability, in the alerts of 'ambsens.pm', to support a range of two
+  values, separated by a dash, in the threshold. [#221]
 - Fixed the copyright year in 'monitorix.cgi'.
 - Fixed in 'mail.pm to use the option 'mail_log' instead the hard coded path I
   forgot to remove when adding the Exim support.
