@@ -245,7 +245,6 @@ sub ambsens_update {
 		}
 		$e++;
 	}
-	print "$rrdata\n";
 
 	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;
