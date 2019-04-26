@@ -42,7 +42,7 @@ sub nfss_init {
 	my @max;
 	my @last;
 
-	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
+	if(grep {$_ eq $config->{os}} ("OpenBSD", "NetBSD")) {
 		logger("$myself is not supported yet by your operating system ($config->{os}).");
 		return;
 	}
@@ -250,6 +250,84 @@ sub nfss_update {
 			logger("$myself: ERROR: Unable to open '/proc/net/rpc/nfsd'. $!.");
 			return;
 		}
+	}
+
+	# On FreeBSD run nfsstat(1) to get this info
+	# We want to fill in the @rc, @fh, @io, @th, @net, @rpc, @nfss arrays
+	# with the same types of data (or 0) that linux gets out of /proc
+
+	if($config->{os} eq "FreeBSD") {
+		my $stats = &parse_nfsstat();
+		if (! $stats) {
+			logger("$myself: ERROR: Unable to run and parse output from 'nfsstat'. $!.");
+			return;
+		}
+
+		# Now shove the data into the arrays in the way the rest of
+		# this plugin expects to find them
+
+		# LINUX: @rc = reply cache = (hits, misses, nocache)
+		# FreeBSD: Server Cache Stats: Inprog, idem, Non-idem, Misses
+		@rc = (
+			$stats->{'Idem'}, 
+			$stats->{'Misses'}, 
+			$stats->{'Non-idem'}
+		); 
+
+		# LINUX: @fh = file handles = (stale, total_lookups, anonlookups, dirnocache, nodirnocahe)
+		# FreeBSD: No data
+		@fh = (0,0,0,0,0);
+
+		# LINUX: @io = I/O = (read, wright)
+		# FreeBSD: Server Info: Read, Write
+		@io = (
+			$stats->{'Read'}, 
+			$stats->{'Write'} 
+		);
+
+		# LINUX: @th = Threads = (11 values)
+		# FreeBSD: Server Info: No data
+		@th = (0,0,0,0,0,0,0,0,0,0,0);
+
+		# LINUX: @net = Net = (netcount, udpcount, tcpcount, tcpconnect)
+		# FreeBSD: Server Info: No data
+		@net = (0,0,0,0);
+
+		# LINUX: @rpc = RPC = (count, badcnt, badfmt, badauth, badcInt)
+		# FreeBSD: Server Info: No data
+		@rpc = (0,0,0,0,0);
+
+		# LINUX: @nfss = Server stats = for v3, 22 stats:
+		#   null / getattr / setattr / lookup / access 
+		#   readlink / read / write / create / mkdir / symlink
+		#   mknod / remove / rmdir / rename / link / readdir
+		#   readdirplus / fsstat / fsinfo / pathconf / commit
+		# FreeBSD: Server Info: has all those items with similar names
+		@nfss = (
+			0,
+			$stats->{'Getattr'}, 
+			$stats->{'Setattr'}, 
+			$stats->{'Lookup'}, 
+			$stats->{'Access'}, 
+			$stats->{'Readlink'}, 
+			$stats->{'Read'}, 
+			$stats->{'Write'}, 
+			$stats->{'Create'}, 
+			$stats->{'Mkdir'}, 
+			$stats->{'Symlink'}, 
+			$stats->{'Mknod'}, 
+			$stats->{'Remove'}, 
+			$stats->{'Rmdir'}, 
+			$stats->{'Rename'}, 
+			$stats->{'Link'}, 
+			$stats->{'Readdir'}, 
+			$stats->{'RdirPlus'}, 
+			$stats->{'Fsstat'}, 
+			$stats->{'Fsinfo'}, 
+			$stats->{'PathConf'}, 
+			$stats->{'Commit'} 
+		);
+
 	}
 
 	for($n = 0; $n < 50; $n++) {
@@ -1383,6 +1461,45 @@ sub nfss_cgi {
 	}
 	push(@output, "  <br>\n");
 	return @output;
+}
+
+# Returns a hashref full of server stats, or undef if anything went wrong
+sub parse_nfsstat {
+	my @heads;
+	my @values;
+	my $head;
+	my $val;
+	my $line;
+	my $stats;
+	my $i;
+
+	if(! open(IN, "nfsstat -s |")) {
+		return undef;
+	}
+	while(<IN>) {
+		next if (/:/);		# Skip section heads
+		next if (/^\s*$/);	# Skip blank lines
+		s/^\s+//;		# Nuke leading spaces
+		if (/[a-z]+\s+[a-z]+/i) {
+			# This looks like a header line
+			@heads = split(/\s+/, $_);
+			# Pull the next line of data
+			$line = <IN>;
+			$line =~ s/^\s+//;	# Nuke leading spaces
+			$line =~ s/Server /Server_/;	# Fix multiword
+			@values = split(/\s+/, $line);
+			for ($i = 0; $i <= $#values; $i++) {
+				$val = $values[$i];
+				if ($val < 0) {
+					# Fix overflow?
+					$val += 2**31;
+				}
+				$stats->{$heads[$i]} = $val;
+			}
+		}
+	}
+	close(IN);
+	return $stats;
 }
 
 1;
