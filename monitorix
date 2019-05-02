@@ -311,6 +311,14 @@ EOF
 				}
 				next;
 			}
+			if($g eq "gensens") {
+				foreach my $sg (sort keys %{$config{gensens}->{list}}) {
+					my $name = trim($config{gensens}->{title}->{$sg});
+					$gname = "_" . $g;
+					print(OUT "              <option value='" . $gname . "'>" . $name . "</option>\n");
+				}
+				next;
+			}
 			if($g eq "ipmi") {
 				for($n = 0; $n < scalar(my @ipmi_list = split(',', $config{ipmi}->{list})); $n++) {
 					my $name = trim($ipmi_list[$n]);
