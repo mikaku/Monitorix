@@ -1,6 +1,8 @@
 3.NN.N - DD-MMM-2019
 ====================
 - Added a complete graph to support PHP-FPM statistics ('phpfpm.pm'). [#167]
+- Completely rewritten the 'gensens.pm' module which includes the battery
+  values as its third supported sensor. [#170]
 - Added a warning if a process vanished during the accouting in 'process.pm'
 - Added the ability, in the alerts of 'gensens.pm', to support a range of two
   values, separated by a dash, in the threshold. [#221]
