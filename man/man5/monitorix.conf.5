@@ -884,11 +884,11 @@ The external script will receive the following arguments:
 .P
 .RE
 .SS Generic sensors statistics (gensens.pm)
-This graph is able to monitor up to 9 temperatures and CPU frequencies which, depending of your machine, should appear in the \fI/sys/devices\fP directory.
+This graph helps to monitor up to three (so far) different sensors: temperatures, CPU frequencies and battery status which, depending of your machine, they should appear in the \fI/sys\fP directory.
 .P
 .BI list
 .RS
-This is a fixed list that can only hold two keys (0 and 1). Each key though can hold up to 9 different entries separated by comma which corresponds to the names of the sensors present in your computer. The key 0 is only for temperature sensors and the key 1 is for CPU frequencies. All this is hard-coded and a bit rigid currently but it might change in the future.
+This is a list of an unlimited number of groups to define the sensors to monitor. Each group is numbered starting from 0, and each one can hold up to 9 different entries separated by comma which corresponds to the names of the sensors present in your computer that you want to monitor. This module is capable to identify the type of the group by searching the substrings \fItemp\fP, \fIcpu\fP and \fIbat\fP, so it will put automatically the vertical label in the graph accordingly (\fICelsius\fP or \fIFahrenheit\fP, \fIHz\fP or \fICharge\fP respectively). Of course, it cannot supports mixed sensors in a same group. For example, if you need to monitor more than 9 temperature sensors just create a new group in \fBlist\fP.
 .P
 An example would be:
 .P
@@ -899,12 +899,30 @@ An example would be:
 .br
 	1 = cpu0, cpu1, cpu2, cpu3
 .br
+	2 = bat0
+.br
 </list>
+.RE
+.RE
+.BI title
+.RS
+In this option you must associate a title with the group number specified in \fBlist\fP. This is the title that will appear as the name of the graph. Following the settings in the example above:
+.P
+.RS
+<title>
+.br
+	0 = Temperatures
+.br
+	1 = CPU frequency
+.br
+	2 = Battery status
+.br
+</title>
 .RE
 .RE
 .BI desc
 .RS
-In this option you must associate the complete pathname of the file from where to get the value of each entry defined in the \fBlist\fP. Following the settings in the example above:
+In this option you must associate the complete pathname of the file from where to get the value of each entry defined in the \fBlist\fP option. Following the settings in the example above:
 .P
 .RS
 <desc>
@@ -921,12 +939,14 @@ In this option you must associate the complete pathname of the file from where t
 .br
 	cpu3 = /sys/devices/system/cpu/cpu3/cpufreq/scaling_cur_freq
 .br
+	bat0 = /sys/class/power_supply/BAT0/capacity
+.br
 </desc>
 .RE
 .RE
 .BI unit
 .RS
-With this option you can define the order of magnitude associated to a specific value. This is used in both temperatures and CPU frequencies, since this kind of temperature sensors tend to give the value in 1000ths of degrees Celsius. In the case of CPU frequencies the values come in Mhz which means that they need to be converted to Hz by multiplying them by 1000. Therefore you can define something like this:
+With this option you can define the order of magnitude associated to a specific value. This is used in both temperatures and CPU frequencies, since this kind of temperature sensors tend to give the value in 1000ths of degrees Celsius. In the case of CPU frequencies the values come in Mhz which means that they need to be converted to Hz by multiplying them by 1000. Since the battery value represents a percentage, it doesn't need any special calculation. Therefore you can define something like this:
 .P
 .RS
 <unit>
@@ -942,6 +962,8 @@ With this option you can define the order of magnitude associated to a specific 
 	cpu2 = 0.001
 .br
 	cpu3 = 0.001
+.br
+	bat0 = 1
 .br
 </unit>
 .RE
@@ -965,6 +987,8 @@ With this option you can optionally rename any of the sensor names defined in th
 .br
 	cpu3 = CPU3 frequency
 .br
+	bat0 = Battery 0
+.br
 </map>
 .RE
 .P
@@ -977,7 +1001,7 @@ This optional list enables the alert capabilities for this graph and complements
 .P
 The \fItime interval\fP is the period of time (in seconds) that the \fIthreshold\fP needs to be exceeded before the external script is executed.
 .P
-The \fIthreshold\fP is the value (either temperature or HZ) that needs to be reached or exceeded within the specified time in \fItime interval\fP to execute the external script. It can be specified as a unique value or as a range of two values separated by a dash.
+The \fIthreshold\fP is the value (temperature, Hz or battery charge) that needs to be reached or exceeded within the specified time in \fItime interval\fP to execute the external script. It can be specified as a unique value or as a range of two values separated by a dash.
 .P
 The \fIscript\fP is the full path name of the script that will be executed by this alert.
 .P
@@ -1169,7 +1193,7 @@ This optional list enables the alert capabilities for this graph and complements
 .P
 The \fItime interval\fP is the period of time (in seconds) that the \fIthreshold\fP needs to be exceeded before the external script is executed.
 .P
-The \fIthreshold\fP is the value (either temperature or HZ) that needs to be reached or exceeded within the specified time in \fItime interval\fP to execute the external script. It can be specified as a unique value or as a range of two values separated by a dash.
+The \fIthreshold\fP is the value (temperature, etc.) that needs to be reached or exceeded within the specified time in \fItime interval\fP to execute the external script. It can be specified as a unique value or as a range of two values separated by a dash.
 .P
 The \fIscript\fP is the full path name of the script that will be executed by this alert.
 .P
