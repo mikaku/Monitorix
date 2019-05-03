@@ -312,10 +312,10 @@ EOF
 				next;
 			}
 			if($g eq "gensens") {
-				foreach my $sg (sort keys %{$config{gensens}->{list}}) {
-					my $name = trim($config{gensens}->{title}->{$sg});
+				for($n = 0; $n < keys %{$config{gensens}->{list}}; $n++) {
+					my $name = trim($config{gensens}->{title}->{$n});
 					$gname = "_" . $g;
-					print(OUT "              <option value='" . $gname . "'>" . $name . "</option>\n");
+					print(OUT "              <option value='" . $gname . $n . "'>" . $name . "</option>\n");
 				}
 				next;
 			}
