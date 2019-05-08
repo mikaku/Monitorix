@@ -218,6 +218,16 @@ It will show a back arrow in the upper-left corner and it is specially useful fo
 Default value: \fIn\fP
 .RE
 .P
+.BI rrdtool_extra_options
+.RS
+This option permits create a comma-separated list of RRDtool options that will be included in all graphs. This is specially useful if you want to take advantage of an specific RRDtool graphics option.
+.P
+An example would be:
+.P
+.br
+	rrdtool_extra_options = "--grid-dash=1:0, --no-legend"
+.RE
+.P
 .BI base_dir
 .RS
 This is the absolute path to the directory where all the web elements are located:
