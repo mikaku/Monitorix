@@ -257,6 +257,7 @@ sub phpfpm_cgi {
 	my $u = "";
 	my $width;
 	my $height;
+	my @extra;
 	my @riglim;
 	my @IMG;
 	my @IMGz;
@@ -287,6 +288,9 @@ sub phpfpm_cgi {
 	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
 	my $imgfmt_uc = uc($config->{image_format});
 	my $imgfmt_lc = lc($config->{image_format});
+	foreach my $i (split(',', $config->{rrdtool_extra_options} || "")) {
+		push(@extra, trim($i)) if trim($i);
+	}
 
 	$title = !$silent ? $title : "";
 
@@ -463,6 +467,7 @@ sub phpfpm_cgi {
 			"--vertical-label=Connections/s",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -490,6 +495,7 @@ sub phpfpm_cgi {
 				"--vertical-label=Connections/s",
 				"--width=$width",
 				"--height=$height",
+				@extra,
 				@riglim,
 				$zoom,
 				@{$cgi->{version12}},
@@ -559,6 +565,7 @@ sub phpfpm_cgi {
 			"--vertical-label=Processes",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -585,6 +592,7 @@ sub phpfpm_cgi {
 				"--vertical-label=Processes",
 				"--width=$width",
 				"--height=$height",
+				@extra,
 				@riglim,
 				$zoom,
 				@{$cgi->{version12}},
@@ -652,6 +660,7 @@ sub phpfpm_cgi {
 			"--vertical-label=Listening",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -679,6 +688,7 @@ sub phpfpm_cgi {
 				"--vertical-label=Listening",
 				"--width=$width",
 				"--height=$height",
+				@extra,
 				@riglim,
 				$zoom,
 				@{$cgi->{version12}},
@@ -742,6 +752,7 @@ sub phpfpm_cgi {
 			"--vertical-label=Processes",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -785,6 +796,7 @@ sub phpfpm_cgi {
 				"--vertical-label=Processes",
 				"--width=$width",
 				"--height=$height",
+				@extra,
 				@riglim,
 				$zoom,
 				@{$cgi->{version12}},
@@ -864,6 +876,7 @@ sub phpfpm_cgi {
 			"--vertical-label=Children",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -891,6 +904,7 @@ sub phpfpm_cgi {
 				"--vertical-label=Children",
 				"--width=$width",
 				"--height=$height",
+				@extra,
 				@riglim,
 				$zoom,
 				@{$cgi->{version12}},
@@ -954,6 +968,7 @@ sub phpfpm_cgi {
 			"--vertical-label=Requests",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -981,6 +996,7 @@ sub phpfpm_cgi {
 				"--vertical-label=Requests",
 				"--width=$width",
 				"--height=$height",
+				@extra,
 				@riglim,
 				$zoom,
 				@{$cgi->{version12}},

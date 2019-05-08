@@ -448,6 +448,7 @@ sub system_cgi {
 	my $u = "";
 	my $width;
 	my $height;
+	my @extra;
 	my @riglim;
 	my @tmp;
 	my @tmpz;
@@ -461,7 +462,9 @@ sub system_cgi {
 	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
 	my $imgfmt_uc = uc($config->{image_format});
 	my $imgfmt_lc = lc($config->{image_format});
-
+	foreach my $i (split(',', $config->{rrdtool_extra_options} || "")) {
+		push(@extra, trim($i)) if trim($i);
+	}
 
 	$title = !$silent ? $title : "";
 
@@ -615,6 +618,7 @@ sub system_cgi {
 		"--vertical-label=Load average",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -638,6 +642,7 @@ sub system_cgi {
 			"--vertical-label=Load average",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -712,6 +717,7 @@ sub system_cgi {
 		"--lower-limit=0",
 		"--rigid",
 		"--base=1024",
+		@extra,
 		$zoom,
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
@@ -747,6 +753,7 @@ sub system_cgi {
 			"--lower-limit=0",
 			"--rigid",
 			"--base=1024",
+			@extra,
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
@@ -851,6 +858,7 @@ sub system_cgi {
 		"--vertical-label=Processes",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -877,6 +885,7 @@ sub system_cgi {
 			"--vertical-label=Processes",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -940,6 +949,7 @@ sub system_cgi {
 		"--vertical-label=Size",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -960,6 +970,7 @@ sub system_cgi {
 			"--vertical-label=Size",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -1017,6 +1028,7 @@ sub system_cgi {
 		"--vertical-label=Days",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -1038,6 +1050,7 @@ sub system_cgi {
 			"--vertical-label=Days",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},

@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2017 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2019 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -227,6 +227,7 @@ sub raspberrypi_cgi {
 	my $u = "";
 	my $width;
 	my $height;
+	my @extra;
 	my $temp_scale = "Celsius";
 	my @riglim;
 	my @tmp;
@@ -252,6 +253,9 @@ sub raspberrypi_cgi {
 	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
 	my $imgfmt_uc = uc($config->{image_format});
 	my $imgfmt_lc = lc($config->{image_format});
+	foreach my $i (split(',', $config->{rrdtool_extra_options} || "")) {
+		push(@extra, trim($i)) if trim($i);
+	}
 
 	$title = !$silent ? $title : "";
 
@@ -411,6 +415,7 @@ sub raspberrypi_cgi {
 		"--vertical-label=Hz",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -438,6 +443,7 @@ sub raspberrypi_cgi {
 			"--vertical-label=Hz",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -514,6 +520,7 @@ sub raspberrypi_cgi {
 		"--vertical-label=$temp_scale",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -534,6 +541,7 @@ sub raspberrypi_cgi {
 			"--vertical-label=$temp_scale",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -602,6 +610,7 @@ sub raspberrypi_cgi {
 		"--vertical-label=Volts",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -625,6 +634,7 @@ sub raspberrypi_cgi {
 			"--vertical-label=Volts",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
