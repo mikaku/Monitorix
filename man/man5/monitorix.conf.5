@@ -452,7 +452,7 @@ Default value: \fI/var/log/proftpd/access.log\fP
 .P
 .BI fail2ban_log
 .RS
-This is the path to the Fail2ban log file. Monitorix uses this file to report IP addresses banned.
+This is the path to the Fail2ban log file. Monitorix uses this file only if the option \fBgraph_mode\fP has the value \fIrate\fP.
 .P
 Default value: \fI/var/log/fail2ban.log\fP
 .RE
@@ -2641,6 +2641,13 @@ The maximum number of jails allowed for each group is 9.
 This is the number of fail2ban graphs that will be put in a row.
 .P
 Default value: \fI2\fP
+.RE
+.P
+.BI graph_mode 
+.RS
+This option changes how the values are represented in the graph. It has two possible values: \fIabsolute\fP which is the default, and \fIrate\fP. The former takes the values directly from the command \fIfail2ban-client status <JAIL>\fP and so the values in the graph will appear as absolute. The later option shows the values in a rating format per minute.
+.P
+Default value: \fIabsolute\fP
 .RE
 .SS Icecast Streaming Media Server (icecast.pm)
 This graph is able to monitor an unlimited number of Icecast servers.

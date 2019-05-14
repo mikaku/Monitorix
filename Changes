@@ -11,9 +11,13 @@
 - Added support for FreeBSD NFS Server stats. [#238]
 - Added the new option 'rrdtool_extra_options' to be able to include RRDtool
   extra options on every graph.
+  	(suggested by Greg Ogonowski, greg AT indexcom.com)
 - Changed the main loop functionality using now the select() function, instead
   of the alarm()+pause() pair. This should improve the responsiveness on high
   system loads. [#230]
+- Changed how the values in 'fail2ban.pm' are shown. Now it shows the Bans as
+  absolute values. The new option 'graph_mode' permits switching between
+  'absolute' (default) and 'rate'. [#241]
 - Fixed the copyright year in 'monitorix.cgi'.
 - Fixed in 'mail.pm to use the option 'mail_log' instead the hard coded path I
   forgot to remove when adding the Exim support.
