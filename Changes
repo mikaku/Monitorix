@@ -18,6 +18,8 @@
 - Changed how the values in 'fail2ban.pm' are shown. Now it shows the Bans as
   absolute values. The new option 'graph_mode' permits switching between
   'absolute' (default) and 'rate'. [#241]
+- Changed the way how 'ztool iostat' command get the read/write values of the
+  Operations/Bandwidth graphs. [#242]
 - Fixed the copyright year in 'monitorix.cgi'.
 - Fixed in 'mail.pm to use the option 'mail_log' instead the hard coded path I
   forgot to remove when adding the Exim support.

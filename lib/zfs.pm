@@ -267,6 +267,7 @@ sub zfs_update {
 		my $pool = (split(',', $zfs->{list}))[$n] || "";
 		if($pool) {
 			my @zpool;
+			my @data;
 
 			$free = trim(`zfs get -Hp -o value available $pool`);
 			$udata = trim(`zfs get -Hp -o value used $pool`);
@@ -282,8 +283,13 @@ sub zfs_update {
 			}
 			$cap =~ s/%//;
 			$fra =~ s/[%-]//g; $fra = $fra || 0;
-			@zpool = split(' ', `zpool iostat -Hp $pool` || "");
-			(undef, undef, undef, $oper, $opew, $banr, $banw) = @zpool;
+
+			open(IN, "zpool iostat -Hp $pool 5 2 |");
+			while(<IN>) {
+				push(@data, $_);
+			}
+			close(IN);
+			(undef, undef, undef, $oper, $opew, $banr, $banw) = split(' ', $data[1]);
 		}
 
 		$rrdata .= ":$free:$udata:$usnap:$cap:$fra:$oper:$opew:$banr:$banw:0";
