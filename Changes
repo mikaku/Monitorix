@@ -12,6 +12,8 @@
 - Added the new option 'rrdtool_extra_options' to be able to include RRDtool
   extra options on every graph.
   	(suggested by Greg Ogonowski, greg AT indexcom.com)
+- Added the new option 'subject_prefix' in 'emailreports.pm' to be able to
+  set a customized prefix in the Subject of the emails that will be sent.
 - Changed the main loop functionality using now the select() function, instead
   of the alarm()+pause() pair. This should improve the responsiveness on high
   system loads. [#230]
