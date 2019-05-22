@@ -401,9 +401,9 @@ sub fail2ban_cgi {
 			foreach my $i (split(',', $fail2ban->{desc}->{$n})) {
 				$str = sprintf("%-25s", substr(trim($i), 0, 25));
 				push(@tmp, "LINE2:j" . ($e + 1) . $LC[$e] . ":$str");
-				push(@tmp, "GPRINT:j" . ($e + 1) . ":LAST: Cur\\:%3.0lf\\g");
-				push(@tmp, "GPRINT:j" . ($e + 1) . ":AVERAGE:     Avg\\:%3.0lf\\g");
-				push(@tmp, "GPRINT:j" . ($e + 1) . ":MAX:     Max\\:%3.0lf\\n");
+				push(@tmp, "GPRINT:j" . ($e + 1) . ":LAST:Cur\\:%4.0lf\\g");
+				push(@tmp, "GPRINT:j" . ($e + 1) . ":AVERAGE:    Avg\\:%4.0lf\\g");
+				push(@tmp, "GPRINT:j" . ($e + 1) . ":MAX:    Max\\:%4.0lf\\n");
 				push(@tmpz, "LINE2:j" . ($e + 1) . $LC[$e] . ":$str");
 				$e++;
 			}
