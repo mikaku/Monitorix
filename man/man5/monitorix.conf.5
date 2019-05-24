@@ -2018,9 +2018,9 @@ Default value: \fI24000\fP
 .P
 .BI list
 .RS
-You may define here up to \fBmax\fP network port numbers. If you need to monitor the same network port with TCP and UDP protocols, you can add your own suffix to the port number (e.g: 443t and 443u) in order to distinguish it from the double definition in the <desc> block.
+You may define here up to \fBmax\fP network port numbers. If you need to monitor the same network port with TCP and UDP protocols, you can add your own suffix to the port number (e.g: 443t and 443u) in order to distinguish it from the double definition in the <desc> block. It also support port ranges (e.g: 49152:65534) to be able to monitor the traffic of a number of consecutive ports summarized on a unique graph.
 .P
-If you see a red color in the background of a network port graph, it means that there is not a daemon listening on that port. This can be useful to know if some service gone down unexpectedly.
+If you see a red color in the background of a network port graph, it means that there is not a daemon listening on that port. This can be useful to know if some service gone down unexpectedly. Of course, this is only valid on a single port, not ranged ports.
 .RE
 .P
 .BI desc
@@ -2037,24 +2037,28 @@ This is the option where each network port specified in \fBlist\fP is described.
 .br
 - the limit value.
 .br
-- the \fIL\fP optional option which specifies that this port should be listening and Monitorix will advice it, by changing the background color of the graph to red, if finds it down.
+- the \fIL\fP optional option which specifies that this port should be listening and Monitorix will advice it, by changing the background color of the graph to red, if finds it down. This option has no effect on ranged ports.
 .RE
 .P
 There is also support (Linux only) for IPv6 network ports activity by using protocol names as \fItcp6\fP or \fIudp6\fP.
 .P
 An example would be:
 .RS
-list = 25, 25ip6, 80, 53
+list = 25, 25ip6, 80, 53t, 53u, 49152:65534
 .br
 <desc>
 .br
-	25 =    SMTP, tcp,  in/out, 0, 1000, L
+	25          = SMTP, tcp,  in/out, 0, 1000, L
 .br
-	25ip6 = SMTP, tcp6, in/out, 0, 1000, L
+	25ip6       = SMTP, tcp6, in/out, 0, 1000, L
 .br
-	80 =    HTTP, tcp,  in,     0, 1000, L
+	80          = HTTP, tcp,  in,     0, 1000, L
 .br
-	53 =    DNS,  udp,  in,     0, 1000, L
+	53t         = DNS,  tcp,  in,     0, 1000, L
+.br
+	53u         = DNS,  udp,  in,     0, 1000, L
+.br
+	49152:65534 = FTP_PSV, tcp, in,   0, 1000
 .br
 </desc>
 .RE
