@@ -143,6 +143,10 @@ sub port_init {
 				logger("$myself: port number '$np' listed but not defined.");
 				next;
 			}
+			# support for port range (i.e: 49152:65534)
+			if(index($pl[$n], ":") != -1) {
+				($np) = ($pl[$n] =~ m/^(\d+:\d+).*?/);
+			}
 			if($pl[$n] && $np) {
 				my $p = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[1])) || "";
 				if(! grep {$_ eq $p} ("tcp", "udp", "tcp6", "udp6")) {
