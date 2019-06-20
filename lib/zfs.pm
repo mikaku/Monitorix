@@ -274,7 +274,10 @@ sub zfs_update {
 			$usnap = eval join('+',`zfs get -rHp -o value usedbysnapshots -tfilesystem $pool`);
 			@zpool = split(' ', `zpool list -H $pool` || "");
 
-			if(scalar(@zpool) == 10) {	# ZFS version 0.6.4+
+			if(scalar(@zpool) > 10) {	# ZFS version 0.8.0+
+				$cap = trim($zpool[7]);
+				$fra = trim($zpool[6]);
+			} elsif(scalar(@zpool) == 10) {	# ZFS version 0.6.4+
 				$cap = trim($zpool[6]);
 				$fra = trim($zpool[5]);
 			} elsif(scalar(@zpool) == 8) {	# ZFS version 0.6.3- (?)
