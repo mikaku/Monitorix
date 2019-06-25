@@ -25,7 +25,7 @@ use warnings;
 use Monitorix;
 use RRDs;
 use LWP::UserAgent;
-use XML::Simple;
+use XML::LibXML;
 use Exporter 'import';
 our @EXPORT = qw(bind_init bind_update bind_cgi);
 
@@ -305,14 +305,14 @@ sub bind_update {
 		my $ua = LWP::UserAgent->new(timeout => 30, $ssl);
 		$ua->agent($config->{user_agent_id}) if $config->{user_agent_id} || "";
 		my $response = $ua->request(HTTP::Request->new('GET', $l));
-		my $data = XMLin($response->content);
+		my $data = XML::LibXML->new->load_xml(string => $response->content);
 		my $value;
 
 		# BIND v9.9+ has different statistics layout than BIND v9.5+.
 		# we attempt first to get stats from a BIND v9.5+
-		if(!($value = $data->{bind}->{statistics}->{version})) {
+		if(!($value = $data->findnodes('/isc/bind/statistics/@version'))) {
 			# otherwise attempt it on a BIND v9.9+
-			$value = $data->{version};
+			$value = $data->findnodes('/statistics/@version');
 		}
 		my ($major, $minor) = split('\.', $value);
 		$minor =~ m/^(\d+)/;
@@ -321,12 +321,17 @@ sub bind_update {
 			logger("$myself: BIND stats version '$version' unsupported.");
 		}
 
-
 		if($major eq "2") {
-			$value = $data->{bind}->{statistics}->{server}->{requests}->{opcode}->{counter};
+			foreach my $counters ($data->findnodes('/isc/bind/statistics/server/requests/opcode')) {
+				foreach my $c ($counters) {
+					my $name = $c->findvalue('name');
+					my $counter = $c->findvalue('counter');
+					$value = $counter if $name eq "QUERY";
+				}
+			}
 		}
 		if($major eq "3") {
-			$value = $data->{server}->{counters}->[0]->{counter}->{QUERY}->{content};
+			$value = $data->findnodes('/statistics/server/counters/counter[@name="QUERY"]');
 		}
 		$str = $n . "totalinq";
 		$value = $value || 0;
@@ -335,130 +340,136 @@ sub bind_update {
 		$totalinq /= 60;
 		$config->{bind_hist}->{$str} = $value;
 
-
 		if($major eq "2") {
-			$value = $data->{bind}->{statistics}->{server}->{'queries-in'}->{rdtype};
-
-			# converts BIND's output when there is only one hit
-			if($value->{name}) {
-				my $name = $value->{name};
-				my $counter = $value->{counter};
-
-				delete($value->{name});
-				delete($value->{counter});
-				$value->{$name}->{'counter'} = $counter;
-			}
-
-			foreach(keys %{$value}) {
-				$str = $n . "inq_$_";
-				$inq{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
-				$inq{$str} = 0 unless $inq{$str} != $value->{$_}->{counter};
-				$inq{$str} /= 60;
-				$config->{bind_hist}->{$str} = $value->{$_}->{counter};
+			foreach my $counters ($data->findnodes('/isc/bind/statistics/server/queries-in/*')) {
+				foreach my $c ($counters) {
+					my $name = $c->findvalue('name');
+					my $counter = $c->findvalue('counter');
+					$str = $n . "inq_$name";
+					$inq{$str} = $counter - ($config->{bind_hist}->{$str} || 0);
+					$inq{$str} = 0 unless $inq{$str} != $counter;
+					$inq{$str} /= 60;
+					$config->{bind_hist}->{$str} = $counter;
+				}
 			}
 		}
 		if($major eq "3") {
-			$value = $data->{server}->{counters}->[1]->{counter} ;
-			foreach(keys %{$value}) {
-				$str = $n . "inq_$_";
-				$inq{$str} = $value->{$_}->{content} - ($config->{bind_hist}->{$str} || 0);
-				$inq{$str} = 0 unless $inq{$str} != $value->{$_}->{content};
-				$inq{$str} /= 60;
-				$config->{bind_hist}->{$str} = $value->{$_}->{content};
+			foreach my $counters ($data->findnodes('/statistics/server/counters[@type="qtype"]/*')) {
+				foreach my $c ($counters) {
+					my $name = $c->findvalue('@name');
+					my $counter = $c->textContent();
+					$str = $n . "inq_$name";
+					$inq{$str} = $counter - ($config->{bind_hist}->{$str} || 0);
+					$inq{$str} = 0 unless $inq{$str} != $counter;
+					$inq{$str} /= 60;
+					$config->{bind_hist}->{$str} = $counter;
+				}
 			}
 		}
 
-
-		my $views_default;
 		if($major eq "2") {
-			$views_default = $data->{bind}->{statistics}->{views}->{view}->{_default};
-			$value = $views_default->{rdtype};
-			foreach(keys %{$value}) {
-				$str = $n . "ouq_$_";
-				$ouq{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
-				$ouq{$str} = 0 unless $ouq{$str} != $value->{$_}->{counter};
-				$ouq{$str} /= 60;
-				$config->{bind_hist}->{$str} = $value->{$_}->{counter};
+			foreach my $counters ($data->findnodes('/isc/bind/statistics/views/view/rdtype')) {
+				foreach my $c ($counters) {
+					my $name = $c->findvalue('name');
+					my $counter = $c->findvalue('counter');
+					$str = $n . "ouq_$name";
+					$ouq{$str} = $counter - ($config->{bind_hist}->{$str} || 0);
+					$ouq{$str} = 0 unless $ouq{$str} != $counter;
+					$ouq{$str} /= 60;
+					$config->{bind_hist}->{$str} = $counter;
+				}
 			}
 		}
 		if($major eq "3") {
-			$views_default = $data->{views}->{view}->{_default}->{counters};
-			$value = $views_default->[0]->{counter};
-			foreach(keys %{$value}) {
-				$str = $n . "ouq_$_";
-				$ouq{$str} = $value->{$_}->{content} - ($config->{bind_hist}->{$str} || 0);
-				$ouq{$str} = 0 unless $ouq{$str} != $value->{$_}->{content};
-				$ouq{$str} /= 60;
-				$config->{bind_hist}->{$str} = $value->{$_}->{content};
+			foreach my $counters ($data->findnodes('/statistics/views/view[@name="_default"]/counters[@type="resqtype"]/*')) {
+				foreach my $c ($counters) {
+					my $name = $c->findvalue('@name');
+					my $counter = $c->textContent();
+					$str = $n . "ouq_$name";
+					$ouq{$str} = $counter - ($config->{bind_hist}->{$str} || 0);
+					$ouq{$str} = 0 unless $ouq{$str} != $counter;
+					$ouq{$str} /= 60;
+					$config->{bind_hist}->{$str} = $counter;
+				}
 			}
 		}
 
-
 		if($major eq "2") {
-			$value = $data->{bind}->{statistics}->{server}->{nsstat};
-			foreach(keys %{$value}) {
-				$str = $n . "ss_$_";
-				$ss{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
-				$ss{$str} = 0 unless $ss{$str} != $value->{$_}->{counter};
-				$ss{$str} /= 60;
-				$config->{bind_hist}->{$str} = $value->{$_}->{counter};
+			foreach my $counters ($data->findnodes('/isc/bind/statistics/server/nsstat')) {
+				foreach my $c ($counters) {
+					my $name = $c->findvalue('name');
+					my $counter = $c->findvalue('counter');
+					$str = $n . "ss_$name";
+					$ss{$str} = $counter - ($config->{bind_hist}->{$str} || 0);
+					$ss{$str} = 0 unless $ss{$str} != $counter;
+					$ss{$str} /= 60;
+					$config->{bind_hist}->{$str} = $counter;
+				}
 			}
 		}
 		if($major eq "3") {
-			$value = $data->{server}->{counters}->[2]->{counter};
-			foreach(keys %{$value}) {
-				$str = $n . "ss_$_";
-				$ss{$str} = $value->{$_}->{content} - ($config->{bind_hist}->{$str} || 0);
-				$ss{$str} = 0 unless $ss{$str} != $value->{$_}->{content};
-				$ss{$str} /= 60;
-				$config->{bind_hist}->{$str} = $value->{$_}->{content};
+			foreach my $counters ($data->findnodes('/statistics/server/counters[@type="nsstat"]/*')) {
+				foreach my $c ($counters) {
+					my $name = $c->findvalue('@name');
+					my $counter = $c->textContent();
+					$str = $n . "ss_$name";
+					$ss{$str} = $counter - ($config->{bind_hist}->{$str} || 0);
+					$ss{$str} = 0 unless $ss{$str} != $counter;
+					$ss{$str} /= 60;
+					$config->{bind_hist}->{$str} = $counter;
+				}
 			}
 		}
 
-
 		if($major eq "2") {
-			$value = $views_default->{resstat};
-			foreach(keys %{$value}) {
-				$str = $n . "rs_$_";
-				$rs{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
-				$rs{$str} = 0 unless $rs{$str} != $value->{$_}->{counter};
-				$rs{$str} /= 60;
-				$config->{bind_hist}->{$str} = $value->{$_}->{counter};
+			LOOP:
+			foreach my $counters ($data->findnodes('/isc/bind/statistics/views/view/resstat')) {
+				foreach my $c ($counters) {
+					my $name = $c->findvalue('name');
+					my $counter = $c->findvalue('counter');
+					last LOOP if $name eq "Queryv4" && defined($rs{$str});
+					$str = $n . "rs_$name";
+					$rs{$str} = $counter - ($config->{bind_hist}->{$str} || 0);
+					$rs{$str} = 0 unless $rs{$str} != $counter;
+					$rs{$str} /= 60;
+					$config->{bind_hist}->{$str} = $counter;
+				}
 			}
 		}
 		if($major eq "3") {
-			$value = $views_default->[1]->{counter};
-			foreach(keys %{$value}) {
-				$str = $n . "rs_$_";
-				$rs{$str} = $value->{$_}->{content} - ($config->{bind_hist}->{$str} || 0);
-				$rs{$str} = 0 unless $rs{$str} != $value->{$_}->{content};
-				$rs{$str} /= 60;
-				$config->{bind_hist}->{$str} = $value->{$_}->{content};
+			foreach my $counters ($data->findnodes('/statistics/views/view[@name="_default"]/counters[@type="resstats"]/*')) {
+				foreach my $c ($counters) {
+					my $name = $c->findvalue('@name');
+					my $counter = $c->textContent();
+					$str = $n . "rs_$name";
+					$rs{$str} = $counter - ($config->{bind_hist}->{$str} || 0);
+					$rs{$str} = 0 unless $rs{$str} != $counter;
+					$rs{$str} /= 60;
+					$config->{bind_hist}->{$str} = $counter;
+				}
 			}
 		}
 
-
 		if($major eq "2") {
-			$value = $views_default->{cache}->{rrset};
+			foreach my $counters ($data->findnodes('/isc/bind/statistics/views/view/cache[@name="_default"]/rrset')) {
+				foreach my $c ($counters) {
+					my $name = $c->findvalue('name');
+					my $counter = $c->findvalue('counter');
+					$str = $n . "crr_$name";
+					$crr{$str} = $counter;
+				}
+			}
 		}
 		if($major eq "3") {
-			$value = $data->{views}->{view}->{_default}->{cache}->{rrset};
+			foreach my $counters ($data->findnodes('/statistics/views/view[@name="_default"]/cache[@name="_default"]/*')) {
+				foreach my $c ($counters) {
+					my $name = $c->findvalue('name');
+					my $counter = $c->findvalue('counter');
+					$str = $n . "crr_$name";
+					$crr{$str} = $counter;
+				}
+			}
 		}
-		foreach(keys %{$value}) {
-			$str = $n . "crr_$_";
-			$crr{$str} = $value->{$_}->{counter};
-		}
-
-
-#		Socket I/O Statistics
-#		$value = $data->{bind}->{statistics}->{server}->{sockstat};
-#		foreach(keys %{$value}) {
-#			$str = $n . "sio_$_";
-#			$sio{$str} = $value->{$_}->{counter} - ($config->{bind_hist}->{$str} || 0);
-#			$sio{$str} = 0 unless $sio{$str} != $value->{$_}->{counter};
-#			$sio{$str} /= 60;
-#			$config->{bind_hist}->{$str} = $value->{$_}->{counter};
-#		}
 
 		$rrdata .= ":$totalinq";
 		my @i;
@@ -497,37 +508,51 @@ sub bind_update {
 			$rrdata .= ":";
 			$rrdata .= defined($crr{$str}) ? $crr{$str} : 0;
 		}
-#		@i = split(',', $bind->{sio_stats_list}->{$l});
-		for($n2 = 0; $n2 < 20; $n2++) {
-			my $j = "";	#trim($i[$n2]);
-			$str = $n . "sio_$j";
-			$rrdata .= ":";
-			$rrdata .= defined($sio{$str}) ? $sio{$str} : 0;
+#		@i = split(',', $bind->{sio_stats_list}->{$l});                                
+		for($n2 = 0; $n2 < 20; $n2++) {                                                
+			my $j = "";     #trim($i[$n2]);
+			$str = $n . "sio_$j";                                                  
+			$rrdata .= ":";                                                        
+			$rrdata .= defined($sio{$str}) ? $sio{$str} : 0;                       
+		}                                                                        
+
+		if($major eq "2") {
+			foreach my $counters ($data->findnodes('/isc/bind/statistics/memory/summary')) {
+				$rrdata .= ":" . $counters->findvalue('./TotalUse');
+				$rrdata .= ":" . $counters->findvalue('./InUse');
+				$rrdata .= ":" . $counters->findvalue('./BlockSize');
+				$rrdata .= ":" . $counters->findvalue('./ContextSize');
+				$rrdata .= ":" . $counters->findvalue('./Lost');
+			}
+			$rrdata .= ":0:0:0";
+		}
+		if($major eq "3") {
+			foreach my $counters ($data->findnodes('/statistics/memory/summary')) {
+				$rrdata .= ":" . $counters->findvalue('./TotalUse');
+				$rrdata .= ":" . $counters->findvalue('./InUse');
+				$rrdata .= ":" . $counters->findvalue('./BlockSize');
+				$rrdata .= ":" . $counters->findvalue('./ContextSize');
+				$rrdata .= ":" . $counters->findvalue('./Lost');
+			}
+			$rrdata .= ":0:0:0";
 		}
 
 		if($major eq "2") {
-			$value = $data->{bind}->{statistics}->{memory};
+			foreach my $counters ($data->findnodes('/isc/bind/statistics/taskmgr/thread-model')) {
+				$rrdata .= ":" . $counters->findvalue('./worker-threads');
+				$rrdata .= ":" . $counters->findvalue('./default-quantum');
+				$rrdata .= ":" . $counters->findvalue('./tasks-running');
+			}
+			$rrdata .= ":0:0:0";
 		}
 		if($major eq "3") {
-			$value = $data->{memory};
+			foreach my $counters ($data->findnodes('/statistics/taskmgr/thread-model')) {
+				$rrdata .= ":" . $counters->findvalue('./worker-threads');
+				$rrdata .= ":" . $counters->findvalue('./default-quantum');
+				$rrdata .= ":" . $counters->findvalue('./tasks-running');
+			}
+			$rrdata .= ":0:0:0";
 		}
-		$rrdata .= ":" . $value->{summary}->{TotalUse};
-		$rrdata .= ":" . $value->{summary}->{InUse};
-		$rrdata .= ":" . $value->{summary}->{BlockSize};
-		$rrdata .= ":" . $value->{summary}->{ContextSize};
-		$rrdata .= ":" . $value->{summary}->{Lost};
-		$rrdata .= ":0:0:0";
-
-		if($major eq "2") {
-			$value = $data->{bind}->{statistics}->{taskmgr};
-		}
-		if($major eq "3") {
-			$value = $data->{taskmgr};
-		}
-		$rrdata .= ":" . ($value->{'thread-model'}->{'worker-threads'} || 0);
-		$rrdata .= ":" . $value->{'thread-model'}->{'default-quantum'};
-		$rrdata .= ":" . $value->{'thread-model'}->{'tasks-running'};
-		$rrdata .= ":0:0:0";
 	}
 
 	RRDs::update($rrd, $rrdata);
