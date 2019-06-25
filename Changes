@@ -3,6 +3,8 @@
 - Added a complete graph to support PHP-FPM statistics ('phpfpm.pm'). [#167]
 - Completely rewritten the 'gensens.pm' module which includes the battery
   values as its third supported sensor. [#170]
+- Rewritten the 'bind.pm' module to use XML::LibXML instead of XML::Simple,
+  fixing a number of long standing bugs. [#181] [#244]
 - Added a warning if a process vanished during the accouting in 'process.pm'
 - Added the ability, in the alerts of 'gensens.pm', to support a range of two
   values, separated by a dash, in the threshold. [#221]
@@ -33,6 +35,7 @@
 - Fixed to make sure that a maximum of 9 values is accepted in the 'graph_0'
   and 'graph_1' options of 'squid.pm'; warn user otherwise. [#235]
 - Fixed to include support for ZFS version 0.8.1+ in 'zfs.pm'. [#245]
+- Fixed to honor the environment variable $OPTIONS during the execution.
 
 
 3.11.0 - 14-Mar-2019
