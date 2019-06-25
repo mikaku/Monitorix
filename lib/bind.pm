@@ -331,7 +331,7 @@ sub bind_update {
 			}
 		}
 		if($major eq "3") {
-			$value = $data->findnodes('/statistics/server/counters/counter[@name="QUERY"]');
+			$value = $data->findvalue('/statistics/server/counters/counter[@name="QUERY"]');
 		}
 		$str = $n . "totalinq";
 		$value = $value || 0;
