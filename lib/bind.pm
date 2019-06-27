@@ -475,42 +475,42 @@ sub bind_update {
 		my @i;
 		@i = split(',', $bind->{in_queries_list}->{$l});
 		for($n2 = 0; $n2 < 20; $n2++) {
-			my $j = trim($i[$n2]);
+			my $j = trim($i[$n2] || 0);
 			$str = $n . "inq_$j";
 			$rrdata .= ":";
 			$rrdata .= defined($inq{$str}) ? $inq{$str} : 0;
 		}
 		@i = split(',', $bind->{out_queries_list}->{$l});
 		for($n2 = 0; $n2 < 20; $n2++) {
-			my $j = trim($i[$n2]);
+			my $j = trim($i[$n2] || 0);
 			$str = $n . "ouq_$j";
 			$rrdata .= ":";
 			$rrdata .= defined($ouq{$str}) ? $ouq{$str} : 0;
 		}
 		@i = split(',', $bind->{server_stats_list}->{$l});
 		for($n2 = 0; $n2 < 20; $n2++) {
-			my $j = trim($i[$n2]);
+			my $j = trim($i[$n2] || 0);
 			$str = $n . "ss_$j";
 			$rrdata .= ":";
 			$rrdata .= defined($ss{$str}) ? $ss{$str} : 0;
 		}
 		@i = split(',', $bind->{resolver_stats_list}->{$l});
 		for($n2 = 0; $n2 < 20; $n2++) {
-			my $j = trim($i[$n2]);
+			my $j = trim($i[$n2] || 0);
 			$str = $n . "rs_$j";
 			$rrdata .= ":";
 			$rrdata .= defined($rs{$str}) ? $rs{$str} : 0;
 		}
 		@i = split(',', $bind->{cache_rrsets_list}->{$l});
 		for($n2 = 0; $n2 < 20; $n2++) {
-			my $j = trim($i[$n2]);
+			my $j = trim($i[$n2] || 0);
 			$str = $n . "crr_$j";
 			$rrdata .= ":";
 			$rrdata .= defined($crr{$str}) ? $crr{$str} : 0;
 		}
 #		@i = split(',', $bind->{sio_stats_list}->{$l});                                
 		for($n2 = 0; $n2 < 20; $n2++) {                                                
-			my $j = "";     #trim($i[$n2]);
+			my $j = "";     #trim($i[$n2] || 0);
 			$str = $n . "sio_$j";                                                  
 			$rrdata .= ":";                                                        
 			$rrdata .= defined($sio{$str}) ? $sio{$str} : 0;                       
