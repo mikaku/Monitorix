@@ -861,10 +861,12 @@ while(1) {
 				if(!$pid) {
 					my $url = "http://localhost:" . $config{httpd_builtin}->{port} . $config{base_url};
 					my $ua = LWP::UserAgent->new(timeout => 30);
-					my $response = $ua->request(HTTP::Request->new('GET', $url));
+					my $response = $ua->get($url);
 					if(!$response->is_success) {
-						logger("WARNING: HTTP built-in server not responding at '$url'.");
-						exit(1);
+						if($response->status_line ne "401 Access Denied") {
+							logger("WARNING: HTTP built-in server not responding at '$url'.");
+							exit(1);
+						}
 					}
 					exit(0);
 				}
