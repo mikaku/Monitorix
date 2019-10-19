@@ -1,6 +1,6 @@
 Monitorix
 =========
-Monitorix is a free, open source, lightweight system monitoring tool designed to monitor as many services and system resources as possible.
+Monitorix is a free, open-source, lightweight system monitoring tool designed to monitor as many services and system resources as possible.
 
 Community
 ---------
