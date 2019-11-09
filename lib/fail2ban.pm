@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2017 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2019 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -142,48 +142,70 @@ sub fail2ban_update {
 	my $str;
 	my $rrdata = "N";
 
-	if(! -r $config->{fail2ban_log}) {
-		logger("Couldn't find file '$config->{fail2ban_log}': $!");
-		return;
-	}
-
-	$seek_pos = $config->{fail2ban_hist} || 0;
-	$seek_pos = defined($seek_pos) ? int($seek_pos) : 0;
-	open(IN, $config->{fail2ban_log});
-	if(!seek(IN, 0, 2)) {
-		logger("Couldn't seek to the end of '$config->{fail2ban_log}': $!");
-		return;
-	}
-	$logsize = tell(IN);
-	if($logsize < $seek_pos) {
-		$seek_pos = 0;
-	}
-	if(!seek(IN, $seek_pos, 0)) {
-		logger("Couldn't seek to $seek_pos in '$config->{fail2ban_log}': $!");
-		return;
-	}
-	if($config->{fail2ban_hist} > 0) {	# avoids initial peak
-		my $date = strftime("%Y-%m-%d", localtime);
-		while(<IN>) {
-			if(/^$date/) {
-				my $e = 0;
-				while($e < scalar(my @fl = split(',', $fail2ban->{list}))) {
-					my $e2 = 0;
-					foreach my $i (split(',', $fail2ban->{desc}->{$e})) {
-						($str = trim($i)) =~ s/\[/\\[/;
-						$str =~ s/\]/\\]/;
-						$jails[$e][$e2] = 0 unless defined $jails[$e][$e2];
-						if(/ $str Ban /) {
-							$jails[$e][$e2]++;
+	if(lc($fail2ban->{graph_mode} || "") ne "rate") {
+		my $e = 0;
+		while($e < scalar(my @fl = split(',', $fail2ban->{list}))) {
+			my $e2 = 0;
+			foreach my $i (split(',', $fail2ban->{desc}->{$e})) {
+				($str = trim($i)) =~ s/\[//;
+				$str =~ s/\]//;
+				$jails[$e][$e2] = 0 unless defined $jails[$e][$e2];
+				if(open(IN, "fail2ban-client status $str |")) {
+					while(<IN>) {
+						if(/- Currently banned:\s+(\d+)$/) {
+							$jails[$e][$e2] = $1;
 						}
-						$e2++;
 					}
-					$e++;
+					close(IN);
+				}
+				$e2++;
+			}
+			$e++;
+		}
+	} else {
+		if(! -r $config->{fail2ban_log}) {
+			logger("Couldn't find file '$config->{fail2ban_log}': $!");
+			return;
+		}
+
+		$seek_pos = $config->{fail2ban_hist} || 0;
+		$seek_pos = defined($seek_pos) ? int($seek_pos) : 0;
+		open(IN, $config->{fail2ban_log});
+		if(!seek(IN, 0, 2)) {
+			logger("Couldn't seek to the end of '$config->{fail2ban_log}': $!");
+			return;
+		}
+		$logsize = tell(IN);
+		if($logsize < $seek_pos) {
+			$seek_pos = 0;
+		}
+		if(!seek(IN, $seek_pos, 0)) {
+			logger("Couldn't seek to $seek_pos in '$config->{fail2ban_log}': $!");
+			return;
+		}
+		if($config->{fail2ban_hist} > 0) {	# avoids initial peak
+			my $date = strftime("%Y-%m-%d", localtime);
+			while(<IN>) {
+				if(/^$date/) {
+					my $e = 0;
+					while($e < scalar(my @fl = split(',', $fail2ban->{list}))) {
+						my $e2 = 0;
+						foreach my $i (split(',', $fail2ban->{desc}->{$e})) {
+							($str = trim($i)) =~ s/\[/\\[/;
+							$str =~ s/\]/\\]/;
+							$jails[$e][$e2] = 0 unless defined $jails[$e][$e2];
+							if(/ $str Ban /) {
+								$jails[$e][$e2]++;
+							}
+							$e2++;
+						}
+						$e++;
+					}
 				}
 			}
 		}
+		close(IN);
 	}
-	close(IN);
 
 	my $e = 0;
 	while($e < scalar(my @fl = split(',', $fail2ban->{list}))) {
@@ -227,12 +249,14 @@ sub fail2ban_cgi {
 	my $u = "";
 	my $width;
 	my $height;
+	my @extra;
 	my @riglim;
 	my @IMG;
 	my @IMGz;
 	my @tmp;
 	my @tmpz;
 	my @CDEF;
+	my $vlabel = "Bans";
 	my $n;
 	my $n2;
 	my $str;
@@ -255,6 +279,12 @@ sub fail2ban_cgi {
 	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
 	my $imgfmt_uc = uc($config->{image_format});
 	my $imgfmt_lc = lc($config->{image_format});
+	foreach my $i (split(',', $config->{rrdtool_extra_options} || "")) {
+		push(@extra, trim($i)) if trim($i);
+	}
+	if(lc($fail2ban->{graph_mode} || "") eq "rate") {
+		$vlabel = "Bans/min";
+	}
 
 	$title = !$silent ? $title : "";
 
@@ -370,11 +400,10 @@ sub fail2ban_cgi {
 			my $e = 0;
 			foreach my $i (split(',', $fail2ban->{desc}->{$n})) {
 				$str = sprintf("%-25s", substr(trim($i), 0, 25));
-				push(@tmp, "LINE1:j" . ($e + 1) . $LC[$e] . ":$str");
-				push(@tmp, "GPRINT:j" . ($e + 1) . ":LAST: Cur\\:%2.0lf\\g");
-				push(@tmp, "GPRINT:j" . ($e + 1) . ":AVERAGE:   Avg\\:%2.0lf\\g");
-				push(@tmp, "GPRINT:j" . ($e + 1) . ":MIN:   Min\\:%2.0lf\\g");
-				push(@tmp, "GPRINT:j" . ($e + 1) . ":MAX:   Max\\:%2.0lf\\n");
+				push(@tmp, "LINE2:j" . ($e + 1) . $LC[$e] . ":$str");
+				push(@tmp, "GPRINT:j" . ($e + 1) . ":LAST:Cur\\:%4.0lf\\g");
+				push(@tmp, "GPRINT:j" . ($e + 1) . ":AVERAGE:    Avg\\:%4.0lf\\g");
+				push(@tmp, "GPRINT:j" . ($e + 1) . ":MAX:    Max\\:%4.0lf\\n");
 				push(@tmpz, "LINE2:j" . ($e + 1) . $LC[$e] . ":$str");
 				$e++;
 			}
@@ -393,9 +422,10 @@ sub fail2ban_cgi {
 				"--title=$str  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=$imgfmt_uc",
-				"--vertical-label=Bans/min",
+				"--vertical-label=$vlabel",
 				"--width=$width",
 				"--height=$height",
+				@extra,
 				@riglim,
 				$zoom,
 				@{$cgi->{version12}},
@@ -421,9 +451,10 @@ sub fail2ban_cgi {
 					"--title=$str  ($tf->{nwhen}$tf->{twhen})",
 					"--start=-$tf->{nwhen}$tf->{twhen}",
 					"--imgformat=$imgfmt_uc",
-					"--vertical-label=Bans/min",
+					"--vertical-label=$vlabel",
 					"--width=$width",
 					"--height=$height",
+					@extra,
 					@riglim,
 					$zoom,
 					@{$cgi->{version12}},

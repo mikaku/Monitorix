@@ -311,6 +311,14 @@ EOF
 				}
 				next;
 			}
+			if($g eq "gensens") {
+				for($n = 0; $n < keys %{$config{gensens}->{list}}; $n++) {
+					my $name = trim($config{gensens}->{title}->{$n});
+					$gname = "_" . $g;
+					print(OUT "              <option value='" . $gname . $n . "'>" . $name . "</option>\n");
+				}
+				next;
+			}
 			if($g eq "ipmi") {
 				for($n = 0; $n < scalar(my @ipmi_list = split(',', $config{ipmi}->{list})); $n++) {
 					my $name = trim($ipmi_list[$n]);
@@ -737,9 +745,8 @@ logger("Ok, ready.");
 
 # main loop
 while(1) {
-	local $SIG{'ALRM'} = sub { };
-	alarm(1);
-	pause();
+
+	select undef, undef, undef, 1.0;
 
 	my ($sec, $min, $hour, $mday, $mon, undef, $wday) = localtime(time);
 
@@ -856,8 +863,10 @@ while(1) {
 					my $ua = LWP::UserAgent->new(timeout => 30);
 					my $response = $ua->request(HTTP::Request->new('GET', $url));
 					if(!$response->is_success) {
-						logger("WARNING: HTTP built-in server not responding at '$url'.");
-						exit(1);
+						if($response->status_line ne "401 Access Denied") {
+							logger("WARNING: HTTP built-in server not responding at '$url'.");
+							exit(1);
+						}
 					}
 					exit(0);
 				}

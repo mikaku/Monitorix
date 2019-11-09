@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2017 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2019 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -267,13 +267,17 @@ sub zfs_update {
 		my $pool = (split(',', $zfs->{list}))[$n] || "";
 		if($pool) {
 			my @zpool;
+			my @data;
 
 			$free = trim(`zfs get -Hp -o value available $pool`);
 			$udata = trim(`zfs get -Hp -o value used $pool`);
 			$usnap = eval join('+',`zfs get -rHp -o value usedbysnapshots -tfilesystem $pool`);
 			@zpool = split(' ', `zpool list -H $pool` || "");
 
-			if(scalar(@zpool) == 10) {	# ZFS version 0.6.4+
+			if(scalar(@zpool) > 10) {	# ZFS version 0.8.0+
+				$cap = trim($zpool[7]);
+				$fra = trim($zpool[6]);
+			} elsif(scalar(@zpool) == 10) {	# ZFS version 0.6.4+
 				$cap = trim($zpool[6]);
 				$fra = trim($zpool[5]);
 			} elsif(scalar(@zpool) == 8) {	# ZFS version 0.6.3- (?)
@@ -282,8 +286,13 @@ sub zfs_update {
 			}
 			$cap =~ s/%//;
 			$fra =~ s/[%-]//g; $fra = $fra || 0;
-			@zpool = split(' ', `zpool iostat -Hp $pool` || "");
-			(undef, undef, undef, $oper, $opew, $banr, $banw) = @zpool;
+
+			open(IN, "zpool iostat -Hp $pool 5 2 |");
+			while(<IN>) {
+				push(@data, $_);
+			}
+			close(IN);
+			(undef, undef, undef, $oper, $opew, $banr, $banw) = split(' ', $data[1]);
 		}
 
 		$rrdata .= ":$free:$udata:$usnap:$cap:$fra:$oper:$opew:$banr:$banw:0";
@@ -320,6 +329,7 @@ sub zfs_cgi {
 	my $u = "";
 	my $width;
 	my $height;
+	my @extra;
 	my @riglim;
 	my @IMG;
 	my @IMGz;
@@ -337,6 +347,9 @@ sub zfs_cgi {
 	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
 	my $imgfmt_uc = uc($config->{image_format});
 	my $imgfmt_lc = lc($config->{image_format});
+	foreach my $i (split(',', $config->{rrdtool_extra_options} || "")) {
+		push(@extra, trim($i)) if trim($i);
+	}
 
 	$title = !$silent ? $title : "";
 
@@ -511,6 +524,7 @@ sub zfs_cgi {
 		"--vertical-label=bytes",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -537,6 +551,7 @@ sub zfs_cgi {
 			"--vertical-label=bytes",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -611,6 +626,7 @@ sub zfs_cgi {
 		"--vertical-label=Reads/s",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -633,6 +649,7 @@ sub zfs_cgi {
 			"--vertical-label=Reads/s",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -697,6 +714,7 @@ sub zfs_cgi {
 		"--vertical-label=Reads/s",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -718,6 +736,7 @@ sub zfs_cgi {
 			"--vertical-label=Reads/s",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -794,6 +813,7 @@ sub zfs_cgi {
 		"--vertical-label=bytes",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -816,6 +836,7 @@ sub zfs_cgi {
 			"--vertical-label=bytes",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -881,6 +902,7 @@ sub zfs_cgi {
 		"--vertical-label=Percent (%)",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -902,6 +924,7 @@ sub zfs_cgi {
 			"--vertical-label=Percent (%)",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -970,6 +993,7 @@ sub zfs_cgi {
 		"--vertical-label=Number",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -992,6 +1016,7 @@ sub zfs_cgi {
 			"--vertical-label=Number",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -1057,6 +1082,7 @@ sub zfs_cgi {
 		"--vertical-label=bytes",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -1081,6 +1107,7 @@ sub zfs_cgi {
 			"--vertical-label=bytes",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},

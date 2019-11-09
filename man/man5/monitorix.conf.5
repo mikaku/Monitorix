@@ -155,6 +155,13 @@ This is the format of each generated graph. There are only two possible values:
 Default value: \fIPNG\fP
 .RE
 .P
+.BI enable_parallelizing
+.RS
+This option will fork an independent process for each graph in order to speed up graph generation in multi-core systems. It's best to keep it disabled on unicore processors.
+.P
+Default value: \fIy\fP
+.RE
+.P
 .BI include_dir
 .RS
 The main configuration file is usually called \fImonitorix.conf\fP and its location is provided as part of the command line arguments. In addition, other configuration files may be loaded placing them in the directory pointed by this option. The names must end with .conf to be included.
@@ -216,6 +223,16 @@ This option enables or disables the ability to go back to the main page from the
 It will show a back arrow in the upper-left corner and it is specially useful for people using the browser in full-screen mode.
 .P
 Default value: \fIn\fP
+.RE
+.P
+.BI rrdtool_extra_options
+.RS
+This option permits create a comma-separated list of RRDtool options that will be included in all graphs. This is specially useful if you want to take advantage of an specific RRDtool graphics option.
+.P
+An example would be:
+.P
+.br
+	rrdtool_extra_options = "--grid-dash=1:0, --no-legend"
 .RE
 .P
 .BI base_dir
@@ -442,7 +459,7 @@ Default value: \fI/var/log/proftpd/access.log\fP
 .P
 .BI fail2ban_log
 .RS
-This is the path to the Fail2ban log file. Monitorix uses this file to report IP addresses banned.
+This is the path to the Fail2ban log file. Monitorix uses this file only if the option \fBgraph_mode\fP has the value \fIrate\fP.
 .P
 Default value: \fI/var/log/fail2ban.log\fP
 .RE
@@ -884,11 +901,11 @@ The external script will receive the following arguments:
 .P
 .RE
 .SS Generic sensors statistics (gensens.pm)
-This graph is able to monitor up to 9 temperatures and CPU frequencies which, depending of your machine, should appear in the \fI/sys/devices\fP directory.
+This graph helps to monitor up to three (so far) different sensors: temperatures, CPU frequencies and battery status which, depending of your machine, they should appear in the \fI/sys\fP directory.
 .P
 .BI list
 .RS
-This is a fixed list that can only hold two keys (0 and 1). Each key though can hold up to 9 different entries separated by comma which corresponds to the names of the sensors present in your computer. The key 0 is only for temperature sensors and the key 1 is for CPU frequencies. All this is hard-coded and a bit rigid currently but it might change in the future.
+This is a list of an unlimited number of groups to define the sensors to monitor. Each group is numbered starting from 0, and each one can hold up to 9 different entries separated by comma which corresponds to the names of the sensors present in your computer that you want to monitor. This module is capable to identify the type of the group by searching the substrings \fItemp\fP, \fIcpu\fP and \fIbat\fP, so it will put automatically the vertical label in the graph accordingly (\fICelsius\fP or \fIFahrenheit\fP, \fIHz\fP or \fICharge\fP respectively). Of course, it cannot supports mixed sensors in a same group. For example, if you need to monitor more than 9 temperature sensors just create a new group in \fBlist\fP.
 .P
 An example would be:
 .P
@@ -899,12 +916,30 @@ An example would be:
 .br
 	1 = cpu0, cpu1, cpu2, cpu3
 .br
+	2 = bat0
+.br
 </list>
+.RE
+.RE
+.BI title
+.RS
+In this option you must associate a title with the group number specified in \fBlist\fP. This is the title that will appear as the name of the graph. Following the settings in the example above:
+.P
+.RS
+<title>
+.br
+	0 = Temperatures
+.br
+	1 = CPU frequency
+.br
+	2 = Battery status
+.br
+</title>
 .RE
 .RE
 .BI desc
 .RS
-In this option you must associate the complete pathname of the file from where to get the value of each entry defined in the \fBlist\fP. Following the settings in the example above:
+In this option you must associate the complete pathname of the file from where to get the value of each entry defined in the \fBlist\fP option. Following the settings in the example above:
 .P
 .RS
 <desc>
@@ -921,12 +956,14 @@ In this option you must associate the complete pathname of the file from where t
 .br
 	cpu3 = /sys/devices/system/cpu/cpu3/cpufreq/scaling_cur_freq
 .br
+	bat0 = /sys/class/power_supply/BAT0/capacity
+.br
 </desc>
 .RE
 .RE
 .BI unit
 .RS
-With this option you can define the order of magnitude associated to a specific value. This is used in both temperatures and CPU frequencies, since this kind of temperature sensors tend to give the value in 1000ths of degrees Celsius. In the case of CPU frequencies the values come in Mhz which means that they need to be converted to Hz by multiplying them by 1000. Therefore you can define something like this:
+With this option you can define the order of magnitude associated to a specific value. This is used in both temperatures and CPU frequencies, since this kind of temperature sensors tend to give the value in 1000ths of degrees Celsius. In the case of CPU frequencies the values come in Mhz which means that they need to be converted to Hz by multiplying them by 1000. Since the battery value represents a percentage, it doesn't need any special calculation. Therefore you can define something like this:
 .P
 .RS
 <unit>
@@ -942,6 +979,8 @@ With this option you can define the order of magnitude associated to a specific 
 	cpu2 = 0.001
 .br
 	cpu3 = 0.001
+.br
+	bat0 = 1
 .br
 </unit>
 .RE
@@ -965,6 +1004,8 @@ With this option you can optionally rename any of the sensor names defined in th
 .br
 	cpu3 = CPU3 frequency
 .br
+	bat0 = Battery 0
+.br
 </map>
 .RE
 .P
@@ -977,7 +1018,7 @@ This optional list enables the alert capabilities for this graph and complements
 .P
 The \fItime interval\fP is the period of time (in seconds) that the \fIthreshold\fP needs to be exceeded before the external script is executed.
 .P
-The \fIthreshold\fP is the value (either temperature or HZ) that needs to be reached or exceeded within the specified time in \fItime interval\fP to execute the external script. It can be specified as a unique value or as a range of two values separated by a dash.
+The \fIthreshold\fP is the value (temperature, Hz or battery charge) that needs to be reached or exceeded within the specified time in \fItime interval\fP to execute the external script. It can be specified as a unique value or as a range of two values separated by a dash.
 .P
 The \fIscript\fP is the full path name of the script that will be executed by this alert.
 .P
@@ -1169,7 +1210,7 @@ This optional list enables the alert capabilities for this graph and complements
 .P
 The \fItime interval\fP is the period of time (in seconds) that the \fIthreshold\fP needs to be exceeded before the external script is executed.
 .P
-The \fIthreshold\fP is the value (either temperature or HZ) that needs to be reached or exceeded within the specified time in \fItime interval\fP to execute the external script. It can be specified as a unique value or as a range of two values separated by a dash.
+The \fIthreshold\fP is the value (temperature, etc.) that needs to be reached or exceeded within the specified time in \fItime interval\fP to execute the external script. It can be specified as a unique value or as a range of two values separated by a dash.
 .P
 The \fIscript\fP is the full path name of the script that will be executed by this alert.
 .P
@@ -1984,9 +2025,9 @@ Default value: \fI24000\fP
 .P
 .BI list
 .RS
-You may define here up to \fBmax\fP network port numbers. If you need to monitor the same network port with TCP and UDP protocols, you can add your own suffix to the port number (e.g: 443t and 443u) in order to distinguish it from the double definition in the <desc> block.
+You may define here up to \fBmax\fP network port numbers. If you need to monitor the same network port with TCP and UDP protocols, you can add your own suffix to the port number (e.g: 443t and 443u) in order to distinguish it from the double definition in the <desc> block. It also support port ranges (e.g: 49152:65534) to be able to monitor the traffic of a number of consecutive ports summarized on a unique graph.
 .P
-If you see a red color in the background of a network port graph, it means that there is not a daemon listening on that port. This can be useful to know if some service gone down unexpectedly.
+If you see a red color in the background of a network port graph, it means that there is not a daemon listening on that port. This can be useful to know if some service gone down unexpectedly. Of course, this is only valid on a single port, not ranged ports.
 .RE
 .P
 .BI desc
@@ -2003,24 +2044,28 @@ This is the option where each network port specified in \fBlist\fP is described.
 .br
 - the limit value.
 .br
-- the \fIL\fP optional option which specifies that this port should be listening and Monitorix will advice it, by changing the background color of the graph to red, if finds it down.
+- the \fIL\fP optional option which specifies that this port should be listening and Monitorix will advice it, by changing the background color of the graph to red, if finds it down. This option has no effect on ranged ports.
 .RE
 .P
 There is also support (Linux only) for IPv6 network ports activity by using protocol names as \fItcp6\fP or \fIudp6\fP.
 .P
 An example would be:
 .RS
-list = 25, 25ip6, 80, 53
+list = 25, 25ip6, 80, 53t, 53u, 49152:65534
 .br
 <desc>
 .br
-	25 =    SMTP, tcp,  in/out, 0, 1000, L
+	25          = SMTP, tcp,  in/out, 0, 1000, L
 .br
-	25ip6 = SMTP, tcp6, in/out, 0, 1000, L
+	25ip6       = SMTP, tcp6, in/out, 0, 1000, L
 .br
-	80 =    HTTP, tcp,  in,     0, 1000, L
+	80          = HTTP, tcp,  in,     0, 1000, L
 .br
-	53 =    DNS,  udp,  in,     0, 1000, L
+	53t         = DNS,  tcp,  in,     0, 1000, L
+.br
+	53u         = DNS,  udp,  in,     0, 1000, L
+.br
+	49152:65534 = FTP_PSV, tcp, in,   0, 1000
 .br
 </desc>
 .RE
@@ -2608,6 +2653,13 @@ This is the number of fail2ban graphs that will be put in a row.
 .P
 Default value: \fI2\fP
 .RE
+.P
+.BI graph_mode 
+.RS
+This option changes how the values are represented in the graph. It has two possible values: \fIabsolute\fP which is the default, and \fIrate\fP. The former takes the values directly from the command \fIfail2ban-client status <JAIL>\fP and so the values in the graph will appear as absolute. The later option shows the values in a rating format per minute.
+.P
+Default value: \fIabsolute\fP
+.RE
 .SS Icecast Streaming Media Server (icecast.pm)
 This graph is able to monitor an unlimited number of Icecast servers.
 .P
@@ -3074,6 +3126,13 @@ Default value:
 This is the address that will be used as remitent for all the monthly report emails.
 .P
 Default value: \fInoreply@example.com\fP
+.RE
+.P
+.BI subject_prefix
+.RS
+This is a string that will be prefixed in the Subject of all emails that will be sent.
+.P
+Default value: \fIMonitorix:\fP
 .RE
 .P
 .BI hour

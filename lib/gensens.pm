@@ -35,6 +35,7 @@ sub gensens_init {
 	my $gensens = $config->{gensens};
 
 	my $info;
+	my @ds;
 	my @rra;
 	my @tmp;
 	my $n;
@@ -47,11 +48,20 @@ sub gensens_init {
 	if(-e $rrd) {
 		$info = RRDs::info($rrd);
 		for my $key (keys %$info) {
+			if(index($key, 'ds[') == 0) {
+				if(index($key, '.type') != -1) {
+					push(@ds, substr($key, 3, index($key, ']') - 3));
+				}
+			}
 			if(index($key, 'rra[') == 0) {
 				if(index($key, '.rows') != -1) {
 					push(@rra, substr($key, 4, index($key, ']') - 4));
 				}
 			}
+		}
+		if(scalar(@ds) / 9 != keys %{$gensens->{list}}) {
+			logger("$myself: Detected size mismatch between 'list' (" . keys(%{$gensens->{list}}) . ") and $rrd (" . scalar(@ds) / 9 . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
+			rename($rrd, "$rrd.bak");
 		}
 		if(scalar(@rra) < 12 + (4 * $config->{max_historic_years})) {
 			logger("$myself: Detected size mismatch between 'max_historic_years' (" . $config->{max_historic_years} . ") and $rrd (" . ((scalar(@rra) -12) / 4) . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
@@ -67,27 +77,21 @@ sub gensens_init {
 			push(@max, "RRA:MAX:0.5:1440:" . (365 * $n));
 			push(@last, "RRA:LAST:0.5:1440:" . (365 * $n));
 		}
+		for($n = 0; $n < keys %{$gensens->{list}}; $n++) {
+			push(@tmp, "DS:gensens" . $n . "_s1:GAUGE:120:0:U");
+			push(@tmp, "DS:gensens" . $n . "_s2:GAUGE:120:0:U");
+			push(@tmp, "DS:gensens" . $n . "_s3:GAUGE:120:0:U");
+			push(@tmp, "DS:gensens" . $n . "_s4:GAUGE:120:0:U");
+			push(@tmp, "DS:gensens" . $n . "_s5:GAUGE:120:0:U");
+			push(@tmp, "DS:gensens" . $n . "_s6:GAUGE:120:0:U");
+			push(@tmp, "DS:gensens" . $n . "_s7:GAUGE:120:0:U");
+			push(@tmp, "DS:gensens" . $n . "_s8:GAUGE:120:0:U");
+			push(@tmp, "DS:gensens" . $n . "_s9:GAUGE:120:0:U")
+		}
 		eval {
 			RRDs::create($rrd,
 				"--step=60",
-				"DS:gensens0_s1:GAUGE:120:U:U",
-				"DS:gensens0_s2:GAUGE:120:U:U",
-				"DS:gensens0_s3:GAUGE:120:U:U",
-				"DS:gensens0_s4:GAUGE:120:U:U",
-				"DS:gensens0_s5:GAUGE:120:U:U",
-				"DS:gensens0_s6:GAUGE:120:U:U",
-				"DS:gensens0_s7:GAUGE:120:U:U",
-				"DS:gensens0_s8:GAUGE:120:U:U",
-				"DS:gensens0_s9:GAUGE:120:U:U",
-				"DS:gensens1_s1:GAUGE:120:U:U",
-				"DS:gensens1_s2:GAUGE:120:U:U",
-				"DS:gensens1_s3:GAUGE:120:U:U",
-				"DS:gensens1_s4:GAUGE:120:U:U",
-				"DS:gensens1_s5:GAUGE:120:U:U",
-				"DS:gensens1_s6:GAUGE:120:U:U",
-				"DS:gensens1_s7:GAUGE:120:U:U",
-				"DS:gensens1_s8:GAUGE:120:U:U",
-				"DS:gensens1_s9:GAUGE:120:U:U",
+				@tmp,
 				"RRA:AVERAGE:0.5:1:1440",
 				"RRA:AVERAGE:0.5:30:336",
 				"RRA:AVERAGE:0.5:60:744",
@@ -269,6 +273,7 @@ sub gensens_cgi {
 	my $u = "";
 	my $width;
 	my $height;
+	my @extra;
 	my @riglim;
 	my $temp_scale = "Celsius";
 	my @IMG;
@@ -298,6 +303,9 @@ sub gensens_cgi {
 	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
 	my $imgfmt_uc = uc($config->{image_format});
 	my $imgfmt_lc = lc($config->{image_format});
+	foreach my $i (split(',', $config->{rrdtool_extra_options} || "")) {
+		push(@extra, trim($i)) if trim($i);
+	}
 
 	$title = !$silent ? $title : "";
 
@@ -324,20 +332,19 @@ sub gensens_cgi {
 		my $line3;
 		push(@output, "    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
 		push(@output, "    ");
-		for($n = 0; $n < 2; $n++) {
+		foreach my $sg (sort keys %{$gensens->{list}}) {
 			$line1 = "";
-			foreach my $i (split(',', $gensens->{list}->{$n})) {
+			foreach my $i (split(',', $gensens->{list}->{$sg})) {
 				$i = trim($i);
 				$str = $i;
-				$str = sprintf("%10s", substr($str, 0, 10));
-				$line1 .= "           ";
-				$line2 .= sprintf(" %10s", $str);
-				$line3 .= "-----------";
+				$str = sprintf("%12s", substr($str, 0, 10));
+				$line1 .= "             ";
+				$line2 .= sprintf(" %12s", $str);
+				$line3 .= "-------------";
 			}
 			if($line1) {
 				my $i = length($line1);
-				$str = "_gensens" . ($n + 1);
-				push(@output, sprintf(sprintf("%${i}s", sprintf("%s", trim($config->{graphs}->{$str})))));
+				push(@output, substr(sprintf("%${i}s", sprintf("%s", trim($gensens->{title}->{$sg}))), 0, 13));
 			}
 		}
 		push(@output, "\n");
@@ -347,22 +354,22 @@ sub gensens_cgi {
 		my @row;
 		my $time;
 		my $n2;
-		my $n3;
 		my $from;
 		my $to;
 		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
 			$line = @$data[$n];
 			$time = $time - (1 / $tf->{ts});
 			push(@output, sprintf(" %2d$tf->{tc} ", $time));
-			for($n2 = 0; $n2 < 2; $n2++) {
-				$n3 = 0;
-				foreach my $i (split(',', $gensens->{list}->{$n2})) {
-					$from = $n2 * 9 + $n3++;
+			foreach my $sg (sort keys %{$gensens->{list}}) {
+				$n2 = 0;
+				foreach my $i (split(',', $gensens->{list}->{$sg})) {
+					$from = $sg * 9 + $n2++;
 					$to = $from + 1;
 					my ($j) = @$line[$from..$to];
-					@row = ($j);
-					push(@output, sprintf("%10d ", @row));
+					@row = ($j || 0);
+					push(@output, sprintf("%12d ", @row));
 				}
+				$n2++;
 			}
 			push(@output, "\n");
 		}
@@ -399,235 +406,161 @@ sub gensens_cgi {
 		}
 	}
 
-	my (@ls, $max, @sg);
-
-	$max = max(scalar(@sg = split(',', $gensens->{list}->{0}), @sg = split(',', $gensens->{list}->{1})));
-
-	# Temperatures
-	if($title) {
-		push(@output, main::graph_header($title, 2));
-		push(@output, "    <tr>\n");
-	}
-
-	@riglim = @{setup_riglim($rigid[0], $limit[0])};
-	undef(@tmp);
-	undef(@tmpz);
-	undef(@CDEF);
-	@ls = split(',', $gensens->{list}->{0});
-	for($n = 0; $n < 9; $n++) {
-		my $str = trim($ls[$n] || "");
-		if($str) {
-			$str = $gensens->{map}->{$str} ? $gensens->{map}->{$str} : $str;
-			$str = sprintf("%-20s", substr($str, 0, 20));
-			push(@tmp, "LINE2:gsen" . $n . $LC[$n] . ":$str");
-			push(@tmp, "GPRINT:gsen" . $n . ":LAST: Cur\\:%5.1lf%s");
-			push(@tmp, "GPRINT:gsen" . $n . ":MIN: Min\\:%5.1lf%s");
-			push(@tmp, "GPRINT:gsen" . $n . ":MAX: Max\\:%5.1lf%s\\n");
-			push(@tmpz, "LINE2:gsen" . $n . $LC[$n] . ":$str");
-			next;
+	my @linpad =(0);
+	my $e = 0;
+	foreach my $sg (sort keys %{$gensens->{list}}) {
+		my @ls = split(',', $gensens->{list}->{$sg});
+		$linpad[$e] = scalar(@ls);
+		if($e && $e % 2) {
+			$linpad[$e] = max($linpad[$e - 1], $linpad[$e]);
+			$linpad[$e - 1] = $linpad[$e];
 		}
-		last;
+		$e++;
 	}
-	while($n < $max) {
-		push(@tmp, "COMMENT: \\n");
-		$n++;
-	}
-	if($title) {
-		push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
-	}
-	if(lc($config->{show_gaps}) eq "y") {
-		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
-		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
-		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
-	}
-	($width, $height) = split('x', $config->{graph_size}->{medium});
-	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[0]",
-		"--title=$config->{graphs}->{_gensens1}  ($tf->{nwhen}$tf->{twhen})",
-		"--start=-$tf->{nwhen}$tf->{twhen}",
-		"--imgformat=$imgfmt_uc",
-		"--vertical-label=$temp_scale",
-		"--width=$width",
-		"--height=$height",
-		@riglim,
-		$zoom,
-		@{$cgi->{version12}},
-		@{$cgi->{version12_small}},
-		@{$colors->{graph_colors}},
-		"DEF:gsen0=$rrd:gensens0_s1:AVERAGE",
-		"DEF:gsen1=$rrd:gensens0_s2:AVERAGE",
-		"DEF:gsen2=$rrd:gensens0_s3:AVERAGE",
-		"DEF:gsen3=$rrd:gensens0_s4:AVERAGE",
-		"DEF:gsen4=$rrd:gensens0_s5:AVERAGE",
-		"DEF:gsen5=$rrd:gensens0_s6:AVERAGE",
-		"DEF:gsen6=$rrd:gensens0_s7:AVERAGE",
-		"DEF:gsen7=$rrd:gensens0_s8:AVERAGE",
-		"DEF:gsen8=$rrd:gensens0_s9:AVERAGE",
-		"CDEF:allvalues=gsen0,gsen1,gsen2,gsen3,gsen4,gsen5,gsen6,gsen7,gsen8,+,+,+,+,+,+,+,+",
-		@CDEF,
-		@tmp);
-	$err = RRDs::error;
-	push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[0]: $err\n") if $err;
-	if(lc($config->{enable_zoom}) eq "y") {
-		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[0]",
-			"--title=$config->{graphs}->{_gensens1}  ($tf->{nwhen}$tf->{twhen})",
+
+	my $vlabel;
+	$e = 0;
+	foreach my $sg (sort keys %{$gensens->{list}}) {
+		my @ls = split(',', $gensens->{list}->{$sg});
+
+		# determine if we are dealing with a 'temp', 'cpu' or 'bat' graph
+		if(index($ls[0], "temp") == 0) {
+			$vlabel = $temp_scale;
+		} elsif(index($ls[0], "cpu") == 0) {
+			$vlabel = "Hz";
+		} elsif(index($ls[0], "bat") == 0) {
+			$vlabel = "Charge";
+		} else {
+			# not supported yet
+		}
+
+		if(!$e) {
+			if($title) {
+				push(@output, main::graph_header($title, 2));
+				push(@output, "    <tr>\n");
+			}
+		}
+
+		@riglim = @{setup_riglim($rigid[$e], $limit[$e])};
+		undef(@tmp);
+		undef(@tmpz);
+		undef(@CDEF);
+		for($n = 0; $n < 9; $n++) {
+			my $str = trim($ls[$n] || "");
+			if($str) {
+				$str = $gensens->{map}->{$str} ? $gensens->{map}->{$str} : $str;
+				$str = sprintf("%-20s", substr($str, 0, 20));
+				push(@tmp, "LINE2:gsen" . $n . $LC[$n] . ":$str");
+				push(@tmp, "GPRINT:gsen" . $n . ":LAST: Cur\\:%5.1lf%s");
+				push(@tmp, "GPRINT:gsen" . $n . ":MIN: Min\\:%5.1lf%s");
+				push(@tmp, "GPRINT:gsen" . $n . ":MAX: Max\\:%5.1lf%s\\n");
+				push(@tmpz, "LINE2:gsen" . $n . $LC[$n] . ":$str");
+				next;
+			}
+			last;
+		}
+		while($n < $linpad[$e]) {
+			push(@tmp, "COMMENT: \\n");
+			$n++;
+		}
+
+		if($title) {
+			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
+		($width, $height) = split('x', $config->{graph_size}->{medium});
+		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e]",
+			"--title=$gensens->{title}->{$sg}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=$imgfmt_uc",
-			"--vertical-label=$temp_scale",
+			"--vertical-label=$vlabel",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
-			"DEF:gsen0=$rrd:gensens0_s1:AVERAGE",
-			"DEF:gsen1=$rrd:gensens0_s2:AVERAGE",
-			"DEF:gsen2=$rrd:gensens0_s3:AVERAGE",
-			"DEF:gsen3=$rrd:gensens0_s4:AVERAGE",
-			"DEF:gsen4=$rrd:gensens0_s5:AVERAGE",
-			"DEF:gsen5=$rrd:gensens0_s6:AVERAGE",
-			"DEF:gsen6=$rrd:gensens0_s7:AVERAGE",
-			"DEF:gsen7=$rrd:gensens0_s8:AVERAGE",
-			"DEF:gsen8=$rrd:gensens0_s9:AVERAGE",
+			"DEF:gsen0=$rrd:gensens" . $e . "_s1:AVERAGE",
+			"DEF:gsen1=$rrd:gensens" . $e . "_s2:AVERAGE",
+			"DEF:gsen2=$rrd:gensens" . $e . "_s3:AVERAGE",
+			"DEF:gsen3=$rrd:gensens" . $e . "_s4:AVERAGE",
+			"DEF:gsen4=$rrd:gensens" . $e . "_s5:AVERAGE",
+			"DEF:gsen5=$rrd:gensens" . $e . "_s6:AVERAGE",
+			"DEF:gsen6=$rrd:gensens" . $e . "_s7:AVERAGE",
+			"DEF:gsen7=$rrd:gensens" . $e . "_s8:AVERAGE",
+			"DEF:gsen8=$rrd:gensens" . $e . "_s9:AVERAGE",
 			"CDEF:allvalues=gsen0,gsen1,gsen2,gsen3,gsen4,gsen5,gsen6,gsen7,gsen8,+,+,+,+,+,+,+,+",
 			@CDEF,
-			@tmpz);
+			@tmp);
 		$err = RRDs::error;
-		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[0]: $err\n") if $err;
-	}
-	if($title || ($silent =~ /imagetag/ && $graph =~ /gensens0/)) {
+		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$e]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
-			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[0] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[0] . "' border='0'></a>\n");
-			} else {
-				if($version eq "new") {
-					$picz_width = $picz->{image_width} * $config->{global_zoom};
-					$picz_height = $picz->{image_height} * $config->{global_zoom};
+			($width, $height) = split('x', $config->{graph_size}->{zoom});
+			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e]",
+				"--title=$gensens->{title}->{$sg}  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=$imgfmt_uc",
+				"--vertical-label=$vlabel",
+				"--width=$width",
+				"--height=$height",
+				@extra,
+				@riglim,
+				$zoom,
+				@{$cgi->{version12}},
+				@{$cgi->{version12_small}},
+				@{$colors->{graph_colors}},
+				"DEF:gsen0=$rrd:gensens" . $e . "_s1:AVERAGE",
+				"DEF:gsen1=$rrd:gensens" . $e . "_s2:AVERAGE",
+				"DEF:gsen2=$rrd:gensens" . $e . "_s3:AVERAGE",
+				"DEF:gsen3=$rrd:gensens" . $e . "_s4:AVERAGE",
+				"DEF:gsen4=$rrd:gensens" . $e . "_s5:AVERAGE",
+				"DEF:gsen5=$rrd:gensens" . $e . "_s6:AVERAGE",
+				"DEF:gsen6=$rrd:gensens" . $e . "_s7:AVERAGE",
+				"DEF:gsen7=$rrd:gensens" . $e . "_s8:AVERAGE",
+				"DEF:gsen8=$rrd:gensens" . $e . "_s9:AVERAGE",
+				"CDEF:allvalues=gsen0,gsen1,gsen2,gsen3,gsen4,gsen5,gsen6,gsen7,gsen8,+,+,+,+,+,+,+,+",
+				@CDEF,
+				@tmpz);
+			$err = RRDs::error;
+			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[$e]: $err\n") if $err;
+		}
+		if($title || ($silent =~ /imagetag/ && $graph =~ /gensens0/)) {
+			if(lc($config->{enable_zoom}) eq "y") {
+				if(lc($config->{disable_javascript_void}) eq "y") {
+					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e] . "' border='0'></a>\n");
 				} else {
-					$picz_width = $width + 115;
-					$picz_height = $height + 100;
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e] . "' border='0'></a>\n");
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[0] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[0] . "' border='0'></a>\n");
-			}
-		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[0] . "'>\n");
-		}
-	}
-
-	if($title) {
-		push(@output, "    </td>\n");
-	}
-
-	# CPU frequency
-	@riglim = @{setup_riglim($rigid[1], $limit[1])};
-	undef(@tmp);
-	undef(@tmpz);
-	undef(@CDEF);
-	@ls = split(',', $gensens->{list}->{1});
-	for($n = 0; $n < 9; $n++) {
-		my $str = trim($ls[$n] || "");
-		if($str) {
-			$str = $gensens->{map}->{$str} ? $gensens->{map}->{$str} : $str;
-			$str = sprintf("%-20s", substr($str, 0, 20));
-			push(@tmp, "LINE2:gsen" . $n . $LC[$n] . ":$str");
-			push(@tmp, "GPRINT:gsen" . $n . ":LAST: Cur\\:%4.1lf%shz");
-			push(@tmp, "GPRINT:gsen" . $n . ":MIN: Min\\:%4.1lf%shz");
-			push(@tmp, "GPRINT:gsen" . $n . ":MAX: Max\\:%4.1lf%shz\\n");
-			push(@tmpz, "LINE2:gsen" . $n . $LC[$n] . ":$str");
-			next;
-		}
-		last;
-	}
-	while($n < $max) {
-		push(@tmp, "COMMENT: \\n");
-		$n++;
-	}
-	if($title) {
-		push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
-	}
-	if(lc($config->{show_gaps}) eq "y") {
-		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
-		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
-		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
-	}
-	($width, $height) = split('x', $config->{graph_size}->{medium});
-	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[1]",
-		"--title=$config->{graphs}->{_gensens2}  ($tf->{nwhen}$tf->{twhen})",
-		"--start=-$tf->{nwhen}$tf->{twhen}",
-		"--imgformat=$imgfmt_uc",
-		"--vertical-label=Hz",
-		"--width=$width",
-		"--height=$height",
-		@riglim,
-		$zoom,
-		@{$cgi->{version12}},
-		@{$cgi->{version12_small}},
-		@{$colors->{graph_colors}},
-		"DEF:gsen0=$rrd:gensens1_s1:AVERAGE",
-		"DEF:gsen1=$rrd:gensens1_s2:AVERAGE",
-		"DEF:gsen2=$rrd:gensens1_s3:AVERAGE",
-		"DEF:gsen3=$rrd:gensens1_s4:AVERAGE",
-		"DEF:gsen4=$rrd:gensens1_s5:AVERAGE",
-		"DEF:gsen5=$rrd:gensens1_s6:AVERAGE",
-		"DEF:gsen6=$rrd:gensens1_s7:AVERAGE",
-		"DEF:gsen7=$rrd:gensens1_s8:AVERAGE",
-		"DEF:gsen8=$rrd:gensens1_s9:AVERAGE",
-		"CDEF:allvalues=gsen0,gsen1,gsen2,gsen3,gsen4,gsen5,gsen6,gsen7,gsen8,+,+,+,+,+,+,+,+",
-		@CDEF,
-		@tmp);
-	$err = RRDs::error;
-	push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[1]: $err\n") if $err;
-	if(lc($config->{enable_zoom}) eq "y") {
-		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[1]",
-			"--title=$config->{graphs}->{_gensens2}  ($tf->{nwhen}$tf->{twhen})",
-			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=$imgfmt_uc",
-			"--vertical-label=Hz",
-			"--width=$width",
-			"--height=$height",
-			@riglim,
-			$zoom,
-			@{$cgi->{version12}},
-			@{$cgi->{version12_small}},
-			@{$colors->{graph_colors}},
-			"DEF:gsen0=$rrd:gensens1_s1:AVERAGE",
-			"DEF:gsen1=$rrd:gensens1_s2:AVERAGE",
-			"DEF:gsen2=$rrd:gensens1_s3:AVERAGE",
-			"DEF:gsen3=$rrd:gensens1_s4:AVERAGE",
-			"DEF:gsen4=$rrd:gensens1_s5:AVERAGE",
-			"DEF:gsen5=$rrd:gensens1_s6:AVERAGE",
-			"DEF:gsen6=$rrd:gensens1_s7:AVERAGE",
-			"DEF:gsen7=$rrd:gensens1_s8:AVERAGE",
-			"DEF:gsen8=$rrd:gensens1_s9:AVERAGE",
-			"CDEF:allvalues=gsen0,gsen1,gsen2,gsen3,gsen4,gsen5,gsen6,gsen7,gsen8,+,+,+,+,+,+,+,+",
-			@CDEF,
-			@tmpz);
-		$err = RRDs::error;
-		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[1]: $err\n") if $err;
-	}
-	if($title || ($silent =~ /imagetag/ && $graph =~ /gensens1/)) {
-		if(lc($config->{enable_zoom}) eq "y") {
-			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[1] . "' border='0'></a>\n");
 			} else {
-				if($version eq "new") {
-					$picz_width = $picz->{image_width} * $config->{global_zoom};
-					$picz_height = $picz->{image_height} * $config->{global_zoom};
-				} else {
-					$picz_width = $width + 115;
-					$picz_height = $height + 100;
-				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[1] . "' border='0'></a>\n");
+				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e] . "'>\n");
 			}
-		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[1] . "'>\n");
+		}
+
+		if($title) {
+			push(@output, "    </td>\n");
+		}
+
+		$e++;
+		if(!($e % 2)) {
+			push(@output, "    </tr>\n");
+			push(@output, "    <tr>\n");
 		}
 	}
 
 	if($title) {
-		push(@output, "    </td>\n");
 		push(@output, "    </tr>\n");
 		push(@output, main::graph_footer());
 	}

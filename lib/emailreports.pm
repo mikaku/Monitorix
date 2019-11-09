@@ -38,6 +38,7 @@ sub emailreports_send {
 	my $imgs_dir = $config->{imgs_dir};
 	my $images;
 	my $mime;
+	my $subject;
 	
 	logger("$myself: sending $report reports.");
 
@@ -175,6 +176,8 @@ EOF
 
 	$html .= $html_footer;
 
+	$subject = $emailreports->{subject_prefix} || "Monitorix:";
+
 	# create the multipart container and add attachments
 	foreach (split(',', $emailreports->{$report}->{to})) {
 		my $to = trim($_);
@@ -182,7 +185,7 @@ EOF
 		my $msg = new MIME::Lite(
 			From		=> $emailreports->{from_address},
 			To		=> $to,
-			Subject		=> "Monitorix: '$report' Report",
+			Subject		=> "$subject '$report' Report",
 			Type		=> "multipart/related",
 			Organization	=> "Monitorix",
 		);

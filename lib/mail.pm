@@ -733,6 +733,7 @@ sub mail_cgi {
 	my $u = "";
 	my $width;
 	my $height;
+	my @extra;
 	my @riglim;
 	my $T = "B";
 	my $vlabel = "bytes/s";
@@ -752,6 +753,9 @@ sub mail_cgi {
 	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
 	my $imgfmt_uc = uc($config->{image_format});
 	my $imgfmt_lc = lc($config->{image_format});
+	foreach my $i (split(',', $config->{rrdtool_extra_options} || "")) {
+		push(@extra, trim($i)) if trim($i);
+	}
 
 	$title = !$silent ? $title : "";
 
@@ -1082,6 +1086,7 @@ sub mail_cgi {
 		"--vertical-label=$rate_label",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -1117,6 +1122,7 @@ sub mail_cgi {
 			"--vertical-label=$rate_label",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -1213,6 +1219,7 @@ sub mail_cgi {
 		"--vertical-label=$vlabel",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -1237,6 +1244,7 @@ sub mail_cgi {
 			"--vertical-label=$vlabel",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -1304,6 +1312,7 @@ sub mail_cgi {
 		"--vertical-label=Messages",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -1324,6 +1333,7 @@ sub mail_cgi {
 			"--vertical-label=Messages",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -1385,6 +1395,7 @@ sub mail_cgi {
 		"--vertical-label=bytes",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -1406,6 +1417,7 @@ sub mail_cgi {
 			"--vertical-label=bytes",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -1474,6 +1486,7 @@ sub mail_cgi {
 		"--vertical-label=Messages",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -1497,6 +1510,7 @@ sub mail_cgi {
 			"--vertical-label=Messages",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
@@ -1585,6 +1599,7 @@ sub mail_cgi {
 		"--vertical-label=$rate_label",
 		"--width=$width",
 		"--height=$height",
+		@extra,
 		@riglim,
 		$zoom,
 		@{$cgi->{version12}},
@@ -1608,6 +1623,7 @@ sub mail_cgi {
 			"--vertical-label=$rate_label",
 			"--width=$width",
 			"--height=$height",
+			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},

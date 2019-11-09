@@ -1,12 +1,30 @@
 3.NN.N - DD-MMM-2019
 ====================
 - Added a complete graph to support PHP-FPM statistics ('phpfpm.pm'). [#167]
+- Completely rewritten the 'gensens.pm' module which includes the battery
+  values as its third supported sensor. [#170]
+- Rewritten the 'bind.pm' module to use XML::LibXML instead of XML::Simple,
+  fixing a number of long standing bugs. [#181] [#244]
 - Added a warning if a process vanished during the accouting in 'process.pm'
 - Added the ability, in the alerts of 'gensens.pm', to support a range of two
   values, separated by a dash, in the threshold. [#221]
 - Added the ability, in the alerts of 'ambsens.pm', to support a range of two
   values, separated by a dash, in the threshold. [#221]
 - Added support for FreeBSD NFS Server stats. [#238]
+- Added the new option 'rrdtool_extra_options' to be able to include RRDtool
+  extra options on every graph.
+  	(suggested by Greg Ogonowski, greg AT indexcom.com)
+- Added the new option 'subject_prefix' in 'emailreports.pm' to be able to
+  set a customized prefix in the Subject of the emails that will be sent.
+- Added the ability to support port ranges in 'port.pm'. [#172]
+- Changed the main loop functionality using now the select() function, instead
+  of the alarm()+pause() pair. This should improve the responsiveness on high
+  system loads. [#230]
+- Changed how the values in 'fail2ban.pm' are shown. Now it shows the Bans as
+  absolute values. The new option 'graph_mode' permits switching between
+  'absolute' (default) and 'rate'. [#241]
+- Changed the way how 'ztool iostat' command get the read/write values of the
+  Operations/Bandwidth graphs. [#242]
 - Fixed the copyright year in 'monitorix.cgi'.
 - Fixed in 'mail.pm to use the option 'mail_log' instead the hard coded path I
   forgot to remove when adding the Exim support.
@@ -16,6 +34,10 @@
 - Fixed to ensure that the 'L' option in port.pm is optional.
 - Fixed to make sure that a maximum of 9 values is accepted in the 'graph_0'
   and 'graph_1' options of 'squid.pm'; warn user otherwise. [#235]
+- Fixed to include support for ZFS version 0.8.1+ in 'zfs.pm'. [#245]
+- Fixed to honor the environment variable $OPTIONS during the execution.
+- Fixed to not auto-restart the built-in HTTP server if it returned the message
+  "401 Access Denied" which happens when Basic Authentication is enabled. [#249]
 
 
 3.11.0 - 14-Mar-2019
