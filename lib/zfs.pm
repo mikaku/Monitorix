@@ -248,6 +248,79 @@ sub zfs_update {
 			}
 		}
 		close(IN);
+	} elsif(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
+		# On BSD we get this data from sysctl instead of /proc
+		my $zstat = {};
+		open(SYS, "/sbin/sysctl -q kstat.zfs |");
+		while(<SYS>) {
+			my $var;
+			my $val;
+			chomp;
+			if (m/^([^:]+):\s+(\d+)$/) {
+				($var,$val) = ($1,$2);
+				$zstat->{$var} = $val;
+			}
+		}
+		close(SYS);
+
+		if (defined $zstat->{"kstat.zfs.misc.arcstats.size"}) {
+			$arcsize = $zstat->{"kstat.zfs.misc.arcstats.size"};
+		}
+		if (defined $zstat->{"kstat.zfs.misc.arcstats.c_max"}) {
+			$cmax = $zstat->{"kstat.zfs.misc.arcstats.c_max"};
+		}
+		if (defined $zstat->{"kstat.zfs.misc.arcstats.c_min"}) {
+			$cmin = $zstat->{"kstat.zfs.misc.arcstats.c_min"};
+		}
+		if (defined $zstat->{"kstat.zfs.misc.arcstats.c"}) {
+			$arctgtsize = $zstat->{"kstat.zfs.misc.arcstats.c"};
+		}
+		if (defined $zstat->{"kstat.zfs.misc.arcstats.arc_meta_limit"}) {
+			$metalimit = $zstat->{"kstat.zfs.misc.arcstats.arc_meta_limit"};
+		}
+		if (defined $zstat->{"kstat.zfs.misc.arcstats.arc_meta_used"}) {
+			$metaused = $zstat->{"kstat.zfs.misc.arcstats.arc_meta_used"};
+		}
+		if (defined $zstat->{"kstat.zfs.misc.arcstats.arc_meta_max"}) {
+			$metamax = $zstat->{"kstat.zfs.misc.arcstats.arc_meta_max"};
+		}
+
+		my $tmp;
+		if (defined $zstat->{"kstat.zfs.misc.arcstats.hits"}) {
+			$tmp = $zstat->{"kstat.zfs.misc.arcstats.hits"};
+			$archits = $tmp - ($config->{zfs_hist}->{archits} || 0);
+			$archits = 0 unless $archits != $tmp;
+			$archits /= 60;
+			$config->{zfs_hist}->{archits} = $tmp;
+		}
+		if (defined $zstat->{"kstat.zfs.misc.arcstats.misses"}) {
+			$tmp = $zstat->{"kstat.zfs.misc.arcstats.misses"};
+			$arcmisses = $tmp - ($config->{zfs_hist}->{arcmisses} || 0);
+			$arcmisses = 0 unless $arcmisses != $tmp;
+			$arcmisses /= 60;
+			$config->{zfs_hist}->{arcmisses} = $tmp;
+		}
+		if (defined $zstat->{"kstat.zfs.misc.arcstats.deleted"}) {
+			$tmp = $zstat->{"kstat.zfs.misc.arcstats.deleted"};
+			$arcdeleted = $tmp - ($config->{zfs_hist}->{arcdeleted} || 0);
+			$arcdeleted = 0 unless $arcdeleted != $tmp;
+			$arcdeleted /= 60;
+			$config->{zfs_hist}->{arcdeleted} = $tmp;
+		}
+		if (defined $zstat->{"kstat.zfs.misc.arcstats.l2_hits"}) {
+			$tmp = $zstat->{"kstat.zfs.misc.arcstats.l2_hits"};
+			$l2arc_hits = $tmp - ($config->{zfs_hist}->{l2arc_hits} || 0);
+			$l2arc_hits = 0 unless $l2arc_hits != $tmp;
+			$l2arc_hits /= 60;
+			$config->{zfs_hist}->{l2arc_hits} = $tmp;
+		}
+		if (defined $zstat->{"kstat.zfs.misc.arcstats.l2_misses"}) {
+			$tmp = $zstat->{"kstat.zfs.misc.arcstats.l2_misses"};
+			$l2arc_misses = $tmp - ($config->{zfs_hist}->{l2arc_misses} || 0);
+			$l2arc_misses = 0 unless $l2arc_misses != $tmp;
+			$l2arc_misses /= 60;
+			$config->{zfs_hist}->{l2arc_misses} = $tmp;
+		}
 	}
 
 	$rrdata .= ":$arcsize:$cmax:$cmin:$arctgtsize:$metalimit:$metaused:$metamax:$archits:$arcmisses:$arcdeleted:$l2arc_hits:$l2arc_misses:0:0:0:0:0:0:0:0:0:0";
@@ -256,6 +329,8 @@ sub zfs_update {
 		my $free = 0;
 		my $udata = 0;
 		my $usnap = 0;
+		my $usnapcmd = '';
+		my $iostatcmd = '';
 		my $cap = 0;
 		my $fra = 0;
 		my $oper = 0;
@@ -269,9 +344,19 @@ sub zfs_update {
 			my @zpool;
 			my @data;
 
+			if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
+				# BSD does not have -tfilesystem for zfs get, so grep out nonsense lines
+				$usnapcmd = "zfs get -rHp -o value usedbysnapshots $pool | grep -v ^-";
+				# BSD zfs iostat does not have -p or -H
+				$iostatcmd = "zpool iostat $pool 5 2";
+			} else {
+				$usnapcmd = "zfs get -rHp -o value usedbysnapshots -tfilesystem $pool";
+				$iostatcmd = "zpool iostat -Hp $pool 5 2";
+			}
+
 			$free = trim(`zfs get -Hp -o value available $pool`);
 			$udata = trim(`zfs get -Hp -o value used $pool`);
-			$usnap = eval join('+',`zfs get -rHp -o value usedbysnapshots -tfilesystem $pool`);
+			$usnap = eval join('+',`$usnapcmd`);
 			@zpool = split(' ', `zpool list -H $pool` || "");
 
 			if(scalar(@zpool) > 10) {	# ZFS version 0.8.0+
@@ -287,12 +372,17 @@ sub zfs_update {
 			$cap =~ s/%//;
 			$fra =~ s/[%-]//g; $fra = $fra || 0;
 
-			open(IN, "zpool iostat -Hp $pool 5 2 |");
+			open(IN, "$iostatcmd |");
 			while(<IN>) {
 				push(@data, $_);
 			}
 			close(IN);
-			(undef, undef, undef, $oper, $opew, $banr, $banw) = split(' ', $data[1]);
+			(undef, undef, undef, $oper, $opew, $banr, $banw) = split(' ', pop @data);
+
+			if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
+				# lack of -p means we need to fix these values
+				($oper, $opew, $banr, $banw) = &zfs_uglify_numbers("$oper", "$opew", "$banr", "$banw");
+			}
 		}
 
 		$rrdata .= ":$free:$udata:$usnap:$cap:$fra:$oper:$opew:$banr:$banw:0";
@@ -1158,4 +1248,41 @@ sub zfs_cgi {
 	return @output;
 }
 
+# Turn readable numbers back into integers, like 1M -> 1048576
+sub zfs_uglify_numbers {
+	my (@numbers) = @_;     
+				
+	my $mult = 1;
+	my $numstr = '';
+	my $num = 0;
+	my $unit = '';
+	my $ignore = '';
+	my @answers = ();
+	 
+	foreach $numstr (@numbers) {
+		($num, $ignore ,$unit) = ($numstr =~ m/(\d+(\.\d+)?)([BKMGTPEZ]?)/i);
+		$unit = uc($unit);
+		if ($unit eq 'B') {
+			$mult = 1024**0;
+		} elsif ($unit eq 'K') {
+			$mult = 1024**1;
+		} elsif ($unit eq 'M') {
+			$mult = 1024**2;
+		} elsif ($unit eq 'G') {
+			$mult = 1024**3;
+		} elsif ($unit eq 'T') {
+			$mult = 1024**4;
+		} elsif ($unit eq 'P') {
+			$mult = 1024**5;
+		} elsif ($unit eq 'E') {
+			$mult = 1024**6;
+		} elsif ($unit eq 'Z') {
+			$mult = 1024**7;
+		} else {
+			$mult = 1024**0;
+		}
+		push(@answers, int($num * $mult));
+	}
+	return @answers;
+}
 1;
