@@ -38,6 +38,7 @@
 - Fixed to honor the environment variable $OPTIONS during the execution.
 - Fixed to not auto-restart the built-in HTTP server if it returned the message
   "401 Access Denied" which happens when Basic Authentication is enabled. [#249]
+- Fixed regexp to include support for newer versions of libvirtd. [#260]
 
 
 3.11.0 - 14-Mar-2019
