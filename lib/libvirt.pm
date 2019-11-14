@@ -246,7 +246,7 @@ sub libvirt_update {
 					$vn = trim($vn);
 					if(open(IN, "$libvirt->{cmd} domiflist $vm |")) {
 						while(<IN>) {
-							if(/^(\S+)\s+.*?\s+$vn$/) {
+							if(/^\s*(\S+)\s+.*?\s+$vn$/) {
 								$vnet = $1;
 							}
 						}
