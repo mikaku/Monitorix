@@ -2023,6 +2023,15 @@ This is the rule number that Monitorix will use when using the \fIipfw\fP comman
 Default value: \fI24000\fP
 .RE
 .P
+.BI use_external_firewall
+.RS
+By default, Monitorix creates a set of iptables rules to collect the amount of network activity that generates each port defined. This might be a problem for people using an external firewall that could eventually remove such iptables rules created by Monitorix. In these cases, you may want to set this option as \fIy\fP to tell Monitorix to not create such iptables rules, but expect that they will be already created by an external software.
+.P
+Keep in mind that the rule names created in your Firewall must coincide with the names that Monitorix expect to find for each network port. Familiarize yourself with the iptables rules created automatically by Monitorix before enabling this option.
+.P
+Default value: \fIn\fP
+.RE
+.P
 .BI list
 .RS
 You may define here up to \fBmax\fP network port numbers. If you need to monitor the same network port with TCP and UDP protocols, you can add your own suffix to the port number (e.g: 443t and 443u) in order to distinguish it from the double definition in the <desc> block. It also support port ranges (e.g: 49152:65534) to be able to monitor the traffic of a number of consecutive ports summarized on a unique graph.

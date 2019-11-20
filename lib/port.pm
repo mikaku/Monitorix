@@ -129,52 +129,59 @@ sub port_init {
 		logger("$myself: WARNING: 'max' option indicates less ports than really defined in 'list'.");
 	}
 
-	if($config->{os} eq "Linux") {
-		my $num;
-		my @line;
+	# initialize to 'n' (default) the option 'use_external_firewall'
+	if(!$port->{use_external_firewall}) {
+		$port->{use_external_firewall} = "n";
+	}
 
-		# set the iptables rules for each defined port
-		my @pl = split(',', $port->{list});
-		for($n = 0; $n < min($port->{max}, scalar(@pl)); $n++) {
-			$pl[$n] = trim($pl[$n]);
-			my ($np) = ($pl[$n] =~ m/^(\d+).*?/);
+	if(lc($port->{use_external_firewall} || "") eq "n") {
+		if($config->{os} eq "Linux") {
+			my $num;
+			my @line;
 
-			if(!$port->{desc}->{$pl[$n]}) {
-				logger("$myself: port number '$np' listed but not defined.");
-				next;
-			}
-			# support for port range (i.e: 49152:65534)
-			if(index($pl[$n], ":") != -1) {
-				($np) = ($pl[$n] =~ m/^(\d+:\d+).*?/);
-			}
-			if($pl[$n] && $np) {
-				my $p = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[1])) || "";
-				if(! grep {$_ eq $p} ("tcp", "udp", "tcp6", "udp6")) {
-					logger("$myself: Invalid protocol name '$p' in port '$pl[$n]'.");
+			# set the iptables rules for each defined port
+			my @pl = split(',', $port->{list});
+			for($n = 0; $n < min($port->{max}, scalar(@pl)); $n++) {
+				$pl[$n] = trim($pl[$n]);
+				my ($np) = ($pl[$n] =~ m/^(\d+).*?/);
+
+				if(!$port->{desc}->{$pl[$n]}) {
+					logger("$myself: port number '$np' listed but not defined.");
 					next;
 				}
-				$cmd = "iptables" . $config->{iptables_wait_lock};
-				if(grep {$_ eq $p} ("tcp6", "udp6")) {
-					if(lc($config->{ipv6_disabled} || "") eq "y") {
-						logger("$myself: IPv6 is explicitly disabled, you shouldn't want to monitor 'tcp6' or 'udp6' protocols.");
+				# support for port range (i.e: 49152:65534)
+				if(index($pl[$n], ":") != -1) {
+					($np) = ($pl[$n] =~ m/^(\d+:\d+).*?/);
+				}
+				if($pl[$n] && $np) {
+					my $p = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[1])) || "";
+					if(! grep {$_ eq $p} ("tcp", "udp", "tcp6", "udp6")) {
+						logger("$myself: Invalid protocol name '$p' in port '$pl[$n]'.");
 						next;
 					}
-					$cmd = "ip6tables" . $config->{iptables_wait_lock};
-					$p =~ s/6//;
-				}
-				my $conn = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[2]));
-				if($conn eq "in" || $conn eq "in/out") {
-					system("$cmd -t $table -N monitorix_IN_$n 2>/dev/null");
-					system("$cmd -t $table -I INPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
-					system("$cmd -t $table -I OUTPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
-				}
-				if($conn eq "out" || $conn eq "in/out") {
-					system("$cmd -t $table -N monitorix_OUT_$n 2>/dev/null");
-					system("$cmd -t $table -I INPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
-					system("$cmd -t $table -I OUTPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
-				}
-				if($conn ne "in" && $conn ne "out" && $conn ne "in/out") {
-					logger("$myself: Invalid connection type '$conn'; must be 'in', 'out' or 'in/out'.");
+					$cmd = "iptables" . $config->{iptables_wait_lock};
+					if(grep {$_ eq $p} ("tcp6", "udp6")) {
+						if(lc($config->{ipv6_disabled} || "") eq "y") {
+							logger("$myself: IPv6 is explicitly disabled, you shouldn't want to monitor 'tcp6' or 'udp6' protocols.");
+							next;
+						}
+						$cmd = "ip6tables" . $config->{iptables_wait_lock};
+						$p =~ s/6//;
+					}
+					my $conn = trim(lc((split(',', $port->{desc}->{$pl[$n]}))[2]));
+					if($conn eq "in" || $conn eq "in/out") {
+						system("$cmd -t $table -N monitorix_IN_$n 2>/dev/null");
+						system("$cmd -t $table -I INPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
+						system("$cmd -t $table -I OUTPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_IN_$n -c 0 0");
+					}
+					if($conn eq "out" || $conn eq "in/out") {
+						system("$cmd -t $table -N monitorix_OUT_$n 2>/dev/null");
+						system("$cmd -t $table -I INPUT -p $p --sport $np --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
+						system("$cmd -t $table -I OUTPUT -p $p --sport 1024:65535 --dport $np -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_OUT_$n -c 0 0");
+					}
+					if($conn ne "in" && $conn ne "out" && $conn ne "in/out") {
+						logger("$myself: Invalid connection type '$conn'; must be 'in', 'out' or 'in/out'.");
+					}
 				}
 			}
 		}
