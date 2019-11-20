@@ -129,11 +129,6 @@ sub port_init {
 		logger("$myself: WARNING: 'max' option indicates less ports than really defined in 'list'.");
 	}
 
-	# initialize to 'n' (default) the option 'use_external_firewall'
-	if(!$port->{use_external_firewall}) {
-		$port->{use_external_firewall} = "n";
-	}
-
 	if(lc($port->{use_external_firewall} || "") eq "n") {
 		if($config->{os} eq "Linux") {
 			my $num;
