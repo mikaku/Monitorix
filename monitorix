@@ -671,8 +671,8 @@ if(!$config{multihost}->{default_option_when_all}) {
 	logger("WARNING: the 'default_option_when_all' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
 	$config{multihost}->{default_option_when_all} = "System load";
 }
-if(!$config{port}->{use_external_firewall}) {	# initialize to 'n' by default
-	$config{port}->{use_external_firewall} = "n";
+if(!$config{use_external_firewall}) {
+	$config{use_external_firewall} = "n";
 }
 
 # make sure that there aren't residual Monitorix iptables rules

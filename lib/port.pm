@@ -129,7 +129,7 @@ sub port_init {
 		logger("$myself: WARNING: 'max' option indicates less ports than really defined in 'list'.");
 	}
 
-	if(lc($port->{use_external_firewall} || "") eq "n") {
+	if(lc($config->{use_external_firewall} || "") eq "n") {
 		if($config->{os} eq "Linux") {
 			my $num;
 			my @line;

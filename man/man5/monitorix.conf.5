@@ -235,6 +235,15 @@ An example would be:
 	rrdtool_extra_options = "--grid-dash=1:0, --no-legend"
 .RE
 .P
+.BI use_external_firewall
+.RS
+By default, Monitorix creates a set of iptables rules to collect the amount of network activity that some graphs (\fIport.pm\fP and \fInginx.pm\fP) need. This might be a problem for people using an external firewall that could eventually remove such iptables rules created by Monitorix. In these cases, you may want to set this option as \fIy\fP to tell Monitorix to not create such iptables rules, but expect that they will be already created by an external software.
+.P
+Keep in mind that the rule names created in your firewall must coincide with the names that Monitorix expects to find for each case. Familiarize yourself with the iptables rules created automatically by Monitorix before enabling this option.
+.P
+Default value: \fIn\fP
+.RE
+.P
 .BI base_dir
 .RS
 This is the absolute path to the directory where all the web elements are located:
@@ -2021,15 +2030,6 @@ Default value: \fI9\fP
 This is the rule number that Monitorix will use when using the \fIipfw\fP command to manage network port activity on *BSD systems. Change it if you think it might conflict with any other rule number.
 .P
 Default value: \fI24000\fP
-.RE
-.P
-.BI use_external_firewall
-.RS
-By default, Monitorix creates a set of iptables rules to collect the amount of network activity that generates each port defined. This might be a problem for people using an external firewall that could eventually remove such iptables rules created by Monitorix. In these cases, you may want to set this option as \fIy\fP to tell Monitorix to not create such iptables rules, but expect that they will be already created by an external software.
-.P
-Keep in mind that the rule names created in your Firewall must coincide with the names that Monitorix expect to find for each network port. Familiarize yourself with the iptables rules created automatically by Monitorix before enabling this option.
-.P
-Default value: \fIn\fP
 .RE
 .P
 .BI list
