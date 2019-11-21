@@ -334,15 +334,11 @@ sub flush_accounting_rules {
 				my @rules;
 				while(<IN>) {
 					my ($rule, undef, undef, $name) = split(' ', $_);
-					if(lc($config->{port}->{use_external_firewall} || "") eq "n") {
-						if($name =~ /monitorix_IN/ || /monitorix_OUT/) {
+					if(lc($config->{use_external_firewall} || "") eq "n") {
+						if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
 							push(@rules, $rule);
 							push(@names, $name);
 						}
-					}
-					if($name =~ /monitorix_nginx_IN/) {
-						push(@rules, $rule);
-						push(@names, $name);
 					}
 				}
 				close(IN);
@@ -356,13 +352,10 @@ sub flush_accounting_rules {
 				my @rules;
 				while(<IN>) {
 					my ($rule, undef, undef, $name) = split(' ', $_);
-					if(lc($config->{port}->{use_external_firewall} || "") eq "n") {
-						if($name =~ /monitorix_IN/ || /monitorix_OUT/) {
+					if(lc($config->{use_external_firewall} || "") eq "n") {
+						if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
 							push(@rules, $rule);
 						}
-					}
-					if($name =~ /monitorix_nginx_IN/) {
-						push(@rules, $rule);
 					}
 				}
 				close(IN);
@@ -383,15 +376,11 @@ sub flush_accounting_rules {
 					my @rules;
 					while(<IN>) {
 						my ($rule, undef, undef, $name) = split(' ', $_);
-						if(lc($config->{port}->{use_external_firewall} || "") eq "n") {
-							if($name =~ /monitorix_IN/ || /monitorix_OUT/) {
+						if(lc($config->{use_external_firewall} || "") eq "n") {
+							if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
 								push(@rules, $rule);
 								push(@names, $name);
 							}
-						}
-						if($name =~ /monitorix_nginx_IN/) {
-							push(@rules, $rule);
-							push(@names, $name);
 						}
 					}
 					close(IN);
@@ -405,13 +394,10 @@ sub flush_accounting_rules {
 					my @rules;
 					while(<IN>) {
 						my ($rule, undef, undef, $name) = split(' ', $_);
-						if(lc($config->{port}->{use_external_firewall} || "") eq "n") {
-							if($name =~ /monitorix_IN/ || /monitorix_OUT/) {
+						if(lc($config->{use_external_firewall} || "") eq "n") {
+							if($name =~ /monitorix_IN/ || /monitorix_OUT/ || /monitorix_nginx_IN/) {
 								push(@rules, $rule);
 							}
-						}
-						if($name =~ /monitorix_nginx_IN/) {
-							push(@rules, $rule);
 						}
 					}
 					close(IN);

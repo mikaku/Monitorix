@@ -115,15 +115,17 @@ sub nginx_init {
 		return 0;
 	}
 
-	if($config->{os} eq "Linux") {
-		system("iptables -t $table -N monitorix_nginx_IN 2>/dev/null");
-		system("iptables -t $table -I INPUT -p tcp --sport 1024:65535 --dport $nginx->{port} -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_nginx_IN -c 0 0");
-		system("iptables -t $table -I OUTPUT -p tcp --sport $nginx->{port} --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_nginx_IN -c 0 0");
-	}
-	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
-		system("ipfw delete $nginx->{rule} 2>/dev/null");
-		system("ipfw -q add $nginx->{rule} count tcp from me $nginx->{port} to any");
-		system("ipfw -q add $nginx->{rule} count tcp from any to me $nginx->{port}");
+	if(lc($config->{use_external_firewall} || "") eq "n") {
+		if($config->{os} eq "Linux") {
+			system("iptables -t $table -N monitorix_nginx_IN 2>/dev/null");
+			system("iptables -t $table -I INPUT -p tcp --sport 1024:65535 --dport $nginx->{port} -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j monitorix_nginx_IN -c 0 0");
+			system("iptables -t $table -I OUTPUT -p tcp --sport $nginx->{port} --dport 1024:65535 -m conntrack --ctstate ESTABLISHED,RELATED -j monitorix_nginx_IN -c 0 0");
+		}
+		if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
+			system("ipfw delete $nginx->{rule} 2>/dev/null");
+			system("ipfw -q add $nginx->{rule} count tcp from me $nginx->{port} to any");
+			system("ipfw -q add $nginx->{rule} count tcp from any to me $nginx->{port}");
+		}
 	}
 
 	$config->{nginx_hist} = ();
