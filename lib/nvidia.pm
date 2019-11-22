@@ -342,9 +342,9 @@ sub nvidia_cgi {
 			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
+			"--resolution=$tf->{res}",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"AVERAGE",
-			"-r $tf->{res}");
+			"AVERAGE");
 		$err = RRDs::error;
 		push(@output, "ERROR: while fetching $rrd: $err\n") if $err;
 		my $line1;
