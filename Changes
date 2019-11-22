@@ -17,6 +17,8 @@
 - Added the new option 'subject_prefix' in 'emailreports.pm' to be able to
   set a customized prefix in the Subject of the emails that will be sent.
 - Added the ability to support port ranges in 'port.pm'. [#172]
+- Added the new global option 'use_external_firewall' to disable the creation
+  of the iptables rules in 'port.pm' and 'nginx.pm'. [#262]
 - Changed the main loop functionality using now the select() function, instead
   of the alarm()+pause() pair. This should improve the responsiveness on high
   system loads. [#230]
@@ -39,6 +41,8 @@
 - Fixed to not auto-restart the built-in HTTP server if it returned the message
   "401 Access Denied" which happens when Basic Authentication is enabled. [#249]
 - Fixed regexp to include support for newer versions of libvirtd. [#260]
+- Fixed to use '--resolution' instead of its synonym '-r' to avoid problems with
+  newer versions of RRDtool. [#263]
 
 
 3.11.0 - 14-Mar-2019
