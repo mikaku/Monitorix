@@ -1,6 +1,7 @@
 3.NN.N - DD-MMM-2019
 ====================
 - Added a complete graph to support PHP-FPM statistics ('phpfpm.pm'). [#167]
+- Added a complete graph to support Unbound statistics ('unbound.pm'). [#176]
 - Completely rewritten the 'gensens.pm' module which includes the battery
   values as its third supported sensor. [#170]
 - Rewritten the 'bind.pm' module to use XML::LibXML instead of XML::Simple,
@@ -19,6 +20,8 @@
 - Added the ability to support port ranges in 'port.pm'. [#172]
 - Added the new global option 'use_external_firewall' to disable the creation
   of the iptables rules in 'port.pm' and 'nginx.pm'. [#262]
+- Added the options 'username' and 'password' in 'mongodb.pm' to provide
+  support for authentication. [#246]
 - Changed the main loop functionality using now the select() function, instead
   of the alarm()+pause() pair. This should improve the responsiveness on high
   system loads. [#230]
