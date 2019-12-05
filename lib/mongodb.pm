@@ -209,9 +209,13 @@ sub mongodb_update {
 		my $mongo = trim($ml[$n]);
 		my $host = $mongodb->{desc}->{$mongo}->{host} || "";
 		my $port = $mongodb->{desc}->{$mongo}->{port} || "";
+		my $user = $mongodb->{desc}->{$mongo}->{username} || "";
+		my $pass = $mongodb->{desc}->{$mongo}->{password} || "";
 		my $cmd = "mongo ";
 		$cmd .= "--host $host " if $host;
 		$cmd .= "--port $port " if $port;
+		$cmd .= "-u $user " if $user;
+		$cmd .= "-p $pass " if $pass;
 		$cmd .= "--eval \"printjson(db.serverStatus())\"";
 
 		if(open(IN, "$cmd |")) {
