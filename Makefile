@@ -110,6 +110,7 @@ install-bin:
 	$(INSTALL_DATA) lib/system.pm "$(DESTDIR)$(LIBDIR)/system.pm"
 	$(INSTALL_DATA) lib/tc.pm "$(DESTDIR)$(LIBDIR)/tc.pm"
 	$(INSTALL_DATA) lib/traffacct.pm "$(DESTDIR)$(LIBDIR)/traffacct.pm"
+	$(INSTALL_DATA) lib/unbound.pm "$(DESTDIR)$(LIBDIR)/unbound.pm"
 	$(INSTALL_DATA) lib/user.pm "$(DESTDIR)$(LIBDIR)/user.pm"
 	$(INSTALL_DATA) lib/varnish.pm "$(DESTDIR)$(LIBDIR)/varnish.pm"
 	$(INSTALL_DATA) lib/verlihub.pm "$(DESTDIR)$(LIBDIR)/verlihub.pm"
