@@ -2585,6 +2585,17 @@ This is a comma-separated list of RR (Resource Records) types for each BIND serv
 .P
 The maximum number of RR types allowed for this graph is 20.
 .RE
+.SS Unbound statistics (unbound.pm)
+This graph monitors a local installation of an Unbound name server. It requires you to configure the options \fIextended-statistics\fP as \fIyes\fP and \fIstatistics-cumulative\fP as \fIno\fP.
+.P
+.BI queries_type
+.RS
+This is a comma-separated list of query types. The types defined here will appear in the Queries by type graph.
+.P
+Default value: \fIqueries_type = A, AAAA, ANY, DS, MX, NS, PTR, SOA, SRV, TXT, NAPTR, A6, CNAME, SPF, KEY, DNSKEY, HINFO, WKS, PX, NSAP\fP
+.P
+The maximum number of types allowed for this graph is 20.
+.RE
 .SS NTP statistics (ntp.pm)
 This graph is able to monitor an unlimited number of NTP servers.
 .P
