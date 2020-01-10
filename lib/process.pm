@@ -880,9 +880,9 @@ sub process_cgi {
 			if($p) {
 				$str = trim((split(',', $process->{desc}->{$p} || ""))[0]) || $p;
 				$str =~ s/:/\\:/g;	# escape colons
-				push(@tmpz, "LINE2:m_net" . $n . $LC[$n] . ":$str");
+				push(@tmpz, "LINE2:net" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
-				push(@tmp, "LINE2:m_net" . $n . $LC[$n] . ":$str");
+				push(@tmp, "LINE2:net" . $n . $LC[$n] . ":$str");
 				push(@tmp, "GPRINT:m_net" . $n . ":LAST:Cur\\: %4.1lfM");
 				push(@tmp, "GPRINT:m_net" . $n . ":MIN:  Min\\: %4.1lfM");
 				push(@tmp, "GPRINT:m_net" . $n . ":MAX:  Max\\: %4.1lfM\\n");
