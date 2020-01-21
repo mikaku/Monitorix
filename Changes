@@ -1,4 +1,4 @@
-3.NN.N - DD-MMM-2019
+3.NN.N - DD-MMM-2020
 ====================
 - Added a complete graph to support PHP-FPM statistics ('phpfpm.pm'). [#167]
 - Added a complete graph to support Unbound statistics ('unbound.pm'). [#176]
@@ -46,6 +46,7 @@
 - Fixed regexp to include support for newer versions of libvirtd. [#260]
 - Fixed to use '--resolution' instead of its synonym '-r' to avoid problems with
   newer versions of RRDtool. [#263]
+- Fixed the scale in the y-axis of the memory graph in 'process.pm'.
 
 
 3.11.0 - 14-Mar-2019
