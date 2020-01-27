@@ -554,7 +554,7 @@ sub gensens_cgi {
 		}
 
 		$e++;
-		if(!($e % 2)) {
+		if(!($e % 2) && $e < keys(%{$gensens->{list}})) {
 			push(@output, "    </tr>\n");
 			push(@output, "    <tr>\n");
 		}
