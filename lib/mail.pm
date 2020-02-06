@@ -248,14 +248,14 @@ sub mail_update {
 
 		for my $path (split /:/, $ENV{PATH}) {
 			if(-f "$path/pflogsumm" && -x _) {
-				if(open(IN, "pflogsumm -d today -h 0 -u 0 --smtpd_stats --no_bounce_detail --no_deferral_detail --no_reject_detail --no_no_msg_size --no_smtpd_warnings $config->{mail_log} 2>/dev/null |")) {
+				if(open(IN, "pflogsumm -d today -h 0 -u 0 --smtpd_stats --bounce_detail=0 --deferral_detail=0 --reject_detail=0 --no_no_msg_size --smtpd_warning_detail=0 $config->{mail_log} 2>/dev/null |")) {
 					@data = <IN>;
 					close(IN);
 					last;
 				}
 			}
 			if(-f "$path/pflogsumm.pl" && -x _) {
-				if(open(IN, "pflogsumm.pl -d today -h 0 -u 0 --smtpd_stats --no_bounce_detail --no_deferral_detail --no_reject_detail --no_no_msg_size --no_smtpd_warnings $config->{mail_log} 2>/dev/null |")) {
+				if(open(IN, "pflogsumm.pl -d today -h 0 -u 0 --smtpd_stats --bounce_detail=0 --deferral_detail=0 --reject_detail=0 --no_no_msg_size --smtpd_warning_detail=0 $config->{mail_log} 2>/dev/null |")) {
 					@data = <IN>;
 					close(IN);
 					last;
