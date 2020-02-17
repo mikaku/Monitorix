@@ -663,11 +663,11 @@ if(!defined($config{logo_top_url})) {
 	logger("WARNING: the 'logo_top_url' option doesn't exist. Please consider upgrading your configuration file.");
 	$config{logo_top_url} = "http://www.monitorix.org/";
 }
-if(!$config{httpd_builtin}->{autocheck_responsiveness}) {
+if(lc($config{httpd_builtin}->{enabled}) eq "y" && !$config{httpd_builtin}->{autocheck_responsiveness}) {
 	logger("WARNING: the 'autocheck_responsiveness' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
 	$config{httpd_builtin}->{autocheck_responsiveness} = "y";
 }
-if(!$config{multihost}->{default_option_when_all}) {
+if(lc($config{multihost}->{enabled} || "") eq "y" && !$config{multihost}->{default_option_when_all}) {
 	logger("WARNING: the 'default_option_when_all' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
 	$config{multihost}->{default_option_when_all} = "System load";
 }
