@@ -56,7 +56,7 @@ sub INT_handler {
 
 	logger("SIG$signal caught.");
 	flush_accounting_rules(\%config, $options{d});
-	if(lc($config{httpd_builtin}->{enabled}) eq "y") {
+	if(lc($config{httpd_builtin}->{enabled} || "") eq "y") {
 		kill(15, $config{httpd_pid});
 	}
 	logger("Exiting.");
@@ -83,7 +83,7 @@ sub HUP_handler {
 	logger("$myself: opening a new log file.");
 
 	# restart HTTP built-in
-	if(lc($config{httpd_builtin}->{enabled}) eq "y") {
+	if(lc($config{httpd_builtin}->{enabled} || "") eq "y") {
 		if(defined($config{httpd_pid})) {
 			require HTTPServer;
 			kill(15, $config{httpd_pid});
@@ -273,7 +273,7 @@ EOF
                               }
 		print(OUT "            </optgroup>\n");
 
-		if(lc($config{multihost}->{groups}) eq "y" ) {
+		if(lc($config{multihost}->{groups} || "") eq "y" ) {
 			my @remotegroup_list = split(',', $config{multihost}->{remotegroup_list});
 			print(OUT "            <optgroup label='Multihost-Groups'>\n");
 			print(OUT "            <option value='multihost.group'>All Groups</option>\n");
@@ -302,7 +302,7 @@ EOF
 	print(OUT "            <option value='all'>All graphs</option>\n");
 	foreach (split(',', $config{graph_name})) {
 		my $g = trim($_);
-		if(lc($config{graph_enable}->{$g}) eq "y") {
+		if(lc($config{graph_enable}->{$g} || "") eq "y") {
 			print(OUT "            <optgroup label='" . $config{graph_title}->{$g} . "'>\n");
 			if($g eq "proc") {
 				for($n = 0; $n < $config{proc}->{max}; $n++) {
@@ -618,6 +618,44 @@ if($config{include_dir} && opendir(DIR, $config{include_dir})) {
 		if $config{include_dir};
 }
 
+# make sure that some options are correctly defined
+die "ERROR: 'base_dir' option does not exist.\n" if(!defined($config{base_dir}));
+die "ERROR: 'base_lib' option does not exist.\n" if(!defined($config{base_lib}));
+die "ERROR: 'base_url' option does not exist.\n" if(!defined($config{base_url}));
+die "ERROR: 'base_cgi' option does not exist.\n" if(!defined($config{base_cgi}));
+
+if(!$config{max_historic_years}) {
+	logger("WARNING: the 'max_historic_years' option doesn't exist. Please consider upgrading your configuration file.");
+	$config{max_historic_years} = 1;
+}
+if(!$config{net}->{max}) {
+	logger("WARNING: the 'max' option in 'net.pm' doesn't exist. Please consider upgrading your configuration file.");
+	$config{net}->{max} = 10;
+}
+if(!$config{global_zoom}) {
+	logger("WARNING: the 'global_zoom' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
+	# it's set in 'monitorix.cgi'
+}
+if(!$config{image_format}) {
+	logger("WARNING: the 'image_format' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
+	# it's set in 'monitorix.cgi'
+}
+if(!defined($config{logo_top_url})) {
+	logger("WARNING: the 'logo_top_url' option doesn't exist. Please consider upgrading your configuration file.");
+	$config{logo_top_url} = "http://www.monitorix.org/";
+}
+if(lc($config{httpd_builtin}->{enabled} || "") eq "y" && !$config{httpd_builtin}->{autocheck_responsiveness}) {
+	logger("WARNING: the 'autocheck_responsiveness' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
+	$config{httpd_builtin}->{autocheck_responsiveness} = "y";
+}
+if(lc($config{multihost}->{enabled} || "") eq "y" && !$config{multihost}->{default_option_when_all}) {
+	logger("WARNING: the 'default_option_when_all' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
+	$config{multihost}->{default_option_when_all} = "System load";
+}
+if(!$config{use_external_firewall}) {
+	$config{use_external_firewall} = "n";
+}
+
 # save the path of the configuration file
 if(open(OUT, "> " . $config{base_dir} . "/cgi/monitorix.conf.path")) {
 	print(OUT "$options{c}\n");
@@ -642,39 +680,6 @@ if($config{os} eq "Linux") {
 	}
 }
 
-# make sure that some options are correctly defined
-if(!$config{max_historic_years}) {
-	logger("WARNING: the 'max_historic_years' option doesn't exist. Please consider upgrading your configuration file.");
-	$config{max_historic_years} = 1;
-}
-if(!$config{net}->{max}) {
-	logger("WARNING: the 'max' option in 'net.pm' doesn't exist. Please consider upgrading your configuration file.");
-	$config{net}->{max} = 10;
-}
-if(!$config{global_zoom}) {
-	logger("WARNING: the 'global_zoom' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
-	# it's set in 'monitorix.cgi'
-}
-if(!$config{image_format}) {
-	logger("WARNING: the 'image_format' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
-	# it's set in 'monitorix.cgi'
-}
-if(!defined($config{logo_top_url})) {
-	logger("WARNING: the 'logo_top_url' option doesn't exist. Please consider upgrading your configuration file.");
-	$config{logo_top_url} = "http://www.monitorix.org/";
-}
-if(lc($config{httpd_builtin}->{enabled}) eq "y" && !$config{httpd_builtin}->{autocheck_responsiveness}) {
-	logger("WARNING: the 'autocheck_responsiveness' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
-	$config{httpd_builtin}->{autocheck_responsiveness} = "y";
-}
-if(lc($config{multihost}->{enabled} || "") eq "y" && !$config{multihost}->{default_option_when_all}) {
-	logger("WARNING: the 'default_option_when_all' option is not valid or doesn't exist. Please consider upgrading your configuration file.");
-	$config{multihost}->{default_option_when_all} = "System load";
-}
-if(!$config{use_external_firewall}) {
-	$config{use_external_firewall} = "n";
-}
-
 # make sure that there aren't residual Monitorix iptables rules
 flush_accounting_rules(\%config, $options{d});
 
@@ -690,7 +695,7 @@ foreach my $g (sort keys %{$config{graph_enable}}) {
 }
 
 # initialize all enabled graphs
-foreach (split(',', $config{graph_name} . ", traffacct")) {
+foreach (split(',', ($config{graph_name} || "") . ", traffacct")) {
 	my $g = trim($_);
 	my $e = "n";
 
@@ -731,7 +736,7 @@ logger("Generating the 'index.html' file.");
 create_index();
 
 # start the HTTP built-in (if enabled)
-if(lc($config{httpd_builtin}->{enabled}) eq "y") {
+if(lc($config{httpd_builtin}->{enabled} || "") eq "y") {
 	logger("Setting owner/group and permission bits for the imgs/ directory.") if defined($options{d});
 	my (undef, undef, $uid) = getpwnam($config{httpd_builtin}->{user});
 	my (undef, undef, $gid) = getgrnam($config{httpd_builtin}->{group});
@@ -775,7 +780,7 @@ while(1) {
 		}
 
 		# TRAFFACCT graph daily reports
-		if(lc($config{traffacct}->{enabled}) eq "y") {
+		if(lc($config{traffacct}->{enabled} || "") eq "y") {
 			my $d = "traffacct";
 			undef($d) if(!grep {trim($_) eq $d} (@{$config{debug}}));
 
@@ -789,7 +794,7 @@ while(1) {
 				}
 
 				# send reports every first day of a month
-				if(lc($config{traffacct}->{reports}->{enabled}) eq "y") {
+				if(lc($config{traffacct}->{reports}->{enabled} || "") eq "y") {
 					if($mday == 1) {
 						eval { traffacct::traffacct_sendreports(\%config, $d); };
 						if($@) {
@@ -801,7 +806,7 @@ while(1) {
 		}
 
 		# Email Reports
-		if(lc($config{emailreports}->{enabled}) eq "y") {
+		if(lc($config{emailreports}->{enabled} || "") eq "y") {
 			my $emailreports = $config{emailreports};
 			my $m = $emailreports->{minute} || 0;
 			my $h = $emailreports->{hour} || 0;
@@ -817,7 +822,7 @@ while(1) {
 				}
 
 				# daily
-				if(lc($emailreports->{daily}->{enabled}) eq "y") {
+				if(lc($emailreports->{daily}->{enabled} || "") eq "y") {
 					eval { emailreports::emailreports_send(\%config, "daily", "1day", $d); };
 					if($@) {
 						logger("emailreports::emailreports_send(): $@");
@@ -826,7 +831,7 @@ while(1) {
 
 				# weekly (send reports on every Monday)
 				if($wday == 1) {
-					if(lc($emailreports->{weekly}->{enabled}) eq "y") {
+					if(lc($emailreports->{weekly}->{enabled} || "") eq "y") {
 						eval { emailreports::emailreports_send(\%config, "weekly", "1week", $d); };
 						if($@) {
 							logger("emailreports::emailreports_send(): $@");
@@ -836,7 +841,7 @@ while(1) {
 
 				# monthly (send reports every first day of each month)
 				if($mday == 1) {
-					if(lc($emailreports->{monthly}->{enabled}) eq "y") {
+					if(lc($emailreports->{monthly}->{enabled} || "") eq "y") {
 						eval { emailreports::emailreports_send(\%config, "monthly", "1month", $d); };
 						if($@) {
 							logger("emailreports::emailreports_send(): $@");
@@ -846,7 +851,7 @@ while(1) {
 
 				# yearly (send reports every first day of each year)
 				if($mon == 0 && $mday == 1) {
-					if(lc($emailreports->{yearly}->{enabled}) eq "y") {
+					if(lc($emailreports->{yearly}->{enabled} || "") eq "y") {
 						eval { emailreports::emailreports_send(\%config, "yearly", "1year", $d); };
 						if($@) {
 							logger("emailreports::emailreports_send(): $@");
@@ -857,8 +862,8 @@ while(1) {
 		}
 
 		# check if the HTTP built-in server is responsive
-		if(lc($config{httpd_builtin}->{enabled}) eq "y") {
-			if(lc($config{httpd_builtin}->{autocheck_responsiveness}) eq "y") {
+		if(lc($config{httpd_builtin}->{enabled} || "") eq "y") {
+			if(lc($config{httpd_builtin}->{autocheck_responsiveness} || "") eq "y") {
 				use LWP::UserAgent;
 				my $pid = fork();
 				if(!$pid) {
