@@ -4,10 +4,10 @@ Monitorix is a free, open-source, lightweight system monitoring tool designed to
 
 Community
 ---------
-- [Website](http://www.monitorix.org)
-- [Documentation](http://www.monitorix.org/documentation.html)
+- [Website](https://www.monitorix.org)
+- [Documentation](https://www.monitorix.org/documentation.html)
 - [Mailing List](https://lists.sourceforge.net/lists/listinfo/monitorix-general)
-- [IRC](http://webchat.freenode.net/?channels=monitorix)
+- [IRC](https://webchat.freenode.net/?channels=monitorix)
 
 License
 -------
@@ -15,5 +15,5 @@ Monitorix is free software licensed under the terms of the GNU General Public Li
 
 Credits
 -------
-Monitorix was created by [Jordi Sanfeliu](http://www.fibranet.cat).
+Monitorix was created by [Jordi Sanfeliu](https://www.fibranet.cat).
 You can contact me at [jordi@fibranet.cat](mailto:jordi@fibranet.cat).

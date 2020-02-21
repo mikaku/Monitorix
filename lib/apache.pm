@@ -31,7 +31,7 @@ our @EXPORT = qw(apache_init apache_update apache_cgi);
 #
 # Some ideas of this upgrading function have been taken from a script written
 # by Joost Cassee and found in the RRDtool Contrib Area:
-# <http://oss.oetiker.ch/rrdtool/pub/contrib/>
+# <https://oss.oetiker.ch/rrdtool/pub/contrib/>
 #
 sub upgrade_to_380 {
 	my $myself = (caller(0))[3];
