@@ -2,7 +2,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2019 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2020 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -44,8 +44,8 @@ $SIG{'STOP'} = 'INT_handler';
 $SIG{'TERM'} = 'INT_handler';
 $SIG{'HUP' } = 'HUP_handler';
 
-use constant VERSION	=> "3.11.0";
-use constant RELDATE	=> "14-Mar-2019";
+use constant VERSION	=> "3.12.0";
+use constant RELDATE	=> "21-Feb-2020";
 
 my @suppsys = ("Linux", "FreeBSD", "OpenBSD", "NetBSD");
 our %config;
@@ -498,7 +498,7 @@ getopts("c:p:d:vn", \%options) || usage();
 if($options{v}) {
 	print("Monitorix version " . VERSION . " (" . RELDATE . ")\n");
 	print("by Jordi Sanfeliu <jordi\@fibranet.cat>\n");
-	print("http://www.monitorix.org/\n\n");
+	print("https://www.monitorix.org/\n\n");
 	exit(0);
 }
 if(!$options{c}) {
@@ -642,7 +642,7 @@ if(!$config{image_format}) {
 }
 if(!defined($config{logo_top_url})) {
 	logger("WARNING: the 'logo_top_url' option doesn't exist. Please consider upgrading your configuration file.");
-	$config{logo_top_url} = "http://www.monitorix.org/";
+	$config{logo_top_url} = "https://www.monitorix.org/";
 }
 if(lc($config{httpd_builtin}->{enabled} || "") eq "y" && !$config{httpd_builtin}->{autocheck_responsiveness}) {
 	logger("WARNING: the 'autocheck_responsiveness' option is not valid or doesn't exist. Please consider upgrading your configuration file.");

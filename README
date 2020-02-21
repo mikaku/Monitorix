@@ -79,15 +79,12 @@ distribution may or may not have:
 - Perl-MIME-Lite
 - Perl-DBI
 - Perl-XML-Simple
+- Perl-XML-LibXML
 - Perl-Config-General
 - Perl-HTTP-Server-Simple
 - perl-IO-Socket-SSL
 - RRDtool and its Perl bindings (perl-rrdtool or rrdtool-perl)
 - (Optional) a CGI capable Web server (Apache, Nginx, lighttpd, etc.)
-
-You can download RRDtool from different places:
-	http://pkgs.repoforge.org/rrdtool/
-	http://oss.oetiker.ch/rrdtool/
 
 
 INSTALLATION
@@ -191,6 +188,6 @@ LICENSE AND COPYRIGHT
 Monitorix is distributed under the terms of the GNU General Public License.
 See the included file "COPYING".
 
-Copyright (C) 2005-2019 Jordi Sanfeliu.
-http://www.monitorix.org
+Copyright (C) 2005-2020 Jordi Sanfeliu.
+https://www.monitorix.org
 
