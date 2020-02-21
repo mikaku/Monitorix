@@ -1,4 +1,4 @@
-3.NN.N - DD-Feb-2020
+3.12.0 - 21-Feb-2020
 ====================
 - Added a complete graph to support PHP-FPM statistics ('phpfpm.pm'). [#167]
 - Added a complete graph to support Unbound statistics ('unbound.pm'). [#176]
