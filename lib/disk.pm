@@ -471,17 +471,22 @@ sub disk_cgi {
 		for($n = 0; $n < 8; $n++) {
 			if($d[$n]) {
 				my $dstr = trim($d[$n]);
+				my $base;
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
 
 				# check if device name is a symbolic link
 				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
 				if(-l $dstr) {
+					$base = basename($dstr);
 					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
 					chomp($dstr);
 				}
 
 				$dstr =~ s/^(.+?) .*$/$1/;
+				if($disk->{map}->{$base} || "" eq $dstr) {
+					$dstr = $disk->{map}->{$base};
+				}
 				$str = sprintf("%-20s", $dstr);
 				push(@tmp, "LINE2:temp_" . $n . $LC[$n] . ":$str");
 				push(@tmpz, "LINE2:temp_" . $n . $LC[$n] . ":$dstr");
