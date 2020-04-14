@@ -77,8 +77,8 @@ sub multihost {
 				my $h2 = trim($remotehost_list[$n2]);
 				if($h eq $h2) {
 					push(@host, $h);
-					push(@url, (split(',', $multihost->{remotehost_desc}->{$n2}))[0] . (split(',', $multihost->{remotehost_desc}->{$n2}))[2]);
-					push(@foot_url, (split(',', $multihost->{remotehost_desc}->{$n2}))[0] . (split(',', $multihost->{remotehost_desc}->{$n2}))[1]);
+					push(@url, trim((split(',', $multihost->{remotehost_desc}->{$n2}))[0]) . trim((split(',', $multihost->{remotehost_desc}->{$n2}))[2]));
+					push(@foot_url, trim((split(',', $multihost->{remotehost_desc}->{$n2}))[0]) . trim((split(',', $multihost->{remotehost_desc}->{$n2}))[1]));
 				}
 			}
 		}
@@ -86,8 +86,8 @@ sub multihost {
 		my @remotehost_list = split(',', $multihost->{remotehost_list});
 		for($n = 0; $n < scalar(@remotehost_list); $n++) {
 			push(@host, trim($remotehost_list[$n]));
-			push(@url, (split(',', $multihost->{remotehost_desc}->{$n}))[0] . (split(',', $multihost->{remotehost_desc}->{$n}))[2]);
-			push(@foot_url, (split(',', $multihost->{remotehost_desc}->{$n}))[0] . (split(',', $multihost->{remotehost_desc}->{$n}))[1]);
+			push(@url, trim((split(',', $multihost->{remotehost_desc}->{$n}))[0]) . trim((split(',', $multihost->{remotehost_desc}->{$n}))[2]));
+			push(@foot_url, trim((split(',', $multihost->{remotehost_desc}->{$n}))[0]) . trim((split(',', $multihost->{remotehost_desc}->{$n}))[1]));
 		}
 	}
 
@@ -178,7 +178,7 @@ sub multihost {
 		}
 	} else {
 		if($cgi->{graph} eq "all") {
-			print "     <iframe src='" . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0] . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=all&color=$cgi->{color}' height=100% width=100% frameborder=0 marginwidth=0 marginheight=0 scrolling=yes></iframe>\n";
+			print "     <iframe src='" . trim((split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0]) . trim((split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2]) . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=all&color=$cgi->{color}' height=100% width=100% frameborder=0 marginwidth=0 marginheight=0 scrolling=yes></iframe>\n";
 		} else {
 			print "  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n";
 			print "   <tr>\n";
@@ -190,7 +190,7 @@ sub multihost {
 			print "   </tr>\n";
 			print "   <tr>\n";
 			print "    <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
-			print "     <iframe src='" . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0] . (split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetagbig' height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
+			print "     <iframe src='" . trim((split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0]) . trim((split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2]) . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetagbig' height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
 			print "    </td>\n";
 			print "   </tr>\n";
 			print "   <tr>\n";
