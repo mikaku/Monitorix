@@ -383,6 +383,7 @@ sub du_cgi {
 				push(@DEF0, "DEF:d7=$rrd:du" . $n . "_d7:AVERAGE");
 				push(@DEF0, "DEF:d8=$rrd:du" . $n . "_d8:AVERAGE");
 				push(@DEF0, "DEF:d9=$rrd:du" . $n . "_d9:AVERAGE");
+				push(@CDEF0, "CDEF:allvalues=d1,d2,d3,d4,d5,d6,d7,d8,d9,+,+,+,+,+,+,+,+");
 			# default type is 'bytes'
 			} else {
 				$type_label = "bytes";
