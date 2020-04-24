@@ -6,6 +6,10 @@
 - Added support to map device names in 'disk.pm'. [#272]
 - Fixed some spelling mistakes on manpages. [#269]
 - Fixed the title size of memory graph in 'system.pm'.
+- Fixed to trimming leading and trailing character spaces from the comma-
+  separated values in 'multihost' graphs.
+- Fixed a missing 'allvalues=' declaration which affected graphs of type 'files'
+  and 'show_gaps' enabled in 'du.pm'. [#277]
 
 
 3.12.0 - 21-Feb-2020
