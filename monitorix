@@ -867,7 +867,8 @@ while(1) {
 				use LWP::UserAgent;
 				my $pid = fork();
 				if(!$pid) {
-					my $url = "http://localhost:" . $config{httpd_builtin}->{port} . $config{base_url};
+					my $host = $config{httpd_builtin}->{host} ? $config{httpd_builtin}->{host} : "localhost";
+					my $url = "http://" . $host . ":" . $config{httpd_builtin}->{port} . $config{base_url};
 					my $ua = LWP::UserAgent->new(timeout => 30);
 					my $response = $ua->request(HTTP::Request->new('GET', $url));
 					if(!$response->is_success) {
