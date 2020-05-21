@@ -114,19 +114,27 @@ sub ip_validity {
 sub http_header {
 	my ($code, $mimetype) = @_;
 	my $msg = $main::config{httpd_builtin}->{auth}->{msg} || "";
+	my $hosts_deny = $main::config{httpd_builtin}->{auth}->{hosts_deny} || "";
+	my $hosts_allow = $main::config{httpd_builtin}->{auth}->{hosts_allow} || "";
 
 	if($code eq "200") {
 		print "HTTP/1.0 200 OK\r\n";
 	} elsif($code eq "401") {
-		my (undef, $encoded_str) = split(' ', $ENV{HTTP_AUTHORIZATION} || "");
-		my ($user, $pass) = split(':', decode_base64($encoded_str || ":"));
+		# check if the IP address is forced to auth
+		my $denied;
+		my $allowed = ip_validity($ENV{REMOTE_ADDR}, $hosts_allow);
+		$denied = ip_validity($ENV{REMOTE_ADDR}, $hosts_deny) if !$allowed;
+		if(!$allowed && $denied) {
+			my (undef, $encoded_str) = split(' ', $ENV{HTTP_AUTHORIZATION} || "");
+			my ($user, $pass) = split(':', decode_base64($encoded_str || ":"));
 
-		if(check_passwd($user, $pass)) {
-			print "HTTP/1.0 401 Access Denied\r\n";
-			print "WWW-Authenticate: Basic realm=\"$msg\"\r\n";
-			print "Content-Length: 0\r\n";
-			print "\r\n";
-			return 1;
+			if(check_passwd($user, $pass)) {
+				print "HTTP/1.0 401 Access Denied\r\n";
+				print "WWW-Authenticate: Basic realm=\"$msg\"\r\n";
+				print "Content-Length: 0\r\n";
+				print "\r\n";
+				return 1;
+			}
 		}
 		return 0;
 	} elsif($code eq "404") {
