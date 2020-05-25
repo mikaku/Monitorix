@@ -351,7 +351,6 @@ sub gensens_cgi {
 		push(@output, "Time$line2\n");
 		push(@output, "----$line3 \n");
 		my $line;
-		my @row;
 		my $time;
 		my $n2;
 		my $from;
@@ -366,8 +365,10 @@ sub gensens_cgi {
 					$from = $sg * 9 + $n2++;
 					$to = $from + 1;
 					my ($j) = @$line[$from..$to];
-					@row = ($j || 0);
-					push(@output, sprintf("%12d ", @row));
+					if(index($sg, "temp")) {
+						$j = celsius_to($config, $j || 0);
+					}
+					push(@output, sprintf("%12d ", $j || 0));
 				}
 				$n2++;
 			}
@@ -450,11 +451,11 @@ sub gensens_cgi {
 			if($str) {
 				$str = $gensens->{map}->{$str} ? $gensens->{map}->{$str} : $str;
 				$str = sprintf("%-20s", substr($str, 0, 20));
-				push(@tmp, "LINE2:gsen" . $n . $LC[$n] . ":$str");
-				push(@tmp, "GPRINT:gsen" . $n . ":LAST: Cur\\:%5.1lf%s");
-				push(@tmp, "GPRINT:gsen" . $n . ":MIN: Min\\:%5.1lf%s");
-				push(@tmp, "GPRINT:gsen" . $n . ":MAX: Max\\:%5.1lf%s\\n");
-				push(@tmpz, "LINE2:gsen" . $n . $LC[$n] . ":$str");
+				push(@tmp, "LINE2:gsen_" . $n . $LC[$n] . ":$str");
+				push(@tmp, "GPRINT:gsen_" . $n . ":LAST: Cur\\:%5.1lf%s");
+				push(@tmp, "GPRINT:gsen_" . $n . ":MIN: Min\\:%5.1lf%s");
+				push(@tmp, "GPRINT:gsen_" . $n . ":MAX: Max\\:%5.1lf%s\\n");
+				push(@tmpz, "LINE2:gsen_" . $n . $LC[$n] . ":$str");
 				next;
 			}
 			last;
@@ -466,6 +467,39 @@ sub gensens_cgi {
 
 		if($title) {
 			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+		}
+		if(index($ls[0], "temp") == 0) {
+			if(lc($config->{temperature_scale}) eq "f") {
+				push(@CDEF, "CDEF:gsen_0=9,5,/,gsen0,*,32,+");
+				push(@CDEF, "CDEF:gsen_1=9,5,/,gsen1,*,32,+");
+				push(@CDEF, "CDEF:gsen_2=9,5,/,gsen2,*,32,+");
+				push(@CDEF, "CDEF:gsen_3=9,5,/,gsen3,*,32,+");
+				push(@CDEF, "CDEF:gsen_4=9,5,/,gsen4,*,32,+");
+				push(@CDEF, "CDEF:gsen_5=9,5,/,gsen5,*,32,+");
+				push(@CDEF, "CDEF:gsen_6=9,5,/,gsen6,*,32,+");
+				push(@CDEF, "CDEF:gsen_7=9,5,/,gsen7,*,32,+");
+				push(@CDEF, "CDEF:gsen_8=9,5,/,gsen8,*,32,+");
+			} else {
+				push(@CDEF, "CDEF:gsen_0=gsen0");
+				push(@CDEF, "CDEF:gsen_1=gsen1");
+				push(@CDEF, "CDEF:gsen_2=gsen2");
+				push(@CDEF, "CDEF:gsen_3=gsen3");
+				push(@CDEF, "CDEF:gsen_4=gsen4");
+				push(@CDEF, "CDEF:gsen_5=gsen5");
+				push(@CDEF, "CDEF:gsen_6=gsen6");
+				push(@CDEF, "CDEF:gsen_7=gsen7");
+				push(@CDEF, "CDEF:gsen_8=gsen8");
+			}
+		} else {
+			push(@CDEF, "CDEF:gsen_0=gsen0");
+			push(@CDEF, "CDEF:gsen_1=gsen1");
+			push(@CDEF, "CDEF:gsen_2=gsen2");
+			push(@CDEF, "CDEF:gsen_3=gsen3");
+			push(@CDEF, "CDEF:gsen_4=gsen4");
+			push(@CDEF, "CDEF:gsen_5=gsen5");
+			push(@CDEF, "CDEF:gsen_6=gsen6");
+			push(@CDEF, "CDEF:gsen_7=gsen7");
+			push(@CDEF, "CDEF:gsen_8=gsen8");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
