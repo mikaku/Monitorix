@@ -409,6 +409,28 @@ WARNING: don't use the character colon ':' as part of your name or password sinc
 .P
 Default value: \fI/var/lib/monitorix/htpasswd\fP
 .RE
+.P
+.BI hosts_deny
+.RS
+This is a comma delimited set of IP addresses which will be forced to do authentication. There is the special keyword called \fIall\fP that can be used to deny all IP addresses.
+.P
+The access control uses the same approach as in the TCP-Wrappers; the search stops at the first match:
+.P
+	- Access will be granted when an IP address matches an entry in the \fBhosts_allow\fP list.
+.br
+	- Otherwise, access will be denied when an IP address matches an entry in the \fBhosts_deny\fP list.
+.br
+	- Otherwise, access will be granted.
+.P
+Default value: 
+.RE
+.P
+.BI hosts_allow
+.RS
+This is the opposite of \fBhosts_deny\fP option. IP addresses listed here will bypass the authentication mechanism (even when it is enabled). It helps in specific cases like to avoid to have to include the auth credentials in the \fBurl_prefix\fP of the \fIemailreports\fP module. There is also the special keyword called \fIall\fP that can be used to allow access to all IP addresses.
+.P
+Default value: 
+.RE
 .SS Log files pathnames
 .BI log_file
 .RS
