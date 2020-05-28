@@ -622,7 +622,8 @@ sub port_cgi {
 				push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
 				push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 			}
-			($width, $height) = split('x', $config->{graph_size}->{mini});
+			$port->{size} = "mini" if !defined($port->{size});
+			($width, $height) = split('x', $config->{graph_size}->{$port->{size}});
 			if($silent =~ /imagetag/) {
 				($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
 				($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
