@@ -4,12 +4,18 @@
 - Adjusted configuration in 'docs/debian.conf'.
 - Added support for older versions of 'ss' in 'netstat.pm'. [#271]
 - Added support to map device names in 'disk.pm'. [#272]
+- Added the ability to force HTTP auth to certain hostnames only. [#274]
+- Added the ability to change the size of the graphs in 'port.pm'.
+  	(suggested by Javier Guarinos, sjguarinos AT aragon.es)
 - Fixed some spelling mistakes on manpages. [#269]
 - Fixed the title size of memory graph in 'system.pm'.
 - Fixed to trimming leading and trailing character spaces from the comma-
   separated values in 'multihost' graphs.
 - Fixed a missing 'allvalues=' declaration which affected graphs of type 'files'
   and 'show_gaps' enabled in 'du.pm'. [#277]
+- Fixed the HTTP built-in responsiveness check to use the value of the option
+  'host'. [#278]
+- Fixed to include conversion to Fahrenheit in 'gensens.pm'. [#280]
 
 
 3.12.0 - 21-Feb-2020
