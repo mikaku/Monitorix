@@ -471,7 +471,7 @@ sub disk_cgi {
 		for($n = 0; $n < 8; $n++) {
 			if($d[$n]) {
 				my $dstr = trim($d[$n]);
-				my $base;
+				my $base = "";
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
 
@@ -484,8 +484,12 @@ sub disk_cgi {
 				}
 
 				$dstr =~ s/^(.+?) .*$/$1/;
-				if($disk->{map}->{$base} || "" eq $dstr) {
+				if($base && defined($disk->{map}->{$base})) {
 					$dstr = $disk->{map}->{$base};
+				} else {
+					if(defined($disk->{map}->{$dstr})) {
+						$dstr = $disk->{map}->{$dstr};
+					}
 				}
 				$str = sprintf("%-20s", $dstr);
 				push(@tmp, "LINE2:temp_" . $n . $LC[$n] . ":$str");
