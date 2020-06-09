@@ -154,13 +154,7 @@ sub phpfpm_update {
 
 	foreach my $pfg (sort keys %{$phpfpm->{group}}) {
 		my @pfl = split(',', $phpfpm->{list}->{$pfg});
-		if(!scalar(@pfl)) {
-			for($n = 0; $n < 8; $n++) {
-				$rrdata .= ":0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0";
-			}
-			next;
-		}
-		for($n = 0; $n < 8; $n++) {
+		for($n = 0; $n < 8 && $n < scalar(@pfl); $n++) {
 			my $uptim = 0;
 			my $aconn = 0;
 			my $lqueu = 0;
@@ -223,6 +217,9 @@ sub phpfpm_update {
 				}
 			}
 			$rrdata .= ":$uptim:$aconn:$lqueu:$mlque:$iproc:$aproc:$mapro:$mchil:$slreq:0:0:0:0:0:0:0:0:0";
+		}
+		for(; $n < 8; $n++) {
+			$rrdata .= ":0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0";
 		}
 	}
 
