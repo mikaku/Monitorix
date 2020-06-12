@@ -16,6 +16,8 @@
 - Fixed the HTTP built-in responsiveness check to use the value of the option
   'host'. [#278]
 - Fixed to include conversion to Fahrenheit in 'gensens.pm'. [#280]
+- Fixed a bug in 'phpfpm.pm' that lead to error messages about a pool don't has
+  an associated URL. [#282]
 
 
 3.12.0 - 21-Feb-2020
