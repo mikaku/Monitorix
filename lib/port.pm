@@ -538,16 +538,31 @@ sub port_cgi {
 			undef(@warning);
 			if(uc($plis || "") eq "L") {
 				if($config->{os} eq "Linux") {
-					open(IN, "netstat -nl --$pp |");
-					while(<IN>) {
-						(undef, undef, undef, $pnum) = split(' ', $_);
-						chomp($pnum);
-						$pnum =~ s/.*://;
-						if($pnum eq $num) {
-							last;
+					my $cmd = $port->{cmd} || "";
+					if(!$cmd || $cmd eq "ss") {
+						open(IN, "ss -nl --$pp |");
+						while(<IN>) {
+							(undef, undef, undef, $pnum) = split(' ', $_);
+							chomp($pnum);
+							$pnum =~ s/.*://;
+							if($pnum eq $num) {
+								last;
+							}
 						}
+						close(IN);
 					}
-					close(IN);
+					if($cmd eq "netstat") {
+						open(IN, "netstat -nl --$pp |");
+						while(<IN>) {
+							(undef, undef, undef, $pnum) = split(' ', $_);
+							chomp($pnum);
+							$pnum =~ s/.*://;
+							if($pnum eq $num) {
+								last;
+							}
+						}
+						close(IN);
+					}
 				}
 				if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD")) {
 					open(IN, "netstat -anl -p $pp |");

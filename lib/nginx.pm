@@ -578,16 +578,31 @@ sub nginx_cgi {
 	undef(@warning);
 	my $pnum;
 	if($config->{os} eq "Linux") {
-		open(IN, "netstat -nl --tcp |");
-		while(<IN>) {
-			(undef, undef, undef, $pnum) = split(' ', $_);
-			chomp($pnum);
-			$pnum =~ s/.*://;
-			if($pnum eq $nginx->{port}) {
-				last;
+		my $cmd = $nginx->{cmd} || "";
+		if(!$cmd || $cmd eq "ss") {
+			open(IN, "ss -nl --$pp |");
+			while(<IN>) {
+				(undef, undef, undef, $pnum) = split(' ', $_);
+				chomp($pnum);
+				$pnum =~ s/.*://;
+				if($pnum eq $nginx->{port}) {
+					last;
+				}
 			}
+			close(IN);
 		}
-		close(IN);
+		if($cmd eq "netstat") {
+			open(IN, "netstat -nl --tcp |");
+			while(<IN>) {
+				(undef, undef, undef, $pnum) = split(' ', $_);
+				chomp($pnum);
+				$pnum =~ s/.*://;
+				if($pnum eq $nginx->{port}) {
+					last;
+				}
+			}
+			close(IN);
+		}
 	}
 	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 		open(IN, "netstat -anl -p tcp |");

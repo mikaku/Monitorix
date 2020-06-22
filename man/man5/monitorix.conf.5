@@ -2132,6 +2132,18 @@ This is the size of the graphs of the ports. It currently accepts up to 8 differ
 .P
 Default value: \fImini\fP
 .RE
+.P
+.BI cmd
+.RS
+This is the command that will be used to test if the network port is down (not listening). There are two possible values:
+.P
+.RS
+\fIss\fP
+.br
+\fInetstat\fP
+.RE
+.P
+Default value: \fIss\fP
 .SS Users using the system (user.pm)
 Only the limit and rigid values can be set here.
 .SS FTP statistics (ftp.pm)
@@ -2240,6 +2252,18 @@ This is the rule number that Monitorix will use when using the \fIipfw\fP comman
 .P
 Default value: \fI24100\fP
 .RE
+.P
+.BI cmd
+.RS
+This is the command that will be used to test if the Nginx web server is down (not listening). There are two possible values:
+.P
+.RS
+\fIss\fP
+.br
+\fInetstat\fP
+.RE
+.P
+Default value: \fIss\fP
 .SS Lighttpd statistics (lighttpd.pm)
 This graph requires that \fImod_status\fP is loaded in order to collect status information from the Lighttpd web server.
 .P
