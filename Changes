@@ -7,6 +7,8 @@
 - Added the ability to force HTTP auth to certain hostnames only. [#274]
 - Added the ability to change the size of the graphs in 'port.pm'.
   	(suggested by Javier Guarinos, sjguarinos AT aragon.es)
+- Added support to use the 'ss' command in 'port.pm' and 'nginx.pm'.
+        (thanks to Otto Müller, rembrengerdeng AT web.de)
 - Fixed some spelling mistakes on manpages. [#269]
 - Fixed the title size of memory graph in 'system.pm'.
 - Fixed to trimming leading and trailing character spaces from the comma-
