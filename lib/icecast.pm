@@ -178,6 +178,7 @@ sub icecast_update {
 
 		if(!$response->is_success) {
 			logger("$myself: ERROR: Unable to connect to '$ils'.");
+			logger("$myself: " . $response->status_line);
 		}
 
 		$data =~ s/\n//g;

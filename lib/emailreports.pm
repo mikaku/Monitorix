@@ -106,6 +106,7 @@ EOF
 		my $response = $ua->request(HTTP::Request->new('GET', $url));
 
 		if(!$response->is_success) {
+			logger("$myself: ERROR: Unable to connect to '$url'.");
 			logger("$myself: " . $response->status_line);
 			$html .= "<pre>\n";
 			$html .= $response->status_line;

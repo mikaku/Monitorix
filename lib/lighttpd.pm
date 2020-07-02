@@ -156,6 +156,7 @@ sub lighttpd_update {
 
 		if(!$response->is_success) {
 			logger("$myself: ERROR: Unable to connect to '$url'.");
+			logger("$myself: " . $response->status_line);
 		}
 
 		my $acc = 0;

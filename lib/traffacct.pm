@@ -381,6 +381,7 @@ sub traffacct_sendreports {
 		my $image = $ua->request(HTTP::Request->new('GET', $url));
 		if(!$image->is_success) {
 			logger("$myself: ERROR: Unable to connect to '$url'.");
+			logger("$myself: " . $response->status_line);
 		}
 
 		# create the multipart container and add attachments

@@ -157,6 +157,7 @@ sub phpapc_update {
 
 		if(!$response->is_success) {
 			logger("$myself: ERROR: Unable to connect to '$pls'.");
+			logger("$myself: " . $response->status_line);
 		}
 
 		$data =~ s/\n//g;

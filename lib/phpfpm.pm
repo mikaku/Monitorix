@@ -181,6 +181,7 @@ sub phpfpm_update {
 			my $response = $ua->request(HTTP::Request->new('GET', $url));
 			if(!$response->is_success) {
 				logger("$myself: ERROR: in pool '$pool', unable to connect to '$url'.");
+				logger("$myself: " . $response->status_line);
 			} else {
 				foreach(split('\n', $response->content)) {
 					if(/^start since:\s+(\d+)$/) {

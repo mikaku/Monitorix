@@ -621,6 +621,7 @@ sub apache_update {
 
 		if(!$response->is_success) {
 			logger("$myself: ERROR: Unable to connect to '$url'.");
+			logger("$myself: " . $response->status_line);
 		} else {
 			foreach(split('\n', $response->content)) {
 				if(/^Total Accesses:\s+(\d+)$/) {

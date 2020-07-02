@@ -284,7 +284,8 @@ sub wowza_update {
 		my $data = XMLin($response->content);
 
 		if(!$response->is_success) {
-			logger("$myself: ERROR: Unable to connect to '$wls' (" . $response->status_line . ").");
+			logger("$myself: ERROR: Unable to connect to '$wls'.");
+			logger("$myself: " . $response->status_line);
 		}
 
 		# main (VHost) stats
