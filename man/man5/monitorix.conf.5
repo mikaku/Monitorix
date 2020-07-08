@@ -1327,6 +1327,8 @@ If you see good results as above, you can add it to the group 0 like this:
 .br
 	0 = /dev/sda, /dev/disk/by-path/pci-0000:00:11.0-scsi-0:0:0:0
 .br
+	1 = /dev/sdc, /dev/sdd
+.br
 </list>
 .RE
 .P
@@ -1345,6 +1347,21 @@ This list complements the \fBlist\fP option. It basically allows you to change t
 	pci-0000:00:11.0-scsi-0:0:0:0 = "data disk"
 .br
 </map>
+.RE
+.RE
+.P
+.BI desc
+.RS
+This list complements the \fBlist\fP option. It basically allows you to include a title for every group of disk drives. The title will appear in the bottom of the graph.
+.P
+.RS
+<desc>
+.br
+	0 = Local disks
+.br
+	1 = Remote disks
+.br
+</desc>
 .RE
 .RE
 .P
