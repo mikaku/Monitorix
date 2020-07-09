@@ -443,10 +443,18 @@ sub net_cgi {
 		push(@tmpz, "LINE1:B_in#00EE00");
 		if(lc($config->{netstats_in_bps}) eq "y") {
 			push(@CDEF, "CDEF:B_in=in,8,*");
-			push(@CDEF, "CDEF:B_out=out,8,*");
+			if(lc($config->{netstats_mode} || "") eq "separated") {
+				push(@CDEF, "CDEF:B_out=out,8,*,-1,*");
+			} else {
+				push(@CDEF, "CDEF:B_out=out,8,*");
+			}
 		} else {
 			push(@CDEF, "CDEF:B_in=in");
-			push(@CDEF, "CDEF:B_out=out");
+			if(lc($config->{netstats_mode} || "") eq "separated") {
+				push(@CDEF, "CDEF:B_out=out,-1,*");
+			} else {
+				push(@CDEF, "CDEF:B_out=out");
+			}
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -547,6 +555,12 @@ sub net_cgi {
 		push(@tmpz, "AREA:p_in#44EE44:");
 		push(@tmpz, "LINE1:p_out#0000EE");
 		push(@tmpz, "LINE1:p_in#00EE00");
+		push(@CDEF, "CDEF:p_in=in");
+		if(lc($config->{netstats_mode} || "") eq "separated") {
+			push(@CDEF, "CDEF:p_out=out,-1,*");
+		} else {
+			push(@CDEF, "CDEF:p_out=out");
+		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -574,9 +588,9 @@ sub net_cgi {
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
-			"DEF:p_in=$rrd:net" . $n . "_packs_in:AVERAGE",
-			"DEF:p_out=$rrd:net" . $n . "_packs_out:AVERAGE",
-			"CDEF:allvalues=p_in,p_out,+",
+			"DEF:in=$rrd:net" . $n . "_packs_in:AVERAGE",
+			"DEF:out=$rrd:net" . $n . "_packs_out:AVERAGE",
+			"CDEF:allvalues=in,out,+",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -596,9 +610,9 @@ sub net_cgi {
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
-				"DEF:p_in=$rrd:net" . $n . "_packs_in:AVERAGE",
-				"DEF:p_out=$rrd:net" . $n . "_packs_out:AVERAGE",
-				"CDEF:allvalues=p_in,p_out,+",
+				"DEF:in=$rrd:net" . $n . "_packs_in:AVERAGE",
+				"DEF:out=$rrd:net" . $n . "_packs_out:AVERAGE",
+				"CDEF:allvalues=in,out,+",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -640,6 +654,12 @@ sub net_cgi {
 		push(@tmpz, "AREA:e_in#44EE44:");
 		push(@tmpz, "LINE1:e_out#0000EE");
 		push(@tmpz, "LINE1:e_in#00EE00");
+		push(@CDEF, "CDEF:e_in=in");
+		if(lc($config->{netstats_mode} || "") eq "separated") {
+			push(@CDEF, "CDEF:e_out=out,-1,*");
+		} else {
+			push(@CDEF, "CDEF:e_out=out");
+		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -667,9 +687,9 @@ sub net_cgi {
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
-			"DEF:e_in=$rrd:net" . $n . "_error_in:AVERAGE",
-			"DEF:e_out=$rrd:net" . $n . "_error_out:AVERAGE",
-			"CDEF:allvalues=e_in,e_out,+",
+			"DEF:in=$rrd:net" . $n . "_error_in:AVERAGE",
+			"DEF:out=$rrd:net" . $n . "_error_out:AVERAGE",
+			"CDEF:allvalues=in,out,+",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -689,9 +709,9 @@ sub net_cgi {
 				@{$cgi->{version12}},
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
-				"DEF:e_in=$rrd:net" . $n . "_error_in:AVERAGE",
-				"DEF:e_out=$rrd:net" . $n . "_error_out:AVERAGE",
-				"CDEF:allvalues=e_in,e_out,+",
+				"DEF:in=$rrd:net" . $n . "_error_in:AVERAGE",
+				"DEF:out=$rrd:net" . $n . "_error_out:AVERAGE",
+				"CDEF:allvalues=in,out,+",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
