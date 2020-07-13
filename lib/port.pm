@@ -605,10 +605,18 @@ sub port_cgi {
 				push(@tmpz, "LINE1:B_i_in#00EE00");
 				if(lc($config->{netstats_in_bps}) eq "y") {
 					push(@CDEF, "CDEF:B_i_in=i_in,8,*");
-					push(@CDEF, "CDEF:B_i_out=i_out,8,*");
+					if(lc($config->{netstats_mode} || "") eq "separated") {
+						push(@CDEF, "CDEF:B_i_out=i_out,8,*,-1,*");
+					} else {
+						push(@CDEF, "CDEF:B_i_out=i_out,8,*");
+					}
 				} else {
 					push(@CDEF, "CDEF:B_i_in=i_in");
-					push(@CDEF, "CDEF:B_i_out=i_out");
+					if(lc($config->{netstats_mode} || "") eq "separated") {
+						push(@CDEF, "CDEF:B_i_out=i_out,-1,*");
+					} else {
+						push(@CDEF, "CDEF:B_i_out=i_out");
+					}
 				}
 			}
 			if(lc($pcon) eq "out") {
@@ -626,10 +634,18 @@ sub port_cgi {
 				push(@tmpz, "LINE1:B_o_in#00EE00");
 				if(lc($config->{netstats_in_bps}) eq "y") {
 					push(@CDEF, "CDEF:B_o_in=o_in,8,*");
-					push(@CDEF, "CDEF:B_o_out=o_out,8,*");
+					if(lc($config->{netstats_mode} || "") eq "separated") {
+						push(@CDEF, "CDEF:B_o_out=o_out,8,*,-1,*");
+					} else {
+						push(@CDEF, "CDEF:B_o_out=o_out,8,*");
+					}
 				} else {
 					push(@CDEF, "CDEF:B_o_in=o_in");
-					push(@CDEF, "CDEF:B_o_out=o_out");
+					if(lc($config->{netstats_mode} || "") eq "separated") {
+						push(@CDEF, "CDEF:B_o_out=o_out,-1,*");
+					} else {
+						push(@CDEF, "CDEF:B_o_out=o_out");
+					}
 				}
 			}
 			if(lc($config->{show_gaps}) eq "y") {
