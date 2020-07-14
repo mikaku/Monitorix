@@ -665,6 +665,12 @@ sub ftp_cgi {
 	push(@tmpz, "AREA:B_up#44EE44:");
 	push(@tmpz, "LINE1:B_dn#0000EE");
 	push(@tmpz, "LINE1:B_up#00EE00");
+	push(@CDEF, "CDEF:B_up=up");
+	if(lc($config->{netstats_mode} || "") eq "separated") {
+		push(@CDEF, "CDEF:B_dn=dn,-1,*");
+	} else {
+		push(@CDEF, "CDEF:B_dn=dn");
+	}
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -692,9 +698,9 @@ sub ftp_cgi {
 		@{$cgi->{version12}},
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
-		"DEF:B_dn=$rrd:ftp_bytes_dn:AVERAGE",
-		"DEF:B_up=$rrd:ftp_bytes_up:AVERAGE",
-		"CDEF:allvalues=B_dn,B_up,+",
+		"DEF:dn=$rrd:ftp_bytes_dn:AVERAGE",
+		"DEF:up=$rrd:ftp_bytes_up:AVERAGE",
+		"CDEF:allvalues=dn,up,+",
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
@@ -714,9 +720,9 @@ sub ftp_cgi {
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
-			"DEF:B_dn=$rrd:ftp_bytes_dn:AVERAGE",
-			"DEF:B_up=$rrd:ftp_bytes_up:AVERAGE",
-			"CDEF:allvalues=B_dn,B_up,+",
+			"DEF:dn=$rrd:ftp_bytes_dn:AVERAGE",
+			"DEF:up=$rrd:ftp_bytes_up:AVERAGE",
+			"CDEF:allvalues=dn,up,+",
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
