@@ -581,7 +581,7 @@ sub nginx_cgi {
 	if($config->{os} eq "Linux") {
 		my $cmd = $nginx->{cmd} || "";
 		if(!$cmd || $cmd eq "ss") {
-			open(IN, "ss -nl --$pp |");
+			open(IN, "ss -nl --tcp |");
 			while(<IN>) {
 				(undef, undef, undef, $pnum) = split(' ', $_);
 				chomp($pnum);
