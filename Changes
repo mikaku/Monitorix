@@ -12,6 +12,11 @@
 - Added more verbosity when HTTP connections fail in the modules 'apache.pm',
   'emailreports.pm', 'icecast.pm', 'lighttpd.pm', 'nginx.pm', 'pagespeed.pm',
   'phpapc.pm', 'phpfpm.pm', 'traffacct.pm' and 'wowza.pm'.
+- Added the ability to include a title name for every group of disks in
+  'disk.pm'. [#283]
+- Added the new global option 'netstats_mode' with the new 'separated' mode of
+  visualization in the modules 'net.pm', 'mail.pm', 'port.pm', 'ftp.pm',
+  'nginx.pm', 'mysql.pm', 'mongodb.pm' and 'squid.pm'. [#217]
 - Fixed some spelling mistakes on manpages. [#269]
 - Fixed the title size of memory graph in 'system.pm'.
 - Fixed to trimming leading and trailing character spaces from the comma-
@@ -23,8 +28,8 @@
 - Fixed to include conversion to Fahrenheit in 'gensens.pm'. [#280]
 - Fixed a bug in 'phpfpm.pm' that lead to error messages about a pool don't has
   an associated URL. [#282]
-- Fixed the error message "Error: 500 Can't connect to ..." when certificate
-  verification failed, in 'phpfpm.pm'.
+- Fixed the error message "Error: 500 Can't connect to ...", in 'phpfpm.pm',
+  when the certificate verification failed.
 
 
 3.12.0 - 21-Feb-2020
