@@ -95,12 +95,17 @@ sub HUP_handler {
 }
 
 sub daemonize {
-	open(STDIN, "< /dev/null") || die "Can't read /dev/null: $!";
-	open(STDOUT, ">> $config{log_file}") || die "Can't write to LOG: $!";
+	if($config{log_file}) {
+		open(STDIN, "< /dev/null") || die "Can't read /dev/null: $!";
+		open(STDOUT, ">> $config{log_file}") || die "Can't write to LOG: $!";
+	}
 	umask(022) || die "Unable to umask 022: $!";
 	exit if fork();	# parent exits
 	(setsid() != -1) || die "Can't start a new session: $!";
-	open(STDERR, ">> $config{log_file}") || die "Can't write to LOG: $!";
+
+	if($config{log_file}) {
+		open(STDERR, ">> $config{log_file}") || die "Can't write to LOG: $!";
+	}
 }
 
 sub usage {
