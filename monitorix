@@ -75,12 +75,14 @@ sub HUP_handler {
 	logger("SIG$signal caught.");
 
 	# upon receiving SIGHUP a new logfile is opened
-	close(STDOUT);
-	close(STDERR);
-	open(STDOUT, ">> $config{log_file}") || logger("Can't write to LOG: $!");
-	open(STDERR, ">> $config{log_file}") || logger("Can't write to LOG: $!");
-	chmod(0600, $config{log_file});
-	logger("$myself: opening a new log file.");
+	if($config{log_file}) {
+		close(STDOUT);
+		close(STDERR);
+		open(STDOUT, ">> $config{log_file}") || logger("Can't write to LOG: $!");
+		open(STDERR, ">> $config{log_file}") || logger("Can't write to LOG: $!");
+		chmod(0600, $config{log_file});
+		logger("$myself: opening a new log file.");
+	}
 
 	# restart HTTP built-in
 	if(lc($config{httpd_builtin}->{enabled} || "") eq "y") {
