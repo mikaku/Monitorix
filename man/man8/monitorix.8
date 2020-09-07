@@ -37,7 +37,7 @@ Displays version information.
 \fB\-n\fR
 This argument will prevent Monitorix from daemonizing, and hence, forcing it to run in foreground. This is specially useful for debugging purposes.
 .SH SIGNALS
-On receipt of a SIGHUP, \fBmonitorix\fP will close and reopen its log file. This is useful in scripts which rotate and age log files.
+On receipt of a SIGHUP, \fBmonitorix\fP will close and reopen its log file (provided that it has a filename defined). This is useful in scripts which rotate and age log files.
 .P
 Note that the configuration file is not re-read.
 .SH FILES
