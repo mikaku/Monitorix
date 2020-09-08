@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2016 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2020 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,21 +32,37 @@ use Socket;
 sub logger {
 	my ($url, $type) = @_;
 
-	if(open(OUT, ">> $main::config{httpd_builtin}->{log_file}")) {
-		if($type eq "OK") {
-			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] \"$ENV{REQUEST_METHOD} $url - " . ($ENV{HTTP_USER_AGENT} || "") . "\"\n";
-		} elsif($type eq "NOTEXIST") {
-			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] File does not exist: $url\n";
-		} elsif($type eq "AUTHERR") {
-			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] Authentication error: $url\n";
-		} elsif($type eq "NOTALLOWED") {
-			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] Access not allowed: $url\n";
+	if($main::config{httpd_builtin}->{log_file}) {
+		if(open(OUT, ">> $main::config{httpd_builtin}->{log_file}")) {
+			if($type eq "OK") {
+				print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] \"$ENV{REQUEST_METHOD} $url - " . ($ENV{HTTP_USER_AGENT} || "") . "\"\n";
+			} elsif($type eq "NOTEXIST") {
+				print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] File does not exist: $url\n";
+			} elsif($type eq "AUTHERR") {
+				print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] Authentication error: $url\n";
+			} elsif($type eq "NOTALLOWED") {
+				print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] Access not allowed: $url\n";
+			} else {
+				print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] $url\n";
+			}
+			close(OUT);
 		} else {
-			print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] $url\n";
+			print STDERR localtime() . " - ERROR: unable to open logfile '$main::config{httpd_builtin}->{log_file}'.\n";
 		}
-		close(OUT);
 	} else {
-		print STDERR localtime() . " - ERROR: unable to open logfile '$main::config{httpd_builtin}->{log_file}'.\n";
+		my $msg;
+		if($type eq "OK") {
+			$msg = localtime() . " - $type - [$ENV{REMOTE_ADDR}] \"$ENV{REQUEST_METHOD} $url - " . ($ENV{HTTP_USER_AGENT} || "") . "\"\n";
+		} elsif($type eq "NOTEXIST") {
+			$msg = localtime() . " - $type - [$ENV{REMOTE_ADDR}] File does not exist: $url\n";
+		} elsif($type eq "AUTHERR") {
+			$msg = localtime() . " - $type - [$ENV{REMOTE_ADDR}] Authentication error: $url\n";
+		} elsif($type eq "NOTALLOWED") {
+			$msg = localtime() . " - $type - [$ENV{REMOTE_ADDR}] Access not allowed: $url\n";
+		} else {
+			$msg = localtime() . " - $type - [$ENV{REMOTE_ADDR}] $url\n";
+		}
+		print("$msg");
 	}
 }
 

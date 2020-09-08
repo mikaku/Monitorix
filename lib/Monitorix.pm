@@ -130,10 +130,12 @@ sub httpd_setup {
 	}
 
 	# create the HTTPd logfile
-	open(OUT, ">> " . $config->{httpd_builtin}->{log_file});
-	close(OUT);
-	chown($uid, $gid, $config->{httpd_builtin}->{log_file});
-	chmod(0600, $config->{httpd_builtin}->{log_file});
+	if($config->{log_file}) {
+		open(OUT, ">> " . $config->{httpd_builtin}->{log_file});
+		close(OUT);
+		chown($uid, $gid, $config->{httpd_builtin}->{log_file});
+		chmod(0600, $config->{httpd_builtin}->{log_file});
+	}
 
 	setgid($gid);
 	if(getgid() != $gid) {
