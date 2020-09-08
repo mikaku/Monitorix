@@ -339,6 +339,8 @@ Default value for group: \fInobody\fP
 .RS
 This is the path to the HTTP server log file.
 .P
+If you leave this option blank or undefined Monitorix will log using the standard file descriptors. This is specially useful on systemd-based systems, you'll need to use the command \fIjournalctl -u monitorix\fP to see the logs.
+.P
 Default value: \fI/var/log/monitorix-httpd\fP
 .RE
 .P
@@ -441,7 +443,9 @@ Default value:
 .SS Log files pathnames
 .BI log_file
 .RS
-This is the path to the Monitorix log file. Please check this file periodically and especially after every update to confirm proper operation.
+This is the path of the Monitorix log file. Please check this file periodically and especially after every update to confirm proper operation.
+.P
+If you leave this option blank or undefined Monitorix will log using the standard file descriptors. This is specially useful on systemd-based systems, you'll need to use the command \fIjournalctl -u monitorix\fP to see the logs.
 .P
 Default value: \fI/var/log/monitorix\fP
 .RE
