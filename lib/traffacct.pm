@@ -378,8 +378,8 @@ sub traffacct_sendreports {
 		$ua->request(HTTP::Request->new('GET', $url));
 
 		$url = $traffacct->{reports}->{url_prefix} . $base_url . "/" . $imgs_dir . "traffacct" . $n . ".1month.$imgfmt_lc";
-		my $image = $ua->request(HTTP::Request->new('GET', $url));
-		if(!$image->is_success) {
+		my $response = $ua->request(HTTP::Request->new('GET', $url));
+		if(!$response->is_success) {
 			logger("$myself: ERROR: Unable to connect to '$url'.");
 			logger("$myself: " . $response->status_line);
 		}
@@ -405,7 +405,7 @@ sub traffacct_sendreports {
 		$msg->attach(
 			Type		=> $mime,
 			Id		=> 'image_02',
-			Data		=> $image->content,
+			Data		=> $response->content,
 		);
 		$msg->attach(
 			Type		=> 'text/plain',
