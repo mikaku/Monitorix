@@ -109,6 +109,7 @@ install-bin:
 	$(INSTALL_DATA) lib/squid.pm "$(DESTDIR)$(LIBDIR)/squid.pm"
 	$(INSTALL_DATA) lib/system.pm "$(DESTDIR)$(LIBDIR)/system.pm"
 	$(INSTALL_DATA) lib/tc.pm "$(DESTDIR)$(LIBDIR)/tc.pm"
+	$(INSTALL_DATA) lib/tinyproxy.pm "$(DESTDIR)$(LIBDIR)/tinyproxy.pm"
 	$(INSTALL_DATA) lib/traffacct.pm "$(DESTDIR)$(LIBDIR)/traffacct.pm"
 	$(INSTALL_DATA) lib/unbound.pm "$(DESTDIR)$(LIBDIR)/unbound.pm"
 	$(INSTALL_DATA) lib/user.pm "$(DESTDIR)$(LIBDIR)/user.pm"
