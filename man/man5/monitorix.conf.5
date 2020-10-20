@@ -1730,6 +1730,39 @@ This is the command that will be used to gather statistics. There are two possib
 .RE
 .P
 Default value: \fIss\fP
+.SS Tinyproxy statistics (tinyproxy.pm)
+This graph is able to monitor an unlimited number of Tinyproxy installations.
+.P
+.BI list
+.RS
+This is a comma-separated list of URLs of Tinyproxys.
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fItinyproxy.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fIhttp://your.proxy.com/\fP
+.RE
+.P
+.BI desc
+.RS
+This list complements the \fBlist\fP option, it defines the URL from where Monitorix must gather the statistics for each Tinyproxy defined.
+.P
+An example of this option would be:
+.P
+.RS
+<desc>
+.br
+	http://your.proxy.com = http://tinyproxy.stats
+.br
+</desc>
+.RE
+.RE
+.P
+.BI show_url
+.RS
+If set to \fIy\fP Monitorix will show the original URL of each Tinyproxy at the bottom of the graph. For security reasons you may want to hide this information.
+.P
+Default value: \fIy\fP
+.RE
 .SS Traffic Control statistics (tc.pm)
 This graph is able to monitor an unlimited number of network interfaces managed by the \fItc\fP command.
 .P
