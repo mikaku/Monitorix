@@ -563,7 +563,7 @@ sub tinyproxy_cgi {
 		push(@tmp, "GPRINT:tinyproxy" . $e . "_dcon:LAST:               Current\\: %4.0lf\\n");
 		push(@tmp, "LINE2:tinyproxy" . $e . "_rcon#EE4444:Refused (high load)");
 		push(@tmp, "GPRINT:tinyproxy" . $e . "_rcon:LAST:  Current\\: %4.0lf\\n");
-		push(@tmpz, "LINE2:tinyproxy" . $e . "_bcon##FFA500Bad");
+		push(@tmpz, "LINE2:tinyproxy" . $e . "_bcon#FFA500:Bad");
 		push(@tmpz, "LINE2:tinyproxy" . $e . "_dcon#EEEE44:Denied");
 		push(@tmpz, "LINE2:tinyproxy" . $e . "_rcon#EE4444:Refused (high load)");
 		if(lc($config->{show_gaps}) eq "y") {
