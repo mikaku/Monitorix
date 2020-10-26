@@ -163,7 +163,8 @@ sub create_index {
 	# The following small JavaScript function is intended to avoid to select to view
 	# accidentally (unless explicitly selected by the user) a huge amount of remote
 	# images that will hang the browser for a while.
-	$text_when_all = $config{multihost}->{default_option_when_all} || 0;
+	$text_when_all = $config{multihost}->{default_option_when_all} || "";
+	$text_when_all = "System load" if !$text_when_all;
 	my @match = grep { $config{graphs}{$_} eq $text_when_all } keys %{$config{graphs}};
 	$value_when_all = $match[0] || "";
 	if(!$value_when_all) {
