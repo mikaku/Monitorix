@@ -2904,6 +2904,17 @@ WARNING: Every time the number of entries in this option changes, Monitorix will
 .P
 Default value: \fIlocalhost:11211\fP
 .RE
+.SS Redis statistics (redis.pm)
+This graph is able to monitor an unlimited number of Redis installations.
+.P
+.BI list
+.RS
+This is a comma-separated list of hostnames with network port running Redis.
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIredis.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fIlocalhost:6379\fP
+.RE
 .SS PHP-FPM statistics (phpfpm.pm)
 This graph is able to monitor an unlimited number of PHP-FPM pools.
 .P
