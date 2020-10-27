@@ -105,6 +105,7 @@ install-bin:
 	$(INSTALL_DATA) lib/process.pm "$(DESTDIR)$(LIBDIR)/process.pm"
 	$(INSTALL_DATA) lib/proc.pm "$(DESTDIR)$(LIBDIR)/proc.pm"
 	$(INSTALL_DATA) lib/raspberrypi.pm "$(DESTDIR)$(LIBDIR)/raspberrypi.pm"
+	$(INSTALL_DATA) lib/redis.pm "$(DESTDIR)$(LIBDIR)/redis.pm"
 	$(INSTALL_DATA) lib/serv.pm "$(DESTDIR)$(LIBDIR)/serv.pm"
 	$(INSTALL_DATA) lib/squid.pm "$(DESTDIR)$(LIBDIR)/squid.pm"
 	$(INSTALL_DATA) lib/system.pm "$(DESTDIR)$(LIBDIR)/system.pm"
