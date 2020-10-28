@@ -1,5 +1,7 @@
 3.NN.N - DD-MMM-2020
 ====================
+- Added a complete graph to support Tinyproxy statistics ('tinyproxy.pm').
+- Added a complete graph to support Redis statistics ('redis.pm'). [#140]
 - Added $local_fs as dependency for Debian init script. [#270].
 - Adjusted configuration in 'docs/debian.conf'.
 - Added support for older versions of 'ss' in 'netstat.pm'. [#271]
@@ -32,6 +34,7 @@
   an associated URL. [#282]
 - Fixed the error message "Error: 500 Can't connect to ...", in 'phpfpm.pm',
   when the certificate verification failed.
+- Fixed an incorrectly misspelled variable in 'traffacct.pm'. [#289]
 
 
 3.12.0 - 21-Feb-2020
