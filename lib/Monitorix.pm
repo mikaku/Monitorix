@@ -103,13 +103,19 @@ sub setup_riglim {
 
 sub httpd_setup {
 	my $myself = (caller(0))[3];
-	my ($config, $debug) = @_;
+	my ($config, $reguser) = @_;
 	my $pid;
+	my ($uid, $gid);
 
-	my (undef, undef, $uid) = getpwnam($config->{httpd_builtin}->{user});
-	my (undef, undef, $gid) = getgrnam($config->{httpd_builtin}->{group});
 	my $host = $config->{httpd_builtin}->{host};
 	my $port = $config->{httpd_builtin}->{port};
+
+	if($reguser) {
+		(undef, undef, $uid, $gid ) = getpwuid($<);
+	} else {
+		(undef, undef, $uid) = getpwnam($config->{httpd_builtin}->{user});
+		(undef, undef, $gid) = getgrnam($config->{httpd_builtin}->{group});
+	}
 
 	if(!defined($uid)) {
 		logger("$myself: ERROR: invalid user defined.");

@@ -55,7 +55,7 @@ sub INT_handler {
 	my ($signal) = @_;
 
 	logger("SIG$signal caught.");
-	flush_accounting_rules(\%config, $options{d});
+	flush_accounting_rules(\%config, $options{d}) unless $options{u};
 	if(lc($config{httpd_builtin}->{enabled} || "") eq "y") {
 		kill(15, $config{httpd_pid});
 	}
@@ -90,7 +90,7 @@ sub HUP_handler {
 			require HTTPServer;
 			kill(15, $config{httpd_pid});
 			kill(9, $config{httpd_pid});
-			httpd_setup(\%config, $options{d});
+			httpd_setup(\%config, $options{u});
 			logger("Restarted HTTP built-in server (pid $config{httpd_pid}).") if (defined($config{httpd_pid}));
 		}
 	}
@@ -501,7 +501,7 @@ EOF
 
 # Main
 # ----------------------------------------------------------------------------
-getopts("c:p:d:vn", \%options) || usage();
+getopts("c:p:d:vnu", \%options) || usage();
 
 if($options{v}) {
 	print("Monitorix version " . VERSION . " (" . RELDATE . ")\n");
@@ -542,13 +542,14 @@ if(grep {$_ eq $config{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
 	$SIG{'CHLD'} = 'DEFAULT';
 }	
 
-$0 = sprintf("%s %s%s%s%s%s",
+$0 = sprintf("%s %s%s%s%s%s%s",
 	$^V lt 5.6.2 ? "monitorix" : abs_path($0),
 	$options{c} ? "-c $options{c}" : "",
 	$options{p} ? " -p $options{p}" : "",
 	$options{d} ? " -d $options{d}" : "",
 	$options{v} ? " -v" : "",
-	$options{n} ? " -n" : "");
+	$options{n} ? " -n" : "",
+	$options{u} ? " -u" : "");
 
 daemonize() unless $options{n};
 logger("Starting Monitorix version " . VERSION . " (pid $$).");
@@ -672,7 +673,7 @@ if(open(OUT, "> " . $config{base_dir} . "/cgi/monitorix.conf.path")) {
 	logger("WARNING: unable to create the file '$config{base_dir}/cgi/monitorix.conf.path'. $!");
 }
 
-if($config{os} eq "Linux") {
+if($config{os} eq "Linux" && !$config{u}) {
 	# make sure that 'ip_default_table' option has a consistent value
 	$config{ip_default_table} = "filter" if !$config{ip_default_table};
 
@@ -689,7 +690,7 @@ if($config{os} eq "Linux") {
 }
 
 # make sure that there aren't residual Monitorix iptables rules
-flush_accounting_rules(\%config, $options{d});
+flush_accounting_rules(\%config, $options{d}) unless $options{u};
 
 logger("Initializing graphs.");
 
@@ -745,14 +746,16 @@ create_index();
 
 # start the HTTP built-in (if enabled)
 if(lc($config{httpd_builtin}->{enabled} || "") eq "y") {
-	logger("Setting owner/group and permission bits for the imgs/ directory.") if defined($options{d});
-	my (undef, undef, $uid) = getpwnam($config{httpd_builtin}->{user});
-	my (undef, undef, $gid) = getgrnam($config{httpd_builtin}->{group});
-	chown($uid, $gid, $config{base_dir} . "/" . $config{imgs_dir});
-	chmod(0755, $config{base_dir} . "/" . $config{imgs_dir});
+	if(!$config{u}) {
+		logger("Setting owner/group and permission bits for the imgs/ directory.") if defined($options{d});
+		my (undef, undef, $uid) = getpwnam($config{httpd_builtin}->{user});
+		my (undef, undef, $gid) = getgrnam($config{httpd_builtin}->{group});
+		chown($uid, $gid, $config{base_dir} . "/" . $config{imgs_dir});
+		chmod(0755, $config{base_dir} . "/" . $config{imgs_dir});
+	}
 
 	require HTTPServer;
-	httpd_setup(\%config, $options{d});
+	httpd_setup(\%config, $options{u});
 	logger("Started HTTP built-in server (pid $config{httpd_pid}).") if (defined($config{httpd_pid}));
 }
 
@@ -895,7 +898,7 @@ while(1) {
 						require HTTPServer;
 						kill(15, $config{httpd_pid});
 						kill(9, $config{httpd_pid});
-						httpd_setup(\%config, $options{d});
+						httpd_setup(\%config, $options{u});
 						logger("Restarted HTTP built-in server (pid $config{httpd_pid}).") if defined($config{httpd_pid});
 					}
 				}
