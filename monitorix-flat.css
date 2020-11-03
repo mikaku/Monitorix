@@ -1,0 +1,73 @@
+body {
+    background-color: #333333;
+    font-family: Verdana, sans-serif;
+    color: #333333;
+}
+
+.index-body {
+    background-color: black;
+    font-family: Verdana, sans-serif;
+    color: #333333;
+}
+
+select, input {
+    border-radius: 0;
+    border: none;
+    padding: 10px;
+}
+
+input[type=button], input[type=submit], input[type=reset] {
+  background-color: white;
+  border: none;
+  color: black;
+  padding: 16px 32px;
+  text-decoration: none;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+table {
+//    background: #888888;
+    border: 0;
+    border-spacing: 0;
+}
+
+th {
+//    background-color: #333333;
+}
+
+th, td {
+//    background-color: #333333;
+    padding: 0;
+}
+
+.text-title {
+    font-family: Verdana, sans-serif;
+    color: #888800;
+}
+
+.td-title {
+    background-color: slategray;
+    font-family: Verdana, sans-serif;
+    font-size: 1.3em;
+    font-weight: bold;
+    color: revert;
+    padding: 10px;
+}
+
+.text-copyright {
+    font-size: 70%;
+    color: #888888;
+}
+
+.text-size {
+    font-size: 5;
+}
+
+.history01 {
+    color: #888888;
+    position: fixed;
+    left: 1em;
+    font-size: 32px;
+    letter-spacing: -1px;
+}

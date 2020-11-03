@@ -1,0 +1,47 @@
+body {
+    background-color: black;
+    font-family: Verdana, sans-serif;
+    color: white;
+}
+
+a {
+    color: #888888;
+    vlink: #888888;
+}
+
+table {
+    background: #888888;
+    border: 1px groove black;
+    border-spacing: 5px;
+}
+
+th {
+    background-color: #333333;
+}
+
+th, td {
+    background-color: #333333;
+    padding: 0;
+}
+
+.text-title {
+    font-family: Verdana, sans-serif;
+    color: #888800;
+}
+
+.text-copyright {
+    font-size: 70%;
+    color: #888888;
+}
+
+.text-size {
+    font-size: 5;
+}
+
+.history01 {
+    color: #888888;
+    position: fixed;
+    left: 1em;
+    font-size: 32px;
+    letter-spacing: -1px;
+}

@@ -41,12 +41,16 @@ install-bin:
 	$(Q)echo -e '\033[1;32mInstalling script and modules...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(BINDIR)"
 	$(INSTALL_PROGRAM) $(PN) "$(DESTDIR)$(BINDIR)/$(PN)"
-	
+
 	$(INSTALL_DIR) "$(DESTDIR)$(DBDIR)"
-	
+
 	$(INSTALL_DIR) "$(DESTDIR)$(BASEDIR)"
 	$(INSTALL_DIR) "$(DESTDIR)$(WWWDIR)"
 	$(INSTALL_DIR) "$(DESTDIR)$(WWWDIR)/cgi"
+	$(INSTALL_DIR) "$(DESTDIR)$(WWWDIR)/css"
+	$(INSTALL_DATA) monitorix-black.css "$(DESTDIR)$(WWWDIR)/css/monitorix-black.css"
+	$(INSTALL_DATA) monitorix-white.css "$(DESTDIR)$(WWWDIR)/css/monitorix-white.css"
+	$(INSTALL_DATA) monitorix-flat.css  "$(DESTDIR)$(WWWDIR)/css/monitorix-flat.css"
 	$(INSTALL_WORLDDIR) "$(DESTDIR)$(WWWDIR)/imgs"
 	$(INSTALL_PROGRAM) $(PN).cgi "$(DESTDIR)$(WWWDIR)/cgi/$(PN).cgi"
 	$(INSTALL_DATA) logo_bot.png "$(DESTDIR)$(WWWDIR)/logo_bot.png"
@@ -59,10 +63,10 @@ install-bin:
 
 	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)/logrotate.d/"
 	$(INSTALL_DATA) docs/$(PN).logrotate "$(DESTDIR)$(CONFDIR)/logrotate.d/$(PN)"
-	
+
 	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)/sysconfig"
 	$(INSTALL_DATA) docs/$(PN).sysconfig "$(DESTDIR)$(CONFDIR)/sysconfig/$(PN)"
-	
+
 	$(INSTALL_DIR) "$(DESTDIR)$(LIBDIR)"
 	$(INSTALL_DATA) lib/ambsens.pm "$(DESTDIR)$(LIBDIR)/ambsens.pm"
 	$(INSTALL_DATA) lib/apache.pm "$(DESTDIR)$(LIBDIR)/apache.pm"

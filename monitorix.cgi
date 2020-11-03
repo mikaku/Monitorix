@@ -96,7 +96,7 @@ sub multihost {
 
 	if($cgi->{val} eq "all" || $cgi->{val} =~ m/group[0-9]*/) {
 		if($cgi->{graph} eq "all") {
-			print "<table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n";
+			print "<table width='1' >\n";
 			my $g = 0;
 			foreach (split(',', $config{graph_name})) {
 				my $gn = trim($_);
@@ -104,10 +104,8 @@ sub multihost {
 					if(!$g) {
 						print " <tr>\n";
 						for($n = 0; $n < scalar(@host); $n++) {
-							print "  <td bgcolor='$colors->{title_bg_color}'>\n";
-							print "   <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
+							print "  <td class='text-title'>\n";
 							print "   <b>&nbsp;&nbsp;" . $host[$n] . "</b>\n";
-							print "   </font>\n";
 							print "  </td>\n";
 						}
 						print " </tr>\n";
@@ -119,7 +117,7 @@ sub multihost {
 						}
 						print " <tr>\n";
 						for($n = 0; $n < scalar(@host); $n++) {
-							print "  <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
+							print "  <td  style='vertical-align: top; height: 10%; width: 10%;'>\n";
 							print "   <iframe src='" . $url[$n] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=_${gn}$sgd&color=$cgi->{color}&silent=imagetag' height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
 							print "  </td>\n";
 						}
@@ -132,14 +130,12 @@ sub multihost {
 			print "<br>\n";
 		} else {
 			for($n = 0; $n < scalar(@host); $n += $multihost->{graphs_per_row}) {
-				print "<table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n";
+				print "<table width='1' >\n";
 				print " <tr>\n";
 				for($n2 = 0; $n2 < $multihost->{graphs_per_row}; $n2++) {
 					if($n < scalar(@host)) {
-						print "  <td bgcolor='$colors->{title_bg_color}'>\n";
-						print "   <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
+						print "  <td class='text-title'>\n";
 						print "   <b>&nbsp;&nbsp;" . $host[$n] . "</b>\n";
-						print "   </font>\n";
 						print "  </td>\n";
 					}
 					$n++;
@@ -148,7 +144,7 @@ sub multihost {
 				print " <tr>\n";
 				for($n2 = 0, $n = $n - $multihost->{graphs_per_row}; $n2 < $multihost->{graphs_per_row}; $n2++) {
 					if($n < scalar(@host)) {
-						print "  <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
+						print "  <td  style='vertical-align: top; height: 10%; width: 10%;'>\n";
 						print "   <iframe src='" . $url[$n] . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetag' height=201 width=397 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
 						print "  </td>\n";
 	
@@ -160,11 +156,9 @@ sub multihost {
 				for($n2 = 0, $n = $n - $multihost->{graphs_per_row}; $n2 < $multihost->{graphs_per_row}; $n2++) {
 					if($n < scalar(@host)) {
 					if(lc($multihost->{footer_url}) eq "y") {
-						print "  <td bgcolor='$colors->{title_bg_color}'>\n";
-						print "   <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
+						print "  <td class='text-title'>\n";
 						print "   <font size='-1'>\n";
 						print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$n] . "' style='color: " . $colors->{title_fg_color} . ";'>$foot_url[$n]</a></b>\n";
-						print "   </font></font>\n";
 						print "  </td>\n";
 					}
 					}
@@ -180,12 +174,10 @@ sub multihost {
 		if($cgi->{graph} eq "all") {
 			print "     <iframe src='" . trim((split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0]) . trim((split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2]) . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=all&color=$cgi->{color}' height=100% width=100% frameborder=0 marginwidth=0 marginheight=0 scrolling=yes></iframe>\n";
 		} else {
-			print "  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n";
+			print "  <table width='1' >\n";
 			print "   <tr>\n";
-			print "    <td bgcolor='$colors->{title_bg_color}'>\n";
-			print "    <font face='Verdana, sans-serif' color='$colors->{fg_color}'>\n";
+			print "    <td class='text-title'>\n";
 			print "    <b>&nbsp;&nbsp;" . $host[$cgi->{val}] . "</b>\n";
-			print "    </font>\n";
 			print "    </td>\n";
 			print "   </tr>\n";
 			print "   <tr>\n";
@@ -195,11 +187,9 @@ sub multihost {
 			print "   </tr>\n";
 			print "   <tr>\n";
 			if(lc($multihost->{footer_url}) eq "y") {
-				print "   <td bgcolor='$colors->{title_bg_color}'>\n";
-				print "    <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n";
+				print "   <td class='text-title'>\n";
 				print "    <font size='-1'>\n";
 				print "    <b>&nbsp;&nbsp;<a href='" . $foot_url[$cgi->{val}] . "' style='color: " . $colors->{title_fg_color} . ";'>$foot_url[$cgi->{val}]</a></b>\n";
-				print "    </font></font>\n";
 				print "   </td>\n";
 			}
 			print "   </tr>\n";
@@ -215,12 +205,10 @@ sub graph_header {
 
 	push(@output, "\n");
 	push(@output, "<!-- graph table begins -->\n");
-	push(@output, "  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors{graph_bg_color}' border='1'>\n");
+	push(@output, "  <table width='1' >\n");
 	push(@output, "    <tr>\n");
-	push(@output, "      <td bgcolor='$colors{title_bg_color}' colspan='$colspan'>\n");
-	push(@output, "        <font face='Verdana, sans-serif' color='$colors{title_fg_color}'>\n");
+	push(@output, "      <td class='td-title' colspan='$colspan'>\n");
 	push(@output, "          <b>&nbsp;&nbsp;$title</b>\n");
-	push(@output, "        </font>\n");
 	push(@output, "      </td>\n");
 	push(@output, "    </tr>\n");
 	return @output;
@@ -448,6 +436,11 @@ if($RRDs::VERSION > 1.2) {
 	if($RRDs::VERSION >= 1.3) {
 		push(@version12_small, "--font=DEFAULT:0:Mono");
 	}
+
+	push(@version12, "--alt-autoscale", "--allow-shrink" );
+	push(@version12_small, "--alt-autoscale", "--allow-shrink" );
+
+
 }
 
 
@@ -492,14 +485,15 @@ EOF
 	print("  <head>\n");
 	print("    <title>$config{title}</title>\n");
 	print("    <link rel='shortcut icon' href='" . $config{url} . "/" . $config{favicon} . "'>\n");
+	print("    <link href='" . $config{url} . "/css/monitorix-" . $config{theme_color} . ".css' rel='stylesheet'>\n");
 	if($config{refresh_rate}) {
 		print("    <meta http-equiv='Refresh' content='" . $config{refresh_rate} . "'>\n");
 	}
 	print("  </head>\n");
-	print("  <body bgcolor='" . $colors{bg_color} . "' vlink='#888888' link='#888888'>\n");
+	print("  <body>\n");
 	print("  $piwik_code\n");
 	print("  <center>\n");
-	push(@output, "  <table cellspacing='5' cellpadding='0' bgcolor='" . $colors{graph_bg_color} . "' border='1'>\n");
+	push(@output, "  <table bgcolor='" . $colors{graph_bg_color} . "' >\n");
 	push(@output, "  <tr>\n");
 
 	if(lc($config{enable_back_button} || "") eq "y") {
@@ -507,10 +501,8 @@ EOF
 	}
 
 	if(($val ne "all" || $val ne "group") && $mode ne "multihost") {
-		push(@output, "  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
-		push(@output, "  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
+		push(@output, "  <td class='td-title'>\n");
 		push(@output, "    <font size='5'><b>&nbsp;&nbsp;Host:&nbsp;</b></font>\n");
-		push(@output, "  </font>\n");
 		push(@output, "  </td>\n");
 	}
 
@@ -518,15 +510,12 @@ EOF
 		my $gnum = $1;
 		my $gname = (split(',', $config{multihost}->{remotegroup_list}))[$gnum];
 		$gname = trim($gname);
-		push(@output, "  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
-		push(@output, "  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
+		push(@output, "  <td class='td-title' >\n");
 		push(@output, "    <font size='5'><b>&nbsp;&nbsp;$gname&nbsp;</b></font>\n");
-		push(@output, "  </font>\n");
 		push(@output, "  </td>\n");
 	}
 
-	push(@output, "  <td bgcolor='" . $colors{bg_color} . "'>\n");
-	push(@output, "  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "'>\n");
+	push(@output, "  <td class='td-title' >\n");
 	if($mode eq "localhost" || $mode eq "traffacct") {
 		$title = $config{hostname};
 	} elsif($mode eq "multihost") {
@@ -553,17 +542,13 @@ EOF
 	if($mode ne "multihost" || $graph ne "all" || $val eq "all") {
 		print @output;
 		print("    <font size='5'><b>&nbsp;&nbsp;$title&nbsp;&nbsp;</b></font>\n");
-		print("  </font>\n");
 		print("  </td>\n");
-			print("  <td bgcolor='" . $colors{title_bg_color} . "'>\n");
-			print("  <font face='Verdana, sans-serif' color='" . $colors{title_fg_color} . "'>\n");
-			print("    <font size='5'><b>&nbsp;&nbsp;last&nbsp;$twhen&nbsp;&nbsp;</b></font>\n");
-			print("  </font>\n");
+		print("  <td class='td-title' >\n");
+		print("    <font size='5'><b>&nbsp;&nbsp;last&nbsp;$twhen&nbsp;&nbsp;</b></font>\n");
 			print("  </td>\n");
 		print("  </tr>\n");
 		print("  </table>\n");
-		print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "'>\n");
-		print encode('utf-8', "    <h4><font color='#888888'>" . strftime("%a %b %e %H:%M:%S %Z %Y", localtime) . "</font></h4>\n");
+		print encode('utf-8', "    <h4 class='text-title'><font color='#888888'>" . strftime("%a %b %e %H:%M:%S %Z %Y", localtime) . "</h4>\n");
 	}
 }
 
@@ -675,15 +660,12 @@ if($mode eq "localhost") {
 if(!$silent) {
 	if($mode ne "multihost" || $graph ne "all" || $val eq "all") {
 		print("\n");
-		print("  </font>\n");
 		print("  </center>\n");
 		print("<!-- footer begins -->\n");
-		print("  <p>\n");
+		print("  <p class='text-copyright'>\n");
 		print("  <a href='https://www.monitorix.org'><img src='" . $config{url} . "/" . $config{logo_bottom} . "' border='0'></a>\n");
 		print("  <br>\n");
-		print("  <font face='Verdana, sans-serif' color='" . $colors{fg_color} . "' size='-2'>\n");
 		print("Copyright &copy; 2005-2020 Jordi Sanfeliu\n");
-		print("  </font>\n");
 	}
 	print("  </body>\n");
 	print("</html>\n");
