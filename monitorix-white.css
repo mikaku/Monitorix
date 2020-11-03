@@ -1,7 +1,7 @@
 body {
-    background-color: black;
+//    background-color: black;
     font-family: Verdana, sans-serif;
-    color: white;
+//    color: white;
 }
 
 a {
@@ -16,17 +16,22 @@ table {
 }
 
 th {
-    background-color: #333333;
+    background-color: gray;
 }
 
 th, td {
-    background-color: #333333;
+    background-color: gray;
     padding: 0;
+}
+
+.td-title {
+    font-family: Verdana, sans-serif;
+    color: #cccc00;
 }
 
 .text-title {
     font-family: Verdana, sans-serif;
-    color: #888800;
+    color: #cccc00;
 }
 
 .text-copyright {
