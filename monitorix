@@ -24,7 +24,7 @@ require 5.006;
 use strict;
 use warnings;
 use FindBin qw($Bin);
-use lib $Bin . "/lib", "/usr/lib/monitorix";
+use lib $Bin . "/lib", "/usr/local/share/monitorix";
 
 use Monitorix;
 use POSIX qw(WNOHANG LC_TIME setlocale uname pause setsid);
@@ -210,7 +210,7 @@ EOF
     })();
  </script>
  <noscript>
-   <p><img src="$piwik_img" style="border:0;" alt=""/></p>
+   <p><img src="$piwik_img" style="order:0;" alt=""/></p>
  </noscript>
 <!-- End Piwik Code -->
 EOF
@@ -238,7 +238,6 @@ EOF
   <center>
   <p>
   <br>
-  <font face="Verdana, sans-serif">
   <table>
     <tr>
       <td>
@@ -492,7 +491,6 @@ EOF
     <input type="hidden" name="color" value="$theme">
     <input type="submit" value="    Ok    ">
   </form>
-  </font>
   </center>
  </body>
 </html>
