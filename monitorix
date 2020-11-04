@@ -24,7 +24,7 @@ require 5.006;
 use strict;
 use warnings;
 use FindBin qw($Bin);
-use lib $Bin . "/lib", "/usr/local/share/monitorix";
+use lib $Bin . "/lib", "/usr/lib/monitorix";
 
 use Monitorix;
 use POSIX qw(WNOHANG LC_TIME setlocale uname pause setsid);
