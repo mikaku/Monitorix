@@ -651,7 +651,7 @@ sub tinyproxy_cgi {
 
 			if(lc($tinyproxy->{show_url}) eq "y") {
 				push(@output, "    <tr>\n");
-				push(@output, "      <td bgcolor='$colors->{title_bg_color}' colspan='2'>\n");
+				push(@output, "      <td class='td-note' colspan='2'>\n");
 				push(@output, "       <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n");
 				push(@output, "       <font size='-1'>\n");
 				push(@output, "        <b>&nbsp;&nbsp;<a href='" . trim($url) . "' style='color: " . $colors->{title_fg_color} . "'>" . trim($url) . "</a></b>\n");

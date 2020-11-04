@@ -33,15 +33,22 @@ table {
 }
 
 th {
-    background-color: #333333;
+    background-color: #888888;
 }
 
 th, td {
-    background-color: #333333;
+    background-color: #888888;
     padding: 0;
 }
 
 .td-title {
+    background-color: #333333;
+    font-family: Verdana, sans-serif;
+    color: #888800;
+}
+
+.td-note {
+    background-color: #333333;
     font-family: Verdana, sans-serif;
     color: #888800;
 }
@@ -52,8 +59,8 @@ th, td {
 }
 
 .text-copyright {
-    font-size: 70%;
-    color: #888888;
+    font-size: 60%;
+    color: white;
 }
 
 .text-size {
