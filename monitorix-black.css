@@ -41,6 +41,11 @@ th, td {
     padding: 0;
 }
 
+.td-title {
+    font-family: Verdana, sans-serif;
+    color: #888800;
+}
+
 .text-title {
     font-family: Verdana, sans-serif;
     color: #888800;
