@@ -20,7 +20,7 @@ input[type=button], input[type=submit], input[type=reset] {
   background-color: white;
   border: none;
   color: black;
-  padding: 16px 32px;
+  padding: 10px 16px;
   text-decoration: none;
   margin: 4px 2px;
   cursor: pointer;
@@ -32,12 +32,28 @@ table {
     border-spacing: 5px;
 }
 
-th {
-    background-color: #888888;
+cgi-header-table {
+//    background: transparent;
+    border: 1px groove black;
+    border-spacing: 5px;
 }
 
+
+.startpage-header-table {
+    border: 0;
+    background: transparent;
+}
+
+.table-module {
+    background: #cccccc;
+}
+
+/* th { */
+/*     background-color: #888888; */
+/* } */
+
 th, td {
-    background-color: #888888;
+    background-color: #333333;
     padding: 0;
 }
 
@@ -45,6 +61,11 @@ th, td {
     background-color: #333333;
     font-family: Verdana, sans-serif;
     color: #888800;
+}
+
+.td-title-host {
+    font-family: Verdana, sans-serif;
+    background-color: black;
 }
 
 .td-note {
