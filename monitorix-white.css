@@ -1,30 +1,75 @@
 body {
-//    background-color: black;
+    background-color: white;
     font-family: Verdana, sans-serif;
 //    color: white;
 }
 
-a {
+.index-body {
+    background-color: black;
+    font-family: Verdana, sans-serif;
     color: #888888;
-    vlink: #888888;
+}
+
+select, input {
+    border-radius: 0;
+    border: none;
+    padding: 10px;
+}
+
+input[type=button], input[type=submit], input[type=reset] {
+  background-color: white;
+  border: none;
+  color: black;
+  padding: 10px 16px;
+  text-decoration: none;
+  margin: 4px 2px;
+  cursor: pointer;
 }
 
 table {
-    background: #888888;
+    background: #cccccc;
+    border: 1px groove #cccccc;
+    border-spacing: 5px;
+}
+
+cgi-header-table {
+//    background: transparent;
     border: 1px groove black;
     border-spacing: 5px;
 }
 
-th {
-    background-color: gray;
+
+.startpage-header-table {
+    border: 0;
+    background: transparent;
 }
 
+.table-module {
+    background: #cccccc;
+}
+
+/* th { */
+/*     background-color: #888888; */
+/* } */
+
 th, td {
-    background-color: gray;
+    background-color: #777777;
     padding: 0;
 }
 
 .td-title {
+    background-color: #777777;
+    font-family: Verdana, sans-serif;
+    color: #cccc00;
+}
+
+.td-title-host {
+    font-family: Verdana, sans-serif;
+    background-color: white;
+}
+
+.td-note {
+    background-color: #777777;
     font-family: Verdana, sans-serif;
     color: #cccc00;
 }
@@ -35,8 +80,8 @@ th, td {
 }
 
 .text-copyright {
-    font-size: 70%;
-    color: #888888;
+    font-size: 60%;
+//    color: white;
 }
 
 .text-size {
