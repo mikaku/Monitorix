@@ -506,9 +506,7 @@ sub traffacct_cgi {
 		print("  <table class='table-module' width='1'>\n");
 		print("  <tr>\n");
 		print("  <td class='td-note' colspan='" . $traffacct->{graphs_per_row}  . "'>\n");
-		print("  <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n");
 		print("    <b>&nbsp;&nbsp;Network traffic<b>\n");
-		print("  </font>\n");
 		print("  </td>\n");
 		print("  </tr>\n");
 		$n = 0;
@@ -619,9 +617,7 @@ sub traffacct_cgi {
 			print("  <table class='table-module' width='1'>\n");
 			print("  <tr>\n");
 			print("  <td class='td-note' colspan='1'>\n");
-			print("  <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n");
 			print("    <b>&nbsp;&nbsp;Network traffic<b>\n");
-			print("  </font>\n");
 			print("  </td>\n");
 			print("  </tr>\n");
 			print("  <tr>\n");

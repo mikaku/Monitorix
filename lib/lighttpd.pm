@@ -635,10 +635,7 @@ sub lighttpd_cgi {
 
 			push(@output, "    <tr>\n");
 			push(@output, "      <td class='td-note' colspan='2'>\n");
-			push(@output, "       <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n");
-			push(@output, "       <font size='-1'>\n");
-			push(@output, "        <b>&nbsp;&nbsp;<a href='" . trim($url) . "' style='color: " . $colors->{title_fg_color} . "'>" . trim($url) . "</a></b>\n");
-			push(@output, "       </font></font>\n");
+			push(@output, "        <b>&nbsp;&nbsp;<a href='" . trim($url) . "'>" . trim($url) . "</a></b>\n");
 			push(@output, "      </td>\n");
 			push(@output, "    </tr>\n");
 			push(@output, main::graph_footer());
