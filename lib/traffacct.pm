@@ -503,7 +503,7 @@ sub traffacct_cgi {
 	my @tal = split(',', $traffacct->{list});
 
 	if($cgi->{val} eq "all") {
-		print("  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n");
+		print("  <table class='table-module' width='1'>\n");
 		print("  <tr>\n");
 		print("  <td class='td-note' colspan='" . $traffacct->{graphs_per_row}  . "'>\n");
 		print("  <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n");
@@ -616,7 +616,7 @@ sub traffacct_cgi {
 	} else {
 		return unless $tal[$cgi->{val}];
 		if(!$silent) {
-			print("  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n");
+			print("  <table class='table-module' width='1'>\n");
 			print("  <tr>\n");
 			print("  <td class='td-note' colspan='1'>\n");
 			print("  <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n");

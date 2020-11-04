@@ -861,7 +861,7 @@ sub zfs_cgi {
 
 	if($title) {
 		push(@output, "  </table>\n");
-		push(@output, "  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n");
+		push(@output, "  <table class='table-module' width='1'>\n");
 	}
 
 	$e = 0;
