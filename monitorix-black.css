@@ -28,7 +28,7 @@ body {
 
 table {
     background: #888888;
-    border: 1px groove black;
+    border: 1px inset black;
     border-spacing: 5px;
 }
 
@@ -53,6 +53,7 @@ cgi-header-table {
 /* } */
 
 th, td {
+    border: 1px inset #cccccc;
     background-color: #333333;
     padding: 0;
 }

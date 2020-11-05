@@ -28,7 +28,7 @@ input[type=button], input[type=submit], input[type=reset] {
 
 table {
     background: #cccccc;
-    border: 1px groove #cccccc;
+    border: 1px inset #cccccc;
     border-spacing: 5px;
 }
 
@@ -53,6 +53,7 @@ cgi-header-table {
 /* } */
 
 th, td {
+    border: 1px inset #cccccc;
     background-color: #777777;
     padding: 0;
 }
