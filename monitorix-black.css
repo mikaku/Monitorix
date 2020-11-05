@@ -10,21 +10,21 @@ body {
     color: #888888;
 }
 
-select, input {
-    border-radius: 0;
-    border: none;
-    padding: 10px;
-}
+/* select, input { */
+/*     border-radius: 0; */
+/*     border: none; */
+/*     padding: 10px; */
+/* } */
 
-input[type=button], input[type=submit], input[type=reset] {
-  background-color: white;
-  border: none;
-  color: black;
-  padding: 10px 16px;
-  text-decoration: none;
-  margin: 4px 2px;
-  cursor: pointer;
-}
+/* input[type=button], input[type=submit], input[type=reset] { */
+/*   background-color: white; */
+/*   border: none; */
+/*   color: black; */
+/*   padding: 10px 16px; */
+/*   text-decoration: none; */
+/*   margin: 4px 2px; */
+/*   cursor: pointer; */
+/* } */
 
 table {
     background: #888888;
