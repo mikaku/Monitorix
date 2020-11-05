@@ -29,10 +29,10 @@ body {
 table {
     background: #cccccc;
 //    border: 1px black;
-    border-left: 1px outset #b2b2b2;
-    border-top: 1px outset  #b2b2b2;
-    border-right: 1px outset  #767676;
-    border-bottom: 1px outset #767676;
+    border-left: 1px outset #888888;
+    border-top: 1px outset  #888888;
+    border-right: 1px outset  #5a5a5a;
+    border-bottom: 1px outset #5a5a5a;
     border-spacing: 5px;
 }
 
