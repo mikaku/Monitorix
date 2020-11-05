@@ -10,22 +10,6 @@ body {
     color: #888888;
 }
 
-/* select, input { */
-/*     border-radius: 0; */
-/*     border: none; */
-/*     padding: 10px; */
-/* } */
-
-/* input[type=button], input[type=submit], input[type=reset] { */
-/*   background-color: white; */
-/*   border: none; */
-/*   color: black; */
-/*   padding: 10px 16px; */
-/*   text-decoration: none; */
-/*   margin: 4px 2px; */
-/*   cursor: pointer; */
-/* } */
-
 table {
     background: #888888;
     border: 1px black;
@@ -36,7 +20,13 @@ table {
     border-spacing: 5px;
 }
 
-cgi-header-table {
+th, td {
+    border: 1px inset #888888;
+    background-color: #333333;
+    padding: 0;
+}
+
+.cgi-header-table {
     border: 1px groove black;
     border-spacing: 5px;
 }
@@ -49,16 +39,6 @@ cgi-header-table {
 
 .table-module {
     background: #cccccc;
-}
-
-/* th { */
-/*     background-color: #888888; */
-/* } */
-
-th, td {
-    border: 1px inset #888888;
-    background-color: #333333;
-    padding: 0;
 }
 
 .td-title {
