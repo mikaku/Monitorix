@@ -24,7 +24,7 @@ require 5.006;
 use strict;
 use warnings;
 use FindBin qw($Bin);
-use lib $Bin . "/lib", "/usr/lib/monitorix";
+use lib $Bin . "/lib", "/usr/local/share/monitorix";
 
 use Monitorix;
 use POSIX qw(WNOHANG LC_TIME setlocale uname pause setsid);
@@ -210,7 +210,7 @@ EOF
     })();
  </script>
  <noscript>
-   <p><img src="$piwik_img" style="order:0;" alt=""/></p>
+   <p><img src="$piwik_img" style="border:0;" alt=""/></p>
  </noscript>
 <!-- End Piwik Code -->
 EOF
@@ -238,14 +238,14 @@ EOF
   <center>
   <p>
   <br>
-  <table>
+  <table class='startpage-header-table'>
     <tr>
-      <td>
+      <td class='startpage-header-table'>
         <a href="$config{logo_top_url}"><img src="$base_url$config{logo_top}" border="0"></a>
       </td>
     </tr>
     <tr>
-      <td>
+      <td class='startpage-header-table'>
         <h2 align="right">v@{[VERSION]}</h2>
       </td>
     </tr>
@@ -254,17 +254,13 @@ EOF
   <form action="${base_cgi}monitorix.cgi" method="get">
     <table>
       <tr>
-        <td bgcolor="$title_back_color">
-          <font color="$title_fore_color">
-<b>&nbsp;Hostname&nbsp;</b>
-          </font>
-       </td>
-        <td bgcolor="$title_back_color">
-          <font color="$title_fore_color">
-<b>&nbsp;Graph&nbsp;</b>
-          </font>
-       </td>
-     </tr>
+        <td class='td-title'>
+          <b>&nbsp;Hostname&nbsp;</b>
+        </td>
+        <td class='td-title'>
+          <b>&nbsp;Graph&nbsp;</b>
+        </td>
+      </tr>
       <tr>
 EOF
 
@@ -427,38 +423,38 @@ EOF
 
 	if(lc($config{enable_hourly_view} || "") eq "y" ) {
 		print(OUT <<EOF);
-        <td bgcolor="$title_back_color">
+        <td class='td-title'>
        	    <label>
 		<input type="radio" name="when" value="1hour">
-		<font color="$title_fore_color"><b>Hourly&nbsp;</b></font>
+		<b>Hourly&nbsp;</b>
 	    </label>
         </td>
 EOF
 	}
 
 	print(OUT <<EOF);
-        <td bgcolor="$title_back_color">
+        <td class='td-title'>
 	    <label>
           	<input type="radio" checked name="when" value="1day">
-            	<font color="$title_fore_color"><b>Daily&nbsp;</b></font>
+            	<b>Daily&nbsp;</b>
 	    </label>
         </td>
-        <td bgcolor="$title_back_color">
+        <td class='td-title'>
        	    <label>
           	<input type="radio" name="when" value="1week">
-            	<font color="$title_fore_color"><b>Weekly&nbsp;</b></font>
+            	<b>Weekly&nbsp;</b>
 	    </label>
         </td>
-        <td bgcolor="$title_back_color">
+        <td class='td-title'>
        	    <label>
           	<input type="radio" name="when" value="1month">
-            	<font color="$title_fore_color"><b>Monthly&nbsp;</b></font>
+            	<b>Monthly&nbsp;</b>
 	    </label>
         </td>
-        <td bgcolor="$title_back_color">
+        <td class='td-title'>
        	    <label>
           	<input type="radio" name="when" value="1year">
-            	<font color="$title_fore_color"><b>Yearly&nbsp;</b></font>
+            	<b>Yearly&nbsp;</b>
 	    </label>
         </td>
       </tr>
@@ -473,10 +469,10 @@ EOF
 			print(OUT "      <tr>\n");
 		}
 		print(OUT <<EOF);
-        <td bgcolor="$title_back_color">
+        <td class='td-title'>
        	    <label>
           	<input type="radio" name="when" value="${n}year">
-            	<font color="$title_fore_color"><b>$n Years&nbsp;</b></font>
+            	<b>$n Years&nbsp;</b>
 	    </label>
         </td>
 EOF

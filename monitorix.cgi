@@ -23,7 +23,7 @@ use strict;
 use warnings;
 use File::Basename;
 use FindBin qw($Bin);
-use lib $Bin . "/lib", "/usr/lib/monitorix";
+use lib $Bin . "/lib", "/usr/local/share/monitorix";
 
 use Monitorix;
 use CGI qw(:standard);
@@ -493,7 +493,7 @@ EOF
 	print("  <body>\n");
 	print("  $piwik_code\n");
 	print("  <center>\n");
-	push(@output, "  <table bgcolor='" . $colors{graph_bg_color} . "' >\n");
+	push(@output, "  <table class='cgi-header-table' >\n");
 	push(@output, "  <tr>\n");
 
 	if(lc($config{enable_back_button} || "") eq "y") {
@@ -510,12 +510,12 @@ EOF
 		my $gnum = $1;
 		my $gname = (split(',', $config{multihost}->{remotegroup_list}))[$gnum];
 		$gname = trim($gname);
-		push(@output, "  <td class='td-title' >\n");
+		push(@output, "  <td class='td-title-host' >\n");
 		push(@output, "    <font size='5'><b>&nbsp;&nbsp;$gname&nbsp;</b></font>\n");
 		push(@output, "  </td>\n");
 	}
 
-	push(@output, "  <td class='td-title' >\n");
+	push(@output, "  <td class='td-title-host' >\n");
 	if($mode eq "localhost" || $mode eq "traffacct") {
 		$title = $config{hostname};
 	} elsif($mode eq "multihost") {
