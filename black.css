@@ -47,6 +47,10 @@ th, td {
     color: #888800;
 }
 
+.td-valign-top {
+    vertical-align: top;
+}
+
 .td-title-host {
     font-family: Verdana, sans-serif;
     background-color: black;
