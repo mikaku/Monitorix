@@ -223,51 +223,48 @@ EOF
 	if(!open(OUT, "> $config{base_dir}/index.html")) {
 		die "unable to create '${config{base_dir}}index.html': $!";
 	}
+	my $css = sprintf("%scss/%s.css", $base_url, $config{theme_color});
 	print(OUT <<EOF);
 <!DOCTYPE html "-//W3C//DTD HTML 4.01 Final//EN">
 <html>
  <head>
   <title>$config{title}</title>
   <link rel="shortcut icon" href="$base_url$config{favicon}">
+  <link href="$css" rel="stylesheet">
  </head>
- <body bgcolor="$bgcolor" text="#888888" vlink="#888888" link="#888888">
+ <body class="index-body">
   $piwik_code
   $when_all_code
   <center>
   <p>
   <br>
-  <font face="Verdana, sans-serif">
-  <table>
+  <table class='startpage-header-table'>
     <tr>
-      <td>
+      <td class='startpage-header-table'>
         <a href="$config{logo_top_url}"><img src="$base_url$config{logo_top}" border="0"></a>
       </td>
     </tr>
     <tr>
-      <td>
+      <td class='startpage-header-table'>
         <h2 align="right">v@{[VERSION]}</h2>
       </td>
     </tr>
   </table>
   <p>
   <form action="${base_cgi}monitorix.cgi" method="get">
-    <table cellspacing="5" cellpadding="0" bgcolor="$table_back_color" border="1">
+    <table>
       <tr>
-        <td bgcolor="$title_back_color">
-          <font color="$title_fore_color">
-<b>&nbsp;Hostname&nbsp;</b>
-          </font>
-       </td>
-        <td bgcolor="$title_back_color">
-          <font color="$title_fore_color">
-<b>&nbsp;Graph&nbsp;</b>
-          </font>
-       </td>
-     </tr>
+        <td class='td-title'>
+          <b>&nbsp;Hostname&nbsp;</b>
+        </td>
+        <td class='td-title'>
+          <b>&nbsp;Graph&nbsp;</b>
+        </td>
+      </tr>
       <tr>
 EOF
 
-	print(OUT "        <td bgcolor='$bgcolor'>\n");
+	print(OUT "        <td>\n");
 	print(OUT "          <select name='mode' size='1' id='hostname' onchange='auto_select()'>\n");
 	print(OUT "            <optgroup label='Local Host'>\n");
 	print(OUT "            <option value='localhost'>localhost</option>\n");
@@ -305,7 +302,7 @@ EOF
 
 
 
-	print(OUT "        <td bgcolor='$bgcolor'>\n");
+	print(OUT "        <td>\n");
 	print(OUT "          <select name='graph' size='1' id='graph'>\n");
 	print(OUT "            <option value='all'>All graphs</option>\n");
 	foreach (split(',', $config{graph_name})) {
@@ -420,44 +417,44 @@ EOF
      </tr>
     </table>
     <p>
-    <table cellspacing="5" cellpadding="0" bgcolor="$table_back_color" border="1">
+    <table>
      <tr>
 EOF
 
 	if(lc($config{enable_hourly_view} || "") eq "y" ) {
 		print(OUT <<EOF);
-        <td bgcolor="$title_back_color">
+        <td class='td-title'>
        	    <label>
 		<input type="radio" name="when" value="1hour">
-		<font color="$title_fore_color"><b>Hourly&nbsp;</b></font>
+		<b>Hourly&nbsp;</b>
 	    </label>
         </td>
 EOF
 	}
 
 	print(OUT <<EOF);
-        <td bgcolor="$title_back_color">
+        <td class='td-title'>
 	    <label>
           	<input type="radio" checked name="when" value="1day">
-            	<font color="$title_fore_color"><b>Daily&nbsp;</b></font>
+            	<b>Daily&nbsp;</b>
 	    </label>
         </td>
-        <td bgcolor="$title_back_color">
+        <td class='td-title'>
        	    <label>
           	<input type="radio" name="when" value="1week">
-            	<font color="$title_fore_color"><b>Weekly&nbsp;</b></font>
+            	<b>Weekly&nbsp;</b>
 	    </label>
         </td>
-        <td bgcolor="$title_back_color">
+        <td class='td-title'>
        	    <label>
           	<input type="radio" name="when" value="1month">
-            	<font color="$title_fore_color"><b>Monthly&nbsp;</b></font>
+            	<b>Monthly&nbsp;</b>
 	    </label>
         </td>
-        <td bgcolor="$title_back_color">
+        <td class='td-title'>
        	    <label>
           	<input type="radio" name="when" value="1year">
-            	<font color="$title_fore_color"><b>Yearly&nbsp;</b></font>
+            	<b>Yearly&nbsp;</b>
 	    </label>
         </td>
       </tr>
@@ -472,10 +469,10 @@ EOF
 			print(OUT "      <tr>\n");
 		}
 		print(OUT <<EOF);
-        <td bgcolor="$title_back_color">
+        <td class='td-title'>
        	    <label>
           	<input type="radio" name="when" value="${n}year">
-            	<font color="$title_fore_color"><b>$n Years&nbsp;</b></font>
+            	<b>$n Years&nbsp;</b>
 	    </label>
         </td>
 EOF
@@ -490,7 +487,6 @@ EOF
     <input type="hidden" name="color" value="$theme">
     <input type="submit" value="    Ok    ">
   </form>
-  </font>
   </center>
  </body>
 </html>

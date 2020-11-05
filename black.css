@@ -1,0 +1,81 @@
+body {
+    background-color: black;
+    font-family: Verdana, sans-serif;
+    color: white;
+}
+
+.index-body {
+    background-color: black;
+    font-family: Verdana, sans-serif;
+    color: #888888;
+}
+
+table {
+    background: #888888;
+    border: 1px black;
+    border-left: 1px outset #888888;
+    border-top: 1px outset #888888;
+    border-right: 1px outset black;
+    border-bottom: 1px outset black;
+    border-spacing: 5px;
+}
+
+th, td {
+    border: 1px inset #888888;
+    background-color: #333333;
+    padding: 0;
+}
+
+.cgi-header-table {
+    border: 1px groove black;
+    border-spacing: 5px;
+}
+
+
+.startpage-header-table {
+    border: 0;
+    background: transparent;
+}
+
+.table-module {
+    background: #cccccc;
+}
+
+.td-title {
+    background-color: #333333;
+    font-family: Verdana, sans-serif;
+    color: #888800;
+}
+
+.td-title-host {
+    font-family: Verdana, sans-serif;
+    background-color: black;
+}
+
+.td-note {
+    background-color: #333333;
+    font-family: Verdana, sans-serif;
+    color: #888800;
+}
+
+.text-title {
+    font-family: Verdana, sans-serif;
+    color: #888800;
+}
+
+.text-copyright {
+    font-size: 60%;
+    color: white;
+}
+
+.text-size {
+    font-size: 5;
+}
+
+.history01 {
+    color: #888888;
+    position: fixed;
+    left: 1em;
+    font-size: 32px;
+    letter-spacing: -1px;
+}
