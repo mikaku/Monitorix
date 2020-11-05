@@ -24,7 +24,7 @@ require 5.006;
 use strict;
 use warnings;
 use FindBin qw($Bin);
-use lib $Bin . "/lib", "/usr/local/share/monitorix";
+use lib $Bin . "/lib", "/usr/lib/monitorix";
 
 use Monitorix;
 use POSIX qw(WNOHANG LC_TIME setlocale uname pause setsid);
@@ -223,7 +223,7 @@ EOF
 	if(!open(OUT, "> $config{base_dir}/index.html")) {
 		die "unable to create '${config{base_dir}}index.html': $!";
 	}
-	my $css = sprintf("%scss/monitorix-%s.css", $base_url, $config{theme_color});
+	my $css = sprintf("%scss/%s.css", $base_url, $config{theme_color});
 	print(OUT <<EOF);
 <!DOCTYPE html "-//W3C//DTD HTML 4.01 Final//EN">
 <html>
