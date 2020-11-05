@@ -27,12 +27,12 @@ body {
 /* } */
 
 table {
-    background: #888888;
+    background: #cccccc;
     border: 1px black;
-    border-left: 1px outset #888888;
-    border-top: 1px outset #888888;
-    border-right: 1px outset black;
-    border-bottom: 1px outset black;
+    border-left: 1px outset #b2b2b2;
+    border-top: 1px outset #b2b2b2;
+    border-right: 1px outset #4c4c4c;
+    border-bottom: 1px outset #4c4c4c;
     border-spacing: 5px;
 }
 
