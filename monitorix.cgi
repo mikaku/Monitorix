@@ -437,9 +437,6 @@ if($RRDs::VERSION > 1.2) {
 		push(@version12_small, "--font=DEFAULT:0:Mono");
 	}
 
-	push(@version12, "--alt-autoscale", "--allow-shrink" );
-	push(@version12_small, "--alt-autoscale", "--allow-shrink" );
-
 
 }
 
