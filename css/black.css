@@ -26,10 +26,20 @@ th, td {
     padding: 0;
 }
 
+/* .cgi-header-table { */
+/*     border: 1px groove black; */
+/*     border-spacing: 5px; */
+/* } */
 .cgi-header-table {
-    border: 1px groove black;
+    background: #888888;
+    border: 1px black;
+    border-left: 1px outset #b2b2b2;
+    border-top: 1px outset #b2b2b2;
+    border-right: 1px outset #5b5b5b;
+    border-bottom: 1px outset #5b5b5b;
     border-spacing: 5px;
 }
+
 
 
 .startpage-header-table {
