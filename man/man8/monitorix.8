@@ -36,6 +36,9 @@ Displays version information.
 .TP
 \fB\-n\fR
 This argument will prevent Monitorix from daemonizing, and hence, forcing it to run in foreground. This is specially useful for debugging purposes.
+.TP
+\fB\-u\fR
+This option will force Monitorix to run under the regular user who started it. It's necessary to make sure that this user will have write permissions to the directory and files pointed by the options \fBbase_dir\fP, \fBbase_lib\fP and \fBlog_file\fP (either for \fImonitorix\fP and for the HTTP built-in server). Also, you must know that some graphs might not work because only the 'root' user is capable to get such statistics. Check the log files after starting Monitorix in this mode.
 .SH SIGNALS
 On receipt of a SIGHUP, \fBmonitorix\fP will close and reopen its log file (provided that it has a filename defined). This is useful in scripts which rotate and age log files.
 .P
