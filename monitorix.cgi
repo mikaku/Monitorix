@@ -485,7 +485,7 @@ EOF
 	print("  <head>\n");
 	print("    <title>$config{title}</title>\n");
 	print("    <link rel='shortcut icon' href='" . $config{url} . "/" . $config{favicon} . "'>\n");
-	print("    <link href='" . $config{url} . "/css/monitorix-" . $config{theme_color} . ".css' rel='stylesheet'>\n");
+	print("    <link href='" . $config{url} . "/css/" . $config{theme_color} . ".css' rel='stylesheet'>\n");
 	if($config{refresh_rate}) {
 		print("    <meta http-equiv='Refresh' content='" . $config{refresh_rate} . "'>\n");
 	}
