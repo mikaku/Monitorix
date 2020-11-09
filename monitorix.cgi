@@ -23,7 +23,7 @@ use strict;
 use warnings;
 use File::Basename;
 use FindBin qw($Bin);
-use lib $Bin . "/lib", "/usr/lib/monitorix";
+use lib $Bin . "/lib", "/usr/local/share/monitorix";
 
 use Monitorix;
 use CGI qw(:standard);
@@ -96,7 +96,7 @@ sub multihost {
 
 	if($cgi->{val} eq "all" || $cgi->{val} =~ m/group[0-9]*/) {
 		if($cgi->{graph} eq "all") {
-			print "<table width='1' >\n";
+			print "<table class='table-module' width='1' >\n";
 			my $g = 0;
 			foreach (split(',', $config{graph_name})) {
 				my $gn = trim($_);
@@ -130,7 +130,7 @@ sub multihost {
 			print "<br>\n";
 		} else {
 			for($n = 0; $n < scalar(@host); $n += $multihost->{graphs_per_row}) {
-				print "<table width='1' >\n";
+				print "<table class='table-module' width='1' >\n";
 				print " <tr>\n";
 				for($n2 = 0; $n2 < $multihost->{graphs_per_row}; $n2++) {
 					if($n < scalar(@host)) {
@@ -174,7 +174,7 @@ sub multihost {
 		if($cgi->{graph} eq "all") {
 			print "     <iframe src='" . trim((split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0]) . trim((split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2]) . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=all&color=$cgi->{color}' height=100% width=100% frameborder=0 marginwidth=0 marginheight=0 scrolling=yes></iframe>\n";
 		} else {
-			print "  <table width='1' >\n";
+			print "  <table class='table-module' width='1' >\n";
 			print "   <tr>\n";
 			print "    <td class='text-title'>\n";
 			print "    <b>&nbsp;&nbsp;" . $host[$cgi->{val}] . "</b>\n";
@@ -205,7 +205,7 @@ sub graph_header {
 
 	push(@output, "\n");
 	push(@output, "<!-- graph table begins -->\n");
-	push(@output, "  <table width='1' >\n");
+	push(@output, "  <table class='table-module' width='1' >\n");
 	push(@output, "    <tr>\n");
 	push(@output, "      <td class='td-title' colspan='$colspan'>\n");
 	push(@output, "          <b>&nbsp;&nbsp;$title</b>\n");
