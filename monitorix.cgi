@@ -23,7 +23,7 @@ use strict;
 use warnings;
 use File::Basename;
 use FindBin qw($Bin);
-use lib $Bin . "/lib", "/usr/local/share/monitorix";
+use lib $Bin . "/lib", "/usr/lib/monitorix";
 
 use Monitorix;
 use CGI qw(:standard);
