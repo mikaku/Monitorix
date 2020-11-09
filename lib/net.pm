@@ -171,7 +171,7 @@ sub net_update {
 				}
 				close(IN);
 			} elsif($config->{os} eq "FreeBSD") {
-				open(IN, "netstat -nibdW |");
+				open(IN, "netstat -nibd |");
 				while(<IN>) {
 					if(/Link/ && /$nl[$n]/) {
 						# Idrop column added in 8.0
