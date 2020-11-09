@@ -83,6 +83,11 @@ th, td {
     color: #888800;
 }
  
+.text-title-multihost {
+    font-family: Verdana, sans-serif;
+    color: white;
+}
+ 
 .text-copyright {
     font-size: 10px;
     color: white;

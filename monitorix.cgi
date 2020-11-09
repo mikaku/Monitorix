@@ -104,7 +104,7 @@ sub multihost {
 					if(!$g) {
 						print " <tr>\n";
 						for($n = 0; $n < scalar(@host); $n++) {
-							print "  <td class='text-title'>\n";
+							print "  <td class='text-title-multihost'>\n";
 							print "   <b>&nbsp;&nbsp;" . $host[$n] . "</b>\n";
 							print "  </td>\n";
 						}
