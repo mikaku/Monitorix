@@ -436,8 +436,6 @@ if($RRDs::VERSION > 1.2) {
 	if($RRDs::VERSION >= 1.3) {
 		push(@version12_small, "--font=DEFAULT:0:Mono");
 	}
-
-
 }
 
 
