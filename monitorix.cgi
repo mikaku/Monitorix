@@ -134,7 +134,7 @@ sub multihost {
 				print " <tr>\n";
 				for($n2 = 0; $n2 < $multihost->{graphs_per_row}; $n2++) {
 					if($n < scalar(@host)) {
-						print "  <td class='text-title'>\n";
+						print "  <td class='text-title-multihost'>\n";
 						print "   <b>&nbsp;&nbsp;" . $host[$n] . "</b>\n";
 						print "  </td>\n";
 					}
