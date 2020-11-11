@@ -1,28 +1,40 @@
 body {
     background-color: white;
     font-family: Verdana, sans-serif;
-    color: #888888;
+    color: #777777;
+}
+
+.index-body {
+    background-color: white;
+    font-family: Verdana, sans-serif;
+    color: #777777;
 }
 
 table {
     background: #cccccc;
-    border-left: 1px outset #888888;
-    border-top: 1px outset  #888888;
-    border-right: 1px outset  #7a7a7a;
+    border-left: 1px outset #777777;
+    border-top: 1px outset #777777;
+    border-right: 1px outset #7a7a7a;
     border-bottom: 1px outset #7a7a7a;
     border-spacing: 5px;
 }
 
 th, td {
-    border: 1px inset #888888;
-    background-color: #777777;
+    border: 1px inset #777777;
+    background-color: white;
     padding: 0;
 }
 
 .cgi-header-table {
-    border: 1px groove black;
+    background: #cccccc;
+    border: 1px black;
+    border-left: 1px outset #b2b2b2;
+    border-top: 1px outset #b2b2b2;
+    border-right: 1px outset #5b5b5b;
+    border-bottom: 1px outset #5b5b5b;
     border-spacing: 5px;
 }
+
 
 
 .startpage-header-table {
@@ -32,6 +44,12 @@ th, td {
 
 .table-module {
     background: #cccccc;
+    border: 1px black;
+    border-left: 1px outset #b2b2b2;
+    border-top: 1px outset #b2b2b2;
+    border-right: 1px outset #5b5b5b;
+    border-bottom: 1px outset #5b5b5b;
+    border-spacing: 5px;
 }
 
 .td-title {
@@ -40,9 +58,14 @@ th, td {
     color: #cccc00;
 }
 
+.td-valign-top {
+    vertical-align: top;
+}
+
 .td-title-host {
     font-family: Verdana, sans-serif;
     background-color: white;
+    color: black;
 }
 
 .td-note {
@@ -58,6 +81,7 @@ th, td {
 
 .text-copyright {
     font-size: 60%;
+//    color: white;
 }
 
 .text-size {
@@ -65,7 +89,7 @@ th, td {
 }
 
 .history01 {
-    color: #888888;
+    color: #777777;
     position: fixed;
     left: 1em;
     font-size: 32px;
