@@ -1,27 +1,27 @@
 body {
     background-color: white;
     font-family: Verdana, sans-serif;
-    color: #777777;
+    color: #888888;
 }
 
 .index-body {
     background-color: white;
     font-family: Verdana, sans-serif;
-    color: #777777;
+    color: #888888;
 }
 
 table {
     background: #cccccc;
-    border-left: 1px outset #777777;
-    border-top: 1px outset #777777;
+    border-left: 1px outset #888888;
+    border-top: 1px outset #888888;
     border-right: 1px outset #7a7a7a;
     border-bottom: 1px outset #7a7a7a;
     border-spacing: 5px;
 }
 
 th, td {
-    border: 1px inset #777777;
-    background-color: white;
+    border: 1px inset #888888;
+    background-color: #777777;
     padding: 0;
 }
 
@@ -85,8 +85,8 @@ th, td {
 }
 
 .text-copyright {
-    font-size: 60%;
-//    color: white;
+    font-size: 10px;
+    color: black;
 }
 
 .text-size {
