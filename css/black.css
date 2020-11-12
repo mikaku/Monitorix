@@ -88,7 +88,12 @@ th, td {
     font-family: Verdana, sans-serif;
     color: #888800;
 }
- 
+
+.text-title-multihost-one {
+    font-family: Verdana, sans-serif;
+    color: white;
+}
+
 .text-title-multihost {
     font-family: Verdana, sans-serif;
     color: white;
