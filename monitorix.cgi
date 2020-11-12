@@ -176,7 +176,7 @@ sub multihost {
 		} else {
 			print "  <table class='table-module' width='1' >\n";
 			print "   <tr>\n";
-			print "    <td class='text-title'>\n";
+			print "    <td class='text-title-multihost-one'>\n";
 			print "    <b>&nbsp;&nbsp;" . $host[$cgi->{val}] . "</b>\n";
 			print "    </td>\n";
 			print "   </tr>\n";
