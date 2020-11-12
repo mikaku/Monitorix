@@ -181,7 +181,7 @@ sub multihost {
 			print "    </td>\n";
 			print "   </tr>\n";
 			print "   <tr>\n";
-			print "    <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
+			print "    <td class='text-title-multihost-one td-valign-top' height: 10%; width: 10%;'>\n";
 			print "     <iframe src='" . trim((split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0]) . trim((split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2]) . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetagbig' height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
 			print "    </td>\n";
 			print "   </tr>\n";
