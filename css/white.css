@@ -58,6 +58,11 @@ th, td {
     color: #cccc00;
 }
 
+.text-title-multihost {
+    font-family: Verdana, sans-serif;
+    color: black;
+}
+
 .td-valign-top {
     vertical-align: top;
 }
