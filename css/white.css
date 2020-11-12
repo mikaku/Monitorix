@@ -80,6 +80,11 @@ th, td {
     color: #cccc00;
 }
 
+.text-title-date {
+    font-family: Verdana, sans-serif;
+    color: #888888;
+}
+ 
 .text-title {
     font-family: Verdana, sans-serif;
     color: #cccc00;
