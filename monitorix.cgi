@@ -537,7 +537,7 @@ EOF
 		print("  <td class='td-title' ><b>&nbsp;&nbsp;last&nbsp;$twhen&nbsp;&nbsp;</b></td>\n");
 		print("  </tr>\n");
 		print("  </table>\n");
-		print encode('utf-8', "    <h4 class='text-title'>" . strftime("%a %b %e %H:%M:%S %Z %Y", localtime) . "</h4>\n");
+		print encode('utf-8', "    <h4 class='text-title-date'>" . strftime("%a %b %e %H:%M:%S %Z %Y", localtime) . "</h4>\n");
 	}
 }
 
