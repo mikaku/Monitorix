@@ -33,6 +33,7 @@ th, td {
     border-right: 1px outset #5b5b5b;
     border-bottom: 1px outset #5b5b5b;
     border-spacing: 5px;
+    font-size: 24px;
 }
 
 
@@ -79,6 +80,17 @@ th, td {
     color: #cccc00;
 }
 
+.text-title-date {
+    font-family: Verdana, sans-serif;
+    color: #888888;
+}
+ 
+.text-title-multihost-one {
+    background-color: #777777;
+    font-family: Verdana, sans-serif;
+    color: black;
+}
+
 .text-title {
     font-family: Verdana, sans-serif;
     color: #cccc00;
@@ -100,4 +112,3 @@ th, td {
     font-size: 32px;
     letter-spacing: -1px;
 }
-

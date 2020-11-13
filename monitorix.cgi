@@ -176,12 +176,12 @@ sub multihost {
 		} else {
 			print "  <table class='table-module' width='1' >\n";
 			print "   <tr>\n";
-			print "    <td class='text-title'>\n";
+			print "    <td class='text-title-multihost-one'>\n";
 			print "    <b>&nbsp;&nbsp;" . $host[$cgi->{val}] . "</b>\n";
 			print "    </td>\n";
 			print "   </tr>\n";
 			print "   <tr>\n";
-			print "    <td bgcolor='$colors->{title_bg_color}' style='vertical-align: top; height: 10%; width: 10%;'>\n";
+			print "    <td class='text-title-multihost-one td-valign-top' height: 10%; width: 10%;'>\n";
 			print "     <iframe src='" . trim((split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[0]) . trim((split(',', $multihost->{remotehost_desc}->{$cgi->{val}}))[2]) . "/monitorix.cgi?mode=localhost&when=$cgi->{when}&graph=$graph&color=$cgi->{color}&silent=imagetagbig' height=249 width=545 frameborder=0 marginwidth=0 marginheight=0 scrolling=no></iframe>\n";
 			print "    </td>\n";
 			print "   </tr>\n";
@@ -496,18 +496,14 @@ EOF
 	}
 
 	if(($val ne "all" || $val ne "group") && $mode ne "multihost") {
-		push(@output, "  <td class='td-title'>\n");
-		push(@output, "    <font size='5'><b>&nbsp;&nbsp;Host:&nbsp;</b></font>\n");
-		push(@output, "  </td>\n");
+		push(@output, "  <th class='td-title'><b>&nbsp;&nbsp;Host:&nbsp;</b></th>\n");
 	}
 
 	if($val =~ m/group(\d+)/) {
 		my $gnum = $1;
 		my $gname = (split(',', $config{multihost}->{remotegroup_list}))[$gnum];
 		$gname = trim($gname);
-		push(@output, "  <td class='td-title-host' >\n");
-		push(@output, "    <font size='5'><b>&nbsp;&nbsp;$gname&nbsp;</b></font>\n");
-		push(@output, "  </td>\n");
+		push(@output, "  <th class='td-title-host' ><b>&nbsp;&nbsp;$gname&nbsp;</b></td>\n");
 	}
 
 	push(@output, "  <td class='td-title-host' >\n");
@@ -536,14 +532,12 @@ EOF
 
 	if($mode ne "multihost" || $graph ne "all" || $val eq "all") {
 		print @output;
-		print("    <font size='5'><b>&nbsp;&nbsp;$title&nbsp;&nbsp;</b></font>\n");
+		print("    <b>&nbsp;&nbsp;$title&nbsp;&nbsp;</b>\n");
 		print("  </td>\n");
-		print("  <td class='td-title' >\n");
-		print("    <font size='5'><b>&nbsp;&nbsp;last&nbsp;$twhen&nbsp;&nbsp;</b></font>\n");
-			print("  </td>\n");
+		print("  <td class='td-title' ><b>&nbsp;&nbsp;last&nbsp;$twhen&nbsp;&nbsp;</b></td>\n");
 		print("  </tr>\n");
 		print("  </table>\n");
-		print encode('utf-8', "    <h4 class='text-title'><font color='#888888'>" . strftime("%a %b %e %H:%M:%S %Z %Y", localtime) . "</h4>\n");
+		print encode('utf-8', "    <h4 class='text-title-date'>" . strftime("%a %b %e %H:%M:%S %Z %Y", localtime) . "</h4>\n");
 	}
 }
 
