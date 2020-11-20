@@ -544,7 +544,7 @@ sub squid_cgi {
 		if($title) {
 			push(@output, main::graph_header($title, 2));
 			push(@output, "    <tr>\n");
-			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, "    <td>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
 			"--resolution=$tf->{res}",
@@ -734,7 +734,7 @@ sub squid_cgi {
 	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	if($title) {
 		push(@output, "    <tr>\n");
-		push(@output, "    <td valign='top' bgcolor='$colors->{title_bg_color}'>\n");
+		push(@output, "    <td class='td-valign-top'>\n");
 	}
 	my @sg0 = split(',', $squid->{graph_0});
 	for($n = 0, $i = 1; $n < 9; $n++, $i++) {
@@ -1062,7 +1062,7 @@ sub squid_cgi {
 
 	if($title) {
 		push(@output, "    </td>\n");
-		push(@output, "    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		push(@output, "    <td class='td-valign-top'>\n");
 	}
 	@riglim = @{setup_riglim($rigid[3], $limit[3])};
 	undef(@tmp);

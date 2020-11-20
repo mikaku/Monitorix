@@ -926,7 +926,7 @@ sub int_cgi {
 		if($title) {
 			push(@output, main::graph_header($title, 2));
 			push(@output, "    <tr>\n");
-			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, "    <td>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
 			"--resolution=$tf->{res}",
@@ -1003,7 +1003,7 @@ sub int_cgi {
 	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	if($title) {
 		push(@output, "    <tr>\n");
-		push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+		push(@output, "    <td>\n");
 	}
 	my $i;
 	for($n = 0, $n1 = 0, $n2 = 0, $n3 = 0; $n < 256; $n++) {
@@ -1119,7 +1119,7 @@ sub int_cgi {
 
 	if($title) {
 		push(@output, "    </td>\n");
-		push(@output, "    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		push(@output, "    <td class='td-valign-top'>\n");
 	}
 
 	@riglim = @{setup_riglim($rigid[1], $limit[1])};

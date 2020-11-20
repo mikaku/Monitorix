@@ -868,7 +868,7 @@ sub fs_cgi {
 		if($title) {
 			push(@output, main::graph_header($title, 2));
 			push(@output, "    <tr>\n");
-			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, "    <td>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
 			"--resolution=$tf->{res}",
@@ -993,7 +993,7 @@ sub fs_cgi {
 		}
 		if($title) {
 			push(@output, "    <tr>\n");
-			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, "    <td>\n");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -1081,7 +1081,7 @@ sub fs_cgi {
 
 		if($title) {
 			push(@output, "    </td>\n");
-			push(@output, "    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
+			push(@output, "    <td class='td-valign-top'>\n");
 		}
 		@riglim = @{setup_riglim($rigid[1], $limit[1])};
 		undef(@tmp);
@@ -1226,7 +1226,7 @@ sub fs_cgi {
 		}
 		if($title) {
 			push(@output, "    <tr>\n");
-			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, "    <td>\n");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -1314,7 +1314,7 @@ sub fs_cgi {
 
 		if($title) {
 			push(@output, "    </td>\n");
-			push(@output, "    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
+			push(@output, "    <td class='td-valign-top'>\n");
 		}
 		@riglim = @{setup_riglim($rigid[3], $limit[3])};
 		undef(@tmp);

@@ -353,7 +353,7 @@ sub ftp_cgi {
 		if($title) {
 			push(@output, main::graph_header($title, 2));
 			push(@output, "    <tr>\n");
-			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, "    <td>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
 			"--resolution=$tf->{res}",
@@ -428,7 +428,7 @@ sub ftp_cgi {
 	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	if($title) {
 		push(@output, "    <tr>\n");
-		push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+		push(@output, "    <td>\n");
 	}
 	push(@tmp, "LINE2:retr#44EE44:Files downloaded (RETR)");
 	push(@tmp, "GPRINT:retr:LAST: Current\\: %3.0lf");
@@ -548,7 +548,7 @@ sub ftp_cgi {
 
 	if($title) {
 		push(@output, "    </td>\n");
-		push(@output, "    <td valign='top' bgcolor='" . $colors->{title_bg_color} . "'>\n");
+		push(@output, "    <td class='td-valign-top'>\n");
 	}
 	@riglim = @{setup_riglim($rigid[1], $limit[1])};
 	undef(@tmp);

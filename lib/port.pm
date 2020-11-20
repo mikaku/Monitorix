@@ -392,7 +392,7 @@ sub port_cgi {
 		if($title) {
 			push(@output, main::graph_header($title, 2));
 			push(@output, "    <tr>\n");
-			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, "    <td>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
 			"--resolution=$tf->{res}",
@@ -521,7 +521,7 @@ sub port_cgi {
 		my $pc = trim((split(',', $port->{desc}->{$pl[$n]}))[2]);
 		foreach my $pcon (split('/', $pc)) {
 			if($title) {
-				push(@output, "    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+				push(@output, "    <td>\n");
 			}
 			my $pnum;
 			$pl[$n] = trim($pl[$n]);

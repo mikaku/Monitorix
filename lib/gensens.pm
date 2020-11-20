@@ -319,7 +319,7 @@ sub gensens_cgi {
 		if($title) {
 			push(@output, main::graph_header($title, 2));
 			push(@output, "    <tr>\n");
-			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, "    <td>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
 			"--resolution=$tf->{res}",
@@ -466,7 +466,7 @@ sub gensens_cgi {
 		}
 
 		if($title) {
-			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, "    <td>\n");
 		}
 		if(index($ls[0], "temp") == 0) {
 			if(lc($config->{temperature_scale}) eq "f") {
