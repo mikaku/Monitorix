@@ -192,6 +192,12 @@ sub unbound_init {
 		}
 	}
 
+	# check for missing options
+	if(!$unbound->{cmd}) {
+		logger("$myself: INFO: the 'cmd' option doesn't exist, defaulting to 'unbound-control'.");
+		$unbound->{cmd} = "unbound-control";
+	}
+
 	$config->{unbound_hist} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
@@ -277,7 +283,7 @@ sub unbound_update {
 		$qtype[$n] = 0;
 	}
 
-	open(IN, "unbound-control stats_noreset |");
+	open(IN, "$unbound->{cmd} stats_noreset |");
 	while(<IN>) {
 		if(/^total\.num\.queries=(\d+)$/) {
 			$tnumquer = $1 - ($config->{unbound_hist}->{'tnumquer'} || 0);

@@ -2717,6 +2717,13 @@ The maximum number of RR types allowed for this graph is 20.
 .SS Unbound statistics (unbound.pm)
 This graph monitors a local installation of an Unbound name server. It requires you to configure the options \fIextended-statistics\fP as \fIyes\fP and \fIstatistics-cumulative\fP as \fIno\fP.
 .P
+.BI cmd
+.RS
+This is the command that will be used to gather statistics from Unbound.
+.P
+Default value: \fIunbound-control\fP
+.RE
+.P
 .BI queries_type
 .RS
 This is a comma-separated list of query types. The types defined here will appear in the Queries by type graph.
