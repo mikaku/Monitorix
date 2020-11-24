@@ -53,6 +53,10 @@ install-bin:
 	$(INSTALL_DATA) logo_top.png "$(DESTDIR)$(WWWDIR)/logo_top.png"
 	$(INSTALL_DATA) monitorixico.png "$(DESTDIR)$(WWWDIR)/monitorixico.png"
 
+	$(INSTALL_DIR) "$(DESTDIR)$(WWWDIR)/css"
+	$(INSTALL_DATA) css/black.css "$(DESTDIR)$(WWWDIR)/css/black.css"
+	$(INSTALL_DATA) css/white.css "$(DESTDIR)$(WWWDIR)/css/white.css"
+
 	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)/$(PN)"
 	$(INSTALL_DATA) $(PN).conf "$(DESTDIR)$(CONFDIR)/$(PN)/$(PN).conf"
 	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)/$(PN)/conf.d"
