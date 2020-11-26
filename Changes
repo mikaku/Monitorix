@@ -2,6 +2,8 @@
 ====================
 - Added a complete graph to support Tinyproxy statistics ('tinyproxy.pm').
 - Added a complete graph to support Redis statistics ('redis.pm'). [#140]
+- Added CSS theming support in main and graphs pages. [#298,#300,#305,#306]
+        (thanks to Zeus Panchenko, zeus AT gnu.org.ua)
 - Added $local_fs as dependency for Debian init script. [#270].
 - Adjusted configuration in 'docs/debian.conf'.
 - Added support for older versions of 'ss' in 'netstat.pm'. [#271]
@@ -21,6 +23,8 @@
   'nginx.pm', 'mysql.pm', 'mongodb.pm' and 'squid.pm'. [#217]
 - Added support to be able to logging on standard file descriptors instead of
   in a file. This is specially useful in systemd-based systems. [#268]
+- Added support to be able to run Monitorix as a regular user. [#288]
+- Added the ability to specify the command to get Unbound stats. [#302]
 - Fixed some spelling mistakes on manpages. [#269]
 - Fixed the title size of memory graph in 'system.pm'.
 - Fixed to trimming leading and trailing character spaces from the comma-
@@ -35,6 +39,9 @@
 - Fixed the error message "Error: 500 Can't connect to ...", in 'phpfpm.pm',
   when the certificate verification failed.
 - Fixed an incorrectly misspelled variable in 'traffacct.pm'. [#289]
+- Fixed the command 'netstat' in 'net.pm' to avoid truncating interface names
+  on FreeBSD. [#303]
+- Fixed to start Monitorix right after reach 'Network Online' systemd target.
 
 
 3.12.0 - 21-Feb-2020
