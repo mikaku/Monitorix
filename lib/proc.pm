@@ -312,7 +312,7 @@ sub proc_cgi {
 		if($title) {
 			push(@output, main::graph_header($title, 2));
 			push(@output, "    <tr>\n");
-			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, "    <td>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
 			"--resolution=$tf->{res}",
@@ -396,7 +396,7 @@ sub proc_cgi {
 		for($n2 = 0; $n2 < $proc->{graphs_per_row}; $n2++) {
 			last unless $n < $ncpu;
 			if($title) {
-				push(@output, "    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+				push(@output, "    <td>\n");
 			}
 			undef(@tmp);
 			undef(@tmpz);
