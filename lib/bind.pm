@@ -640,7 +640,7 @@ sub bind_cgi {
 		if($title) {
 			push(@output, main::graph_header($title, 2));
 			push(@output, "    <tr>\n");
-			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, "    <td>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
 			"--resolution=$tf->{res}",
@@ -846,7 +846,7 @@ sub bind_cgi {
 		}
 		if($title) {
 			push(@output, "    <tr>\n");
-			push(@output, "    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+			push(@output, "    <td>\n");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -972,7 +972,7 @@ sub bind_cgi {
 			push(@tmp, "COMMENT: \\n");
 		}
 		if($title) {
-			push(@output, "    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+			push(@output, "    <td>\n");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -1096,7 +1096,7 @@ sub bind_cgi {
 		}
 		if($title) {
 			push(@output, "    <tr>\n");
-			push(@output, "    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+			push(@output, "    <td>\n");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -1222,7 +1222,7 @@ sub bind_cgi {
 			push(@tmp, "COMMENT: \\n");
 		}
 		if($title) {
-			push(@output, "    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+			push(@output, "    <td>\n");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -1346,7 +1346,7 @@ sub bind_cgi {
 		}
 		if($title) {
 			push(@output, "    <tr>\n");
-			push(@output, "    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+			push(@output, "    <td>\n");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -1473,7 +1473,7 @@ sub bind_cgi {
 		push(@tmp, "GPRINT:mem_l_mb" . ":LAST:     Cur\\:%6.1lf MB\\n");
 		push(@tmpz, "LINE2:mem_l#EE4444:Lost");
 		if($title) {
-			push(@output, "    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+			push(@output, "    <td>\n");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");

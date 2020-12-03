@@ -298,7 +298,7 @@ sub icecast_cgi {
 		if($title) {
 			push(@output, main::graph_header($title, 2));
 			push(@output, "    <tr>\n");
-			push(@output, "    <td bgcolor='$colors->{title_bg_color}'>\n");
+			push(@output, "    <td>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
 			"--resolution=$tf->{res}",
@@ -438,7 +438,7 @@ sub icecast_cgi {
 
 		if($title) {
 			push(@output, "    <tr>\n");
-			push(@output, "    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+			push(@output, "    <td>\n");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -541,7 +541,7 @@ sub icecast_cgi {
 		}
 
 		if($title) {
-			push(@output, "    <td bgcolor='" . $colors->{title_bg_color} . "'>\n");
+			push(@output, "    <td>\n");
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
