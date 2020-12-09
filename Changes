@@ -42,6 +42,12 @@
 - Fixed the command 'netstat' in 'net.pm' to avoid truncating interface names
   on FreeBSD. [#303]
 - Fixed to start Monitorix right after reach 'Network Online' systemd target.
+- Fixed the internal structure of 'ambsens.pm'. An implementation bug prevented
+  it from having negative values.
+  	(thanks to Alexander G.Gubar, alexander.gubar AT gmail.com for pointing
+	this out)
+
+
 
 
 3.12.0 - 21-Feb-2020
