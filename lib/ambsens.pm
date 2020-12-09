@@ -78,15 +78,15 @@ sub ambsens_init {
 			push(@last, "RRA:LAST:0.5:1440:" . (365 * $n));
 		}
 		for($n = 0; $n < scalar(my @sl = split(',', $ambsens->{list})); $n++) {
-			push(@tmp, "DS:ambsens" . $n . "_s1:GAUGE:120:0:U");
-			push(@tmp, "DS:ambsens" . $n . "_s2:GAUGE:120:0:U");
-			push(@tmp, "DS:ambsens" . $n . "_s3:GAUGE:120:0:U");
-			push(@tmp, "DS:ambsens" . $n . "_s4:GAUGE:120:0:U");
-			push(@tmp, "DS:ambsens" . $n . "_s5:GAUGE:120:0:U");
-			push(@tmp, "DS:ambsens" . $n . "_s6:GAUGE:120:0:U");
-			push(@tmp, "DS:ambsens" . $n . "_s7:GAUGE:120:0:U");
-			push(@tmp, "DS:ambsens" . $n . "_s8:GAUGE:120:0:U");
-			push(@tmp, "DS:ambsens" . $n . "_s9:GAUGE:120:0:U");
+			push(@tmp, "DS:ambsens" . $n . "_s1:GAUGE:120:U:U");
+			push(@tmp, "DS:ambsens" . $n . "_s2:GAUGE:120:U:U");
+			push(@tmp, "DS:ambsens" . $n . "_s3:GAUGE:120:U:U");
+			push(@tmp, "DS:ambsens" . $n . "_s4:GAUGE:120:U:U");
+			push(@tmp, "DS:ambsens" . $n . "_s5:GAUGE:120:U:U");
+			push(@tmp, "DS:ambsens" . $n . "_s6:GAUGE:120:U:U");
+			push(@tmp, "DS:ambsens" . $n . "_s7:GAUGE:120:U:U");
+			push(@tmp, "DS:ambsens" . $n . "_s8:GAUGE:120:U:U");
+			push(@tmp, "DS:ambsens" . $n . "_s9:GAUGE:120:U:U");
 		}
 		eval {
 			RRDs::create($rrd,
