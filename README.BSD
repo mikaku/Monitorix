@@ -1,0 +1,46 @@
+Notes to read after installation of Monitorix in FreeBSD systems
+===============================================================================
+Please take some time to adjust the options in the monitorix.conf file.
+See the monitorix.conf(5) man page for a detailed help of each configuration
+option.
+
+Make sure that the default ipfw(8) rule numbers defined in the monitorix.conf
+file doesn't conflict with any other rule number in your firewall:
+	- In <port> configuration section: rule = 24000
+	- In <nginx> configuration section: rule = 24100
+
+This is the list of module names that still need attention:
+
+   [traffacct]	- Network activity is not supported yet. Help is needed!
+   [serv]	- Some services may not work.
+   [hptemp]	- Temperatures may not work because of the lack of HP support.
+   [nfsc]	- NFS client is not supported yet.
+
+
+
+Notes to read after installation of Monitorix in OpenBSD systems
+===============================================================================
+This is the list of module names that still need attention:
+
+   Same as in FreeBSD, plus:
+
+   [proc]	- Per processor kernel usage graph is not available because the
+		  command 'sysctl kern.cp_time2' doesn't work yet.
+   [nfss]	- NFS server is not supported yet.
+
+
+
+Notes to read after installation of Monitorix in NetBSD systems
+===============================================================================
+This is the list of module names that still need attention:
+
+   Same as in OpenBSD, plus:
+
+   IP filter not supported yet, hence some network activity graphs won't work.
+   File usage in 'VFS usage' graph doesn't work.
+   [port]	- Network port activity not supported yet.
+   [int]	- Device interrupt activity not supported yet.
+
+
+Other module names might not work because they are specific to Linux systems.
+

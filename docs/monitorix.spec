@@ -91,7 +91,7 @@ rm -rf %{buildroot}
 %{_localstatedir}/lib/monitorix/reports/*.html
 %doc %{_mandir}/man5/monitorix.conf.5.gz
 %doc %{_mandir}/man8/monitorix.8.gz
-%doc Changes COPYING README README.nginx README.FreeBSD README.OpenBSD README.NetBSD docs/monitorix-alert.sh docs/monitorix-apache.conf docs/monitorix-lighttpd.conf docs/monitorix.service docs/htpasswd.pl
+%doc Changes COPYING README README.nginx README.BSD docs/monitorix-alert.sh docs/monitorix-apache.conf docs/monitorix-lighttpd.conf docs/monitorix.service docs/htpasswd.pl
 
 %changelog
 * Thu Sep 01 2005 Jordi Sanfeliu <jordi@fibranet.cat>
