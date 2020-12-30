@@ -1069,11 +1069,11 @@ sub squid_cgi {
 	undef(@tmpz);
 	undef(@CDEF);
 	push(@tmp, "LINE2:m_alloc#EEEE44:Allocated");
-	push(@tmp, "GPRINT:m_alloc:LAST:            Current\\: %7.1lf\\n");
+	push(@tmp, "GPRINT:m_alloc:LAST:            Current\\: %6.1lf%s\\n");
 	push(@tmp, "AREA:m_inuse#44AAEE:In use");
 	push(@tmp, "LINE2:m_inuse#00AAEE:");
-	push(@tmp, "GPRINT:m_inuse:LAST:               Current\\: %7.1lf\\n");
-	push(@tmp, "GPRINT:m_perc:LAST:                          In use\\:   %5.1lf%%\\n");
+	push(@tmp, "GPRINT:m_inuse:LAST:               Current\\: %6.1lf%s\\n");
+	push(@tmp, "GPRINT:m_perc:LAST:                          In use\\:   %4.1lf%%\\n");
 	push(@tmpz, "LINE2:m_alloc#EEEE44:Allocated");
 	push(@tmpz, "AREA:m_inuse#44AAEE:In use");
 	push(@tmpz, "LINE2:m_inuse#00AAEE:");
@@ -1095,7 +1095,7 @@ sub squid_cgi {
 		"--title=$config->{graphs}->{_squid4}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=$imgfmt_uc",
-		"--vertical-label=Megabytes",
+		"--vertical-label=bytes",
 		"--width=$width",
 		"--height=$height",
 		@extra,
@@ -1106,8 +1106,8 @@ sub squid_cgi {
 		@{$colors->{graph_colors}},
 		"DEF:squid_m_1=$rrd:squid_m_1:AVERAGE",
 		"DEF:squid_m_2=$rrd:squid_m_2:AVERAGE",
-		"CDEF:m_alloc=squid_m_1,1024,/",
-		"CDEF:m_inuse=squid_m_2,1024,/",
+		"CDEF:m_alloc=squid_m_1,1024,*",
+		"CDEF:m_inuse=squid_m_2,1024,*",
 		"CDEF:m_perc=squid_m_2,100,*,squid_m_1,/",
 		"CDEF:allvalues=squid_m_1,squid_m_2,+",
 		@CDEF,
@@ -1120,7 +1120,7 @@ sub squid_cgi {
 			"--title=$config->{graphs}->{_squid4}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=$imgfmt_uc",
-			"--vertical-label=Megabytes",
+			"--vertical-label=bytes",
 			"--width=$width",
 			"--height=$height",
 			@extra,
@@ -1131,8 +1131,8 @@ sub squid_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:squid_m_1=$rrd:squid_m_1:AVERAGE",
 			"DEF:squid_m_2=$rrd:squid_m_2:AVERAGE",
-			"CDEF:m_alloc=squid_m_1,1024,/",
-			"CDEF:m_inuse=squid_m_2,1024,/",
+			"CDEF:m_alloc=squid_m_1,1024,*",
+			"CDEF:m_inuse=squid_m_2,1024,*",
 			"CDEF:m_perc=squid_m_2,100,*,squid_m_1,/",
 			"CDEF:allvalues=squid_m_1,squid_m_2,+",
 			@CDEF,
@@ -1164,11 +1164,11 @@ sub squid_cgi {
 	undef(@tmpz);
 	undef(@CDEF);
 	push(@tmp, "LINE2:s_alloc#EEEE44:Allocated");
-	push(@tmp, "GPRINT:s_alloc:LAST:            Current\\: %7.1lf\\n");
+	push(@tmp, "GPRINT:s_alloc:LAST:            Current\\: %6.1lf%s\\n");
 	push(@tmp, "AREA:s_inuse#44AAEE:In use");
-	push(@tmp, "GPRINT:s_inuse:LAST:               Current\\: %7.1lf\\n");
+	push(@tmp, "GPRINT:s_inuse:LAST:               Current\\: %6.1lf%s\\n");
 	push(@tmp, "LINE2:s_inuse#00AAEE:");
-	push(@tmp, "GPRINT:s_perc:LAST:                          In use\\:   %5.1lf%%\\n");
+	push(@tmp, "GPRINT:s_perc:LAST:                          In use\\:   %4.1lf%%\\n");
 	push(@tmpz, "LINE2:s_alloc#EEEE44:Allocated");
 	push(@tmpz, "AREA:s_inuse#44AAEE:In use");
 	push(@tmpz, "LINE2:s_inuse#00AAEE:");
@@ -1190,7 +1190,7 @@ sub squid_cgi {
 		"--title=$config->{graphs}->{_squid5}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=$imgfmt_uc",
-		"--vertical-label=Megabytes",
+		"--vertical-label=bytes",
 		"--width=$width",
 		"--height=$height",
 		@extra,
@@ -1201,8 +1201,8 @@ sub squid_cgi {
 		@{$colors->{graph_colors}},
 		"DEF:squid_s_2=$rrd:squid_s_2:AVERAGE",
 		"DEF:squid_s_3=$rrd:squid_s_3:AVERAGE",
-		"CDEF:s_alloc=squid_s_2,1024,/",
-		"CDEF:s_inuse=squid_s_3,1024,/",
+		"CDEF:s_alloc=squid_s_2,1024,*",
+		"CDEF:s_inuse=squid_s_3,1024,*",
 		"CDEF:s_perc=squid_s_3,100,*,squid_s_2,/",
 		"CDEF:allvalues=squid_s_2,squid_s_3,+",
 		@CDEF,
@@ -1215,7 +1215,7 @@ sub squid_cgi {
 			"--title=$config->{graphs}->{_squid5}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=$imgfmt_uc",
-			"--vertical-label=Megabytes",
+			"--vertical-label=bytes",
 			"--width=$width",
 			"--height=$height",
 			@extra,
@@ -1226,8 +1226,8 @@ sub squid_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:squid_s_2=$rrd:squid_s_2:AVERAGE",
 			"DEF:squid_s_3=$rrd:squid_s_3:AVERAGE",
-			"CDEF:s_alloc=squid_s_2,1024,/",
-			"CDEF:s_inuse=squid_s_3,1024,/",
+			"CDEF:s_alloc=squid_s_2,1024,*",
+			"CDEF:s_inuse=squid_s_3,1024,*",
 			"CDEF:s_perc=squid_s_3,100,*,squid_s_2,/",
 			"CDEF:allvalues=squid_s_2,squid_s_3,+",
 			@CDEF,
