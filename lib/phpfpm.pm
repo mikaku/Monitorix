@@ -402,9 +402,11 @@ sub phpfpm_cgi {
 	}
 
 	my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
+		"--resolution=60",
 		"--start=-1min",
-		"AVERAGE",
-		"-r 60");
+		"AVERAGE");
+	$err = RRDs::error;
+	push(@output, "ERROR: while fetching $rrd: $err\n") if $err;
 	my $line = @$data[0];
 	my ($uptime) = @$line[0];	# all pools have the same uptime
 	my $uptimeline;
