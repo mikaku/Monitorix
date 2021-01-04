@@ -1405,7 +1405,7 @@ sub mongodb_cgi {
 			}
 
 			@riglim = @{setup_riglim($rigid[$e * 6 + $e2], $limit[$e * 6 + $e2])};
-			 undef(@tmp);
+			undef(@tmp);
 			undef(@tmpz);
 			undef(@CDEF);
 			push(@tmp, "LINE2:colls#44EEEE:Collections");
@@ -1502,7 +1502,7 @@ sub mongodb_cgi {
 
 			$e2++;
 			@riglim = @{setup_riglim($rigid[$e * 6 + $e2], $limit[$e * 6 + $e2])};
-			 undef(@tmp);
+			undef(@tmp);
 			undef(@tmpz);
 			undef(@CDEF);
 			push(@tmp, "LINE2:dsize#44EEEE:dataSize");
