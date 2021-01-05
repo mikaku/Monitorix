@@ -25,6 +25,7 @@
   in a file. This is specially useful in systemd-based systems. [#268]
 - Added support to be able to run Monitorix as a regular user. [#288]
 - Added the ability to specify the command to get Unbound stats. [#302]
+- Changed lines thickness in 'squid.pm'.
 - Fixed some spelling mistakes on manpages. [#269]
 - Fixed the title size of memory graph in 'system.pm'.
 - Fixed to trimming leading and trailing character spaces from the comma-
@@ -46,8 +47,11 @@
   it from having negative values.
   	(thanks to Alexander G.Gubar, alexander.gubar AT gmail.com for pointing
 	this out)
-
-
+- Unified all README.*BSD on a single README.BSD file.
+- Fixed the fetching code that retrieves the uptime value in 'phpfpm.pm'.
+- Fixed to a more readable scale the graphs of memory usage and store directory
+  stats in 'squid.pm'.
+- Fixed the fetching code that retrieves the uptime value in 'wowza.pm'.
 
 
 3.12.0 - 21-Feb-2020
