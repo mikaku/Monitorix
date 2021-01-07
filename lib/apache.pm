@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2020 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2021 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -804,8 +804,8 @@ sub apache_cgi {
 			push(@output, sprintf(" %2d$tf->{tc}", $time));
 			for($n2 = 0; $n2 < scalar(my @al = split(',', $apache->{list})); $n2++) {
 				undef(@row);
-				$from = $n2 * 5;
-				$to = $from + 5;
+				$from = $n2 * 21;
+				$to = $from + 21;
 				push(@row, @$line[$from..$to]);
 				push(@output, sprintf("   %7d  %9d    %4.2f%%   %3d   %3d", @row));
 			}

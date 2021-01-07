@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2020 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2021 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -338,8 +338,8 @@ sub nut_cgi {
 			push(@output, sprintf(" %2d$tf->{tc}", $time));
 			for($n2 = 0; $n2 < scalar(my @pl = split(',', $nut->{list})); $n2++) {
 				undef(@row);
-				$from = $n2 * 22;
-				$to = $from + 22;
+				$from = $n2 * 21;
+				$to = $from + 21;
 				my ($ltran, $htran, $ivolt, $ovolt, $bchar, $loadc, $mbatc, undef, $atemp, $itemp, $humid, $battv, $nomba, $timel, $minti, $linef) = @$line[$from..$to];
 				$itemp = celsius_to($config, $itemp);
 				$atemp = celsius_to($config, $atemp);
