@@ -2452,6 +2452,69 @@ Note that if you modify the value of \fItmp_table_size\fP in the MySQL configura
 Therefore this value helps to know how many tmp tables go to the disk instead than to the memory. Keep in mind that some large queries, involving TEXT and BLOB columns, are directly written to the disk instead than to the memory, because they would be too big. So you probably will want to avoid having a high % of tmp tables written to the disk, but you will never reach 0% on a big site, and this is fine.
 .br
 Lower is better ... but 0% is not reachable and you should not try to reach it, usually.
+.SS PostgreSQL statistics (pgsql.pm)
+This graph is able to monitor an unlimited number of PostgreSQL servers.
+.P
+.BI list
+.RS
+This is a comma-separated list of names of PostgreSQL servers.
+.P
+WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIpgsql.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fIlocalhost\fP
+.RE
+.P
+.BI desc
+.RS
+This is a list of blocks of names specified in the \fBlist\fP option.
+.P
+<desc>
+.br
+	<localhost>
+.br
+		host = localhost
+.br
+		port = 5432
+.br
+		username = user
+.br
+		password = secret
+.br
+		db_list =
+.br
+	</localhost>
+.br
+</desc>
+.RE
+.P
+.BI host
+.RS
+This is the hostname or IP address of the PostgreSQL server name specified in its block.
+.P
+Default value: \fIlocalhost\fP
+.RE
+.P
+.BI port
+.RS
+This is the port number of the PostgreSQL server name specified in its block.
+.P
+Default value: \fI5432\fP
+.RE
+.P
+.BI username
+.RS
+This is the username for authentication of the PostgreSQL server name specified in its block.
+.RE
+.P
+.BI password
+.RS
+This is the password for authentication of the PostgreSQL server name specified in its block.
+.RE
+.P
+.BI db_list
+.RS
+This is a comma-separated list of up to 9 databases that will be monitored in the PostgreSQL server name specified in its block.
+.RE
 .SS MongoDB statistics (mongodb.pm)
 This graph is able to monitor an unlimited number of MongoDB servers.
 .P
@@ -2488,8 +2551,6 @@ This is a list of blocks of names specified in the \fBlist\fP option.
 	</localhost>
 .br
 </desc>
-.P
-The maximum number of mountpoints allowed for each URL is 9.
 .RE
 .P
 .BI host
