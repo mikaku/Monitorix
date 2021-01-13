@@ -177,7 +177,18 @@ sub tinyproxy_update {
 
 		my $xpath = '//tr//td';
 		my @stats;
-		push(@stats, $_) foreach $data->findnodes($xpath)->to_literal_list;
+
+		# This 'foreach' emulates the method 'to_literal_list' as it was
+		# introduced in Perl-XML-LibXML version 2.0105 (2013-09-07), and
+		# unfortunately not all systems have such a recent version.
+		#
+		# Some day in the future it should be changed by the line:
+		# push(@stats, $_) foreach $data->findnodes($xpath)->to_literal_list;
+		foreach($data->findnodes($xpath)->get_nodelist()) {
+			my $node;
+			($node = $_) =~ s@</?td>@@g;
+			push(@stats, $node);
+		}
 		my %hstats = @stats;
 
 		for my $key (keys %hstats) {
