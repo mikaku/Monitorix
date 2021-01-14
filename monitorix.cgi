@@ -2,7 +2,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2020 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2021 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -266,10 +266,12 @@ if($config{include_dir} && opendir(DIR, $config{include_dir})) {
 		my %config_inc = $conf_inc->getall;
 		while(my ($key, $val) = each(%config_inc)) {
 			if(ref($val) eq "HASH") {
-				# two level options
+				# two level options (a subsection)
 				while(my ($key2, $val2) = each(%{$val})) {
+					# delete first this whole subsection
+					delete($config{$key}->{$key2});
 					if(ref($val2) eq "HASH") {
-						# three level options
+						# three level options (a subsubsection)
 						while(my ($key3, $val3) = each(%{$val2})) {
 							$config{$key}->{$key2}->{$key3} = $val3;
 							delete $config_inc{$key}->{$key2}->{$key3};
