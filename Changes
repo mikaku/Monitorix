@@ -1,7 +1,8 @@
-3.NN.N - DD-MMM-2020
+3.NN.N - DD-Jan-2021
 ====================
-- Added a complete graph to support Tinyproxy statistics ('tinyproxy.pm').
+- Added a complete graph to support PostgreSQL statistics ('pgsql.pm'). [#84]
 - Added a complete graph to support Redis statistics ('redis.pm'). [#140]
+- Added a complete graph to support Tinyproxy statistics ('tinyproxy.pm').
 - Added CSS theming support in main and graphs pages. [#298,#300,#305,#306]
         (thanks to Zeus Panchenko, zeus AT gnu.org.ua)
 - Added $local_fs as dependency for Debian init script. [#270].
@@ -52,6 +53,9 @@
 - Fixed to a more readable scale the graphs of memory usage and store directory
   stats in 'squid.pm'.
 - Fixed the fetching code that retrieves the uptime value in 'wowza.pm'.
+- Fixed the scalar of Data Segments (DS) on the textmode interface in modules
+  'apache.pm', 'chrony.pm', 'nut.pm', 'pagespeed.pm' and 'tinyproxy.pm'.
+- Fixed the behavior of the options in the extra configuration file.
 
 
 3.12.0 - 21-Feb-2020
