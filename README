@@ -127,13 +127,12 @@ monitorixico.png              <base_dir>		favicon
 /docs/monitorix.lighttpd.conf /etc/lighttpd/		lighttpd configuration
 /docs/htpasswd.pl             /usr/share/doc/monitorix/	documentation
 README                        /usr/share/doc/monitorix/	documentation
-README.FreeBSD                /usr/share/doc/monitorix/	documentation
+README.BSD                    /usr/share/doc/monitorix/	documentation
 README.nginx                  /usr/share/doc/monitorix/	documentation
-README.OpenBSD                /usr/share/doc/monitorix/	documentation
-README.NetBSD                 /usr/share/doc/monitorix/	documentation
 man/man5/monitorix.conf.5     /usr/share/man/man5/	monitorix.conf manpage
 man/man8/monitorix.8          /usr/share/man/man8/	monitorix manpage
 reports/*.html                <base_lib>/reports/	traffacct reports i18n
+css/*.css                     <base_dir>/css/		CSS theme files
 usage/                        <base_lib>/usage/		traffacct usage data
 
 Once succesfully installed, please take a look into the configuration file to
