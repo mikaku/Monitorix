@@ -1,4 +1,4 @@
-3.NN.N - DD-Jan-2021
+3.13.0 - 22-Jan-2021
 ====================
 - Added a complete graph to support PostgreSQL statistics ('pgsql.pm'). [#84]
 - Added a complete graph to support Redis statistics ('redis.pm'). [#140]
