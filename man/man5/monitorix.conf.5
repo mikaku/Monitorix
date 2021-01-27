@@ -423,15 +423,15 @@ Default value: \fI/var/lib/monitorix/htpasswd\fP
 .RS
 This is a comma delimited set of IP addresses which will be forced to do authentication. There is the special keyword called \fIall\fP that can be used to deny all IP addresses.
 .P
-The access control uses the same approach as in the TCP-Wrappers; the search stops at the first match:
+The access control uses a similar approach as in the TCP-Wrappers; the search stops at the first match:
 .P
 	- Access will be granted when an IP address matches an entry in the \fBhosts_allow\fP list.
 .br
 	- Otherwise, access will be denied when an IP address matches an entry in the \fBhosts_deny\fP list.
 .br
-	- Otherwise, access will be granted.
+	- Otherwise, access will be denied (if not defined it will deny all hosts).
 .P
-Default value: 
+Default value: \fIall\fP
 .RE
 .P
 .BI hosts_allow
