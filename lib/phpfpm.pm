@@ -457,9 +457,7 @@ sub phpfpm_cgi {
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
 			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
-		for($n = 0; $n < scalar(@pfl) / 2; $n++) {
-			push(@tmp, "COMMENT: \\n");
-		}
+		push(@tmp, "COMMENT: \\n");
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6]",
 			"--title=$config->{graphs}->{_phpfpm1}  ($tf->{nwhen}$tf->{twhen})",
@@ -555,9 +553,7 @@ sub phpfpm_cgi {
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
 			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
-		for($n = 0; $n < scalar(@pfl) / 2; $n++) {
-			push(@tmp, "COMMENT: \\n");
-		}
+		push(@tmp, "COMMENT: \\n");
 		($width, $height) = split('x', $config->{graph_size}->{main});
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 1]",
 			"--title=$config->{graphs}->{_phpfpm2}  ($tf->{nwhen}$tf->{twhen})",
