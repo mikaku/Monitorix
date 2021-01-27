@@ -139,6 +139,10 @@ sub http_header {
 		# check if the IP address is forced to auth
 		my $denied;
 		my $allowed = ip_validity($ENV{REMOTE_ADDR}, $hosts_allow);
+
+		# specific behavior
+		$hosts_deny = "all" if !$hosts_deny;
+
 		$denied = ip_validity($ENV{REMOTE_ADDR}, $hosts_deny) if !$allowed;
 		if(!$allowed && $denied) {
 			my (undef, $encoded_str) = split(' ', $ENV{HTTP_AUTHORIZATION} || "");
