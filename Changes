@@ -1,3 +1,13 @@
+3.13.1 - 27-Jan-2021
+====================
+- Fixed a security bug introduced in 3.13.0 version that lead the HTTP built-in
+  server to bypass Basic Authentication when the new option 'hosts_deny' is not
+  defined. [#309]
+- Fixed in HTTP built-in server configuration to force Basic Authentication to
+  any host, by default. [#309]
+- Reduced the number of padding lines in 'phpfpm.pm'.
+
+
 3.13.0 - 22-Jan-2021
 ====================
 - Added a complete graph to support PostgreSQL statistics ('pgsql.pm'). [#84]
