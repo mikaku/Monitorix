@@ -203,7 +203,7 @@ sub pgsql_update {
 		my $pass = $pgsql->{desc}->{$pg}->{password} || "";
 		my $dbh;
 		$dbh = DBI->connect(
-			"DBI:Pg:host=$host;port=$port",
+			"DBI:Pg:host=$host;port=$port;dbname=postgres",
 			$user,
 			$pass,
 			{ PrintError => $print_error, }
