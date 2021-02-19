@@ -1,3 +1,9 @@
+3.NN.N - DD-MMM-2021
+====================
+- Fixed to include the DBI->connect parameter 'dbname=postgres' in 'pgsql.pm' to
+  avoid connection problems. [#310]
+
+
 3.13.1 - 27-Jan-2021
 ====================
 - Fixed a security bug introduced in 3.13.0 version that lead the HTTP built-in
