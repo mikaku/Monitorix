@@ -660,7 +660,7 @@ if(open(OUT, "> " . $config{base_dir} . "/cgi/monitorix.conf.path")) {
 	logger("WARNING: unable to create the file '$config{base_dir}/cgi/monitorix.conf.path'. $!");
 }
 
-if($config{os} eq "Linux" && !$config{u}) {
+if($config{os} eq "Linux" && !$options{u}) {
 	# make sure that 'ip_default_table' option has a consistent value
 	$config{ip_default_table} = "filter" if !$config{ip_default_table};
 
@@ -733,7 +733,7 @@ create_index();
 
 # start the HTTP built-in (if enabled)
 if(lc($config{httpd_builtin}->{enabled} || "") eq "y") {
-	if(!$config{u}) {
+	if(!$options{u}) {
 		logger("Setting owner/group and permission bits for the imgs/ directory.") if defined($options{d});
 		my (undef, undef, $uid) = getpwnam($config{httpd_builtin}->{user});
 		my (undef, undef, $gid) = getgrnam($config{httpd_builtin}->{group});
