@@ -158,7 +158,7 @@ sub redis_update {
 	my $rrdata = "N";
 
 	my $e = 0;
-	foreach(my @ml = split(',', $redis->{list})) {
+	foreach(my @rl = split(',', $redis->{list})) {
 		my $uptime = 0;
 		my $connc = 0;
 		my $blocc = 0;
@@ -178,18 +178,32 @@ sub redis_update {
 		my $kmiss = 0;
 		my $conns = 0;
 		my $str;
+		my $s;
 
-		my ($host, $port) = split(':', trim($ml[$e]));
-		my $s = new IO::Socket::INET (
-			Domain		=> AF_INET,
-			Type		=> SOCK_STREAM,
-			Proto		=> "tcp",
-			PeerHost	=> $host,
-			PeerPort	=> $port,
-			Timeout		=> 5,
-		);
+		if(substr($rl[$e], -5) eq ".sock") {
+			my $file = trim($rl[$e]);
+			$s = new IO::Socket::UNIX (
+				Peer		=> $file,
+				Type		=> SOCK_STREAM,
+			);
+			if(!$s) {
+				logger("$myself: unable to connect to socket '$file': $!");
+			}
+		} else {
+			my ($host, $port) = split(':', trim($rl[$e]));
+			$s = new IO::Socket::INET (
+				Domain		=> AF_INET,
+				Type		=> SOCK_STREAM,
+				Proto		=> "tcp",
+				PeerHost	=> $host,
+				PeerPort	=> $port,
+				Timeout		=> 5,
+			);
+			if(!$s) {
+				logger("$myself: unable to connect to port '$port' on host '$host': $!");
+			}
+		}
 		if(!$s) {
-			logger("$myself: unable to connect to port '$port' on host '$host': $!");
 			$rrdata .= ":$uptime:$connc:$blocc:$mused:$murss:$afrgr:$arssr:$aovhr:$mfrgr:$tconn:$tcomm:$netin:$netout:$rconn:$ekeys:$khits:$kmiss:$conns:0:0:0:0:0:0:0:0:0:0";
 			next;
 		}
