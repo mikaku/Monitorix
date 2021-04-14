@@ -311,6 +311,29 @@ sub lmsens_update {
 						lmsens_alerts($config, $str, $value);
 					}
 				}
+				for($n = 0; $n < 9; $n++) {
+					$str = "gpu" . $n;
+					$gpu[$n] = 0 unless $gpu[$n];
+					next if !$lmsens->{list}->{$str};
+					if($lmsens->{list}->{$str} =~ m/^lmsensors:\S+/) {
+						my $lmkey = $lmsens->{list}->{$str};
+						$lmkey =~ s/^lmsensors://;
+						if($data[$l] =~ /^$lmkey:/ && $data[$l] !~ /RPM/) {
+							my (undef, $tmp) = split(':', $data[$l]);
+							if($tmp eq "\n") {
+								$l++;
+								$tmp = $data[$l];
+							}
+							my ($value, undef) = split(' ', $tmp);
+							if($value =~ m/^\+?(\d{1,3}\.?\d*)/) {
+								$value = $1;
+							}
+							$gpu[$n] = int($value);
+							# check alerts for each sensor defined
+							lmsens_alerts($config, $str, $value);
+						}
+					}
+				}
 			}
 			for($n = 0; $n < 9; $n++) {
 				$str = "gpu" . $n;
