@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2020 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2021 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -169,6 +169,8 @@ sub process_update {
 
 			# check if that process is running
 			if(open(IN, "ps -eo pid,comm,command |")) {
+				my $pidwidth = length(`cat /proc/sys/kernel/pid_max`);
+
 				while(<IN>) {
 					if(m/^\s*(\d+)\s+(\S+)\s+(.*?)$/) {
 						if($p eq trim($2)) {
@@ -187,7 +189,7 @@ sub process_update {
 							next;
 						}
 					}
-					if(substr($p, 0, 15) eq substr($_, 6, 15)) {
+					if(substr($p, 0, 15) eq substr($_, $pidwidth, 15)) {
 						push(@pids, $1);
 						$pro++;
 						next;
