@@ -94,7 +94,7 @@ sub process_init {
 				push(@tmp, "DS:proc" . $n . "_nth" . $n2 . ":GAUGE:120:0:U");
 				push(@tmp, "DS:proc" . $n . "_vcs" . $n2 . ":GAUGE:120:0:U");
 				push(@tmp, "DS:proc" . $n . "_ics" . $n2 . ":GAUGE:120:0:U");
-				push(@tmp, "DS:proc" . $n . "_va1" . $n2 . ":GAUGE:120:0:U");
+				push(@tmp, "DS:proc" . $n . "_upt" . $n2 . ":GAUGE:120:0:U");
 				push(@tmp, "DS:proc" . $n . "_va2" . $n2 . ":GAUGE:120:0:U");
 			}
 		}
@@ -133,6 +133,16 @@ sub process_init {
 		}
 	}
 
+	# Since 3.14.0 the process' uptime is now included in statistics
+	for($n = 0; $n < keys(%{$process->{list}}); $n++) {
+		my $n2;
+		for($n2 = 0; $n2 < 10; $n2++) {
+			RRDs::tune($rrd,
+			"--data-source-rename=proc" . $n . "_va1" . $n2 . ":proc" . $n . "_upt" . $n2
+			);
+		}
+	}
+
 	$config->{process_hist} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
@@ -160,6 +170,7 @@ sub process_update {
 			my $nth = 0;
 			my $vcs = 0;
 			my $ics = 0;
+			my $upt = 0;
 
 			my $str;
 			my @pids;
@@ -168,30 +179,34 @@ sub process_update {
 			my $s_usage = 0;
 
 			# check if that process is running
-			if(open(IN, "ps -eo pid,comm,command |")) {
+			if(open(IN, "ps -eo pid,comm,etimes,command |")) {
 				my $pidwidth = length(`cat /proc/sys/kernel/pid_max`);
 
 				while(<IN>) {
-					if(m/^\s*(\d+)\s+(\S+)\s+(.*?)$/) {
+					if(m/^\s*(\d+)\s+(\S+)\s*(\d+)\s+(.*?)$/) {
 						if($p eq trim($2)) {
 							push(@pids, $1);
 							$pro++;
+							$upt = $3 if !$upt;
 							next;
 						}
-						if($p eq trim($3)) {
+						if($p eq trim($4)) {
 							push(@pids, $1);
 							$pro++;
+							$upt = $3 if !$upt;
 							next;
 						}
-						if(index($3, $p) != -1) {
+						if(index($4, $p) != -1) {
 							push(@pids, $1);
 							$pro++;
+							$upt = $3 if !$upt;
 							next;
 						}
 					}
 					if(substr($p, 0, 15) eq substr($_, $pidwidth, 15)) {
 						push(@pids, $1);
 						$pro++;
+						$upt = $3 if !$upt;
 						next;
 					}
 				}
@@ -300,7 +315,7 @@ sub process_update {
 			$ics /= 60;
 			$config->{process_hist}->{$str} = $v_ics;
 
-			$rrdata .= ":$cpu:$mem:$dsk:$net:$nof:$pro:$nth:$vcs:$ics:0:0";
+			$rrdata .= ":$cpu:$mem:$dsk:$net:$nof:$pro:$nth:$vcs:$ics:$upt:0";
 		}
 		$e++;
 	}
@@ -405,11 +420,11 @@ sub process_cgi {
 			my @lp = split(',', $process->{list}->{$pg});
 			for($n = 0; $n < scalar(@lp); $n++) {
 				my $p = trim($lp[$n]);
-				$str = sprintf("  %61s", trim((split(',', $process->{desc}->{$p} || $p))));
+				$str = sprintf("  %69s", trim((split(',', $process->{desc}->{$p} || $p))));
 				$line1 .= $str;
-				$str = sprintf("   CPU%%  Memory    Disk     Net  OFiles  NProcs Threads CtxtS/s");
+				$str = sprintf("   CPU%%  Memory    Disk     Net  OFiles  NProcs Threads CtxtS/s  Uptime");
 				$line2 .= $str;
-				$line3 .=      "---------------------------------------------------------------";
+				$line3 .=      "-----------------------------------------------------------------------";
 			}
 		}
 		push(@output, "     $line1\n");
@@ -431,7 +446,7 @@ sub process_cgi {
 				for($n2 = 0; $n2 < scalar(@lp); $n2++) {
 					$from = ($e * 10 * 11) + ($n2 * 11);
 					$to = $from + 11;
-					my ($cpu, $mem, $dsk, $net, $nof, $pro, $nth, $vcs, $ics) = @$line[$from..$to];
+					my ($cpu, $mem, $dsk, $net, $nof, $pro, $nth, $vcs, $ics, $upt) = @$line[$from..$to];
 					if(lc($config->{netstats_in_bps}) eq "y") {
 						$net *= 8;
 					}
@@ -443,7 +458,8 @@ sub process_cgi {
 					$pro ||= 0;
 					$nth ||= 0;
 					my $cs = ($vcs || 0) + ($ics || 0) ;
-					push(@output, sprintf("  %4.1f%% %6dM %6dM %6dM %7d %7d %7d %7d", $cpu, $mem, $dsk, $net, $nof, $pro, $nth, $cs));
+					$upt ||= 0;
+					push(@output, sprintf("  %4.1f%% %6dM %6dM %6dM %7d %7d %7d %7d %8d", $cpu, $mem, $dsk, $net, $nof, $pro, $nth, $cs, $upt));
 				}
 				$e++;
 			}
@@ -1516,6 +1532,249 @@ sub process_cgi {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 10 + 7] . "'>\n");
 			}
 		}
+
+		@riglim = @{setup_riglim($rigid[8], $limit[8])};
+		undef(@tmp);
+		undef(@tmpz);
+		undef(@CDEF);
+		for($n = 0; $n < 10; $n++) {
+			my $p = trim($lp[$n] || "");
+
+			if($p) {
+				$str = trim((split(',', $process->{desc}->{$p} || ""))[0]) || $p;
+				$str =~ s/:/\\:/g;	# escape colons
+				push(@tmpz, "LINE2:uptd" . $n . $LC[$n] . ":$str");
+				$str = sprintf("%-20s", substr($str, 0, 20));
+				push(@tmp, "LINE2:uptd" . $n . $LC[$n] . ":$str");
+				push(@tmp, "GPRINT:uptd" . $n . ":LAST:Cur\\: %4.1lf");
+				push(@tmp, "GPRINT:uptd" . $n . ":MIN:  Min\\: %4.1lf");
+				push(@tmp, "GPRINT:uptd" . $n . ":MAX:  Max\\: %4.1lf\\n");
+			}
+		}
+		if($title) {
+			push(@output, "    <tr>\n");
+			push(@output, "    <td>\n");
+		}
+		if(lc($config->{show_gaps}) eq "y") {
+			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+		}
+		($width, $height) = split('x', $config->{graph_size}->{medium});
+		if($silent =~ /imagetag/) {
+			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+			@tmp = @tmpz;
+		}
+		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 10 + 8]",
+			"--title=$config->{graphs}->{_process9}  ($tf->{nwhen}$tf->{twhen})",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"--imgformat=$imgfmt_uc",
+			"--vertical-label=Days",
+			"--width=$width",
+			"--height=$height",
+			@extra,
+			@riglim,
+			$zoom,
+			@{$cgi->{version12}},
+			@{$colors->{graph_colors}},
+			"DEF:upt0=$rrd:proc" . $e . "_upt0:AVERAGE",
+			"DEF:upt1=$rrd:proc" . $e . "_upt1:AVERAGE",
+			"DEF:upt2=$rrd:proc" . $e . "_upt2:AVERAGE",
+			"DEF:upt3=$rrd:proc" . $e . "_upt3:AVERAGE",
+			"DEF:upt4=$rrd:proc" . $e . "_upt4:AVERAGE",
+			"DEF:upt5=$rrd:proc" . $e . "_upt5:AVERAGE",
+			"DEF:upt6=$rrd:proc" . $e . "_upt6:AVERAGE",
+			"DEF:upt7=$rrd:proc" . $e . "_upt7:AVERAGE",
+			"DEF:upt8=$rrd:proc" . $e . "_upt8:AVERAGE",
+			"DEF:upt9=$rrd:proc" . $e . "_upt9:AVERAGE",
+			"CDEF:uptd0=upt0,86400,/",
+			"CDEF:uptd1=upt1,86400,/",
+			"CDEF:uptd2=upt2,86400,/",
+			"CDEF:uptd3=upt3,86400,/",
+			"CDEF:uptd4=upt4,86400,/",
+			"CDEF:uptd5=upt5,86400,/",
+			"CDEF:uptd6=upt6,86400,/",
+			"CDEF:uptd7=upt7,86400,/",
+			"CDEF:uptd8=upt8,86400,/",
+			"CDEF:uptd9=upt9,86400,/",
+			"CDEF:allvalues=uptd0,uptd1,uptd2,uptd3,uptd4,uptd5,uptd6,uptd7,uptd8,uptd9,+,+,+,+,+,+,+,+,+",
+			@CDEF,
+			@tmp);
+		$err = RRDs::error;
+		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$e * 10 + 8]: $err\n") if $err;
+		if(lc($config->{enable_zoom}) eq "y") {
+			($width, $height) = split('x', $config->{graph_size}->{zoom});
+			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 10 + 8]",
+				"--title=$config->{graphs}->{_process8}  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=$imgfmt_uc",
+				"--vertical-label=Days",
+				"--width=$width",
+				"--height=$height",
+				@extra,
+				@riglim,
+				$zoom,
+				@{$cgi->{version12}},
+				@{$colors->{graph_colors}},
+				"DEF:upt0=$rrd:proc" . $e . "_upt0:AVERAGE",
+				"DEF:upt1=$rrd:proc" . $e . "_upt1:AVERAGE",
+				"DEF:upt2=$rrd:proc" . $e . "_upt2:AVERAGE",
+				"DEF:upt3=$rrd:proc" . $e . "_upt3:AVERAGE",
+				"DEF:upt4=$rrd:proc" . $e . "_upt4:AVERAGE",
+				"DEF:upt5=$rrd:proc" . $e . "_upt5:AVERAGE",
+				"DEF:upt6=$rrd:proc" . $e . "_upt6:AVERAGE",
+				"DEF:upt7=$rrd:proc" . $e . "_upt7:AVERAGE",
+				"DEF:upt8=$rrd:proc" . $e . "_upt8:AVERAGE",
+				"DEF:upt9=$rrd:proc" . $e . "_upt9:AVERAGE",
+				"CDEF:uptd0=upt0,86400,/",
+				"CDEF:uptd1=upt1,86400,/",
+				"CDEF:uptd2=upt2,86400,/",
+				"CDEF:uptd3=upt3,86400,/",
+				"CDEF:uptd4=upt4,86400,/",
+				"CDEF:uptd5=upt5,86400,/",
+				"CDEF:uptd6=upt6,86400,/",
+				"CDEF:uptd7=upt7,86400,/",
+				"CDEF:uptd8=upt8,86400,/",
+				"CDEF:uptd9=upt9,86400,/",
+				"CDEF:allvalues=uptd0,uptd1,uptd2,uptd3,uptd4,uptd5,uptd6,uptd7,uptd8,uptd9,+,+,+,+,+,+,+,+,+",
+				@CDEF,
+				@tmpz);
+			$err = RRDs::error;
+			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 10 + 8]: $err\n") if $err;
+		}
+		$e2 = $e . "8";
+		if($title || ($silent =~ /imagetag/ && $graph =~ /process$e2/)) {
+			if(lc($config->{enable_zoom}) eq "y") {
+				if(lc($config->{disable_javascript_void}) eq "y") {
+					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 10 + 8] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 10 + 8] . "' border='0'></a>\n");
+				} else {
+					if($version eq "new") {
+						$picz_width = $picz->{image_width} * $config->{global_zoom};
+						$picz_height = $picz->{image_height} * $config->{global_zoom};
+					} else {
+						$picz_width = $width + 115;
+						$picz_height = $height + 100;
+					}
+					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 10 + 8] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 10 + 8] . "' border='0'></a>\n");
+				}
+			} else {
+				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 10 + 8] . "'>\n");
+			}
+		}
+
+		if($title) {
+			push(@output, "    </td>\n");
+			push(@output, "    <td class='td-valign-top'>\n");
+		}
+#		@riglim = @{setup_riglim($rigid[9], $limit[9])};
+#		undef(@tmp);
+#		undef(@tmpz);
+#		undef(@CDEF);
+#		for($n = 0; $n < 10; $n++) {
+#			my $p = trim($lp[$n] || "");
+#
+#			if($p) {
+#				$str = trim((split(',', $process->{desc}->{$p} || ""))[0]) || $p;
+#				$str =~ s/:/\\:/g;	# escape colons
+#				push(@tmpz, "LINE2:xxx" . $n . $LC[$n] . ":$str");
+#				$str = sprintf("%-20s", substr($str, 0, 20));
+#				push(@tmp, "LINE2:xxx" . $n . $LC[$n] . ":$str");
+#				push(@tmp, "GPRINT:xxx" . $n . ":LAST:Cur\\: %4.0lf");
+#				push(@tmp, "GPRINT:xxx" . $n . ":MIN:  Min\\: %4.0lf");
+#				push(@tmp, "GPRINT:xxx" . $n . ":MAX:  Max\\: %4.0lf\\n");
+#			}
+#		}
+#		if(lc($config->{show_gaps}) eq "y") {
+#			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+#			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+#			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+#		}
+#		($width, $height) = split('x', $config->{graph_size}->{medium});
+#		if($silent =~ /imagetag/) {
+#			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+#			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+#			@tmp = @tmpz;
+#			push(@tmp, "COMMENT: \\n");
+#			push(@tmp, "COMMENT: \\n");
+#			push(@tmp, "COMMENT: \\n");
+#		}
+#		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 10 + 9]",
+#			"--title=$config->{graphs}->{_process10}  ($tf->{nwhen}$tf->{twhen})",
+#			"--start=-$tf->{nwhen}$tf->{twhen}",
+#			"--imgformat=$imgfmt_uc",
+#			"--vertical-label=Xxxxxxxxx",
+#			"--width=$width",
+#			"--height=$height",
+#			@extra,
+#			@riglim,
+#			$zoom,
+#			@{$cgi->{version12}},
+#			@{$colors->{graph_colors}},
+#			"DEF:xxx0=$rrd:proc" . $e . "_xxx0:AVERAGE",
+#			"DEF:xxx1=$rrd:proc" . $e . "_xxx1:AVERAGE",
+#			"DEF:xxx2=$rrd:proc" . $e . "_xxx2:AVERAGE",
+#			"DEF:xxx3=$rrd:proc" . $e . "_xxx3:AVERAGE",
+#			"DEF:xxx4=$rrd:proc" . $e . "_xxx4:AVERAGE",
+#			"DEF:xxx5=$rrd:proc" . $e . "_xxx5:AVERAGE",
+#			"DEF:xxx6=$rrd:proc" . $e . "_xxx6:AVERAGE",
+#			"DEF:xxx7=$rrd:proc" . $e . "_xxx7:AVERAGE",
+#			"DEF:xxx8=$rrd:proc" . $e . "_xxx8:AVERAGE",
+#			"DEF:xxx9=$rrd:proc" . $e . "_xxx9:AVERAGE",
+#			"CDEF:allvalues=xxx0,xxx1,xxx2,xxx3,xxx4,xxx5,xxx6,xxx7,xxx8,xxx9,+,+,+,+,+,+,+,+,+",
+#			@CDEF,
+#			@tmp);
+#		$err = RRDs::error;
+#		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$e * 10 + 9]: $err\n") if $err;
+#		if(lc($config->{enable_zoom}) eq "y") {
+#			($width, $height) = split('x', $config->{graph_size}->{zoom});
+#			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 10 + 9]",
+#				"--title=$config->{graphs}->{_process10}  ($tf->{nwhen}$tf->{twhen})",
+#				"--start=-$tf->{nwhen}$tf->{twhen}",
+#				"--imgformat=$imgfmt_uc",
+#				"--vertical-label=Xxxxxxxxx",
+#				"--width=$width",
+#				"--height=$height",
+#				@extra,
+#				@riglim,
+#				$zoom,
+#				@{$cgi->{version12}},
+#				@{$colors->{graph_colors}},
+#				"DEF:xxx0=$rrd:proc" . $e . "_xxx0:AVERAGE",
+#				"DEF:xxx1=$rrd:proc" . $e . "_xxx1:AVERAGE",
+#				"DEF:xxx2=$rrd:proc" . $e . "_xxx2:AVERAGE",
+#				"DEF:xxx3=$rrd:proc" . $e . "_xxx3:AVERAGE",
+#				"DEF:xxx4=$rrd:proc" . $e . "_xxx4:AVERAGE",
+#				"DEF:xxx5=$rrd:proc" . $e . "_xxx5:AVERAGE",
+#				"DEF:xxx6=$rrd:proc" . $e . "_xxx6:AVERAGE",
+#				"DEF:xxx7=$rrd:proc" . $e . "_xxx7:AVERAGE",
+#				"DEF:xxx8=$rrd:proc" . $e . "_xxx8:AVERAGE",
+#				"DEF:xxx9=$rrd:proc" . $e . "_xxx9:AVERAGE",
+#				"CDEF:allvalues=xxx0,xxx1,xxx2,xxx3,xxx4,xxx5,xxx6,xxx7,xxx8,xxx9,+,+,+,+,+,+,+,+,+",
+#				@CDEF,
+#				@tmpz);
+#			$err = RRDs::error;
+#			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 10 + 9]: $err\n") if $err;
+#		}
+#		$e2 = $e . "9";
+#		if($title || ($silent =~ /imagetag/ && $graph =~ /process$e2/)) {
+#			if(lc($config->{enable_zoom}) eq "y") {
+#				if(lc($config->{disable_javascript_void}) eq "y") {
+#					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 10 + 9] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 10 + 9] . "' border='0'></a>\n");
+#				} else {
+#					if($version eq "new") {
+#						$picz_width = $picz->{image_width} * $config->{global_zoom};
+#						$picz_height = $picz->{image_height} * $config->{global_zoom};
+#					} else {
+#						$picz_width = $width + 115;
+#						$picz_height = $height + 100;
+#					}
+#					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 10 + 9] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 10 + 9] . "' border='0'></a>\n");
+#				}
+#			} else {
+#				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 10 + 9] . "'>\n");
+#			}
+#		}
 
 		if($title) {
 			push(@output, "    </td>\n");
