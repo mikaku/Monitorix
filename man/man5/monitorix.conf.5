@@ -895,6 +895,8 @@ Up to 12 \fIvolt\fP keys (from volt0 to volt11).
 .br
 Up to 9 \fIgpu\fP keys (from gpu0 to gpu8).
 .RE
+.P
+IMPORTANT NOTE: Sometimes the output of lm_sensors shows the same exact names for different temperature values and so Monitorix is unable to differentiate them. If you are under this situation please check the issue #131 (https://github.com/mikaku/Monitorix/issues/131) to solve this situation.
 .RE
 .P
 .BI desc
@@ -950,7 +952,6 @@ The external script will receive the following arguments:
 2nd - the value defined as \fIthreshold\fP.
 .br
 3rd - the value of the sensor.
-.P
 .RE
 .SS Generic sensors statistics (gensens.pm)
 This graph helps to monitor up to three (so far) different sensors: temperatures, CPU frequencies and battery status which, depending of your machine, they should appear in the \fI/sys\fP directory.
