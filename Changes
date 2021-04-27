@@ -1,7 +1,17 @@
 3.NN.N - DD-MMM-2021
 ====================
+- Added support in 'redis.pm' to connect to a socket file. [#316]
+- Added support to get temperature values for gpu[n] keys using the output of
+  'lmsensors' in 'lmsens.pm'. [#320]
+- Added support in 'process.pm' for systems with different PID max value defined
+  in '/proc/sys/kernel/pid_max'.
+- Added new graph of process' uptime in 'process.pm'. [#311]
+- Changed the way how the 'cmd' option works in 'port.pm', by executing directly
+  the command defined (without args), unless undefined, in which case it will
+  continue defaulting to 'ss'.
 - Fixed to include the DBI->connect parameter 'dbname=postgres' in 'pgsql.pm' to
   avoid connection problems. [#310]
+- Fixed to use $options{u} instead of $config{u}.
 
 
 3.13.1 - 27-Jan-2021
