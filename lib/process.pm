@@ -1537,6 +1537,22 @@ sub process_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
+		my $ytitle;
+		my $unit;
+		my $format;
+		if(lc(($process->{time_unit} || "") eq "minute")) {
+			$ytitle = "Minutes";
+			$unit = 60;
+			$format = "%5.0lf";
+		} elsif(lc(($process->{time_unit} || "") eq "hour")) {
+			$ytitle = "Hours";
+			$unit = 3600;
+			$format = "%4.0lf";
+		} else {
+			$ytitle = "Days";
+			$unit = 86400;
+			$format = "%4.1lf";
+		}
 		for($n = 0; $n < 10; $n++) {
 			my $p = trim($lp[$n] || "");
 
@@ -1546,9 +1562,9 @@ sub process_cgi {
 				push(@tmpz, "LINE2:uptd" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:uptd" . $n . $LC[$n] . ":$str");
-				push(@tmp, "GPRINT:uptd" . $n . ":LAST:Cur\\: %4.1lf");
-				push(@tmp, "GPRINT:uptd" . $n . ":MIN:  Min\\: %4.1lf");
-				push(@tmp, "GPRINT:uptd" . $n . ":MAX:  Max\\: %4.1lf\\n");
+				push(@tmp, "GPRINT:uptd" . $n . ":LAST:Cur\\: $format");
+				push(@tmp, "GPRINT:uptd" . $n . ":MIN:  Min\\: $format");
+				push(@tmp, "GPRINT:uptd" . $n . ":MAX:  Max\\: $format\\n");
 			}
 		}
 		if($title) {
@@ -1570,7 +1586,7 @@ sub process_cgi {
 			"--title=$config->{graphs}->{_process9}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=$imgfmt_uc",
-			"--vertical-label=Days",
+			"--vertical-label=$ytitle",
 			"--width=$width",
 			"--height=$height",
 			@extra,
@@ -1588,16 +1604,16 @@ sub process_cgi {
 			"DEF:upt7=$rrd:proc" . $e . "_upt7:AVERAGE",
 			"DEF:upt8=$rrd:proc" . $e . "_upt8:AVERAGE",
 			"DEF:upt9=$rrd:proc" . $e . "_upt9:AVERAGE",
-			"CDEF:uptd0=upt0,86400,/",
-			"CDEF:uptd1=upt1,86400,/",
-			"CDEF:uptd2=upt2,86400,/",
-			"CDEF:uptd3=upt3,86400,/",
-			"CDEF:uptd4=upt4,86400,/",
-			"CDEF:uptd5=upt5,86400,/",
-			"CDEF:uptd6=upt6,86400,/",
-			"CDEF:uptd7=upt7,86400,/",
-			"CDEF:uptd8=upt8,86400,/",
-			"CDEF:uptd9=upt9,86400,/",
+			"CDEF:uptd0=upt0,$unit,/",
+			"CDEF:uptd1=upt1,$unit,/",
+			"CDEF:uptd2=upt2,$unit,/",
+			"CDEF:uptd3=upt3,$unit,/",
+			"CDEF:uptd4=upt4,$unit,/",
+			"CDEF:uptd5=upt5,$unit,/",
+			"CDEF:uptd6=upt6,$unit,/",
+			"CDEF:uptd7=upt7,$unit,/",
+			"CDEF:uptd8=upt8,$unit,/",
+			"CDEF:uptd9=upt9,$unit,/",
 			"CDEF:allvalues=uptd0,uptd1,uptd2,uptd3,uptd4,uptd5,uptd6,uptd7,uptd8,uptd9,+,+,+,+,+,+,+,+,+",
 			@CDEF,
 			@tmp);
@@ -1609,7 +1625,7 @@ sub process_cgi {
 				"--title=$config->{graphs}->{_process8}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=$imgfmt_uc",
-				"--vertical-label=Days",
+				"--vertical-label=$ytitle",
 				"--width=$width",
 				"--height=$height",
 				@extra,
@@ -1627,16 +1643,16 @@ sub process_cgi {
 				"DEF:upt7=$rrd:proc" . $e . "_upt7:AVERAGE",
 				"DEF:upt8=$rrd:proc" . $e . "_upt8:AVERAGE",
 				"DEF:upt9=$rrd:proc" . $e . "_upt9:AVERAGE",
-				"CDEF:uptd0=upt0,86400,/",
-				"CDEF:uptd1=upt1,86400,/",
-				"CDEF:uptd2=upt2,86400,/",
-				"CDEF:uptd3=upt3,86400,/",
-				"CDEF:uptd4=upt4,86400,/",
-				"CDEF:uptd5=upt5,86400,/",
-				"CDEF:uptd6=upt6,86400,/",
-				"CDEF:uptd7=upt7,86400,/",
-				"CDEF:uptd8=upt8,86400,/",
-				"CDEF:uptd9=upt9,86400,/",
+				"CDEF:uptd0=upt0,$unit,/",
+				"CDEF:uptd1=upt1,$unit,/",
+				"CDEF:uptd2=upt2,$unit,/",
+				"CDEF:uptd3=upt3,$unit,/",
+				"CDEF:uptd4=upt4,$unit,/",
+				"CDEF:uptd5=upt5,$unit,/",
+				"CDEF:uptd6=upt6,$unit,/",
+				"CDEF:uptd7=upt7,$unit,/",
+				"CDEF:uptd8=upt8,$unit,/",
+				"CDEF:uptd9=upt9,$unit,/",
 				"CDEF:allvalues=uptd0,uptd1,uptd2,uptd3,uptd4,uptd5,uptd6,uptd7,uptd8,uptd9,+,+,+,+,+,+,+,+,+",
 				@CDEF,
 				@tmpz);
