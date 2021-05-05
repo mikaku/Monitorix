@@ -1622,7 +1622,7 @@ sub process_cgi {
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
 			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 10 + 8]",
-				"--title=$config->{graphs}->{_process8}  ($tf->{nwhen}$tf->{twhen})",
+				"--title=$config->{graphs}->{_process9}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=$imgfmt_uc",
 				"--vertical-label=$ytitle",
