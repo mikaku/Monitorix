@@ -1004,8 +1004,24 @@ sub system_cgi {
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
+	my $ytitle;
+	my $unit;
+	my $format;
+	if(lc(($system->{time_unit} || "") eq "minute")) {
+		$ytitle = "Minutes";
+		$unit = 60;
+		$format = "%5.0lf";
+	} elsif(lc(($system->{time_unit} || "") eq "hour")) {
+		$ytitle = "Hours";
+		$unit = 3600;
+		$format = "%5.0lf";
+	} else {
+		$ytitle = "Days";
+		$unit = 86400;
+		$format = "%5.1lf";
+	}
 	push(@tmp, "LINE2:uptime_days#EE44EE:Uptime");
-	push(@tmp, "GPRINT:uptime_days:LAST:(in days)      Current\\:%5.1lf\\n");
+	push(@tmp, "GPRINT:uptime_days:LAST:               Current\\:$format\\n");
 	push(@tmpz, "LINE2:uptime_days#EE44EE:Uptime");
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -1023,7 +1039,7 @@ sub system_cgi {
 		"--title=$config->{graphs}->{_system5}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
 		"--imgformat=$imgfmt_uc",
-		"--vertical-label=Days",
+		"--vertical-label=$ytitle",
 		"--width=$width",
 		"--height=$height",
 		@extra,
@@ -1033,7 +1049,7 @@ sub system_cgi {
 		@{$cgi->{version12_small}},
 		@{$colors->{graph_colors}},
 		"DEF:uptime=$rrd:system_uptime:AVERAGE",
-		"CDEF:uptime_days=uptime,86400,/",
+		"CDEF:uptime_days=uptime,$unit,/",
 		"CDEF:allvalues=uptime",
 		@CDEF,
 		@tmp);
@@ -1045,7 +1061,7 @@ sub system_cgi {
 			"--title=$config->{graphs}->{_system5}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=$imgfmt_uc",
-			"--vertical-label=Days",
+			"--vertical-label=$ytitle",
 			"--width=$width",
 			"--height=$height",
 			@extra,
@@ -1055,7 +1071,7 @@ sub system_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:uptime=$rrd:system_uptime:AVERAGE",
-			"CDEF:uptime_days=uptime,86400,/",
+			"CDEF:uptime_days=uptime,$unit,/",
 			"CDEF:allvalues=uptime",
 			@CDEF,
 			@tmpz);
