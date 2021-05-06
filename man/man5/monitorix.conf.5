@@ -605,6 +605,11 @@ It will receive the following three parameters:
 .P
 Default value: \fI/path/to/script.sh\fP
 .RE
+.P
+.BI time_unit
+.RS
+This is the unit in which will appear the values in the uptime graph. Possible values are: \fBminute\fP, \fBhour\fP or \fBday\fP. It will default to \fBday\fP even if none is specified.
+.RE
 .SS Global kernel usage (kern.pm)
 Note that the VFS graph is just informative of how the kernel is balancing its tables.
 .BI graph_mode
@@ -1977,7 +1982,7 @@ You can define as much entries as you want.
 .P
 .BI time_unit
 .RS
-This the unit in which will appear the values of the uptime graph. Possible values are \fBminute\fP, \fBhour\fP or \fBday\fP. It will default to \fBday\fP even if none is specified.
+This is the unit in which will appear the values in the uptime graph. Possible values are: \fBminute\fP, \fBhour\fP or \fBday\fP. It will default to \fBday\fP even if none is specified.
 .RE
 .SS System services demand (serv.pm)
 This graph requires either \fIMailScanner\fP or \fIamavisd-new\fP mail scanners in order to account spam and virus emails.
