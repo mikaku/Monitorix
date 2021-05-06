@@ -112,7 +112,7 @@ sub daemonize {
 
 sub usage {
 	print(STDERR << "EOF");
-Usage: monitorix -c configfile [-p pidfile] [-d none | graph[,graph] | all ] [-v] [-n] [-u]
+Usage: monitorix -c configfile [-p pidfile] [-d none | graph[,graph] | all ] [-v] [-n] [-u] [-s splitpolicy]
 
 EOF
 	exit(1);
@@ -486,7 +486,7 @@ EOF
 
 # Main
 # ----------------------------------------------------------------------------
-getopts("c:p:d:vnu", \%options) || usage();
+getopts("c:p:d:vnus:", \%options) || usage();
 
 if($options{v}) {
 	print("Monitorix version " . VERSION . " (" . RELDATE . ")\n");
@@ -504,8 +504,10 @@ if(!stat($options{c})) {
 }
 
 # load main configuration file
+$options{s} = "guess" if !defined($options{s});
 my $conf = new Config::General(
-	-ConfigFile => $options{c},
+	-ConfigFile	=> $options{c},
+	-SplitPolicy	=> $options{s},
 );
 %config = $conf->getall;
 $config{debug} = ();
