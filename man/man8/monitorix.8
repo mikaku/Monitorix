@@ -7,7 +7,7 @@
 .SH NAME
 monitorix - a lightweight system monitoring tool
 .SH SYNOPSIS
-\fBmonitorix\fR \fB-c\fR configfile [\fB-p\fR pidfile] [\fB-d\fR none | graph[,graph] | all] [\fB-v\fR] [\fB-n\fR] [\fB-u\fR]
+\fBmonitorix\fR \fB-c\fR configfile [\fB-p\fR pidfile] [\fB-d\fR none | graph[,graph] | all] [\fB-v\fR] [\fB-n\fR] [\fB-u\fR] [\fB-s\fR splitpolicy]
 .SH DESCRIPTION
 This Perl daemon starts the main Monitorix process, which gathers statistics about the system it is running on and stores this information in a set of RRD files.
 .SH OPTIONS
@@ -39,6 +39,9 @@ This argument will prevent Monitorix from daemonizing, and hence, forcing it to 
 .TP
 \fB\-u\fR
 This option will force Monitorix to run under the regular user who started it. It's necessary to make sure that this user will have write permissions to the directory and files pointed by the options \fBbase_dir\fP, \fBbase_lib\fP and \fBlog_file\fP (either for \fImonitorix\fP and for the HTTP built-in server). Also, you must know that some graphs might not work because only the 'root' user is capable to get such statistics. Check the log files after starting Monitorix in this mode.
+.TP
+\fB\-s\fR \fIsplitpolicy\fR
+This option decides which part of a line in the config file will be the key and which one will be the value. The split policy accepts the values \fIguess\fP (which is the default), \fIwhitespace\fP (which causes the Monitorix to split by whitespace) and \fIequalsign\fP (which causes it to split strictly by equal sign).
 .SH SIGNALS
 On receipt of a SIGHUP, \fBmonitorix\fP will close and reopen its log file (provided that it has a filename defined). This is useful in scripts which rotate and age log files.
 .P
