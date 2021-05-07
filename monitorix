@@ -578,7 +578,8 @@ if($config{include_dir} && opendir(DIR, $config{include_dir})) {
 		next unless $c =~ m/\.conf$/;
 		logger("Loading extra configuration file '$config{include_dir}/$c'.");
 		my $conf_inc = new Config::General(
-			-ConfigFile => $config{include_dir} . "/$c",
+			-ConfigFile	=> $config{include_dir} . "/$c",
+			-SplitPolicy	=> $options{s},
 		);
 		my %config_inc = $conf_inc->getall;
 		while(my ($key, $val) = each(%config_inc)) {
