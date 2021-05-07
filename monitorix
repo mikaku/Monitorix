@@ -210,7 +210,7 @@ EOF
 	(my $base_cgi = $config{base_cgi}) =~ s/\/*$/\//;
 
 	if(!open(OUT, "> $config{base_dir}/index.html")) {
-		die "unable to create '${config{base_dir}}index.html': $!";
+		die "Unable to create '${config{base_dir}}index.html': $!";
 	}
 	my $css = sprintf("%scss/%s.css", $base_url, $theme);
 	print(OUT <<EOF);
@@ -500,7 +500,7 @@ if(!$options{c}) {
 }
 $options{c} = (abs_path($options{c}) || $options{c}) unless $^V lt 5.6.2;
 if(!stat($options{c})) {
-	die "can't open file '$options{c}': $!";
+	die "Can't open file '$options{c}': $!";
 }
 
 # load main configuration file
@@ -546,14 +546,14 @@ logger("Loaded main configuration file '$options{c}'.");
 if($options{p}) {
 	$options{p} = abs_path($options{p});
 	open(OUT, "> $options{p}")
-		|| die "could not open '$options{p}' for writing: $!";
+		|| die "Could not open '$options{p}' for writing: $!";
 	print(OUT "$$");
 	close(OUT);
 }
 
 # change to a safety directory
 unless(chdir("/tmp")) {
-	die "can't chdir to /tmp: $!";
+	die "Can't chdir to /tmp: $!";
 }
 
 if($options{d}) {
