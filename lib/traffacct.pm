@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2020 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2021 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ use RRDs;
 use MIME::Lite;
 use LWP::UserAgent;
 use Socket;
+use Net::IP qw(ip_is_ipv6 ip_splitprefix);
 use Exporter 'import';
 our @EXPORT = qw(traffacct_init traffacct_update traffacct_cgi traffacct_getcounters traffacct_sendreports);
 
@@ -146,14 +147,27 @@ sub traffacct_init {
 					$ip = inet_ntoa((gethostbyname($name))[4]);
 					$ip = $ip . "/32";
 				}
-				open(IN, "iptables -t $table -nxvL monitorix_daily_$name 2>/dev/null |");
-				my @data = <IN>;
-				close(IN);
-				if(!scalar(@data)) {
-					system("iptables -t $table -N monitorix_daily_$name");
-					system("iptables -t $table -I FORWARD -j monitorix_daily_$name");
-					system("iptables -t $table -A monitorix_daily_$name -s $ip -d 0/0 -o $config->{net}->{gateway}");
-					system("iptables -t $table -A monitorix_daily_$name -s 0/0 -d $ip -i $config->{net}->{gateway}");
+				my ($ipaddr,$iplen) = ip_splitprefix($ip);
+				if(ip_is_ipv6($ipaddr)) {
+					open(IN, "ip6tables -t $table -nxvL monitorix_daily_$name 2>/dev/null |");
+					my @data = <IN>;
+					close(IN);
+					if(!scalar(@data)) {
+						system("ip6tables -t $table -N monitorix_daily_$name");
+						system("ip6tables -t $table -I FORWARD -j monitorix_daily_$name");
+						system("ip6tables -t $table -A monitorix_daily_$name -s $ip -d ::/0 -o $config->{net}->{gateway}");
+						system("ip6tables -t $table -A monitorix_daily_$name -s ::/0 -d $ip -i $config->{net}->{gateway}");
+					}
+				} else {
+					open(IN, "iptables -t $table -nxvL monitorix_daily_$name 2>/dev/null |");
+					my @data = <IN>;
+					close(IN);
+					if(!scalar(@data)) {
+						system("iptables -t $table -N monitorix_daily_$name");
+						system("iptables -t $table -I FORWARD -j monitorix_daily_$name");
+						system("iptables -t $table -A monitorix_daily_$name -s $ip -d 0/0 -o $config->{net}->{gateway}");
+						system("iptables -t $table -A monitorix_daily_$name -s 0/0 -d $ip -i $config->{net}->{gateway}");
+					}
 				}
 			}
 		}
@@ -201,27 +215,55 @@ sub traffacct_update {
 				$ip = inet_ntoa((gethostbyname($name))[4]);
 			}
 			$ip =~ s/\/\d+//;
-			open(IN, "iptables -t $table -nxvL monitorix_daily_$name |");
-			$in[$n] = 0 unless $in[$n];
-			$out[$n] = 0 unless $out[$n];
-			while(<IN>) {
-				my (undef, $bytes, undef, undef, undef, undef, $source) = split(' ', $_);
-				if($source) {
-					if($source =~ /0.0.0.0/) {
-						$in[$n] = $bytes - ($config->{traffacct_hist_in}[$n] || 0);
-						$in[$n] = 0 unless $in[$n] != $bytes;
-						$config->{traffacct_hist_in}[$n] = $bytes;
-						$in[$n] /= 60;
-					}
-					if($source eq $ip) {
-						$out[$n] = $bytes - ($config->{traffacct_hist_out}[$n] || 0);
-						$out[$n] = 0 unless $out[$n] != $bytes;
-						$config->{traffacct_hist_out}[$n] = $bytes;
-						$out[$n] /= 60;
+			if(ip_is_ipv6($ip)) {
+				open(IN, "ip6tables -t $table -nxvL monitorix_daily_$name |");
+				$in[$n] = 0 unless $in[$n];
+				$out[$n] = 0 unless $out[$n];
+				while(<IN>) {
+					my (undef, $bytes, undef, undef, undef, $source) = split(' ', $_);
+					if($source) {
+						my $sourceaddr = $source;
+						$sourceaddr =~ s/\/\d+//;
+						if($source =~ /::\/0/) {
+							$in[$n] = $bytes - ($config->{traffacct_hist_in}[$n] || 0);
+							$in[$n] = 0 unless $in[$n] != $bytes;
+							$config->{traffacct_hist_in}[$n] = $bytes;
+							$in[$n] /= 60;
+						}
+						if($sourceaddr eq $ip) {
+							$out[$n] = $bytes - ($config->{traffacct_hist_out}[$n] || 0);
+							$out[$n] = 0 unless $out[$n] != $bytes;
+							$config->{traffacct_hist_out}[$n] = $bytes;
+							$out[$n] /= 60;
+						}
 					}
 				}
+				close(IN);
+			} else {
+				open(IN, "iptables -t $table -nxvL monitorix_daily_$name |");
+				$in[$n] = 0 unless $in[$n];
+				$out[$n] = 0 unless $out[$n];
+				while(<IN>) {
+					my (undef, $bytes, undef, undef, undef, undef, $source) = split(' ', $_);
+					if($source) {
+						my $sourceaddr = $source;
+						$sourceaddr =~ s/\/\d+//;
+						if($source =~ /0.0.0.0/) {
+							$in[$n] = $bytes - ($config->{traffacct_hist_in}[$n] || 0);
+							$in[$n] = 0 unless $in[$n] != $bytes;
+							$config->{traffacct_hist_in}[$n] = $bytes;
+							$in[$n] /= 60;
+						}
+						if($sourceaddr eq $ip) {
+							$out[$n] = $bytes - ($config->{traffacct_hist_out}[$n] || 0);
+							$out[$n] = 0 unless $out[$n] != $bytes;
+							$config->{traffacct_hist_out}[$n] = $bytes;
+							$out[$n] /= 60;
+						}
+					}
+				}
+				close(IN);
 			}
-			close(IN);
 		}
 	}
 
@@ -263,15 +305,34 @@ sub traffacct_getcounters {
 				$ip = inet_ntoa((gethostbyname($name))[4]);
 			}
 			$ip =~ s/\/\d+//;
-			open(IN, "iptables -nxvL monitorix_daily_$name |");
-			while(<IN>) {
-				my (undef, $bytes, undef, undef, undef, undef, $source) = split(' ', $_);
-				if($source) {
-					if($source eq $ip) {
-						$out = $bytes;
+			if(ip_is_ipv6($ip)) {
+				open(IN, "ip6tables -nxvL monitorix_daily_$name |");
+				while(<IN>) {
+					my (undef, $bytes, undef, undef, undef, $source) = split(' ', $_);
+					if($source) {
+						my $sourceaddr = $source;
+						$sourceaddr =~ s/\/\d+//;
+						if($sourceaddr eq $ip) {
+							$out = $bytes;
+						}
+						if($source =~ /::\/0/) {
+							$in = $bytes;
+						}
 					}
-					if($source =~ /0.0.0.0/) {
-						$in = $bytes;
+				}
+			} else {
+				open(IN, "iptables -nxvL monitorix_daily_$name |");
+				while(<IN>) {
+					my (undef, $bytes, undef, undef, undef, undef, $source) = split(' ', $_);
+					if($source) {
+						my $sourceaddr = $source;
+						$sourceaddr =~ s/\/\d+//;
+						if($sourceaddr eq $ip) {
+							$out = $bytes;
+						}
+						if($source =~ /0.0.0.0/) {
+							$in = $bytes;
+						}
 					}
 				}
 			}
@@ -286,7 +347,11 @@ sub traffacct_getcounters {
 				close(OUT);
 				logger("Saved daily traffic counter for '$name'.") if $debug;
 			}
-			system("iptables -Z monitorix_daily_$name >/dev/null 2>/dev/null");
+			if(ip_is_ipv6($ip)) {
+				system("ip6tables -Z monitorix_daily_$name >/dev/null 2>/dev/null");
+			} else {
+				system("iptables -Z monitorix_daily_$name >/dev/null 2>/dev/null");
+			}
 		}
 	}
 

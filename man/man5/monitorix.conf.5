@@ -3180,13 +3180,13 @@ If the names in this list are able to be resolved by a DNS query then you don't 
 An example would be:
 .P
 .RS
-list = pc8, printer, scanner, lan3
+list = pc8, printer, pc9, scanner
 .RE
 .RE
 .P
 .BI desc
 .RS
-This is the list of IP addresses with network masks and email addresses corresponding to the entries defined in the \fBlist\fP. This option is only used when the those entries are not resolvable through a DNS query.
+This is the list of IPv4 or IPv6 addresses with network masks and email addresses corresponding to the entries defined in the \fBlist\fP. This option is only used when the those entries are not resolvable through a DNS query.
 .P
 An example would be:
 .P
@@ -3199,7 +3199,7 @@ An example would be:
 .br
 	2 = 192.168.1.103/32, paul@example.com
 .br
-	3 = 192.168.1.104/32, peter@example.com
+	3 = 2607:6300:93:1::/64, peter@example.com
 .br
 </desc
 .RE
