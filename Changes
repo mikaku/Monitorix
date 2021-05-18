@@ -5,13 +5,27 @@
   'lmsensors' in 'lmsens.pm'. [#320]
 - Added support in 'process.pm' for systems with different PID max value defined
   in '/proc/sys/kernel/pid_max'.
-- Added new graph of process' uptime in 'process.pm'. [#311]
+- Added new graph of process' uptime in 'process.pm'. It comes with a new option
+  called 'time_unit' to set the scale of the graph. [#311]
+- Added the option 'time_unit' in 'system.pm' to set the scale of the uptime
+  graph. [#331]
+- Added the new command line option '-s' to decide which part of a line in the
+  config file will be the key and which one will be the value. The split policy
+  accepts the values 'guess' (as the default), 'whitespace' and 'equalsign'.
+        (suggested by Shashi Mall, shashi.mall AT wizix.com)
+- Added support for IPv6 addresses in 'traffacct.pm'.
+	(thanks to Adam Starr, astar AT fhtc.edu)
 - Changed the way how the 'cmd' option works in 'port.pm', by executing directly
   the command defined (without args), unless undefined, in which case it will
   continue defaulting to 'ss'.
+        (thanks to Shashi Mall, shashi.mall AT wizix.com for pointing this out)
 - Fixed to include the DBI->connect parameter 'dbname=postgres' in 'pgsql.pm' to
   avoid connection problems. [#310]
 - Fixed to use $options{u} instead of $config{u}.
+- Fixed to include the reference to the -u option either in the usage text and
+  in the monitorix(8) man page.
+- Fixed the legend in 'nvidia.pm' graphs to respect the 'max' value. [#330]
+- Small cosmetic changes.
 
 
 3.13.1 - 27-Jan-2021
