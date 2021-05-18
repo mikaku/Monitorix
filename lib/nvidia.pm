@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2020 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2021 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -432,9 +432,10 @@ sub nvidia_cgi {
 			push(@tmp, "GPRINT:temp_" . $n . ":AVERAGE:   Average\\: %2.0lf");
 			push(@tmp, "GPRINT:temp_" . $n . ":MIN:   Min\\: %2.0lf");
 			push(@tmp, "GPRINT:temp_" . $n . ":MAX:   Max\\: %2.0lf\\n");
-		} else {
-			push(@tmp, "COMMENT: \\n");
 		}
+	}
+	for($n = 0; $n < (5 - $nvidia->{max}); $n++) {
+		push(@tmp, "COMMENT: \\n");
 	}
 
 	if($title) {
@@ -498,7 +499,6 @@ sub nvidia_cgi {
 		"CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8,+,+,+,+,+,+,+,+",
 		@CDEF,
 		@tmp,
-		"COMMENT: \\n",
 		"COMMENT: \\n");
 	$err = RRDs::error;
 	push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG1: $err\n") if $err;
@@ -558,29 +558,19 @@ sub nvidia_cgi {
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
-	push(@tmp, "LINE2:gpu0#FFA500:Card 0\\g");
-	push(@tmp, "GPRINT:gpu0:LAST:\\:%3.0lf%%");
-	push(@tmp, "LINE2:gpu3#4444EE:Card 3\\g");
-	push(@tmp, "GPRINT:gpu3:LAST:\\:%3.0lf%%");
-	push(@tmp, "LINE2:gpu6#EE44EE:Card 6\\g");
-	push(@tmp, "GPRINT:gpu6:LAST:\\:%3.0lf%%\\n");
-	push(@tmp, "LINE2:gpu1#44EEEE:Card 1\\g");
-	push(@tmp, "GPRINT:gpu1:LAST:\\:%3.0lf%%");
-	push(@tmp, "LINE2:gpu4#448844:Card 4\\g");
-	push(@tmp, "GPRINT:gpu4:LAST:\\:%3.0lf%%");
-	push(@tmp, "LINE2:gpu7#EEEE44:Card 7\\g");
-	push(@tmp, "GPRINT:gpu7:LAST:\\:%3.0lf%%\\n");
-	push(@tmp, "LINE2:gpu2#44EE44:Card 2\\g");
-	push(@tmp, "GPRINT:gpu2:LAST:\\:%3.0lf%%");
-	push(@tmp, "LINE2:gpu5#EE4444:Card 5\\g");
-	push(@tmp, "GPRINT:gpu5:LAST:\\:%3.0lf%%");
-	push(@tmp, "LINE2:gpu8#963C74:Card 8\\g");
-	push(@tmp, "GPRINT:gpu8:LAST:\\:%3.0lf%%\\n");
-        for($n = 0; $n < 9; $n++) {
-                if($n < $nvidia->{max}) {
-                        push(@tmpz, "LINE2:gpu" . $n . $LC[$n] . ":Card $n");
-                }
-        }
+	for($n = 0; $n < $nvidia->{max}; $n++) {
+		push(@tmp, "LINE2:gpu" . $n . $LC[$n] . ":Card $n\\g");
+		push(@tmp, "GPRINT:gpu" . $n . ":LAST:\\:%3.0lf%%");
+		push(@tmpz, "LINE2:gpu" . $n . $LC[$n] . ":Card $n");
+		if($n == 2 || $n == 5 || $n == 8) {
+			my $last = pop(@tmp);
+			push(@tmp, $last . "\\n");
+		}
+	}
+	if(grep {$_ == $nvidia->{max}} (1, 2, 4, 5, 7, 8)) {
+		my $last = pop(@tmp);
+		push(@tmp, $last . "\\n");
+	}
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -674,29 +664,19 @@ sub nvidia_cgi {
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
-	push(@tmp, "LINE2:mem0#FFA500:Card 0\\g");
-	push(@tmp, "GPRINT:mem0:LAST:\\:%3.0lf%%");
-	push(@tmp, "LINE2:mem3#4444EE:Card 3\\g");
-	push(@tmp, "GPRINT:mem3:LAST:\\:%3.0lf%%");
-	push(@tmp, "LINE2:mem6#EE44EE:Card 6\\g");
-	push(@tmp, "GPRINT:mem6:LAST:\\:%3.0lf%%\\n");
-	push(@tmp, "LINE2:mem1#44EEEE:Card 1\\g");
-	push(@tmp, "GPRINT:mem1:LAST:\\:%3.0lf%%");
-	push(@tmp, "LINE2:mem4#448844:Card 4\\g");
-	push(@tmp, "GPRINT:mem4:LAST:\\:%3.0lf%%");
-	push(@tmp, "LINE2:mem7#EEEE44:Card 7\\g");
-	push(@tmp, "GPRINT:mem7:LAST:\\:%3.0lf%%\\n");
-	push(@tmp, "LINE2:mem2#44EE44:Card 2\\g");
-	push(@tmp, "GPRINT:mem2:LAST:\\:%3.0lf%%");
-	push(@tmp, "LINE2:mem5#EE4444:Card 5\\g");
-	push(@tmp, "GPRINT:mem5:LAST:\\:%3.0lf%%");
-	push(@tmp, "LINE2:mem8#963C74:Card 8\\g");
-	push(@tmp, "GPRINT:mem8:LAST:\\:%3.0lf%%\\n");
-        for($n = 0; $n < 9; $n++) {
-                if($n < $nvidia->{max}) {
-                        push(@tmpz, "LINE2:mem" . $n . $LC[$n] . ":Card $n");
-                }
-        }
+	for($n = 0; $n < $nvidia->{max}; $n++) {
+		push(@tmp, "LINE2:mem" . $n . $LC[$n] . ":Card $n\\g");
+		push(@tmp, "GPRINT:mem" . $n . ":LAST:\\:%3.0lf%%");
+		push(@tmpz, "LINE2:mem" . $n . $LC[$n] . ":Card $n");
+		if($n == 2 || $n == 5 || $n == 8) {
+			my $last = pop(@tmp);
+			push(@tmp, $last . "\\n");
+		}
+	}
+	if(grep {$_ == $nvidia->{max}} (1, 2, 4, 5, 7, 8)) {
+		my $last = pop(@tmp);
+		push(@tmp, $last . "\\n");
+	}
 	if(lc($config->{show_gaps}) eq "y") {
 		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
