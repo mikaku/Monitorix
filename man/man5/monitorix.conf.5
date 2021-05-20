@@ -958,6 +958,13 @@ The external script will receive the following arguments:
 .br
 3rd - the value of the sensor.
 .RE
+.RE
+.P
+.BI cmd
+.RS
+This is the command that will be used to gather statistics. This option may also be used to add new sensors values not covered by LM-Sensors by referencing an external script which executes the command \fIsensors\fP and others.
+.P
+Default value: \fIsensors\fP
 .SS Generic sensors statistics (gensens.pm)
 This graph helps to monitor up to three (so far) different sensors: temperatures, CPU frequencies and battery status which, depending of your machine, they should appear in the \fI/sys\fP directory.
 .P
