@@ -156,6 +156,9 @@ sub lmsens_init {
 		}
 	}
 
+	if(!defined($config->{lmsens}->{cmd})) {
+		$config->{lmsens}->{cmd} = "sensors";
+	}
 	$config->{lmsens_hist_alerts} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
@@ -214,7 +217,7 @@ sub lmsens_update {
 	if($config->{os} eq "Linux") {
 		if($lmsens->{list}) {
 			my @data;
-	  		if(open(IN, "sensors |")) {
+			if(open(IN, $lmsens->{cmd} . " |")) {
 				@data = <IN>;
 				close(IN);
 			} else {
