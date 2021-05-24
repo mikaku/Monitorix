@@ -873,6 +873,16 @@ Then you may want to configure that \fBlist\fP as:
 .P
 Note that you need to escape the plus and minus signs in the voltage labels. It also recommended to enclose the values using double quotes.
 .P
+The Fan values can be prefixed with the words \fIrpm:\fP (optional) or \fIpercent:\fP. This will tell to Monitorix how to treat these values in the graph and in the case of the later it will add the percentage symbol (%) right after the value. Just like this:
+.P
+.RS
+<list>
+.br
+	fan0    = percent:Power
+.br
+</LIST>
+.RE
+.P
 The last one, \fIgpu0\fP, is set here just in case you have a supported graphics card and want to monitor its temperature. Currently only NVIDIA and ATI graphic cards are supported; with the values \fInvidia\fP and \fIati\fP respectively, and it requires the official NVIDIA or ATI drivers.
 .P
 If the temperature of your graphical card appears in the output of \fIlm_sensors\fP, then you can tell Monitorix to use it instead of using the official NVIDIA or ATI drivers. In that case, you need to prefix with \fIlmsensors:\fP the name of the temperature value. Just like this:
