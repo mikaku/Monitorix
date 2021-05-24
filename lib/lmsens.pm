@@ -264,10 +264,18 @@ sub lmsens_update {
 					}
 				}
 				for($n = 0; $n < 9; $n++) {
+					my $str2;
 					$str = "fan" . $n;
 					$fan[$n] = 0 unless $fan[$n];
 					next if !$lmsens->{list}->{$str};
-					if($data[$l] =~ /^$lmsens->{list}->{$str}:/ && $data[$l] =~ /RPM/) {
+					if(lc(substr($lmsens->{list}->{$str}, 0, 4) eq "rpm:")) {
+						$str2 = sprintf("%s", substr($lmsens->{list}->{$str}, 4));
+					} elsif(lc(substr($lmsens->{list}->{$str}, 0, 8) eq "percent:")) {
+						$str2 = sprintf("%s", substr($lmsens->{list}->{$str}, 8));
+					} else {
+						$str2 = sprintf("%s", $lmsens->{list}->{$str});
+					}
+					if($data[$l] =~ /^$str2:/ && $data[$l] =~ /RPM/) {
 						my (undef, $tmp) = split(':', $data[$l]);
 						if($tmp eq "\n") {
 							$l++;
@@ -1148,26 +1156,36 @@ sub lmsens_cgi {
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
+	my $percent;
 	$str = $lmsens->{desc}->{'fan0'} ? sprintf("%5s", substr($lmsens->{desc}->{'fan0'}, 0, 5)) : "Fan 0";
-	push(@tmp, ("LINE2:fan0#FFA500:$str\\g", "GPRINT:fan0:LAST:\\:%5.0lf"));
+	$percent = lc(substr($lmsens->{list}->{'fan0'} || "", 0, 8) eq "percent:") ? "%%" : "";
+	push(@tmp, ("LINE2:fan0#FFA500:$str\\g", "GPRINT:fan0:LAST:\\:%5.0lf$percent"));
 	$str = $lmsens->{desc}->{'fan3'} ? sprintf("%5s", substr($lmsens->{desc}->{'fan3'}, 0, 5)) : "Fan 3";
-	push(@tmp, ("LINE2:fan3#4444EE:$str\\g", "GPRINT:fan3:LAST:\\:%5.0lf")) unless !$lmsens->{list}->{'fan3'};
+	$percent = lc(substr($lmsens->{list}->{'fan3'} || "", 0, 8) eq "percent:") ? "%%" : "";
+	push(@tmp, ("LINE2:fan3#4444EE:$str\\g", "GPRINT:fan3:LAST:\\:%5.0lf$percent")) unless !$lmsens->{list}->{'fan3'};
 	$str = $lmsens->{desc}->{'fan6'} ? sprintf("%5s", substr($lmsens->{desc}->{'fan6'}, 0, 5)) : "Fan 6";
-	push(@tmp, ("LINE2:fan6#EE44EE:$str\\g", "GPRINT:fan6:LAST:\\:%5.0lf\\g")) unless !$lmsens->{list}->{'fan6'};
+	$percent = lc(substr($lmsens->{list}->{'fan6'} || "", 0, 8) eq "percent:") ? "%%" : "";
+	push(@tmp, ("LINE2:fan6#EE44EE:$str\\g", "GPRINT:fan6:LAST:\\:%5.0lf$percent\\g")) unless !$lmsens->{list}->{'fan6'};
 	push(@tmp, "COMMENT: \\n");
 	$str = $lmsens->{desc}->{'fan1'} ? sprintf("%5s", substr($lmsens->{desc}->{'fan1'}, 0, 5)) : "Fan 1";
-	push(@tmp, ("LINE2:fan1#44EEEE:$str\\g", "GPRINT:fan1:LAST:\\:%5.0lf")) unless !$lmsens->{list}->{'fan1'};
+	$percent = lc(substr($lmsens->{list}->{'fan1'} || "", 0, 8) eq "percent:") ? "%%" : "";
+	push(@tmp, ("LINE2:fan1#44EEEE:$str\\g", "GPRINT:fan1:LAST:\\:%5.0lf$percent")) unless !$lmsens->{list}->{'fan1'};
 	$str = $lmsens->{desc}->{'fan4'} ? sprintf("%5s", substr($lmsens->{desc}->{'fan4'}, 0, 5)) : "Fan 4";
-	push(@tmp, ("LINE2:fan4#448844:$str\\g", "GPRINT:fan4:LAST:\\:%5.0lf")) unless !$lmsens->{list}->{'fan4'};
+	$percent = lc(substr($lmsens->{list}->{'fan4'} || "", 0, 8) eq "percent:") ? "%%" : "";
+	push(@tmp, ("LINE2:fan4#448844:$str\\g", "GPRINT:fan4:LAST:\\:%5.0lf$percent")) unless !$lmsens->{list}->{'fan4'};
 	$str = $lmsens->{desc}->{'fan7'} ? sprintf("%5s", substr($lmsens->{desc}->{'fan7'}, 0, 5)) : "Fan 7";
-	push(@tmp, ("LINE2:fan7#EEEE44:$str\\g", "GPRINT:fan7:LAST:\\:%5.0lf\\g")) unless !$lmsens->{list}->{'fan7'};
+	$percent = lc(substr($lmsens->{list}->{'fan7'} || "", 0, 8) eq "percent:") ? "%%" : "";
+	push(@tmp, ("LINE2:fan7#EEEE44:$str\\g", "GPRINT:fan7:LAST:\\:%5.0lf$percent\\g")) unless !$lmsens->{list}->{'fan7'};
 	push(@tmp, "COMMENT: \\n");
 	$str = $lmsens->{desc}->{'fan2'} ? sprintf("%5s", substr($lmsens->{desc}->{'fan2'}, 0, 5)) : "Fan 2";
-	push(@tmp, ("LINE2:fan2#44EE44:$str\\g", "GPRINT:fan2:LAST:\\:%5.0lf")) unless !$lmsens->{list}->{'fan2'};
+	$percent = lc(substr($lmsens->{list}->{'fan2'} || "", 0, 8) eq "percent:") ? "%%" : "";
+	push(@tmp, ("LINE2:fan2#44EE44:$str\\g", "GPRINT:fan2:LAST:\\:%5.0lf$percent")) unless !$lmsens->{list}->{'fan2'};
 	$str = $lmsens->{desc}->{'fan5'} ? sprintf("%5s", substr($lmsens->{desc}->{'fan5'}, 0, 5)) : "Fan 5";
-	push(@tmp, ("LINE2:fan5#EE4444:$str\\g", "GPRINT:fan5:LAST:\\:%5.0lf")) unless !$lmsens->{list}->{'fan5'};
+	$percent = lc(substr($lmsens->{list}->{'fan5'} || "", 0, 8) eq "percent:") ? "%%" : "";
+	push(@tmp, ("LINE2:fan5#EE4444:$str\\g", "GPRINT:fan5:LAST:\\:%5.0lf$percent")) unless !$lmsens->{list}->{'fan5'};
 	$str = $lmsens->{desc}->{'fan8'} ? sprintf("%5s", substr($lmsens->{desc}->{'fan8'}, 0, 5)) : "Fan 8";
-	push(@tmp, ("LINE2:fan8#963C74:$str\\g", "GPRINT:fan8:LAST:\\:%5.0lf\\g")) unless !$lmsens->{list}->{'fan8'};
+	$percent = lc(substr($lmsens->{list}->{'fan8'} || "", 0, 8) eq "percent:") ? "%%" : "";
+	push(@tmp, ("LINE2:fan8#963C74:$str\\g", "GPRINT:fan8:LAST:\\:%5.0lf$percent\\g")) unless !$lmsens->{list}->{'fan8'};
 	push(@tmp, "COMMENT: \\n");
 
 	$str = $lmsens->{desc}->{'fan0'} ? substr($lmsens->{desc}->{'fan0'}, 0, 8) : "Fan 0";
