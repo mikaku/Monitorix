@@ -227,8 +227,12 @@ sub graph_footer {
 # ----------------------------------------------------------------------------
 open(IN, dirname(__FILE__)."/monitorix.conf.path");
 my $config_path = <IN>;
+my $split_policy = <IN>;
 chomp($config_path);
 close(IN);
+
+$split_policy = "guess" if !defined($split_policy);
+chomp($split_policy);
 
 if(! -f $config_path) {
 	print(<< "EOF");
@@ -249,7 +253,8 @@ EOF
 
 # load main configuration file
 my $conf = new Config::General(
-	-ConfigFile => $config_path,
+	-ConfigFile	=> $config_path,
+	-SplitPolicy	=> $split_policy,
 );
 %config = $conf->getall;
 
@@ -261,7 +266,8 @@ if($config{include_dir} && opendir(DIR, $config{include_dir})) {
 		next unless -f $config{include_dir} . "/$c";
 		next unless $c =~ m/\.conf$/;
 		my $conf_inc = new Config::General(
-			-ConfigFile => $config{include_dir} . "/$c",
+			-ConfigFile	=> $config{include_dir} . "/$c",
+			-SplitPolicy	=> $split_policy,
 		);
 		my %config_inc = $conf_inc->getall;
 		while(my ($key, $val) = each(%config_inc)) {

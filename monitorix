@@ -658,6 +658,7 @@ if(!$config{use_external_firewall}) {
 # save the path of the configuration file
 if(open(OUT, "> " . $config{base_dir} . "/cgi/monitorix.conf.path")) {
 	print(OUT "$options{c}\n");
+	print(OUT "$options{s}\n");
 	close(OUT);
 } else {
 	logger("WARNING: unable to create the file '$config{base_dir}/cgi/monitorix.conf.path'. $!");
