@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2020 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2021 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -626,34 +626,52 @@ sub disk_cgi {
 		for($n = 0; $n < 8; $n += 2) {
 			if($d[$n]) {
 				my $dstr = trim($d[$n]);
+				my $base = "";
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
 
 				# check if device name is a symbolic link
 				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
 				if(-l $dstr) {
+					$base = basename($dstr);
 					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
 					chomp($dstr);
 				}
 
 				$dstr =~ s/^(.+?) .*$/$1/;
+				if($base && defined($disk->{map}->{$base})) {
+					$dstr = $disk->{map}->{$base};
+				} else {
+					if(defined($disk->{map}->{$dstr})) {
+						$dstr = $disk->{map}->{$dstr};
+					}
+				}
 				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:rsc" . $n . $LC[$n] . ":$str");
 				push(@tmpz, "LINE2:rsc" . $n . $LC[$n] . ":$dstr\\g");
 			}
 			if($d[$n + 1]) {
 				my $dstr = trim($d[$n + 1]);
+				my $base = "";
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
 
 				# check if device name is a symbolic link
 				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
 				if(-l $dstr) {
+					$base = basename($dstr);
 					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
 					chomp($dstr);
 				}
 
 				$dstr =~ s/^(.+?) .*$/$1/;
+				if($base && defined($disk->{map}->{$base})) {
+					$dstr = $disk->{map}->{$base};
+				} else {
+					if(defined($disk->{map}->{$dstr})) {
+						$dstr = $disk->{map}->{$dstr};
+					}
+				}
 				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:rsc" . ($n + 1) . $LC[$n + 1] . ":$str\\n");
 				push(@tmpz, "LINE2:rsc" . ($n + 1) . $LC[$n + 1] . ":$dstr\\g");
@@ -755,34 +773,52 @@ sub disk_cgi {
 		for($n = 0; $n < 8; $n += 2) {
 			if($d[$n]) {
 				my $dstr = trim($d[$n]);
+				my $base = "";
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
 
 				# check if device name is a symbolic link
 				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
 				if(-l $dstr) {
+					$base = basename($dstr);
 					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
 					chomp($dstr);
 				}
 
 				$dstr =~ s/^(.+?) .*$/$1/;
+				if($base && defined($disk->{map}->{$base})) {
+					$dstr = $disk->{map}->{$base};
+				} else {
+					if(defined($disk->{map}->{$dstr})) {
+						$dstr = $disk->{map}->{$dstr};
+					}
+				}
 				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:cps" . $n . $LC[$n] . ":$str");
 				push(@tmpz, "LINE2:cps" . $n . $LC[$n] . ":$dstr\\g");
 			}
 			if($d[$n + 1]) {
 				my $dstr = trim($d[$n + 1]);
+				my $base = "";
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
 
 				# check if device name is a symbolic link
 				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
 				if(-l $dstr) {
+					$base = basename($dstr);
 					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
 					chomp($dstr);
 				}
 
 				$dstr =~ s/^(.+?) .*$/$1/;
+				if($base && defined($disk->{map}->{$base})) {
+					$dstr = $disk->{map}->{$base};
+				} else {
+					if(defined($disk->{map}->{$dstr})) {
+						$dstr = $disk->{map}->{$dstr};
+					}
+				}
 				$str = sprintf("%-17s", substr($dstr, 0, 17));
 				push(@tmp, "LINE2:cps" . ($n + 1) . $LC[$n + 1] . ":$str\\n");
 				push(@tmpz, "LINE2:cps" . ($n + 1) . $LC[$n + 1] . ":$dstr\\g");
