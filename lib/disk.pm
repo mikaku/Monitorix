@@ -483,7 +483,7 @@ sub disk_cgi {
 					chomp($dstr);
 				}
 
-				$dstr =~ s/^(.+?) .*$/$1/;
+#				$dstr =~ s/^(.+?) .*$/$1/;
 				if($base && defined($disk->{map}->{$base})) {
 					$dstr = $disk->{map}->{$base};
 				} else {
@@ -638,7 +638,7 @@ sub disk_cgi {
 					chomp($dstr);
 				}
 
-				$dstr =~ s/^(.+?) .*$/$1/;
+#				$dstr =~ s/^(.+?) .*$/$1/;
 				if($base && defined($disk->{map}->{$base})) {
 					$dstr = $disk->{map}->{$base};
 				} else {
@@ -664,7 +664,7 @@ sub disk_cgi {
 					chomp($dstr);
 				}
 
-				$dstr =~ s/^(.+?) .*$/$1/;
+#				$dstr =~ s/^(.+?) .*$/$1/;
 				if($base && defined($disk->{map}->{$base})) {
 					$dstr = $disk->{map}->{$base};
 				} else {
@@ -785,7 +785,7 @@ sub disk_cgi {
 					chomp($dstr);
 				}
 
-				$dstr =~ s/^(.+?) .*$/$1/;
+#				$dstr =~ s/^(.+?) .*$/$1/;
 				if($base && defined($disk->{map}->{$base})) {
 					$dstr = $disk->{map}->{$base};
 				} else {
@@ -811,7 +811,7 @@ sub disk_cgi {
 					chomp($dstr);
 				}
 
-				$dstr =~ s/^(.+?) .*$/$1/;
+#				$dstr =~ s/^(.+?) .*$/$1/;
 				if($base && defined($disk->{map}->{$base})) {
 					$dstr = $disk->{map}->{$base};
 				} else {
