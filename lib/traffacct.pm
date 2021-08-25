@@ -667,7 +667,7 @@ sub traffacct_cgi {
 							$picz_width = $width + 115;
 							$picz_height = $height + 100;
 						}
-						print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$n] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "' border='0'></a>\n");
+						print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$n] . "','','width=" . int($picz_width * ($imgfmt_uc == "SVG" ? (4 / 3) : 1) + 0.5) . ",height=" . int($picz_height * ($imgfmt_uc == "SVG" ? (4 / 3) : 1) + 0.5) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "' border='0'></a>\n");
 					}
 				} else {
 					print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "'>\n");
@@ -784,7 +784,7 @@ sub traffacct_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$cgi->{val}] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$cgi->{val}] . "' border='0'></a>\n");
+				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$cgi->{val}] . "','','width=" . int($picz_width * ($imgfmt_uc == "SVG" ? (4 / 3) : 1) + 0.5) . ",height=" . int($picz_height * ($imgfmt_uc == "SVG" ? (4 / 3) : 1) + 0.5) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$cgi->{val}] . "' border='0'></a>\n");
 			}
 		} else {
 			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$cgi->{val}] . "'>\n");
