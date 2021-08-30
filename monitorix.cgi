@@ -492,6 +492,8 @@ EOF
 	if($config{refresh_rate}) {
 		print("    <meta http-equiv='Refresh' content='" . $config{refresh_rate} . "'>\n");
 	}
+	print("    <meta name='apple-mobile-web-app-capable' content='yes' />\n");
+	print("    <meta name='apple-mobile-web-app-status-bar-style' content='black' />\n");
 	print("  </head>\n");
 	print("  <body>\n");
 	print("  $piwik_code\n");
