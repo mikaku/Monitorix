@@ -424,7 +424,7 @@ sub gensens_cgi {
 	foreach my $sg (sort keys %{$gensens->{list}}) {
 		my @ls = split(',', $gensens->{list}->{$sg});
 
-		# determine if we are dealing with a 'temp', 'cpu', 'bat', 'pwr' or 'fan' graph
+		# determine if we are dealing with a 'temp', 'cpu', 'bat', 'pwr', 'fan' or 'pct' graph
 		if(index($ls[0], "temp") == 0) {
 			$vlabel = $temp_scale;
 		} elsif(index($ls[0], "cpu") == 0) {
@@ -435,6 +435,8 @@ sub gensens_cgi {
 			$vlabel = "Watt";
 		} elsif(index($ls[0], "fan") == 0) {
 			$vlabel = "RPM";
+		} elsif(index($ls[0], "pct") == 0) {
+			$vlabel = "Percent (%)";
 		} else {
 			# not supported yet
 		}
