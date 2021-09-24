@@ -145,11 +145,12 @@ sub ambsens_update {
 		my $e2 = 1;
 		foreach my $dl (split(',', $ambsens->{desc}->{$e})) {
 			my $str = trim($dl);
-			my $script = trim($ambsens->{cmd}->{$str});
+			my $scriptWithArguments = trim($ambsens->{cmd}->{$str});
+			my $script = (split(' ', $scriptWithArguments))[0];
 
 			if($script) {
 				if(-x $script) {
-					my $val = `$script`;
+					my $val = `$scriptWithArguments`;
 					chomp($val);
 					$sens[$e][$e2] = $val;
 
