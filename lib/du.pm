@@ -140,6 +140,14 @@ sub du_update {
 	my $str;
 	my $rrdata = "N";
 
+	my $refresh_interval = ($config->{du}->{refresh_interval} || 0);
+	if($refresh_interval > 0) {
+		# If desired refreshed only every refresh_interval minutes.
+		# This logic will refresh atleast once a day.
+		my (undef, $min, $hour) = localtime(time);
+		return if(($min + 60 * $hour) % $refresh_interval);
+	}
+
 	my $e = 0;
 	while($e < scalar(my @dl = split(',', $du->{list}))) {
 		my $type;
