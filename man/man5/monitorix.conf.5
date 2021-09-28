@@ -1544,6 +1544,199 @@ This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option 
 .P
 Default value: \fIn\fP
 .RE
+.SS NVME drive temperatures and health (nvme.pm)
+This graph is able to monitor an unlimited number of nvme drives.
+.P
+.BI list
+.RS
+This is a list of groups of nvme drives that you want to monitor. Each group will become a graph and there may be an unlimited number of groups. You can define device names or paths to devices like \fI/dev/nvme0\fP.
+.P
+WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fInvme.rrd\fP file accordingly, removing all historical data.
+.P
+To collect the nvme drive temperatures and health the \fIsmartmontools\fP command are required.
+.P
+It is recommended that you first check if \fIsmartctl\fP(8) is able to collect data from the nvme drive(s) that you plan to monitor. You may test this with the following command:
+.P
+.RS
+# smartctl -A /dev/nvme0
+.br
+=== START OF SMART DATA SECTION ===
+.br
+SMART/Health Information (NVMe Log 0x02)
+.br
+Critical Warning:                   0x00
+.br
+Temperature:                        32 Celsius
+.br
+Available Spare:                    100%
+.br
+Available Spare Threshold:          10%
+.br
+Percentage Used:                    0%
+.br
+Data Units Read:                    15,134,801 [7.74 TB]
+.br
+Data Units Written:                 11,639,110 [5.95 TB]
+.br
+Host Read Commands:                 108,213,874
+.br
+Host Write Commands:                84,023,019
+.br
+Controller Busy Time:               819
+.br
+Power Cycles:                       94
+.br
+Power On Hours:                     701
+.br
+Unsafe Shutdowns:                   15
+.br
+Media and Data Integrity Errors:    0
+.br
+Error Information Log Entries:      0
+.br
+Warning  Comp. Temperature Time:    0
+.br
+Critical Comp. Temperature Time:    0
+.br
+Temperature Sensor 1:               32 Celsius
+.br
+Temperature Sensor 2:               35 Celsius
+.br
+.P
+.RE
+If you see good results as above, you can add it to the group 0 like this:
+.P
+.RS
+<list>
+.br
+	0 = /dev/nvme0, /dev/vnme1
+.br
+	1 = /dev/nvme2
+.br
+</list>
+.RE
+.P
+The maximum number of nvme device names allowed per group is 8.
+.RE
+.P
+.BI map
+.RS
+This list complements the \fBlist\fP option. It basically allows you to change the nvme drive name that will appear in the graph, hiding the real device name. If no association is defined, then Monitorix will display the name of the nvme drive as it is.
+.P
+.RS
+<map>
+.br
+	/dev/nvme = "system disk"
+.br
+	pci-0000:00:11.0-scsi-0:0:0:0 = "data disk"
+.br
+</map>
+.RE
+.RE
+.P
+.BI desc
+.RS
+This list complements the \fBlist\fP option. It basically allows you to include a title for every group of nvme drives. The title will appear in the bottom of the graph.
+.P
+.RS
+<desc>
+.br
+	0 = Individual drives
+.br
+	1 = RAID
+.br
+</desc>
+.RE
+.RE
+.P
+.BI availspare_enabled
+.RS
+This section enables or disables one of the alert capabilities for this graph; the alert for the normalized percentage (0 to 100%) of the remaining spare capacity available. It works as follows:
+.P
+If the percentage of available spare space in any of the specified nvme device names reaches or subceeds the \fBavailspare_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBavailspare_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI availspare_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fI0\fP
+.RE
+.P
+.BI availspare_threshold
+.RS
+This is the value that needs to be reached or subceeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fI10\fP
+.RE
+.P
+.BI availspare_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBavailspare_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBavailspare_threshold\fP.
+.br
+3rd - the current percentage number of available spare space.
+.P
+Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI percentused_enabled
+.RS
+This section enables or disables one of the alert capabilities for this graph; the alert for the the percentage of NVM subsystem life used based on the actual usage and the manufacturer's prediction of NVM life. It works as follows:
+.P
+If the life percentage used in any of the specified nvme device names reaches or exceeds the \fBpercentused_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBpercentused_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI percentused_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fI0\fP
+.RE
+.P
+.BI percentused_threshold
+.RS
+This is the value that needs to be reached or exceeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fI90\fP
+.RE
+.P
+.BI percentused_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBpercentused_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBpercentused_threshold\fP.
+.br
+3rd - the current number of life percentage used.
+.P
+Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI accept_invalid_nvme
+.RS
+During the init stage this graph verifies that every defined device name does exist in the system. If not, then the graph disables itself.
+.P
+This option changes this behavior and permits to continue working even if the device names defined doesn't exist. Keep in mind that you will continue seeing error messages in the logfile.
+.P
+Default value: \fIn\fP
+.RE
 .SS Filesystem usage and I/O activity (fs.pm)
 This graph is able to monitor an unlimited number of filesystems.
 .P

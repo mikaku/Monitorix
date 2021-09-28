@@ -74,6 +74,7 @@ install-bin:
 	$(INSTALL_DATA) lib/bind.pm "$(DESTDIR)$(LIBDIR)/bind.pm"
 	$(INSTALL_DATA) lib/chrony.pm "$(DESTDIR)$(LIBDIR)/chrony.pm"
 	$(INSTALL_DATA) lib/disk.pm "$(DESTDIR)$(LIBDIR)/disk.pm"
+	$(INSTALL_DATA) lib/nvme.pm "$(DESTDIR)$(LIBDIR)/nvme.pm"
 	$(INSTALL_DATA) lib/du.pm "$(DESTDIR)$(LIBDIR)/du.pm"
 	$(INSTALL_DATA) lib/emailreports.pm "$(DESTDIR)$(LIBDIR)/emailreports.pm"
 	$(INSTALL_DATA) lib/fail2ban.pm "$(DESTDIR)$(LIBDIR)/fail2ban.pm"
