@@ -231,15 +231,6 @@ sub nvme_update {
 					}
 				}
 				close(IN);
-				if(!$temp) {
-					if(open(IN, "hddtemp -wqn $d |")) {
-						$temp = <IN>;
-						close(IN);
-					} else {
-						logger("$myself: 'smartctl' failed to get data from '$d' and 'hddtemp' seems doesn't exist.");
-					}
-				}
-				chomp($temp);
 			}
 			$rrdata .= ":$temp";
 			$rrdata .= ":$smart1";
