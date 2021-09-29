@@ -1038,7 +1038,7 @@ In this option you must associate the complete pathname of the file from where t
 .RE
 .BI unit
 .RS
-With this option you can define the order of magnitude associated to a specific value. This is used in both temperatures and CPU frequencies, since this kind of temperature sensors tend to give the value in 1000ths of degrees Celsius. In the case of CPU frequencies the values come in Mhz which means that they need to be converted to Hz by multiplying them by 1000. Since the battery value represents a percentage, it doesn't need any special calculation. Therefore you can define something like this:
+With this option you can define the order of magnitude associated to a specific value. The value collected will be divided by the value defined here. For instance, the temperature sensors tend to give the value in 1000ths of degrees Celsius, something like 28300, which will need to be divided by 1000 to get the real temperature of 28.3. In the case of CPU frequencies the values come in Mhz which means that they need to be converted to Hz by dividing them by 0.001. Since the battery value represents a percentage, it doesn't need any special calculation. Therefore you can define something like this:
 .P
 .RS
 <unit>
