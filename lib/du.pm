@@ -50,7 +50,7 @@ sub du_init {
 	my $heartbeat = 120;
 	my $refresh_interval = ($config->{du}->{refresh_interval} || 0);
 	if($refresh_interval > 0) {
-		$heartbeat = 2 * $refresh_interval * 60;
+		$heartbeat = 2 * $refresh_interval;
 	}
 
 	if(-e $rrd) {
@@ -171,10 +171,10 @@ sub du_update {
 
 	my $refresh_interval = ($config->{du}->{refresh_interval} || 0);
 	if($refresh_interval > 0) {
-		# If desired refreshed only every refresh_interval minutes.
+		# If desired refreshed only every refresh_interval seconds.
 		# This logic will refresh atleast once a day.
 		my (undef, $min, $hour) = localtime(time);
-		return if(($min + 60 * $hour) % $refresh_interval);
+		return if(60 * ($min + 60 * $hour) % $refresh_interval);
 	}
 
 	my $e = 0;
