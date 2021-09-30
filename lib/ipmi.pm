@@ -361,7 +361,6 @@ sub ipmi_cgi {
 		}
 	}
 
-	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	$n = 0;
 	while($n < scalar(my @sl = split(',', $ipmi->{list}))) {
 		if($title) {
@@ -375,6 +374,7 @@ sub ipmi_cgi {
 			if($title) {
 				push(@output, "    <td>\n");
 			}
+			@riglim = @{setup_riglim($rigid[$n], $limit[$n])};
 			undef(@tmp);
 			undef(@tmpz);
 			undef(@CDEF);
