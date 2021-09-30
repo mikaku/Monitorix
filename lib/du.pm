@@ -37,6 +37,8 @@ sub du_init {
 	my $info;
 	my @ds;
 	my @rra;
+	my @ds_to_change_heartbeat;
+	my $rrd_heartbeat;
 	my @tmp;
 	my $n;
 
@@ -44,6 +46,12 @@ sub du_init {
 	my @min;
 	my @max;
 	my @last;
+
+	my $heartbeat = 120;
+	my $refresh_interval = ($config->{du}->{refresh_interval} || 0);
+	if($refresh_interval > 0) {
+		$heartbeat = 2 * $refresh_interval;
+	}
 
 	if(-e $rrd) {
 		$info = RRDs::info($rrd);
@@ -58,6 +66,15 @@ sub du_init {
 					push(@rra, substr($key, 4, index($key, ']') - 4));
 				}
 			}
+			if(index($key, 'ds[') == 0) {
+				if(index($key, '.minimal_heartbeat') != -1) {
+					$rrd_heartbeat = %$info{$key};
+					if($rrd_heartbeat != $heartbeat) {
+						my $ds_name = substr($key, 3, index($key, ']') - 3);
+						push(@ds_to_change_heartbeat, $ds_name);
+					}
+				}
+			}
 		}
 		if(scalar(@ds) / 9 != scalar(my @fl = split(',', $du->{list}))) {
 			logger("$myself: Detected size mismatch between 'list' (" . scalar(my @fl = split(',', $du->{list})) . ") and $rrd (" . scalar(@ds) / 9 . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
@@ -66,6 +83,18 @@ sub du_init {
 		if(scalar(@rra) < 12 + (4 * $config->{max_historic_years})) {
 			logger("$myself: Detected size mismatch between 'max_historic_years' (" . $config->{max_historic_years} . ") and $rrd (" . ((scalar(@rra) -12) / 4) . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
+		}
+		if((-e $rrd) && scalar(@ds_to_change_heartbeat) > 0) {
+			logger("$myself: Detected heartbeat mismatch between set (" . $heartbeat . ") and $rrd (" . $rrd_heartbeat . "). Tuning it accordingly.");
+			my @tune_arguments;
+			foreach(@ds_to_change_heartbeat) {
+				push(@tune_arguments, "-h");
+				push(@tune_arguments, "$_:$heartbeat");
+			}
+
+			RRDs::tune($rrd, @tune_arguments);
+			my $err = RRDs::error;
+			logger("ERROR: while tuning $rrd: $err") if $err;
 		}
 	}
 
@@ -78,15 +107,15 @@ sub du_init {
 			push(@last, "RRA:LAST:0.5:1440:" . (365 * $n));
 		}
 		for($n = 0; $n < scalar(my @fl = split(',', $du->{list})); $n++) {
-			push(@tmp, "DS:du" . $n . "_d1:GAUGE:120:0:U");
-			push(@tmp, "DS:du" . $n . "_d2:GAUGE:120:0:U");
-			push(@tmp, "DS:du" . $n . "_d3:GAUGE:120:0:U");
-			push(@tmp, "DS:du" . $n . "_d4:GAUGE:120:0:U");
-			push(@tmp, "DS:du" . $n . "_d5:GAUGE:120:0:U");
-			push(@tmp, "DS:du" . $n . "_d6:GAUGE:120:0:U");
-			push(@tmp, "DS:du" . $n . "_d7:GAUGE:120:0:U");
-			push(@tmp, "DS:du" . $n . "_d8:GAUGE:120:0:U");
-			push(@tmp, "DS:du" . $n . "_d9:GAUGE:120:0:U");
+			push(@tmp, "DS:du" . $n . "_d1:GAUGE:" . $heartbeat . ":0:U");
+			push(@tmp, "DS:du" . $n . "_d2:GAUGE:" . $heartbeat . ":0:U");
+			push(@tmp, "DS:du" . $n . "_d3:GAUGE:" . $heartbeat . ":0:U");
+			push(@tmp, "DS:du" . $n . "_d4:GAUGE:" . $heartbeat . ":0:U");
+			push(@tmp, "DS:du" . $n . "_d5:GAUGE:" . $heartbeat . ":0:U");
+			push(@tmp, "DS:du" . $n . "_d6:GAUGE:" . $heartbeat . ":0:U");
+			push(@tmp, "DS:du" . $n . "_d7:GAUGE:" . $heartbeat . ":0:U");
+			push(@tmp, "DS:du" . $n . "_d8:GAUGE:" . $heartbeat . ":0:U");
+			push(@tmp, "DS:du" . $n . "_d9:GAUGE:" . $heartbeat . ":0:U");
 		}
 		eval {
 			RRDs::create($rrd,
@@ -139,6 +168,14 @@ sub du_update {
 	my $n;
 	my $str;
 	my $rrdata = "N";
+
+	my $refresh_interval = ($config->{du}->{refresh_interval} || 0);
+	if($refresh_interval > 0) {
+		# If desired refreshed only every refresh_interval seconds.
+		# This logic will refresh atleast once a day.
+		my (undef, $min, $hour) = localtime(time);
+		return if(60 * ($min + 60 * $hour) % $refresh_interval);
+	}
 
 	my $e = 0;
 	while($e < scalar(my @dl = split(',', $du->{list}))) {
