@@ -170,11 +170,11 @@ sub du_update {
 	my $rrdata = "N";
 
 	my $refresh_interval = ($config->{du}->{refresh_interval} || 0);
-	if($refresh_interval > 0) {
+	if($refresh_interval > 60) {
 		# If desired refreshed only every refresh_interval seconds.
 		# This logic will refresh atleast once a day.
 		my (undef, $min, $hour) = localtime(time);
-		return if(60 * ($min + 60 * $hour) % $refresh_interval);
+		return if(($min + 60 * $hour) % int($refresh_interval / 60));
 	}
 
 	my $e = 0;
