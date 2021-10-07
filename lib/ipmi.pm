@@ -149,12 +149,14 @@ sub ipmi_update {
 	my @data = <IN>;
 	close(IN);
 
+	my $nan = 0+"nan"; # To generate a 'nan' value
+
 	my $e = 0;
 	while($e < scalar(my @sl = split(',', $ipmi->{list}))) {
 		my $e2 = 0;
 		foreach my $i (split(',', $ipmi->{desc}->{$e})) {
 			my $unit;
-			$sens[$e][$e2] = ($use_nan_for_missing_data ? "NaN" : 0) unless defined $sens[$e][$e2];
+			$sens[$e][$e2] = ($use_nan_for_missing_data ? $nan : 0) unless defined $sens[$e][$e2];
 			$str = trim($i);
 			$unit = $ipmi->{units}->{$e};
 			foreach(@data) {
