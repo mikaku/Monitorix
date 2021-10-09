@@ -183,6 +183,7 @@ sub disk_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $disk = $config->{disk};
 	my $respect_standby = lc($disk->{respect_standby} || "") eq "y" ? 1 : 0;
+	my $use_nan_for_missing_data = lc($disk->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
 
 	my $temp;
 	my $smart1;
@@ -195,9 +196,9 @@ sub disk_update {
 		# values delimitted by ", " (comma + space)
 		my @dsk = split(', ', $disk->{list}->{$k});
 		for($n = 0; $n < 8; $n++) {
-			$temp = 0;
-			$smart1 = 0;
-			$smart2 = 0;
+			$temp = $use_nan_for_missing_data ? (0+"nan") : 0;
+			$smart1 = $use_nan_for_missing_data ? (0+"nan") : 0;
+			$smart2 = $use_nan_for_missing_data ? (0+"nan") : 0;
 			if($dsk[$n]) {
 				my $d = trim($dsk[$n]);
 				$d =~ s/^\"//;
