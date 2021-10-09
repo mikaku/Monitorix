@@ -182,6 +182,7 @@ sub disk_update {
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $disk = $config->{disk};
+	my $respect_standby = lc($disk->{respect_standby} || "") eq "y" ? 1 : 0;
 
 	my $temp;
 	my $smart1;
@@ -208,8 +209,12 @@ sub disk_update {
 					$d = abs_path(dirname($d) . "/" . readlink($d));
 					chomp($d);
 				}
+				my $smartctl_options = "-A";
+				if($respect_standby) {
+					$smartctl_options .= " -n standby";
+				}
 
-	  			open(IN, "smartctl -A $d |");
+				open(IN, "smartctl $smartctl_options $d |");
 				while(<IN>) {
 					if(/^  5/ && /Reallocated_Sector_Ct/) {
 						my @tmp = split(' ', $_);
@@ -243,7 +248,7 @@ sub disk_update {
                                         }
 				}
 				close(IN);
-				if(!$temp) {
+				if(!$temp && !$respect_standby) {
 	  				if(open(IN, "hddtemp -wqn $d |")) {
 						$temp = <IN>;
 						close(IN);
