@@ -364,7 +364,7 @@ sub disk_cgi {
 	if(lc($config->{temperature_scale}) eq "f") {
 		$temp_scale = "Fahrenheit";
 	}
-
+	my $gap_on_all_nan = lc($disk->{gap_on_all_nan} || "") eq "y" ? 1 : 0;
 
 	# text mode
 	#
@@ -548,6 +548,7 @@ sub disk_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
+		my $cdef_allvalues_temp = $gap_on_all_nan ? "CDEF:allvalues=temp0,UN,0,1,IF,temp1,UN,0,1,IF,temp2,UN,0,1,IF,temp3,UN,0,1,IF,temp4,UN,0,1,IF,temp5,UN,0,1,IF,temp6,UN,0,1,IF,temp7,UN,0,1,IF,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,temp6,temp7,+,+,+,+,+,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 3]",
 			"--title=$config->{graphs}->{_disk1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -568,7 +569,7 @@ sub disk_cgi {
 			"DEF:temp5=$rrd:disk" . $e ."_hd5_temp:AVERAGE",
 			"DEF:temp6=$rrd:disk" . $e ."_hd6_temp:AVERAGE",
 			"DEF:temp7=$rrd:disk" . $e ."_hd7_temp:AVERAGE",
-			"CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,temp6,temp7,+,+,+,+,+,+,+",
+			$cdef_allvalues_temp,
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -595,7 +596,7 @@ sub disk_cgi {
 				"DEF:temp5=$rrd:disk" . $e ."_hd5_temp:AVERAGE",
 				"DEF:temp6=$rrd:disk" . $e ."_hd6_temp:AVERAGE",
 				"DEF:temp7=$rrd:disk" . $e ."_hd7_temp:AVERAGE",
-				"CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,temp6,temp7,+,+,+,+,+,+,+",
+				$cdef_allvalues_temp,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -697,6 +698,7 @@ sub disk_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
+		my $cdef_allvalues_rsc = $gap_on_all_nan ? "CDEF:allvalues=rsc0,UN,0,1,IF,rsc1,UN,0,1,IF,rsc2,UN,0,1,IF,rsc3,UN,0,1,IF,rsc4,UN,0,1,IF,rsc5,UN,0,1,IF,rsc6,UN,0,1,IF,rsc7,UN,0,1,IF,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=rsc0,rsc1,rsc2,rsc3,rsc4,rsc5,rsc6,rsc7,+,+,+,+,+,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 3 + 1]",
 			"--title=$config->{graphs}->{_disk2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -718,7 +720,7 @@ sub disk_cgi {
 			"DEF:rsc5=$rrd:disk" . $e . "_hd5_smart1:AVERAGE",
 			"DEF:rsc6=$rrd:disk" . $e . "_hd6_smart1:AVERAGE",
 			"DEF:rsc7=$rrd:disk" . $e . "_hd7_smart1:AVERAGE",
-			"CDEF:allvalues=rsc0,rsc1,rsc2,rsc3,rsc4,rsc5,rsc6,rsc7,+,+,+,+,+,+,+",
+			$cdef_allvalues_rsc,
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -746,7 +748,7 @@ sub disk_cgi {
 				"DEF:rsc5=$rrd:disk" . $e . "_hd5_smart1:AVERAGE",
 				"DEF:rsc6=$rrd:disk" . $e . "_hd6_smart1:AVERAGE",
 				"DEF:rsc7=$rrd:disk" . $e . "_hd7_smart1:AVERAGE",
-				"CDEF:allvalues=rsc0,rsc1,rsc2,rsc3,rsc4,rsc5,rsc6,rsc7,+,+,+,+,+,+,+",
+				$cdef_allvalues_rsc,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -844,6 +846,7 @@ sub disk_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
+		my $cdef_allvalues_cps = $gap_on_all_nan ? "CDEF:allvalues=cps0,UN,0,1,IF,cps1,UN,0,1,IF,cps2,UN,0,1,IF,cps3,UN,0,1,IF,cps4,UN,0,1,IF,cps5,UN,0,1,IF,cps6,UN,0,1,IF,cps7,UN,0,1,IF,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=cps0,cps1,cps2,cps3,cps4,cps5,cps6,cps7,+,+,+,+,+,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 3 + 2]",
 			"--title=$config->{graphs}->{_disk3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -865,7 +868,7 @@ sub disk_cgi {
 			"DEF:cps5=$rrd:disk" . $e . "_hd5_smart2:AVERAGE",
 			"DEF:cps6=$rrd:disk" . $e . "_hd6_smart2:AVERAGE",
 			"DEF:cps7=$rrd:disk" . $e . "_hd7_smart2:AVERAGE",
-			"CDEF:allvalues=cps0,cps1,cps2,cps3,cps4,cps5,cps6,cps7,+,+,+,+,+,+,+",
+			$cdef_allvalues_cps,
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -893,7 +896,7 @@ sub disk_cgi {
 				"DEF:cps5=$rrd:disk" . $e . "_hd5_smart2:AVERAGE",
 				"DEF:cps6=$rrd:disk" . $e . "_hd6_smart2:AVERAGE",
 				"DEF:cps7=$rrd:disk" . $e . "_hd7_smart2:AVERAGE",
-				"CDEF:allvalues=cps0,cps1,cps2,cps3,cps4,cps5,cps6,cps7,+,+,+,+,+,+,+",
+				$cdef_allvalues_cps,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
