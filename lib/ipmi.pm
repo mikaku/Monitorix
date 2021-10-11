@@ -134,7 +134,7 @@ sub ipmi_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $ipmi = $config->{ipmi};
 	my $args = $ipmi->{extra_args} || "";
-	my $use_nan_for_missing_data = lc(($ipmi->{use_nan_for_missing_data} || "")) eq "y" ? 1 : 0;
+	my $use_nan_for_missing_data = lc($ipmi->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
 
 	my @sens;
 
@@ -214,7 +214,7 @@ sub ipmi_cgi {
 	my @output;
 
 	my $ipmi = $config->{ipmi};
-	my $gap_on_all_nan = lc(($ipmi->{gap_on_all_nan} || "")) eq "y" ? 1 : 0;
+	my $gap_on_all_nan = lc($ipmi->{gap_on_all_nan} || "") eq "y" ? 1 : 0;
 	my @rigid = split(',', ($ipmi->{rigid} || ""));
 	my @limit = split(',', ($ipmi->{limit} || ""));
 	my $tf = $cgi->{tf};
