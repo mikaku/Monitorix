@@ -233,8 +233,10 @@ sub nvme_update {
 					if(/\"temperature\"/) {
 						my @tmp = split(':', $_);
 						$tmp[1] =~ tr/,//d;
-						$temp = trim($tmp[1]) unless $temp;
-						chomp($temp);
+						if (index($tmp[1], "{") == -1) {
+							$temp = trim($tmp[1]);
+							chomp($temp);
+						}
 					}
 				}
 				close(IN);
@@ -345,7 +347,7 @@ sub nvme_cgi {
 	if(lc($config->{temperature_scale}) eq "f") {
 		$temp_scale = "Fahrenheit";
 	}
-
+	my $gap_on_all_nan = lc($nvme->{gap_on_all_nan} || "") eq "y" ? 1 : 0;
 
 	# text mode
 	#
@@ -527,9 +529,16 @@ sub nvme_cgi {
 			if($n_hd != 0) {
 				$cdef_temp_allvalues .= ",";
 			}
-			$cdef_temp_allvalues .= "temp" . $n_hd;
+			if ($gap_on_all_nan) {
+				$cdef_temp_allvalues .= "temp" . $n_hd . ",UN,0,1,IF";
+			} else {
+				$cdef_temp_allvalues .= "temp" . $n_hd;
+			}
 		}
 		$cdef_temp_allvalues .= ",+" x ($max_number_of_hds - 1);
+		if ($gap_on_all_nan) {
+			$cdef_temp_allvalues .= ",0,GT,1,UNKN,IF";
+		}
 
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 3]",
 		"--title=$config->{graphs}->{_nvme1}  ($tf->{nwhen}$tf->{twhen})",
@@ -678,9 +687,16 @@ sub nvme_cgi {
 				if($n_hd != 0) {
 					$cdef_smart_allvalues .= ",";
 				}
-				$cdef_smart_allvalues .= $value_name;
+				if ($gap_on_all_nan) {
+					$cdef_smart_allvalues .= $value_name . ",UN,0,1,IF";
+				} else {
+					$cdef_smart_allvalues .= $value_name;
+				}
 			}
 			$cdef_smart_allvalues .= ",+" x ($max_number_of_hds - 1);
+			if ($gap_on_all_nan) {
+				$cdef_smart_allvalues .= ",0,GT,1,UNKN,IF";
+			}
 
 			my $plot_title = $config->{graphs}->{'_nvme' . ($n_smart + 2)};
 			$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 3 + $n_smart + 1]",
