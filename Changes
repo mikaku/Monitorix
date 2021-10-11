@@ -12,17 +12,32 @@
 - Added the new command line option '-s' to decide which part of a line in the
   config file will be the key and which one will be the value. The split policy
   accepts the values 'guess' (as the default), 'whitespace' and 'equalsign'.
-        (suggested by Shashi Mall, shashi.mall AT wizix.com)
+	(suggested by Shashi Mall, shashi.mall AT wizix.com)
 - Added support for IPv6 addresses in 'traffacct.pm'.
 	(thanks to Adam Starr, astar AT fhtc.edu)
 - Added the option 'cmd' in 'lmsens.pm', which defaults to 'sensors', to be able
   to help to add sensors values not covered by lm_sensors. [#325]
 - Added the ability to prefix fan values to be able to select between rpm and
   percentages, using 'rpm:' and 'percent:' respectively. [#325]
+- Added a home button in the upper-left corner to easily go to the main page.
+  The button will appear only if the new option called 'enable_mainmenu_button'
+  is enabled (disabled by default). [#341]
+- Added the ability to view the website as web app in full screen mode. [#340]
 - Changed the way how the 'cmd' option works in 'port.pm', by executing directly
   the command defined (without args), unless undefined, in which case it will
   continue defaulting to 'ss'.
-        (thanks to Shashi Mall, shashi.mall AT wizix.com for pointing this out)
+	(thanks to Shashi Mall, shashi.mall AT wizix.com for pointing this out)
+- Added some changes to 'monitorix-alert.sh' to be able to symlink it and act as
+  a generic alert script.
+	(thanks to Karl R Seeger, karlrseeger AT gmail.com)
+- Added fan speed (as 'fan'), power (as 'pwr'), percentage (as 'pct') and byte
+  (as 'byt') identifiers to 'gensens.pm'. [#344]
+- Added the ability to include arguments in the scripts called by 'ambsens.pm'
+  to collect the value for each sensor. [#347].
+- Added the new option 'refresh_interval' in 'du.pm' to reduce the execution of
+  the 'du' command and its undesired side effects. [#353]
+- Changed to simplify the unit correction in 'gensens.pm'. [#350]
+- Enhanced the quality of the favicon image.
 - Fixed to include the DBI->connect parameter 'dbname=postgres' in 'pgsql.pm' to
   avoid connection problems. [#310]
 - Fixed to use $options{u} instead of $config{u}.
@@ -31,6 +46,12 @@
 - Fixed the legend in 'nvidia.pm' graphs to respect the 'max' value. [#330]
 - Fixed to honour the <map> option on graphs 2 and 3 in 'disk.pm'.
 - Fixed (by just commenting out some lines) the <map> option in 'disk.pm'.
+- Fixed to not treat option 'graph_name' as special as it ends up duplicating
+  graphs.
+       (thanks to Karl R Seeger, karlrseeger AT gmail.com for pointing this out)
+- Fixed Samba users counter in 'user.pm' in case Samba is not installed. [#348]
+- Fixed the 'rigid' and 'limit' values in 'ipmi.pm' to extend their effect to
+  the rest of graphs. [#354]
 - Small cosmetic changes.
 
 
