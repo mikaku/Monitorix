@@ -158,8 +158,19 @@ sub ipmi_update {
 			$str = trim($i);
 			$unit = $ipmi->{units}->{$e};
 			foreach(@data) {
-				if(/^($str)\s+\|\s+(-?\d+\.*\d*)\s+$unit\s+/) {
-					my $val = $2;
+				my $val;
+				if ("$]" >= 5.026 && "$]" < 5.034) {
+					# Memory leak in perl regexp https://github.com/Perl/perl5/issues/17218
+					# Work around by using ASCII-restrict modifier.
+					if(/^($str)\s+\|\s+(-?\d+\.*\d*)\s+$unit\s+/a) {
+						$val = $2;
+					}
+				} else {
+					if(/^($str)\s+\|\s+(-?\d+\.*\d*)\s+$unit\s+/) {
+						$val = $2;
+					}
+				}
+				if(defined $val) {
 					$sens[$e][$e2] = $val;
 
 					# check alerts for each sensor defined
