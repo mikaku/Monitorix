@@ -243,10 +243,10 @@ sub disk_update {
 						chomp($temp);
 					}
 					if(/^Temperature: /) {
-                                                my @tmp = split(' ', $_);
-                                                $temp = $tmp[1] unless $temp;
-                                                chomp($temp);
-                                        }
+						my @tmp = split(' ', $_);
+						$temp = $tmp[1] unless $temp;
+						chomp($temp);
+					}
 				}
 				close(IN);
 				if(!$temp && !$respect_standby) {
