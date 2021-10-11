@@ -29,11 +29,20 @@ use File::Basename;
 use Exporter 'import';
 our @EXPORT = qw(nvme_init nvme_update nvme_cgi);
 
+my $max_number_of_hds = 8;									# Changing this number destroys history.
+my $max_number_of_smart_values = 2;					# Excluding temperature. Changing this number does not require rrd recreation as long as max_number_of_smart_values_in_rrd is not changed.
+my $max_number_of_smart_values_in_rrd = 12;	# Excluding temperature. Changing this number destroys history.
+
 sub nvme_init {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $nvme = $config->{nvme};
+
+	if($max_number_of_smart_values > $max_number_of_smart_values_in_rrd) {
+		logger("$myself: ERROR: Number of smart values (" . $max_number_of_smart_values . ") has smaller or equal to number of smart values in rrd (" . $max_number_of_smart_values_in_rrd . ")!");
+		return;
+	}
 
 	my $info;
 	my @ds;
@@ -49,7 +58,7 @@ sub nvme_init {
 	foreach my $k (sort keys %{$nvme->{list}}) {
 		# values delimitted by ", " (comma + space)
 		my @dsk = split(', ', $nvme->{list}->{$k});
-		for(my $n = 0; $n < 8; $n++) {
+		for(my $n = 0; $n < $max_number_of_hds; $n++) {
 			if($dsk[$n]) {
 				my $d = trim($dsk[$n]);
 				$d =~ s/^\"//;
@@ -67,11 +76,19 @@ sub nvme_init {
 	}
 
 	if(-e $rrd) {
+		my $rrd_n_hd = 0;
+		my $rrd_n_hd_times_n_values = 0;
 		$info = RRDs::info($rrd);
 		for my $key (keys %$info) {
 			if(index($key, 'ds[') == 0) {
 				if(index($key, '.type') != -1) {
 					push(@ds, substr($key, 3, index($key, ']') - 3));
+				}
+				if(index($key, '_temp].index') != -1) {
+					$rrd_n_hd += 1;
+				}
+				if(index($key, '.index') != -1) {
+					$rrd_n_hd_times_n_values += 1;
 				}
 			}
 			if(index($key, 'rra[') == 0) {
@@ -80,8 +97,16 @@ sub nvme_init {
 				}
 			}
 		}
-		if(scalar(@ds) / 24 != keys(%{$nvme->{list}})) {
-			logger("$myself: Detected size mismatch between <list>...</list> (" . keys(%{$nvme->{list}}) . ") and $rrd (" . scalar(@ds) / 24 . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
+		if(scalar(@ds) / $rrd_n_hd_times_n_values != keys(%{$nvme->{list}})) {
+			logger("$myself: Detected size mismatch between <list>...</list> (" . keys(%{$nvme->{list}}) . ") and $rrd (" . scalar(@ds) / $rrd_n_hd_times_n_values . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
+			rename($rrd, "$rrd.bak");
+		}
+		if($rrd_n_hd < $max_number_of_hds) {
+			logger("$myself: Detected size mismatch between max_number_of_hds (" . $max_number_of_hds . ") and $rrd (" . $rrd_n_hd . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
+			rename($rrd, "$rrd.bak");
+		}
+		if($rrd_n_hd_times_n_values / $rrd_n_hd < ($max_number_of_smart_values_in_rrd + 1)) {
+			logger("$myself: Detected size mismatch between max_number_of_smart_values_in_rrd (" . $max_number_of_smart_values_in_rrd . ") and $rrd (" . (($rrd_n_hd_times_n_values / $rrd_n_hd) - 1) . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 		if(scalar(@rra) < 12 + (4 * $config->{max_historic_years})) {
@@ -99,30 +124,12 @@ sub nvme_init {
 			push(@last, "RRA:LAST:0.5:1440:" . (365 * $n));
 		}
 		for($n = 0; $n < keys(%{$nvme->{list}}); $n++) {
-			push(@tmp, "DS:nvme" . $n . "_hd0_temp:GAUGE:120:0:100");
-			push(@tmp, "DS:nvme" . $n . "_hd0_smart1:GAUGE:120:0:U");
-			push(@tmp, "DS:nvme" . $n . "_hd0_smart2:GAUGE:120:0:U");
-			push(@tmp, "DS:nvme" . $n . "_hd1_temp:GAUGE:120:0:100");
-			push(@tmp, "DS:nvme" . $n . "_hd1_smart1:GAUGE:120:0:U");
-			push(@tmp, "DS:nvme" . $n . "_hd1_smart2:GAUGE:120:0:U");
-			push(@tmp, "DS:nvme" . $n . "_hd2_temp:GAUGE:120:0:100");
-			push(@tmp, "DS:nvme" . $n . "_hd2_smart1:GAUGE:120:0:U");
-			push(@tmp, "DS:nvme" . $n . "_hd2_smart2:GAUGE:120:0:U");
-			push(@tmp, "DS:nvme" . $n . "_hd3_temp:GAUGE:120:0:100");
-			push(@tmp, "DS:nvme" . $n . "_hd3_smart1:GAUGE:120:0:U");
-			push(@tmp, "DS:nvme" . $n . "_hd3_smart2:GAUGE:120:0:U");
-			push(@tmp, "DS:nvme" . $n . "_hd4_temp:GAUGE:120:0:100");
-			push(@tmp, "DS:nvme" . $n . "_hd4_smart1:GAUGE:120:0:U");
-			push(@tmp, "DS:nvme" . $n . "_hd4_smart2:GAUGE:120:0:U");
-			push(@tmp, "DS:nvme" . $n . "_hd5_temp:GAUGE:120:0:100");
-			push(@tmp, "DS:nvme" . $n . "_hd5_smart1:GAUGE:120:0:U");
-			push(@tmp, "DS:nvme" . $n . "_hd5_smart2:GAUGE:120:0:U");
-			push(@tmp, "DS:nvme" . $n . "_hd6_temp:GAUGE:120:0:100");
-			push(@tmp, "DS:nvme" . $n . "_hd6_smart1:GAUGE:120:0:U");
-			push(@tmp, "DS:nvme" . $n . "_hd6_smart2:GAUGE:120:0:U");
-			push(@tmp, "DS:nvme" . $n . "_hd7_temp:GAUGE:120:0:100");
-			push(@tmp, "DS:nvme" . $n . "_hd7_smart1:GAUGE:120:0:U");
-			push(@tmp, "DS:nvme" . $n . "_hd7_smart2:GAUGE:120:0:U");
+			for(my $n_hd = 0; $n_hd < $max_number_of_hds; $n_hd++) {
+				push(@tmp, "DS:nvme" . $n . "_hd" . $n_hd . "_temp:GAUGE:120:0:100");
+				for(my $n_smart = 0; $n_smart < $max_number_of_smart_values_in_rrd; $n_smart++) {
+					push(@tmp, "DS:nvme" . $n . "_hd" . $n_hd . "_smv" . $n_smart . ":GAUGE:120:0:U");
+				}
+			}
 		}
 		eval {
 			RRDs::create($rrd,
@@ -184,8 +191,7 @@ sub nvme_update {
 	my $nvme = $config->{nvme};
 
 	my $temp;
-	my $smart1;
-	my $smart2;
+	my @smart;
 
 	my $n;
 	my $rrdata = "N";
@@ -193,10 +199,10 @@ sub nvme_update {
 	foreach my $k (sort keys %{$nvme->{list}}) {
 		# values delimitted by ", " (comma + space)
 		my @dsk = split(', ', $nvme->{list}->{$k});
-		for($n = 0; $n < 8; $n++) {
+		for($n = 0; $n < $max_number_of_hds; $n++) {
 			$temp = 0;
-			$smart1 = 0;
-			$smart2 = 0;
+			@smart = (0) x $max_number_of_smart_values_in_rrd;
+
 			if($dsk[$n]) {
 				my $d = trim($dsk[$n]);
 				$d =~ s/^\"//;
@@ -214,14 +220,14 @@ sub nvme_update {
 					if(/\"available_spare\"/) {
 						my @tmp = split(':', $_);
 						$tmp[1] =~ tr/,//d;
-						$smart1 = trim($tmp[1]);
-						chomp($smart1);
+						$smart[0] = trim($tmp[1]);
+						chomp($smart[0]);
 					}
 					if(/\"percentage_used\"/) {
 						my @tmp = split(':', $_);
 						$tmp[1] =~ tr/,//d;
-						$smart2 = trim($tmp[1]);
-						chomp($smart2);
+						$smart[1] = trim($tmp[1]);
+						chomp($smart[1]);
 					}
 					if(/\"temperature\"/) {
 						my @tmp = split(':', $_);
@@ -233,34 +239,35 @@ sub nvme_update {
 				close(IN);
 			}
 			$rrdata .= ":$temp";
-			$rrdata .= ":$smart1";
-			$rrdata .= ":$smart2";
+			foreach(@smart) {
+				$rrdata .= ":$_";
+			}
 
 			# nvme alert
 			if(lc($nvme->{alerts}->{availspare_enabled}) eq "y") {
 				$config->{nvme_hist_alert1}->{$n} = 0
 				if(!$config->{nvme_hist_alert1}->{$n});
-				if($smart1 <= $nvme->{alerts}->{availspare_threshold} && $config->{nvme_hist_alert1}->{$n} < $smart1) {
+				if($smart[0] <= $nvme->{alerts}->{availspare_threshold} && $config->{nvme_hist_alert1}->{$n} < $smart[0]) {
 					if(-x $nvme->{alerts}->{availspare_script}) {
 						logger("$myself: ALERT: executing script '$nvme->{alerts}->{availspare_script}'.");
-						system($nvme->{alerts}->{availspare_script} . " " .$nvme->{alerts}->{availspare_timeintvl} . " " . $nvme->{alerts}->{availspare_threshold} . " " . $smart1);
+						system($nvme->{alerts}->{availspare_script} . " " .$nvme->{alerts}->{availspare_timeintvl} . " " . $nvme->{alerts}->{availspare_threshold} . " " . $smart[0]);
 					} else {
 						logger("$myself: ERROR: script '$nvme->{alerts}->{availspare_script}' doesn't exist or don't has execution permissions.");
 					}
-					$config->{nvme_hist_alert1}->{$n} = $smart1;
+					$config->{nvme_hist_alert1}->{$n} = $smart[0];
 				}
 			}
 			if(lc($nvme->{alerts}->{percentused_enabled}) eq "y") {
 				$config->{nvme_hist_alert2}->{$n} = 0
 				if(!$config->{nvme_hist_alert2}->{$n});
-				if($smart2 >= $nvme->{alerts}->{percentused_threshold} && $config->{nvme_hist_alert2}->{$n} < $smart2) {
+				if($smart[1] >= $nvme->{alerts}->{percentused_threshold} && $config->{nvme_hist_alert2}->{$n} < $smart[1]) {
 					if(-x $nvme->{alerts}->{percentused_script}) {
 						logger("$myself: ALERT: executing script '$nvme->{alerts}->{percentused_script}'.");
-						system($nvme->{alerts}->{percentused_script} . " " .$nvme->{alerts}->{percentused_timeintvl} . " " . $nvme->{alerts}->{percentused_threshold} . " " . $smart2);
+						system($nvme->{alerts}->{percentused_script} . " " .$nvme->{alerts}->{percentused_timeintvl} . " " . $nvme->{alerts}->{percentused_threshold} . " " . $smart[1]);
 					} else {
 						logger("$myself: ERROR: script '$nvme->{alerts}->{percentused_script}' doesn't exist or don't has execution permissions.");
 					}
-					$config->{nvme_hist_alert2}->{$n} = $smart2;
+					$config->{nvme_hist_alert2}->{$n} = $smart[1];
 				}
 			}
 		}
@@ -385,7 +392,7 @@ sub nvme_cgi {
 				# values delimitted by ", " (comma + space)
 				my @d = split(', ', $nvme->{list}->{$k});
 				for($n2 = 0; $n2 < scalar(@d); $n2++) {
-					$from = ($e * 8 * 3) + ($n2 * 3);
+					$from = ($e * $max_number_of_hds * 3) + ($n2 * 3);
 					$to = $from + 3;
 					my ($temp, $availspare, $percentused) = @$line[$from..$to];
 					@row = (celsius_to($config, $temp), $availspare, $percentused);
@@ -418,7 +425,7 @@ sub nvme_cgi {
 	}
 
 	for($n = 0; $n < keys(%{$nvme->{list}}); $n++) {
-		for($n2 = 1; $n2 <= 8; $n2++) {
+		for($n2 = 1; $n2 <= $max_number_of_hds; $n2++) {
 			$str = $u . $package . $n . $n2 . "." . $tf->{when} . ".$imgfmt_lc";
 			push(@IMG, $str);
 			unlink("$IMG_DIR" . $str);
@@ -447,7 +454,7 @@ sub nvme_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		push(@tmp, "COMMENT: \\n");
-		for($n = 0; $n < 8; $n++) {
+		for($n = 0; $n < $max_number_of_hds; $n++) {
 			if($d[$n]) {
 				my $dstr = trim($d[$n]);
 				my $base = "";
@@ -489,23 +496,13 @@ sub nvme_cgi {
 			push(@output, "    <td>\n");
 		}
 		if(lc($config->{temperature_scale}) eq "f") {
-			push(@CDEF, "CDEF:temp_0=9,5,/,temp0,*,32,+");
-			push(@CDEF, "CDEF:temp_1=9,5,/,temp1,*,32,+");
-			push(@CDEF, "CDEF:temp_2=9,5,/,temp2,*,32,+");
-			push(@CDEF, "CDEF:temp_3=9,5,/,temp3,*,32,+");
-			push(@CDEF, "CDEF:temp_4=9,5,/,temp4,*,32,+");
-			push(@CDEF, "CDEF:temp_5=9,5,/,temp5,*,32,+");
-			push(@CDEF, "CDEF:temp_6=9,5,/,temp6,*,32,+");
-			push(@CDEF, "CDEF:temp_7=9,5,/,temp7,*,32,+");
+			for(my $n_hd = 0; $n_hd < $max_number_of_hds; $n_hd++) {
+				push(@CDEF, "CDEF:temp_" . $n_hd . "=9,5,/,temp" . $n_hd . ",*,32,+");
+			}
 		} else {
-			push(@CDEF, "CDEF:temp_0=temp0");
-			push(@CDEF, "CDEF:temp_1=temp1");
-			push(@CDEF, "CDEF:temp_2=temp2");
-			push(@CDEF, "CDEF:temp_3=temp3");
-			push(@CDEF, "CDEF:temp_4=temp4");
-			push(@CDEF, "CDEF:temp_5=temp5");
-			push(@CDEF, "CDEF:temp_6=temp6");
-			push(@CDEF, "CDEF:temp_7=temp7");
+			for(my $n_hd = 0; $n_hd < $max_number_of_hds; $n_hd++) {
+				push(@CDEF, "CDEF:temp_" . $n_hd . "=temp" . $n_hd);
+			}
 		}
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -521,6 +518,18 @@ sub nvme_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
+
+		my @def_temp_average;
+		my $cdef_temp_allvalues = "CDEF:allvalues=";
+		for(my $n_hd = 0; $n_hd < $max_number_of_hds; $n_hd++) {
+			push(@def_temp_average, "DEF:temp" . $n_hd . "=$rrd:nvme" . $e ."_hd" . $n_hd . "_temp:AVERAGE");
+			if($n_hd != 0) {
+				$cdef_temp_allvalues .= ",";
+			}
+			$cdef_temp_allvalues .= "temp" . $n_hd;
+		}
+		$cdef_temp_allvalues .= ",+" x ($max_number_of_hds - 1);
+
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 3]",
 		"--title=$config->{graphs}->{_nvme1}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -533,15 +542,8 @@ sub nvme_cgi {
 		$zoom,
 		@{$cgi->{version12}},
 		@{$colors->{graph_colors}},
-		"DEF:temp0=$rrd:nvme" . $e ."_hd0_temp:AVERAGE",
-		"DEF:temp1=$rrd:nvme" . $e ."_hd1_temp:AVERAGE",
-		"DEF:temp2=$rrd:nvme" . $e ."_hd2_temp:AVERAGE",
-		"DEF:temp3=$rrd:nvme" . $e ."_hd3_temp:AVERAGE",
-		"DEF:temp4=$rrd:nvme" . $e ."_hd4_temp:AVERAGE",
-		"DEF:temp5=$rrd:nvme" . $e ."_hd5_temp:AVERAGE",
-		"DEF:temp6=$rrd:nvme" . $e ."_hd6_temp:AVERAGE",
-		"DEF:temp7=$rrd:nvme" . $e ."_hd7_temp:AVERAGE",
-		"CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,temp6,temp7,+,+,+,+,+,+,+",
+		@def_temp_average,
+		$cdef_temp_allvalues,
 		@CDEF,
 		@tmp);
 		$err = RRDs::error;
@@ -560,15 +562,8 @@ sub nvme_cgi {
 			$zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
-			"DEF:temp0=$rrd:nvme" . $e ."_hd0_temp:AVERAGE",
-			"DEF:temp1=$rrd:nvme" . $e ."_hd1_temp:AVERAGE",
-			"DEF:temp2=$rrd:nvme" . $e ."_hd2_temp:AVERAGE",
-			"DEF:temp3=$rrd:nvme" . $e ."_hd3_temp:AVERAGE",
-			"DEF:temp4=$rrd:nvme" . $e ."_hd4_temp:AVERAGE",
-			"DEF:temp5=$rrd:nvme" . $e ."_hd5_temp:AVERAGE",
-			"DEF:temp6=$rrd:nvme" . $e ."_hd6_temp:AVERAGE",
-			"DEF:temp7=$rrd:nvme" . $e ."_hd7_temp:AVERAGE",
-			"CDEF:allvalues=temp0,temp1,temp2,temp3,temp4,temp5,temp6,temp7,+,+,+,+,+,+,+",
+			@def_temp_average,
+			$cdef_temp_allvalues,
 			@CDEF,
 			@tmpz);
 			$err = RRDs::error;
@@ -598,108 +593,97 @@ sub nvme_cgi {
 			push(@output, "    </td>\n");
 			push(@output, "    <td class='td-valign-top'>\n");
 		}
-		@riglim = @{setup_riglim($rigid[1], $limit[1])};
-		undef(@tmp);
-		undef(@tmpz);
-		undef(@CDEF);
-		for($n = 0; $n < 8; $n += 2) {
-			if($d[$n]) {
-				my $dstr = trim($d[$n]);
-				my $base = "";
-				$dstr =~ s/^\"//;
-				$dstr =~ s/\"$//;
 
-				# check if device name is a symbolic link
-				# e.g. /dev/nvme/by-path/pci-0000:07:07.0-scsi-0:0:0:0
-				if(-l $dstr) {
-					$base = basename($dstr);
-					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
-					chomp($dstr);
-				}
+		for(my $n_smart = 0; $n_smart < $max_number_of_smart_values; $n_smart += 1) {
 
-				#				$dstr =~ s/^(.+?) .*$/$1/;
-				if($base && defined($nvme->{map}->{$base})) {
-					$dstr = $nvme->{map}->{$base};
-				} else {
-					if(defined($nvme->{map}->{$dstr})) {
-						$dstr = $nvme->{map}->{$dstr};
+			@riglim = @{setup_riglim($rigid[$n_smart+1], $limit[$n_smart+1])};
+			undef(@tmp);
+			undef(@tmpz);
+			undef(@CDEF);
+			for($n = 0; $n < $max_number_of_hds; $n += 2) {
+				if($d[$n]) {
+					my $dstr = trim($d[$n]);
+					my $base = "";
+					$dstr =~ s/^\"//;
+					$dstr =~ s/\"$//;
+
+					# check if device name is a symbolic link
+					# e.g. /dev/nvme/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+					if(-l $dstr) {
+						$base = basename($dstr);
+						$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
+						chomp($dstr);
 					}
-				}
-				$str = sprintf("%-17s", substr($dstr, 0, 17));
-				push(@tmp, "LINE2:rsc" . $n . $LC[$n] . ":$str");
-				push(@tmpz, "LINE2:rsc" . $n . $LC[$n] . ":$dstr\\g");
-			}
-			if($d[$n + 1]) {
-				my $dstr = trim($d[$n + 1]);
-				my $base = "";
-				$dstr =~ s/^\"//;
-				$dstr =~ s/\"$//;
 
-				# check if device name is a symbolic link
-				# e.g. /dev/nvme/by-path/pci-0000:07:07.0-scsi-0:0:0:0
-				if(-l $dstr) {
-					$base = basename($dstr);
-					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
-					chomp($dstr);
-				}
-
-				#				$dstr =~ s/^(.+?) .*$/$1/;
-				if($base && defined($nvme->{map}->{$base})) {
-					$dstr = $nvme->{map}->{$base};
-				} else {
-					if(defined($nvme->{map}->{$dstr})) {
-						$dstr = $nvme->{map}->{$dstr};
+					#				$dstr =~ s/^(.+?) .*$/$1/;
+					if($base && defined($nvme->{map}->{$base})) {
+						$dstr = $nvme->{map}->{$base};
+					} else {
+						if(defined($nvme->{map}->{$dstr})) {
+							$dstr = $nvme->{map}->{$dstr};
+						}
 					}
+					$str = sprintf("%-17s", substr($dstr, 0, 17));
+					push(@tmp, "LINE2:hd" . $n . "_smv" . $n_smart . $LC[$n] . ":$str");
+					push(@tmpz, "LINE2:hd" . $n . "_smv" . $n_smart . $LC[$n] . ":$dstr\\g");
 				}
-				$str = sprintf("%-17s", substr($dstr, 0, 17));
-				push(@tmp, "LINE2:rsc" . ($n + 1) . $LC[$n + 1] . ":$str\\n");
-				push(@tmpz, "LINE2:rsc" . ($n + 1) . $LC[$n + 1] . ":$dstr\\g");
+				if($d[$n + 1]) {
+					my $dstr = trim($d[$n + 1]);
+					my $base = "";
+					$dstr =~ s/^\"//;
+					$dstr =~ s/\"$//;
+
+					# check if device name is a symbolic link
+					# e.g. /dev/nvme/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+					if(-l $dstr) {
+						$base = basename($dstr);
+						$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
+						chomp($dstr);
+					}
+
+					#				$dstr =~ s/^(.+?) .*$/$1/;
+					if($base && defined($nvme->{map}->{$base})) {
+						$dstr = $nvme->{map}->{$base};
+					} else {
+						if(defined($nvme->{map}->{$dstr})) {
+							$dstr = $nvme->{map}->{$dstr};
+						}
+					}
+					$str = sprintf("%-17s", substr($dstr, 0, 17));
+					push(@tmp, "LINE2:hd" . ($n + 1) . "_smv" . $n_smart . $LC[$n + 1] . ":$str\\n");
+					push(@tmpz, "LINE2:hd" . ($n + 1) . "_smv" . $n_smart . $LC[$n + 1] . ":$dstr\\g");
+				}
 			}
-		}
-		if(lc($config->{show_gaps}) eq "y") {
-			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
-			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
-			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
-		}
-		($width, $height) = split('x', $config->{graph_size}->{small});
-		if($silent =~ /imagetag/) {
-			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
-			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
-			@tmp = @tmpz;
-			push(@tmp, "COMMENT: \\n");
-			push(@tmp, "COMMENT: \\n");
-			push(@tmp, "COMMENT: \\n");
-		}
-		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 3 + 1]",
-		"--title=$config->{graphs}->{_nvme2}  ($tf->{nwhen}$tf->{twhen})",
-		"--start=-$tf->{nwhen}$tf->{twhen}",
-		"--imgformat=$imgfmt_uc",
-		"--vertical-label=Percent (%)",
-		"--width=$width",
-		"--height=$height",
-		@extra,
-		@riglim,
-		$zoom,
-		@{$cgi->{version12}},
-		@{$cgi->{version12_small}},
-		@{$colors->{graph_colors}},
-		"DEF:rsc0=$rrd:nvme" . $e . "_hd0_smart1:AVERAGE",
-		"DEF:rsc1=$rrd:nvme" . $e . "_hd1_smart1:AVERAGE",
-		"DEF:rsc2=$rrd:nvme" . $e . "_hd2_smart1:AVERAGE",
-		"DEF:rsc3=$rrd:nvme" . $e . "_hd3_smart1:AVERAGE",
-		"DEF:rsc4=$rrd:nvme" . $e . "_hd4_smart1:AVERAGE",
-		"DEF:rsc5=$rrd:nvme" . $e . "_hd5_smart1:AVERAGE",
-		"DEF:rsc6=$rrd:nvme" . $e . "_hd6_smart1:AVERAGE",
-		"DEF:rsc7=$rrd:nvme" . $e . "_hd7_smart1:AVERAGE",
-		"CDEF:allvalues=rsc0,rsc1,rsc2,rsc3,rsc4,rsc5,rsc6,rsc7,+,+,+,+,+,+,+",
-		@CDEF,
-		@tmp);
-		$err = RRDs::error;
-		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$e * 3 + 1]: $err\n") if $err;
-		if(lc($config->{enable_zoom}) eq "y") {
-			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 3 + 1]",
-			"--title=$config->{graphs}->{_nvme2}  ($tf->{nwhen}$tf->{twhen})",
+			if(lc($config->{show_gaps}) eq "y") {
+				push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+				push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+				push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+			}
+			($width, $height) = split('x', $config->{graph_size}->{small});
+			if($silent =~ /imagetag/) {
+				($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
+				($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+				@tmp = @tmpz;
+				push(@tmp, "COMMENT: \\n");
+				push(@tmp, "COMMENT: \\n");
+				push(@tmp, "COMMENT: \\n");
+			}
+
+			my @def_smart_average;
+			my $cdef_smart_allvalues = "CDEF:allvalues=";
+			for(my $n_hd = 0; $n_hd < $max_number_of_hds; $n_hd++) {
+				my $value_name = "hd" . $n_hd . "_smv" . $n_smart;
+				push(@def_smart_average, "DEF:" . $value_name . "=$rrd:nvme" . $e . "_" . $value_name . ":AVERAGE");
+				if($n_hd != 0) {
+					$cdef_smart_allvalues .= ",";
+				}
+				$cdef_smart_allvalues .= $value_name;
+			}
+			$cdef_smart_allvalues .= ",+" x ($max_number_of_hds - 1);
+
+			my $plot_title = $config->{graphs}->{'_nvme' . ($n_smart + 2)};
+			$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 3 + $n_smart + 1]",
+			"--title=$plot_title ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=$imgfmt_uc",
 			"--vertical-label=Percent (%)",
@@ -711,185 +695,54 @@ sub nvme_cgi {
 			@{$cgi->{version12}},
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
-			"DEF:rsc0=$rrd:nvme" . $e . "_hd0_smart1:AVERAGE",
-			"DEF:rsc1=$rrd:nvme" . $e . "_hd1_smart1:AVERAGE",
-			"DEF:rsc2=$rrd:nvme" . $e . "_hd2_smart1:AVERAGE",
-			"DEF:rsc3=$rrd:nvme" . $e . "_hd3_smart1:AVERAGE",
-			"DEF:rsc4=$rrd:nvme" . $e . "_hd4_smart1:AVERAGE",
-			"DEF:rsc5=$rrd:nvme" . $e . "_hd5_smart1:AVERAGE",
-			"DEF:rsc6=$rrd:nvme" . $e . "_hd6_smart1:AVERAGE",
-			"DEF:rsc7=$rrd:nvme" . $e . "_hd7_smart1:AVERAGE",
-			"CDEF:allvalues=rsc0,rsc1,rsc2,rsc3,rsc4,rsc5,rsc6,rsc7,+,+,+,+,+,+,+",
+			@def_smart_average,
+			$cdef_smart_allvalues,
 			@CDEF,
-			@tmpz);
+			@tmp);
 			$err = RRDs::error;
-			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 3 + 1]: $err\n") if $err;
-		}
-		$e2 = $e + 2;
-		if($title || ($silent =~ /imagetag/ && $graph =~ /nvme$e2/)) {
+			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$e * 3 + $n_smart + 1]: $err\n") if $err;
 			if(lc($config->{enable_zoom}) eq "y") {
-				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 3 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 3 + 1] . "' border='0'></a>\n");
-				} else {
-					if($version eq "new") {
-						$picz_width = $picz->{image_width} * $config->{global_zoom};
-						$picz_height = $picz->{image_height} * $config->{global_zoom};
+				($width, $height) = split('x', $config->{graph_size}->{zoom});
+				$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 3 + $n_smart + 1]",
+				"--title=$plot_title  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=$imgfmt_uc",
+				"--vertical-label=Percent (%)",
+				"--width=$width",
+				"--height=$height",
+				@extra,
+				@riglim,
+				$zoom,
+				@{$cgi->{version12}},
+				@{$cgi->{version12_small}},
+				@{$colors->{graph_colors}},
+				@def_smart_average,
+				$cdef_smart_allvalues,
+				@CDEF,
+				@tmpz);
+				$err = RRDs::error;
+				push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 3 + $n_smart + 1]: $err\n") if $err;
+			}
+			$e2 = $e + $n_smart + 2;
+			if($title || ($silent =~ /imagetag/ && $graph =~ /nvme$e2/)) {
+				if(lc($config->{enable_zoom}) eq "y") {
+					if(lc($config->{disable_javascript_void}) eq "y") {
+						push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 3 + $n_smart + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 3 + $n_smart + 1] . "' border='0'></a>\n");
 					} else {
-						$picz_width = $width + 115;
-						$picz_height = $height + 100;
+						if($version eq "new") {
+							$picz_width = $picz->{image_width} * $config->{global_zoom};
+							$picz_height = $picz->{image_height} * $config->{global_zoom};
+						} else {
+							$picz_width = $width + 115;
+							$picz_height = $height + 100;
+						}
+						push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 3 + $n_smart + 1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 3 + $n_smart + 1] . "' border='0'></a>\n");
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 3 + 1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 3 + 1] . "' border='0'></a>\n");
-				}
-			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 3 + 1] . "'>\n");
-			}
-		}
-
-		@riglim = @{setup_riglim($rigid[2], $limit[2])};
-		undef(@tmp);
-		undef(@tmpz);
-		undef(@CDEF);
-		for($n = 0; $n < 8; $n += 2) {
-			if($d[$n]) {
-				my $dstr = trim($d[$n]);
-				my $base = "";
-				$dstr =~ s/^\"//;
-				$dstr =~ s/\"$//;
-
-				# check if device name is a symbolic link
-				# e.g. /dev/nvme/by-path/pci-0000:07:07.0-scsi-0:0:0:0
-				if(-l $dstr) {
-					$base = basename($dstr);
-					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
-					chomp($dstr);
-				}
-
-				#				$dstr =~ s/^(.+?) .*$/$1/;
-				if($base && defined($nvme->{map}->{$base})) {
-					$dstr = $nvme->{map}->{$base};
 				} else {
-					if(defined($nvme->{map}->{$dstr})) {
-						$dstr = $nvme->{map}->{$dstr};
-					}
+					push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 3 + $n_smart + 1] . "'>\n");
 				}
-				$str = sprintf("%-17s", substr($dstr, 0, 17));
-				push(@tmp, "LINE2:cps" . $n . $LC[$n] . ":$str");
-				push(@tmpz, "LINE2:cps" . $n . $LC[$n] . ":$dstr\\g");
 			}
-			if($d[$n + 1]) {
-				my $dstr = trim($d[$n + 1]);
-				my $base = "";
-				$dstr =~ s/^\"//;
-				$dstr =~ s/\"$//;
 
-				# check if device name is a symbolic link
-				# e.g. /dev/nvme/by-path/pci-0000:07:07.0-scsi-0:0:0:0
-				if(-l $dstr) {
-					$base = basename($dstr);
-					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
-					chomp($dstr);
-				}
-
-				#				$dstr =~ s/^(.+?) .*$/$1/;
-				if($base && defined($nvme->{map}->{$base})) {
-					$dstr = $nvme->{map}->{$base};
-				} else {
-					if(defined($nvme->{map}->{$dstr})) {
-						$dstr = $nvme->{map}->{$dstr};
-					}
-				}
-				$str = sprintf("%-17s", substr($dstr, 0, 17));
-				push(@tmp, "LINE2:cps" . ($n + 1) . $LC[$n + 1] . ":$str\\n");
-				push(@tmpz, "LINE2:cps" . ($n + 1) . $LC[$n + 1] . ":$dstr\\g");
-			}
-		}
-		if(lc($config->{show_gaps}) eq "y") {
-			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
-			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
-			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
-		}
-		($width, $height) = split('x', $config->{graph_size}->{small});
-		if($silent =~ /imagetag/) {
-			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
-			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
-			@tmp = @tmpz;
-			push(@tmp, "COMMENT: \\n");
-			push(@tmp, "COMMENT: \\n");
-			push(@tmp, "COMMENT: \\n");
-		}
-		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 3 + 2]",
-		"--title=$config->{graphs}->{_nvme3}  ($tf->{nwhen}$tf->{twhen})",
-		"--start=-$tf->{nwhen}$tf->{twhen}",
-		"--imgformat=$imgfmt_uc",
-		"--vertical-label=Percent (%)",
-		"--width=$width",
-		"--height=$height",
-		@extra,
-		@riglim,
-		$zoom,
-		@{$cgi->{version12}},
-		@{$cgi->{version12_small}},
-		@{$colors->{graph_colors}},
-		"DEF:cps0=$rrd:nvme" . $e . "_hd0_smart2:AVERAGE",
-		"DEF:cps1=$rrd:nvme" . $e . "_hd1_smart2:AVERAGE",
-		"DEF:cps2=$rrd:nvme" . $e . "_hd2_smart2:AVERAGE",
-		"DEF:cps3=$rrd:nvme" . $e . "_hd3_smart2:AVERAGE",
-		"DEF:cps4=$rrd:nvme" . $e . "_hd4_smart2:AVERAGE",
-		"DEF:cps5=$rrd:nvme" . $e . "_hd5_smart2:AVERAGE",
-		"DEF:cps6=$rrd:nvme" . $e . "_hd6_smart2:AVERAGE",
-		"DEF:cps7=$rrd:nvme" . $e . "_hd7_smart2:AVERAGE",
-		"CDEF:allvalues=cps0,cps1,cps2,cps3,cps4,cps5,cps6,cps7,+,+,+,+,+,+,+",
-		@CDEF,
-		@tmp);
-		$err = RRDs::error;
-		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$e * 3 + 2]: $err\n") if $err;
-		if(lc($config->{enable_zoom}) eq "y") {
-			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 3 + 2]",
-			"--title=$config->{graphs}->{_nvme3}  ($tf->{nwhen}$tf->{twhen})",
-			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=$imgfmt_uc",
-			"--vertical-label=Percent (%)",
-			"--width=$width",
-			"--height=$height",
-			@extra,
-			@riglim,
-			$zoom,
-			@{$cgi->{version12}},
-			@{$cgi->{version12_small}},
-			@{$colors->{graph_colors}},
-			"DEF:cps0=$rrd:nvme" . $e . "_hd0_smart2:AVERAGE",
-			"DEF:cps1=$rrd:nvme" . $e . "_hd1_smart2:AVERAGE",
-			"DEF:cps2=$rrd:nvme" . $e . "_hd2_smart2:AVERAGE",
-			"DEF:cps3=$rrd:nvme" . $e . "_hd3_smart2:AVERAGE",
-			"DEF:cps4=$rrd:nvme" . $e . "_hd4_smart2:AVERAGE",
-			"DEF:cps5=$rrd:nvme" . $e . "_hd5_smart2:AVERAGE",
-			"DEF:cps6=$rrd:nvme" . $e . "_hd6_smart2:AVERAGE",
-			"DEF:cps7=$rrd:nvme" . $e . "_hd7_smart2:AVERAGE",
-			"CDEF:allvalues=cps0,cps1,cps2,cps3,cps4,cps5,cps6,cps7,+,+,+,+,+,+,+",
-			@CDEF,
-			@tmpz);
-			$err = RRDs::error;
-			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 3 + 2]: $err\n") if $err;
-		}
-		$e2 = $e + 3;
-		if($title || ($silent =~ /imagetag/ && $graph =~ /nvme$e2/)) {
-			if(lc($config->{enable_zoom}) eq "y") {
-				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 3 + 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 3 + 2] . "' border='0'></a>\n");
-				} else {
-					if($version eq "new") {
-						$picz_width = $picz->{image_width} * $config->{global_zoom};
-						$picz_height = $picz->{image_height} * $config->{global_zoom};
-					} else {
-						$picz_width = $width + 115;
-						$picz_height = $height + 100;
-					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 3 + 2] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 3 + 2] . "' border='0'></a>\n");
-				}
-			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 3 + 2] . "'>\n");
-			}
 		}
 
 		if($title) {
