@@ -189,6 +189,7 @@ sub nvme_update {
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $nvme = $config->{nvme};
+	my $use_nan_for_missing_data = lc($nvme->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
 
 	my $temp;
 	my @smart;
@@ -200,8 +201,8 @@ sub nvme_update {
 		# values delimitted by ", " (comma + space)
 		my @dsk = split(', ', $nvme->{list}->{$k});
 		for($n = 0; $n < $max_number_of_hds; $n++) {
-			$temp = 0;
-			@smart = (0) x $max_number_of_smart_values_in_rrd;
+			$temp = $use_nan_for_missing_data ? (0+"nan") : 0;
+			@smart = ($use_nan_for_missing_data ? (0+"nan") : 0) x $max_number_of_smart_values_in_rrd;
 
 			if($dsk[$n]) {
 				my $d = trim($dsk[$n]);
