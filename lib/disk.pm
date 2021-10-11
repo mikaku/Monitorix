@@ -29,6 +29,8 @@ use File::Basename;
 use Exporter 'import';
 our @EXPORT = qw(disk_init disk_update disk_cgi);
 
+sub isnan { ! defined( $_[0] <=> (0+"inf")) }
+
 sub disk_init {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
@@ -229,7 +231,7 @@ sub disk_update {
 					}
 					if(/^190/ && /Airflow_Temperature_Cel/) {
 						my @tmp = split(' ', $_);
-						$temp = $tmp[9] unless $temp;
+						$temp = $tmp[9] unless ($temp && !isnan($temp));
 						chomp($temp);
 					}
 					if(/^197/ && /Current_Pending_Sector/) {
@@ -239,12 +241,12 @@ sub disk_update {
 					}
 					if(/^Current Drive Temperature: /) {
 						my @tmp = split(' ', $_);
-						$temp = $tmp[3] unless $temp;
+						$temp = $tmp[3] unless ($temp && !isnan($temp));
 						chomp($temp);
 					}
 					if(/^Temperature: /) {
 						my @tmp = split(' ', $_);
-						$temp = $tmp[1] unless $temp;
+						$temp = $tmp[1] unless ($temp && !isnan($temp));
 						chomp($temp);
 					}
 				}
