@@ -39,11 +39,6 @@ sub nvme_init {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $nvme = $config->{nvme};
 
-	if($number_of_smart_values_in_use > $number_of_smart_values_in_rrd) {
-		logger("$myself: ERROR: Number of smart values (" . $number_of_smart_values_in_use . ") has smaller or equal to number of smart values in rrd (" . $number_of_smart_values_in_rrd . ")!");
-		return;
-	}
-
 	my $info;
 	my @ds;
 	my @rra;
@@ -353,6 +348,13 @@ sub nvme_cgi {
 	"#EEEE44",
 	);
 
+	my $show_extended_plots = lc($nvme->{show_extended_plots} || "") eq "y" ? 1 : 0;
+	my $number_of_smart_values_in_use = $show_extended_plots ? 6 : 3;
+	if($number_of_smart_values_in_use > $number_of_smart_values_in_rrd) {
+		logger(@output, "ERROR: Number of smart values (" . $number_of_smart_values_in_use . ") has smaller or equal to number of smart values in rrd (" . $number_of_smart_values_in_rrd . ")!");
+		return;
+	}
+
 	$version = "old" if $RRDs::VERSION < 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
@@ -458,13 +460,25 @@ sub nvme_cgi {
 		}
 	}
 
-	# Plot settings
+	# Plot settings in order of the smart array.
 	my @y_axis_titles = ((lc($config->{temperature_scale}) eq "f" ? "Fahrenheit" : "Celsius"), "Percent (%)", "Percent (%)", "bytes", "Errors", "Counts");
 	my @value_transformations = ((lc($config->{temperature_scale}) eq "f" ? ",9,*,5,/,32,+" : ""), "", "", ",512000,*", "", "");
 	my @legend_labels = ("%2.0lf", "%4.0lf%%", "%4.0lf%%", "%7.3lf%s", "%4.0lf%s", "%4.0lf%s");
-	my @plot_order = (0, 3, 1, 2, 4, 5); # To rearange the plots
-	my $main_smart_plots = 2; # Number of smart plots on the left side.
-	my @main_plot_with_average = (1, 0); # Wether or not the main plots show average, min and max or only the last value in the legend.
+
+	my @plot_order = $show_extended_plots ? (0, 3, 1, 2, 4, 5) : (0, 1, 2); # To rearange the plots
+	my $main_smart_plots = $show_extended_plots ? 2 : 1; # Number of smart plots on the left side.
+	my @main_plot_with_average = $show_extended_plots ? (1, 0) : (1); # Wether or not the main plots show average, min and max or only the last value in the legend.
+
+	if(!$show_extended_plots) {
+		for(my $index = 0; $index < scalar(@plot_order); $index++) {
+			$y_axis_titles[$index] = $y_axis_titles[$plot_order[$index]];
+			$value_transformations[$index] = $value_transformations[$plot_order[$index]];
+			$legend_labels[$index] = $legend_labels[$plot_order[$index]];
+		}
+		$#y_axis_titles = scalar(@plot_order)-1;
+		$#value_transformations = scalar(@plot_order)-1;
+		$#legend_labels = scalar(@plot_order)-1;
+	}
 
 	if(scalar(@y_axis_titles) != $number_of_smart_values_in_use) {
 		push(@output, "ERROR: Size of y_axis_titles (" . scalar(@y_axis_titles) . ") has to be equal to number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
