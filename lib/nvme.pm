@@ -354,6 +354,7 @@ sub nvme_cgi {
 		logger(@output, "ERROR: Number of smart values (" . $number_of_smart_values_in_use . ") has smaller or equal to number of smart values in rrd (" . $number_of_smart_values_in_rrd . ")!");
 		return;
 	}
+	my $show_current_values = lc($nvme->{show_current_values} || "") eq "y" ? 1 : 0;
 
 	$version = "old" if $RRDs::VERSION < 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
@@ -551,10 +552,14 @@ sub nvme_cgi {
 							$str = sprintf("%-57s", $dstr);
 						}
 					} else {
-						$str = sprintf("%-13s", substr($dstr, 0, 13));
+						if($show_current_values) {
+							$str = sprintf("%-13s", substr($dstr, 0, 13));
+						} else {
+							$str = sprintf("%-19s", substr($dstr, 0, 19));
+						}
 					}
 					my $value_name = "hd" . $n . "_smv" . $n_smart;
-					push(@tmp, "LINE2:trans_" . $value_name . $LC[$n] . ":$str" . ($n_plot < $main_smart_plots ? "" :"\\: \\g"));
+					push(@tmp, "LINE2:trans_" . $value_name . $LC[$n] . ":$str" . ($n_plot < $main_smart_plots ? "" : ( $show_current_values ? "\\: \\g" : (($n%2 || !$d[$n+1]) ? "\\n" : ""))));
 					push(@tmpz, "LINE2:trans_" . $value_name . $LC[$n] . ":$dstr");
 					if($n_plot < $main_smart_plots) {
 						if($main_plot_with_average[$n_plot]) {
@@ -566,7 +571,9 @@ sub nvme_cgi {
 						  push(@tmp, "GPRINT:trans_" . $value_name . ":LAST: Current\\: " . $legend_labels[$n_smart] . "\\n");
 						}
 					} else {
-						push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:" . $legend_labels[$n_smart] . (($n%2 || !$d[$n+1]) ? "\\n" : ""));
+						if($show_current_values) {
+						  push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:" . $legend_labels[$n_smart] . (($n%2 || !$d[$n+1]) ? "\\n" : ""));
+						}
 					}
 				}
 			}
