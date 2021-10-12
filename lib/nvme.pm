@@ -333,7 +333,6 @@ sub nvme_cgi {
 	my @riglim;
 	my @IMG;
 	my @IMGz;
-	my $temp_scale = "Celsius";
 	my @tmp;
 	my @tmpz;
 	my @CDEF;
@@ -365,10 +364,6 @@ sub nvme_cgi {
 	}
 
 	$title = !$silent ? $title : "";
-
-	if(lc($config->{temperature_scale}) eq "f") {
-		$temp_scale = "Fahrenheit";
-	}
 	my $gap_on_all_nan = lc($nvme->{gap_on_all_nan} || "") eq "y" ? 1 : 0;
 
 	# text mode
@@ -464,7 +459,7 @@ sub nvme_cgi {
 	}
 
 	# Plot settings
-	my @y_axis_titles = ($temp_scale, "Percent (%)", "Percent (%)", "bytes", "Errors", "Counts");
+	my @y_axis_titles = ((lc($config->{temperature_scale}) eq "f" ? "Fahrenheit" : "Celsius"), "Percent (%)", "Percent (%)", "bytes", "Errors", "Counts");
 	my @value_transformations = ((lc($config->{temperature_scale}) eq "f" ? ",9,*,5,/,32,+" : ""), "", "", ",512000,*", "", "");
 	my @legend_labels = ("%2.0lf", "%4.0lf%%", "%4.0lf%%", "%7.3lf%s", "%4.0lf%s", "%4.0lf%s");
 	my @plot_order = (0, 3, 1, 2, 4, 5); # To rearange the plots
