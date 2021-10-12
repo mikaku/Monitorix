@@ -29,9 +29,9 @@ use File::Basename;
 use Exporter 'import';
 our @EXPORT = qw(nvme_init nvme_update nvme_cgi);
 
-my $max_number_of_hds = 8;									# Changing this number destroys history.
-my $max_number_of_smart_values = 2;					# Excluding temperature. Changing this number does not require rrd recreation as long as max_number_of_smart_values_in_rrd is not changed.
-my $max_number_of_smart_values_in_rrd = 7;	# Excluding temperature. Changing this number destroys history.
+my $max_number_of_hds = 8;							# Changing this number destroys history.
+my $number_of_smart_values_in_rrd = 8;	# Changing this number destroys history.
+my $number_of_smart_values_in_use = 5;	# Changing this number does not require rrd recreation as long as number_of_smart_values_in_rrd is not changed. Has to be <= number_of_smart_values_in_rrd
 
 sub nvme_init {
 	my $myself = (caller(0))[3];
@@ -39,8 +39,8 @@ sub nvme_init {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $nvme = $config->{nvme};
 
-	if($max_number_of_smart_values > $max_number_of_smart_values_in_rrd) {
-		logger("$myself: ERROR: Number of smart values (" . $max_number_of_smart_values . ") has smaller or equal to number of smart values in rrd (" . $max_number_of_smart_values_in_rrd . ")!");
+	if($number_of_smart_values_in_use > $number_of_smart_values_in_rrd) {
+		logger("$myself: ERROR: Number of smart values (" . $number_of_smart_values_in_use . ") has smaller or equal to number of smart values in rrd (" . $number_of_smart_values_in_rrd . ")!");
 		return;
 	}
 
@@ -105,8 +105,8 @@ sub nvme_init {
 			logger("$myself: Detected size mismatch between max_number_of_hds (" . $max_number_of_hds . ") and $rrd (" . $rrd_n_hd . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
-		if($rrd_n_hd_times_n_values / $rrd_n_hd < ($max_number_of_smart_values_in_rrd + 1)) {
-			logger("$myself: Detected size mismatch between max_number_of_smart_values_in_rrd (" . $max_number_of_smart_values_in_rrd . ") and $rrd (" . (($rrd_n_hd_times_n_values / $rrd_n_hd) - 1) . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
+		if($rrd_n_hd_times_n_values / $rrd_n_hd < ($number_of_smart_values_in_rrd + 1)) {
+			logger("$myself: Detected size mismatch between number_of_smart_values_in_rrd (" . $number_of_smart_values_in_rrd . ") and $rrd (" . (($rrd_n_hd_times_n_values / $rrd_n_hd) - 1) . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 		if(scalar(@rra) < 12 + (4 * $config->{max_historic_years})) {
@@ -126,7 +126,7 @@ sub nvme_init {
 		for($n = 0; $n < keys(%{$nvme->{list}}); $n++) {
 			for(my $n_hd = 0; $n_hd < $max_number_of_hds; $n_hd++) {
 				push(@tmp, "DS:nvme" . $n . "_hd" . $n_hd . "_temp:GAUGE:120:0:100");
-				for(my $n_smart = 0; $n_smart < $max_number_of_smart_values_in_rrd; $n_smart++) {
+				for(my $n_smart = 0; $n_smart < $number_of_smart_values_in_rrd; $n_smart++) {
 					push(@tmp, "DS:nvme" . $n . "_hd" . $n_hd . "_smv" . $n_smart . ":GAUGE:120:0:U");
 				}
 			}
@@ -202,7 +202,7 @@ sub nvme_update {
 		my @dsk = split(', ', $nvme->{list}->{$k});
 		for($n = 0; $n < $max_number_of_hds; $n++) {
 			$temp = $use_nan_for_missing_data ? (0+"nan") : 0;
-			@smart = ($use_nan_for_missing_data ? (0+"nan") : 0) x $max_number_of_smart_values_in_rrd;
+			@smart = ($use_nan_for_missing_data ? (0+"nan") : 0) x $number_of_smart_values_in_rrd;
 
 			if($dsk[$n]) {
 				my $d = trim($dsk[$n]);
@@ -229,6 +229,24 @@ sub nvme_update {
 						$tmp[1] =~ tr/,//d;
 						$smart[1] = trim($tmp[1]);
 						chomp($smart[1]);
+					}
+					if(/\"data_units_written\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						$smart[2] = trim($tmp[1]);
+						chomp($smart[2]);
+					}
+					if(/\"media_errors\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						$smart[3] = trim($tmp[1]);
+						chomp($smart[3]);
+					}
+					if(/\"unsafe_shutdowns\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						$smart[4] = trim($tmp[1]);
+						chomp($smart[4]);
 					}
 					if(/\"temperature\"/) {
 						my @tmp = split(':', $_);
@@ -428,7 +446,7 @@ sub nvme_cgi {
 	}
 
 	for($n = 0; $n < keys(%{$nvme->{list}}); $n++) {
-		for($n2 = 1; $n2 <= $max_number_of_smart_values+1; $n2++) {
+		for($n2 = 1; $n2 <= $number_of_smart_values_in_use+1; $n2++) {
 			$str = $u . $package . $n . $n2 . "." . $tf->{when} . ".$imgfmt_lc";
 			push(@IMG, $str);
 			unlink("$IMG_DIR" . $str);
@@ -489,7 +507,6 @@ sub nvme_cgi {
 				push(@tmp, "GPRINT:temp_" . $n . ":MAX:   Max\\: %2.0lf\\n");
 			}
 		}
-		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 		if(scalar(@d) && (scalar(@d) % 2)) {
 			push(@tmp, "COMMENT: \\n");
@@ -599,18 +616,31 @@ sub nvme_cgi {
 			}
 		}
 
-		if($title) {
+		if($title && $number_of_smart_values_in_use == 0) {
 			push(@output, "    </td>\n");
 			push(@output, "    <td class='td-valign-top'>\n");
 		}
 
-		for(my $n_smart = 0; $n_smart < $max_number_of_smart_values; $n_smart += 1) {
+		my @y_axis_titles = ("Percent (%)", "Percent (%)", "bytes", "Errors", "Counts");
+		my @y_axis_factors = (1, 1, 512000, 1, 1);
+		my @legend_labels = ("%3.0lf%%", "%3.0lf%%", "%7.3lf%s", " %3.0lf%s", " %3.0lf%s");
+		my @smart_order = (2, 0, 1, 3, 4); # To rearange the plots
+		my $main_smart_plots = 1; # Number of smart plots on the left side.
 
+		for(my $n_plot = 0; $n_plot < $number_of_smart_values_in_use; $n_plot += 1) {
+			if($title && $n_plot == $main_smart_plots) {
+				push(@output, "    </td>\n");
+				push(@output, "    <td class='td-valign-top'>\n");
+			}
+			my $n_smart = $smart_order[$n_plot];
 			@riglim = @{setup_riglim($rigid[$n_smart+1], $limit[$n_smart+1])};
 			undef(@tmp);
 			undef(@tmpz);
 			undef(@CDEF);
-			for($n = 0; $n < $max_number_of_hds; $n += 2) {
+			if($n_plot < $main_smart_plots) {
+				push(@tmp, "COMMENT: \\n");
+			}
+			for($n = 0; $n < $max_number_of_hds; $n += 1) {
 				if($d[$n]) {
 					my $dstr = trim($d[$n]);
 					my $base = "";
@@ -633,43 +663,39 @@ sub nvme_cgi {
 							$dstr = $nvme->{map}->{$dstr};
 						}
 					}
-					$str = sprintf("%-17s", substr($dstr, 0, 17));
-					push(@tmp, "LINE2:hd" . $n . "_smv" . $n_smart . $LC[$n] . ":$str");
-					push(@tmpz, "LINE2:hd" . $n . "_smv" . $n_smart . $LC[$n] . ":$dstr\\g");
-				}
-				if($d[$n + 1]) {
-					my $dstr = trim($d[$n + 1]);
-					my $base = "";
-					$dstr =~ s/^\"//;
-					$dstr =~ s/\"$//;
-
-					# check if device name is a symbolic link
-					# e.g. /dev/nvme/by-path/pci-0000:07:07.0-scsi-0:0:0:0
-					if(-l $dstr) {
-						$base = basename($dstr);
-						$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
-						chomp($dstr);
-					}
-
-					#				$dstr =~ s/^(.+?) .*$/$1/;
-					if($base && defined($nvme->{map}->{$base})) {
-						$dstr = $nvme->{map}->{$base};
+					if($n_plot < $main_smart_plots) {
+						$str = sprintf("%-57s", $dstr);
 					} else {
-						if(defined($nvme->{map}->{$dstr})) {
-							$dstr = $nvme->{map}->{$dstr};
-						}
+						$str = sprintf("%-14s", substr($dstr, 0, 14));
 					}
-					$str = sprintf("%-17s", substr($dstr, 0, 17));
-					push(@tmp, "LINE2:hd" . ($n + 1) . "_smv" . $n_smart . $LC[$n + 1] . ":$str\\n");
-					push(@tmpz, "LINE2:hd" . ($n + 1) . "_smv" . $n_smart . $LC[$n + 1] . ":$dstr\\g");
+					my $value_name = "hd" . $n . "_smv" . $n_smart;
+					push(@tmp, "LINE2:mult_" . $value_name . $LC[$n] . ":$str" . ($n_plot < $main_smart_plots ? "" :"\\: \\g"));
+					push(@tmpz, "LINE2:mult_" . $value_name . $LC[$n] . ":$dstr\\g");
+					if($n_plot < $main_smart_plots) {
+						push(@tmp, "GPRINT:mult_" . $value_name . ":LAST: Current\\: " . $legend_labels[$n_smart] . "\\n");
+					} else {
+						push(@tmp, "GPRINT:mult_" . $value_name . ":LAST:" . $legend_labels[$n_smart] . (($n%2 || !$d[$n+1]) ? "\\n" : ""));
+					}
 				}
+			}
+
+			if($n_plot < $main_smart_plots) {
+				push(@tmp, "COMMENT: \\n");
+				if(scalar(@d) && (scalar(@d) % 2)) {
+					push(@tmp, "COMMENT: \\n");
+				}
+			}
+
+			for(my $n_hd = 0; $n_hd < $max_number_of_hds; $n_hd++) {
+				my $value_name = "hd" . $n_hd . "_smv" . $n_smart;
+				push(@CDEF, "CDEF:mult_" . $value_name . "=" . $value_name . "," . $y_axis_factors[$n_smart] . ",*");
 			}
 			if(lc($config->{show_gaps}) eq "y") {
 				push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 				push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
 				push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 			}
-			($width, $height) = split('x', $config->{graph_size}->{small});
+			($width, $height) = split('x', $config->{graph_size}->{($n_plot < $main_smart_plots) ? 'main' : 'small'});
 			if($silent =~ /imagetag/) {
 				($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
 				($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
@@ -697,20 +723,19 @@ sub nvme_cgi {
 			if ($gap_on_all_nan) {
 				$cdef_smart_allvalues .= ",0,GT,1,UNKN,IF";
 			}
-
 			my $plot_title = $config->{graphs}->{'_nvme' . ($n_smart + 2)};
 			$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 3 + $n_smart + 1]",
 			"--title=$plot_title ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=$imgfmt_uc",
-			"--vertical-label=Percent (%)",
+			"--vertical-label=" . $y_axis_titles[$n_smart],
 			"--width=$width",
 			"--height=$height",
 			@extra,
 			@riglim,
 			$zoom,
 			@{$cgi->{version12}},
-			@{$cgi->{version12_small}},
+			$n_plot < $main_smart_plots ? () : @{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			@def_smart_average,
 			$cdef_smart_allvalues,
@@ -724,14 +749,14 @@ sub nvme_cgi {
 				"--title=$plot_title  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=$imgfmt_uc",
-				"--vertical-label=Percent (%)",
+				"--vertical-label=" . $y_axis_titles[$n_smart],
 				"--width=$width",
 				"--height=$height",
 				@extra,
 				@riglim,
 				$zoom,
 				@{$cgi->{version12}},
-				@{$cgi->{version12_small}},
+				$n_plot < $main_smart_plots ? () : @{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
 				@def_smart_average,
 				$cdef_smart_allvalues,
