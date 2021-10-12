@@ -31,7 +31,7 @@ our @EXPORT = qw(nvme_init nvme_update nvme_cgi);
 
 my $max_number_of_hds = 8;									# Changing this number destroys history.
 my $max_number_of_smart_values = 2;					# Excluding temperature. Changing this number does not require rrd recreation as long as max_number_of_smart_values_in_rrd is not changed.
-my $max_number_of_smart_values_in_rrd = 12;	# Excluding temperature. Changing this number destroys history.
+my $max_number_of_smart_values_in_rrd = 7;	# Excluding temperature. Changing this number destroys history.
 
 sub nvme_init {
 	my $myself = (caller(0))[3];
@@ -428,7 +428,7 @@ sub nvme_cgi {
 	}
 
 	for($n = 0; $n < keys(%{$nvme->{list}}); $n++) {
-		for($n2 = 1; $n2 <= $max_number_of_hds; $n2++) {
+		for($n2 = 1; $n2 <= $max_number_of_smart_values+1; $n2++) {
 			$str = $u . $package . $n . $n2 . "." . $tf->{when} . ".$imgfmt_lc";
 			push(@IMG, $str);
 			unlink("$IMG_DIR" . $str);
