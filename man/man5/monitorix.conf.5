@@ -1354,7 +1354,7 @@ This is a list of groups of disk drives that you want to monitor. Each group wil
 .P
 WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIdisk.rrd\fP file accordingly, removing all historical data.
 .P
-To collect the disk drive temperatures and health the \fIsmartmontools\fP or the \fIhddtemp\fP command are required. \fIsmartmontools\fP will wake up sleeping disk. To avoid this set \fIrespect_standby = y\fP (this will disable built-in symlink resolving).
+To collect the disk drive temperatures and health the \fIsmartmontools\fP or the \fIhddtemp\fP command are required. \fIsmartmontools\fP will wake up sleeping disk. To avoid this set \fIrespect_standby = y\fP.
 .P
 It is recommended that you first check if either \fIsmartctl\fP(8) or \fIhddtemp\fP are able to collect data from the disk drive(s) that you plan to monitor. You may test this with the following command:
 .P
