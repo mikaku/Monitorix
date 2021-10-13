@@ -1609,7 +1609,7 @@ If you see good results as above, you can add it to the group 0 like this:
 .RS
 <list>
 .br
-	0 = /dev/nvme0, /dev/vnme1
+	0 = /dev/nvme0, /dev/nvme1
 .br
 	1 = /dev/nvme2
 .br
@@ -1734,6 +1734,38 @@ Default value: \fI/path/to/script.sh\fP
 During the init stage this graph verifies that every defined device name does exist in the system. If not, then the graph disables itself.
 .P
 This option changes this behavior and permits to continue working even if the device names defined doesn't exist. Keep in mind that you will continue seeing error messages in the logfile.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI show_extended_plots
+.RS
+.P
+Show additional plots.
+.P
+Default value: \fIn\fP
+.RE.RE
+.P
+.BI show_current_values
+.RS
+.P
+Print current values in the legend of the small righthand plots.
+.P
+Default value: \fIn\fP
+.RE
+.RE
+.BI use_nan_for_missing_data
+.RS
+This option, when enabled via \fIy\fP, shows \fnan\fP values for missing data instead of \f0\fP. This is useful when \f0\fP could be mistaken for valid data.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.RE
+.RE
+.BI gap_on_all_nan
+.RS
+This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option shows gaps only if all data points are \fInan\fP instead of requiring only one to be \fInan\fP for a gap. This can be useful if not all sensor data are required for normal operation.
 .P
 Default value: \fIn\fP
 .RE
