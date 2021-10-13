@@ -31,7 +31,6 @@ our @EXPORT = qw(nvme_init nvme_update nvme_cgi);
 
 my $max_number_of_hds = 8;							# Changing this number destroys history.
 my $number_of_smart_values_in_rrd = 9;	# Changing this number destroys history.
-my $number_of_smart_values_in_use = 6;	# Changing this number does not require rrd recreation as long as number_of_smart_values_in_rrd is not changed. Has to be <= number_of_smart_values_in_rrd
 
 sub nvme_init {
 	my $myself = (caller(0))[3];
