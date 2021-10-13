@@ -1354,7 +1354,7 @@ This is a list of groups of disk drives that you want to monitor. Each group wil
 .P
 WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIdisk.rrd\fP file accordingly, removing all historical data.
 .P
-To collect the disk drive temperatures and health the \fIsmartmontools\fP or the \fIhddtemp\fP command are required. \fIsmartmontools\fP will wake up sleeping disk. To avoid this set \fIrespect_standby = y\fP.
+To collect the disk drive temperatures and health the \fIsmartmontools\fP or the \fIhddtemp\fP command are required. \fIsmartmontools\fP will wake up sleeping disk and keep them from getting to sleep. To avoid this set \fIrespect_standby = y\fP and \frefresh_interval\fP to at least twice the standby time as a call to \fIsmartctl\fP or \fIhddtemp\fP will reset the standby timer of the disk.
 .P
 It is recommended that you first check if either \fIsmartctl\fP(8) or \fIhddtemp\fP are able to collect data from the disk drive(s) that you plan to monitor. You may test this with the following command:
 .P
@@ -1496,6 +1496,21 @@ During the init stage this graph verifies that every defined device name does ex
 This option changes this behavior and permits to continue working even if the device names defined doesn't exist. Keep in mind that you will continue seeing error messages in the logfile.
 .P
 Default value: \fIn\fP
+.RE
+.P
+.BI respect_standby
+.RS
+Getting smart information will wake up sleeping disks and keep them from getting to sleep. To avoid waking them up set \fIrespect_standby = y\fP. This will inhibit a smart request in case the drive is in standby causing gaps in the graph but not waking it up.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI refresh_interval
+.RS
+Refresh interval in seconds. This is an option to reduce the execution of the \fIsmartctl\fP and \fIhddtemp\fP command and undesired side effects caused by this. Default value 0 means normal refresh with all other plots. The refresh will happen independently from the interval once a month at the first day of the month at 0:00 hours.
+Keep in mind that changing the \fBrefresh_interval\fP is possible without loosing history but changing the interval to a smaller one will introduce gaps in the data at the transition point.
+.P
+Default value: \fI0\fP
 .RE
 .SS Filesystem usage and I/O activity (fs.pm)
 This graph is able to monitor an unlimited number of filesystems.
