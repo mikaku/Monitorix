@@ -206,15 +206,17 @@ sub disk_update {
 				$d =~ s/^\"//;
 				$d =~ s/\"$//;
 
-				# check if device name is a symbolic link
-				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
-				if(-l $d) {
-					$d = abs_path(dirname($d) . "/" . readlink($d));
-					chomp($d);
-				}
 				my $smartctl_options = "-A";
 				if($respect_standby) {
 					$smartctl_options .= " -n standby";
+				} else {
+					# check if device name is a symbolic link
+					# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+					# But does wake up sleeping disks
+					if(-l $d) {
+						$d = abs_path(dirname($d) . "/" . readlink($d));
+						chomp($d);
+					}
 				}
 
 				open(IN, "smartctl $smartctl_options $d |");
@@ -252,7 +254,7 @@ sub disk_update {
 				}
 				close(IN);
 				if(!$temp && !$respect_standby) {
-	  				if(open(IN, "hddtemp -wqn $d |")) {
+					if(open(IN, "hddtemp -wqn $d |")) {
 						$temp = <IN>;
 						close(IN);
 					} else {
@@ -350,6 +352,7 @@ sub disk_cgi {
 		"#EE44EE",
 		"#EEEE44",
 	);
+	my $respect_standby = lc($disk->{respect_standby} || "") eq "y" ? 1 : 0;
 
 	$version = "old" if $RRDs::VERSION < 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
@@ -483,12 +486,15 @@ sub disk_cgi {
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
 
-				# check if device name is a symbolic link
-				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
-				if(-l $dstr) {
-					$base = basename($dstr);
-					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
-					chomp($dstr);
+				if(!$respect_standby) {
+					# check if device name is a symbolic link
+					# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+					# But does wake up sleeping disks
+					if(-l $dstr) {
+						$base = basename($dstr);
+						$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
+						chomp($dstr);
+					}
 				}
 
 #				$dstr =~ s/^(.+?) .*$/$1/;
@@ -639,12 +645,15 @@ sub disk_cgi {
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
 
-				# check if device name is a symbolic link
-				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
-				if(-l $dstr) {
-					$base = basename($dstr);
-					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
-					chomp($dstr);
+				if(!$respect_standby) {
+					# check if device name is a symbolic link
+					# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+					# But does wake up sleeping disks
+					if(-l $dstr) {
+						$base = basename($dstr);
+						$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
+						chomp($dstr);
+					}
 				}
 
 #				$dstr =~ s/^(.+?) .*$/$1/;
@@ -665,12 +674,15 @@ sub disk_cgi {
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
 
-				# check if device name is a symbolic link
-				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
-				if(-l $dstr) {
-					$base = basename($dstr);
-					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
-					chomp($dstr);
+				if(!$respect_standby) {
+					# check if device name is a symbolic link
+					# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+					# But does wake up sleeping disks
+					if(-l $dstr) {
+						$base = basename($dstr);
+						$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
+						chomp($dstr);
+					}
 				}
 
 #				$dstr =~ s/^(.+?) .*$/$1/;
@@ -787,12 +799,15 @@ sub disk_cgi {
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
 
-				# check if device name is a symbolic link
-				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
-				if(-l $dstr) {
-					$base = basename($dstr);
-					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
-					chomp($dstr);
+				if(!$respect_standby) {
+					# check if device name is a symbolic link
+					# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+					# But does wake up sleeping disks
+					if(-l $dstr) {
+						$base = basename($dstr);
+						$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
+						chomp($dstr);
+					}
 				}
 
 #				$dstr =~ s/^(.+?) .*$/$1/;
@@ -813,12 +828,15 @@ sub disk_cgi {
 				$dstr =~ s/^\"//;
 				$dstr =~ s/\"$//;
 
-				# check if device name is a symbolic link
-				# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
-				if(-l $dstr) {
-					$base = basename($dstr);
-					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
-					chomp($dstr);
+				if(!$respect_standby) {
+					# check if device name is a symbolic link
+					# e.g. /dev/disk/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+					# But does wake up sleeping disks
+					if(-l $dstr) {
+						$base = basename($dstr);
+						$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
+						chomp($dstr);
+					}
 				}
 
 #				$dstr =~ s/^(.+?) .*$/$1/;
