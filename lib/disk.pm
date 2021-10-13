@@ -252,7 +252,7 @@ sub disk_update {
 				}
 				close(IN);
 				if(!$temp && !$respect_standby) {
-	  				if(open(IN, "hddtemp -wqn $d |")) {
+					if(open(IN, "hddtemp -wqn $d |")) {
 						$temp = <IN>;
 						close(IN);
 					} else {
