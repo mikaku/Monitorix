@@ -29,7 +29,7 @@ use File::Basename;
 use Exporter 'import';
 our @EXPORT = qw(nvme_init nvme_update nvme_cgi);
 
-my $max_number_of_hds = 8;							# Changing this number destroys history.
+my $max_number_of_hds = 8;		# Changing this number destroys history.
 my $number_of_smart_values_in_rrd = 9;	# Changing this number destroys history.
 
 sub nvme_init {
@@ -311,9 +311,9 @@ sub nvme_cgi {
 	my $silent = $cgi->{silent};
 	my $zoom = "--zoom=" . $config->{global_zoom};
 	my %rrd = (
-	'new' => \&RRDs::graphv,
-	'old' => \&RRDs::graph,
-	);
+		'new' => \&RRDs::graphv,
+		'old' => \&RRDs::graph,
+		);
 	my $version = "new";
 	my $pic;
 	my $picz;
@@ -337,14 +337,14 @@ sub nvme_cgi {
 	my $str;
 	my $err;
 	my @LC = (
-	"#FFA500",
-	"#44EEEE",
-	"#44EE44",
-	"#4444EE",
-	"#448844",
-	"#EE4444",
-	"#EE44EE",
-	"#EEEE44",
+		"#FFA500",
+		"#44EEEE",
+		"#44EE44",
+		"#4444EE",
+		"#448844",
+		"#EE4444",
+		"#EE44EE",
+		"#EEEE44",
 	);
 
 	my $show_extended_plots = lc($nvme->{show_extended_plots} || "") eq "y" ? 1 : 0;
@@ -623,28 +623,7 @@ sub nvme_cgi {
 			}
 			my $plot_title = $config->{graphs}->{'_nvme' . ($n_smart + 1)};
 			$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 3 + $n_smart]",
-			"--title=$plot_title ($tf->{nwhen}$tf->{twhen})",
-			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=$imgfmt_uc",
-			"--vertical-label=" . $y_axis_titles[$n_smart],
-			"--width=$width",
-			"--height=$height",
-			@extra,
-			@riglim,
-			$zoom,
-			@{$cgi->{version12}},
-			$n_plot < $main_smart_plots ? () : @{$cgi->{version12_small}},
-			@{$colors->{graph_colors}},
-			@def_smart_average,
-			$cdef_smart_allvalues,
-			@CDEF,
-			@tmp);
-			$err = RRDs::error;
-			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$e * 3 + $n_smart]: $err\n") if $err;
-			if(lc($config->{enable_zoom}) eq "y") {
-				($width, $height) = split('x', $config->{graph_size}->{zoom});
-				$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 3 + $n_smart]",
-				"--title=$plot_title  ($tf->{nwhen}$tf->{twhen})",
+				"--title=$plot_title ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=$imgfmt_uc",
 				"--vertical-label=" . $y_axis_titles[$n_smart],
@@ -659,7 +638,28 @@ sub nvme_cgi {
 				@def_smart_average,
 				$cdef_smart_allvalues,
 				@CDEF,
-				@tmpz);
+				@tmp);
+			$err = RRDs::error;
+			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$e * 3 + $n_smart]: $err\n") if $err;
+			if(lc($config->{enable_zoom}) eq "y") {
+				($width, $height) = split('x', $config->{graph_size}->{zoom});
+				$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 3 + $n_smart]",
+					"--title=$plot_title  ($tf->{nwhen}$tf->{twhen})",
+					"--start=-$tf->{nwhen}$tf->{twhen}",
+					"--imgformat=$imgfmt_uc",
+					"--vertical-label=" . $y_axis_titles[$n_smart],
+					"--width=$width",
+					"--height=$height",
+					@extra,
+					@riglim,
+					$zoom,
+					@{$cgi->{version12}},
+					$n_plot < $main_smart_plots ? () : @{$cgi->{version12_small}},
+					@{$colors->{graph_colors}},
+					@def_smart_average,
+					$cdef_smart_allvalues,
+					@CDEF,
+					@tmpz);
 				$err = RRDs::error;
 				push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 3 + $n_smart]: $err\n") if $err;
 			}
