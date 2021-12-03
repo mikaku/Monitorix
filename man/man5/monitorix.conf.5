@@ -1357,6 +1357,190 @@ This is the number of graphs that will be put in a row.
 .P
 Default value: \fI2\fP
 .RE
+.SS AMD GPU temperatures and usage (amdgpu.pm)
+This graph is able to monitor an unlimited number of AMD GPUs as long as the driver provides a hwmon interface. Usually it is not guaranteed to always get the same hwmon path so it is advised to assign fixed links via udev rules.
+.P
+.BI list
+.RS
+This is a list of groups of GPUs that you want to monitor. Each group will become a graph and there may be an unlimited number of groups. You can define device names or paths to devices like \fI/dev/amd-w6800\fP.
+.P
+WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIamdgpu.rrd\fP file accordingly, removing all historical data.
+.P
+To collect the GPU temperatures and usage data the \fIhwmon\fP subsystem is used.
+.P
+It is recommended that you first check if the \fIhwmon\fP subsystem is able to provide data from the GPU(s) that you plan to monitor. For example check \fI/sys/class/hwmon/hwmon1\fP for available sensors.
+
+You can add it to the group 0 like this:
+.P
+.RS
+<list>
+.br
+	0 = /dev/amd-w6800, /dev/amd-rx6900
+.br
+	1 = /dev/amd-wx5100
+.br
+</list>
+.RE
+.P
+The maximum number of GPUs allowed per group is 8.
+.RE
+.P
+.BI sensors
+.RS
+This list specifies the sensor locations. If a certain card does not have this specific sensor you can disable it by writing /fiN/A/fP instead. The order has to fit to the plot arrangement and power consumption and limit will be shown in one plot.
+.P
+.RS
+<sensors>
+.br
+	/dev/amd-rx6900 = device/gpu_busy_percent, device/mem_busy_percent, freq1_input, freq2_input, device/mem_info_vram_used, power1_average, power1_cap, pwm1, temp1_input, temp3_input, temp2_input
+.br
+	/dev/amd-wx5100 = device/gpu_busy_percent, device/mem_busy_percent, freq1_input, freq2_input, device/mem_info_vram_used, power1_average, power1_cap, pwm1, temp1_input, N/A, N/A
+.br
+</sensors>
+.RE
+.P
+.BI map
+.RS
+This list complements the \fBlist\fP option. It basically allows you to change the GPU name that will appear in the graph, hiding the real device name. If no association is defined, then Monitorix will display the name of the GPU device as it is.
+.P
+.RS
+<map>
+.br
+	/dev/amd-w6800 = W 6800
+.br
+	/dev/amd-rx6900 = RX 6900
+.br
+</map>
+.RE
+.RE
+.P
+.BI desc
+.RS
+This list complements the \fBlist\fP option. It basically allows you to include a title for every group of GPUs. The title will appear in the title of the graph.
+.P
+.RS
+<desc>
+.br
+	0 = Host
+.br
+	1 = Virtual
+.br
+</desc>
+.RE
+.RE
+.P
+.BI coretemp_enabled
+.RS
+This section enables or disables one of the alert capabilities for this graph; the alert for the core temperature. It works as follows:
+.P
+If the core temperature of any of the specified GPU device names reaches or subceeds the \fBcoretemp_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBcoretemp_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI coretemp_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fI0\fP
+.RE
+.P
+.BI coretemp_threshold
+.RS
+This is the value that needs to be reached or subceeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fI10\fP
+.RE
+.P
+.BI coretemp_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBcoretemp_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBcoretemp_threshold\fP.
+.br
+3rd - the current core temperature.
+.P
+Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI memorytemp_enabled
+.RS
+This section enables or disables one of the alert capabilities for this graph; the alert for the memory temperature. It works as follows:
+.P
+If the memory temperature of any of the specified GPU names reaches or exceeds the \fBmemorytemp_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBmemorytemp_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI memorytemp_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fI0\fP
+.RE
+.P
+.BI memorytemp_threshold
+.RS
+This is the value that needs to be reached or exceeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fI90\fP
+.RE
+.P
+.BI memorytemp_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBmemorytemp_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBmemorytemp_threshold\fP.
+.br
+3rd - the current memory temperature.
+.P
+Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI accept_invalid_amdgpu
+.RS
+During the init stage this graph verifies that every defined device name does exist in the system. If not, then the graph disables itself.
+.P
+This option changes this behaviour and permits to continue working even if the device names defined doesn't exist. Keep in mind that you will continue seeing error messages in the logfile.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI show_current_values
+.RS
+.P
+Print current values in the legend of the small righthand plots.
+.P
+Default value: \fIn\fP
+.RE
+.RE
+.BI use_nan_for_missing_data
+.RS
+This option, when enabled via \fIy\fP, shows \fnan\fP values for missing data instead of \f0\fP. This is useful when \f0\fP could be mistaken for valid data.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.RE
+.RE
+.BI gap_on_all_nan
+.RS
+This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option shows gaps only if all data points are \fInan\fP instead of requiring only one to be \fInan\fP for a gap. This can be useful if not all sensor data are required for normal operation.
+.P
+Default value: \fIn\fP
+.RE
 .SS NVIDIA temperatures and usage (nvidia.pm)
 This graph requires to have installed the official NVIDIA drivers.
 .P
