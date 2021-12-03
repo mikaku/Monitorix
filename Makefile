@@ -69,6 +69,7 @@ install-bin:
 	
 	$(INSTALL_DIR) "$(DESTDIR)$(LIBDIR)"
 	$(INSTALL_DATA) lib/ambsens.pm "$(DESTDIR)$(LIBDIR)/ambsens.pm"
+	$(INSTALL_DATA) lib/amdgpu.pm "$(DESTDIR)$(LIBDIR)/amdgpu.pm"
 	$(INSTALL_DATA) lib/apache.pm "$(DESTDIR)$(LIBDIR)/apache.pm"
 	$(INSTALL_DATA) lib/apcupsd.pm "$(DESTDIR)$(LIBDIR)/apcupsd.pm"
 	$(INSTALL_DATA) lib/bind.pm "$(DESTDIR)$(LIBDIR)/bind.pm"
