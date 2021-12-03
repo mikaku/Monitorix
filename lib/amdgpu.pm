@@ -313,8 +313,7 @@ sub amdgpu_cgi {
 		"#EEEE44",
 	);
 
-	my $show_extended_plots = lc($amdgpu->{show_extended_plots} || "") eq "y" ? 1 : 0;
-	my $number_of_sensor_values_in_use = $show_extended_plots ? 11 : 3;
+	my $number_of_sensor_values_in_use = 11;
 	if($number_of_sensor_values_in_use > $number_of_values_per_gpu_in_rrd) {
 		logger(@output, "ERROR: Number of sensor values (" . $number_of_sensor_values_in_use . ") has smaller or equal to number of sensor values in rrd (" . $number_of_values_per_gpu_in_rrd . ")!");
 		return;
@@ -470,22 +469,11 @@ sub amdgpu_cgi {
 																	"%3.1lf"
 																);
 
-	my @graphs_per_plot = $show_extended_plots ? (7, 8, 9, 10, [5, 6], 0, 1, 2, 3, 4) : (8, 7, [5, 6]); # To rearange the graphs
-	my $main_sensor_plots = $show_extended_plots ? 4 : 1; # Number of sensor plots on the left side.
-	my @main_plots_with_average = $show_extended_plots ? (1, 1, 1, 1) : (0); # Wether or not the main plots show average, min and max or only the last value in the legend.
+	my @graphs_per_plot = (7, 8, 9, 10, [5, 6], 0, 1, 2, 3, 4); # To rearange the graphs
+	my $main_sensor_plots = 4; # Number of sensor plots on the left side.
+	my @main_plots_with_average = (1, 1, 1, 1); # Wether or not the main plots show average, min and max or only the last value in the legend.
 
 	my $number_of_plots = scalar(@graphs_per_plot);
-
-	if(!$show_extended_plots) {
-		for(my $index = 0; $index < scalar(@graphs_per_plot); $index++) {
-			$y_axis_titles_per_plot[$index] = $y_axis_titles_per_plot[$graphs_per_plot[$index]];
-			$value_transformations_per_sensor[$index] = $value_transformations_per_sensor[$graphs_per_plot[$index]];
-			$legend_labels_per_sensor[$index] = $legend_labels_per_sensor[$graphs_per_plot[$index]];
-		}
-		$#y_axis_titles_per_plot = scalar(@graphs_per_plot)-1;
-		$#value_transformations_per_sensor = scalar(@graphs_per_plot)-1;
-		$#legend_labels_per_sensor = scalar(@graphs_per_plot)-1;
-	}
 
 	if(scalar(@y_axis_titles_per_plot) != $number_of_plots) {
 		push(@output, "ERROR: Size of y_axis_titles_per_plot (" . scalar(@y_axis_titles_per_plot) . ") has to be equal to number_of_plots (" . $number_of_plots . ")");
@@ -582,19 +570,26 @@ sub amdgpu_cgi {
 					}
 
 					if($n_plot < $main_sensor_plots) {
-						if($main_plots_with_average[$n_plot]) {
-							push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:  Current\\: " . $legend_labels_per_sensor[$n_sensor]);
-							push(@tmp, "GPRINT:trans_" . $value_name . ":AVERAGE:  Average\\: " . $legend_labels_per_sensor[$n_sensor]);
-							push(@tmp, "GPRINT:trans_" . $value_name . ":MIN:  Min\\: " . $legend_labels_per_sensor[$n_sensor]);
-							push(@tmp, "GPRINT:trans_" . $value_name . ":MAX:  Max\\: " . $legend_labels_per_sensor[$n_sensor] . "\\n");
+					  my @gpu_group = split(', ', $amdgpu->{list}->{$k});
+					  my $device_str = trim($gpu_group[$n] || "");
+					  my @sensor_names = split(', ', $amdgpu->{sensors}->{$device_str});
+						if($sensor_names[$n_sensor] eq "N/A") {
+							push(@tmp, "COMMENT:      N/A\\n");
 						} else {
-						  push(@tmp, "GPRINT:trans_" . $value_name . ":LAST: Current\\: " . $legend_labels_per_sensor[$n_sensor] . "\\n");
+							if($main_plots_with_average[$n_plot]) {
+								push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:  Current\\: " . $legend_labels_per_sensor[$n_sensor]);
+								push(@tmp, "GPRINT:trans_" . $value_name . ":AVERAGE:  Average\\: " . $legend_labels_per_sensor[$n_sensor]);
+								push(@tmp, "GPRINT:trans_" . $value_name . ":MIN:  Min\\: " . $legend_labels_per_sensor[$n_sensor]);
+								push(@tmp, "GPRINT:trans_" . $value_name . ":MAX:  Max\\: " . $legend_labels_per_sensor[$n_sensor] . "\\n");
+							} else {
+								push(@tmp, "GPRINT:trans_" . $value_name . ":LAST: Current\\: " . $legend_labels_per_sensor[$n_sensor] . "\\n");
+							}
 						}
 					} else {
 						if($show_current_values) {
 						  if($n_sensor2 && $value_name2) {
 								push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:" . $legend_labels_per_sensor[$n_sensor] . "\\g");
-								push(@tmp, "GPRINT:trans_" . $value_name2 . ":LAST: /" . $legend_labels_per_sensor[$n_sensor2] . "\\n");
+								push(@tmp, "GPRINT:trans_" . $value_name2 . ":LAST: /" . $legend_labels_per_sensor[$n_sensor2] . " (actual/limit)\\n");
 							} else {
 								push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:" . $legend_labels_per_sensor[$n_sensor] . (($n%2 || !$d[$n+1]) ? "\\n" : ""));
 							}
