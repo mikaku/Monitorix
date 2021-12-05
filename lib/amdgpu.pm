@@ -469,7 +469,7 @@ sub amdgpu_cgi {
 																	"%3.1lf"
 																);
 
-	my @graphs_per_plot = (7, 8, 9, 10, [5, 6], 0, 1, 2, 3, 4); # To rearange the graphs
+	my @graphs_per_plot = (7, 8, 10, 9, [5, 6], 0, 1, 2, 3, 4); # To rearange the graphs
 	my $main_sensor_plots = 4; # Number of sensor plots on the left side.
 	my @main_plots_with_average = (1, 1, 1, 1); # Wether or not the main plots show average, min and max or only the last value in the legend.
 

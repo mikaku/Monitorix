@@ -1387,12 +1387,12 @@ The maximum number of GPUs allowed per group is 8.
 .P
 .BI sensors
 .RS
-This list specifies the sensor locations. If a certain card does not have this specific sensor you can disable it by writing /fiN/A/fP instead. The order has to fit to the plot arrangement and power consumption and limit will be shown in one plot.
+This list specifies the sensor locations. If a certain card does not have this specific sensor you can disable it by writing /fiN/A/fP instead. The order has to be: GPU busy percent, memory busy percent, GPU clock, memory clock, memory used, power consumption, power limit, fan pwm value, GPU temperature, junction temperature, memory temperature. Power consumption and limit will be shown in one plot.
 .P
 .RS
 <sensors>
 .br
-	/dev/amd-rx6900 = device/gpu_busy_percent, device/mem_busy_percent, freq1_input, freq2_input, device/mem_info_vram_used, power1_average, power1_cap, pwm1, temp1_input, temp3_input, temp2_input
+	/dev/amd-rx6900 = device/gpu_busy_percent, device/mem_busy_percent, freq1_input, freq2_input, device/mem_info_vram_used, power1_average, power1_cap, pwm1, temp1_input, temp2_input, temp3_input
 .br
 	/dev/amd-wx5100 = device/gpu_busy_percent, device/mem_busy_percent, freq1_input, freq2_input, device/mem_info_vram_used, power1_average, power1_cap, pwm1, temp1_input, N/A, N/A
 .br
