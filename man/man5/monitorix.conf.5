@@ -1541,6 +1541,163 @@ This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option 
 .P
 Default value: \fIn\fP
 .RE
+.SS NVIDIA GPU temperatures and usage (nvidiagpu.pm)
+This graph is able to monitor an unlimited number of Nvidia GPUs via \fInvidia-smi\fP.
+.P
+.BI list
+.RS
+This is a list of groups of GPUs that you want to monitor. Each group will become a graph and there may be an unlimited number of groups.
+.P
+WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fInvidiagpu.rrd\fP file accordingly, removing all historical data.
+.P
+As identifier you can either use the GPU ID or the GPU UUID found via \fInvidia-smi --list-gpus\fP. You can add it to the group 0 like this:
+.P
+.RS
+<list>
+.br
+	0 = 0, GPU-531b3e21-2fa4-1254-1215-2361f2d345ef
+.br
+	1 = 2
+.br
+</list>
+.RE
+.P
+The maximum number of GPUs allowed per group is 8.
+.RE
+.P
+.BI map
+.RS
+This list complements the \fBlist\fP option. It basically allows you to change the GPU name that will appear in the graph, hiding the real device name. If no association is defined, then Monitorix will display the name of the GPU device as it is.
+.P
+.RS
+<map>
+.br
+	0 = RTX 3090
+.br
+	1 = RTX 3080 Ti
+.br
+</map>
+.RE
+.RE
+.P
+.BI desc
+.RS
+This list complements the \fBlist\fP option. It basically allows you to include a title for every group of GPUs. The title will appear in the title of the graph.
+.P
+.RS
+<desc>
+.br
+	0 = Host
+.br
+	1 = Virtual
+.br
+</desc>
+.RE
+.RE
+.P
+.BI coretemp_enabled
+.RS
+This section enables or disables one of the alert capabilities for this graph; the alert for the core temperature. It works as follows:
+.P
+If the core temperature of any of the specified GPU device names reaches or subceeds the \fBcoretemp_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBcoretemp_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI coretemp_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fI0\fP
+.RE
+.P
+.BI coretemp_threshold
+.RS
+This is the value that needs to be reached or subceeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fI10\fP
+.RE
+.P
+.BI coretemp_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBcoretemp_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBcoretemp_threshold\fP.
+.br
+3rd - the current core temperature.
+.P
+Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI memorytemp_enabled
+.RS
+This section enables or disables one of the alert capabilities for this graph; the alert for the memory temperature. It works as follows:
+.P
+If the memory temperature of any of the specified GPU names reaches or exceeds the \fBmemorytemp_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBmemorytemp_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI memorytemp_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fI0\fP
+.RE
+.P
+.BI memorytemp_threshold
+.RS
+This is the value that needs to be reached or exceeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fI90\fP
+.RE
+.P
+.BI memorytemp_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBmemorytemp_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBmemorytemp_threshold\fP.
+.br
+3rd - the current memory temperature.
+.P
+Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI show_current_values
+.RS
+.P
+Print current values in the legend of the small righthand plots.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI use_nan_for_missing_data
+.RS
+This option, when enabled via \fIy\fP, shows \fnan\fP values for missing data instead of \f0\fP. This is useful when \f0\fP could be mistaken for valid data.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.RE
+.RE
+.BI gap_on_all_nan
+.RS
+This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option shows gaps only if all data points are \fInan\fP instead of requiring only one to be \fInan\fP for a gap. This can be useful if not all sensor data are required for normal operation.
+.P
+Default value: \fIn\fP
+.RE
 .SS NVIDIA temperatures and usage (nvidia.pm)
 This graph requires to have installed the official NVIDIA drivers.
 .P
