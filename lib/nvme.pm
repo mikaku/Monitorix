@@ -464,6 +464,7 @@ sub nvme_cgi {
 	my @y_axis_titles = ((lc($config->{temperature_scale}) eq "f" ? "Fahrenheit" : "Celsius"), "Percent (%)", "Percent (%)", "bytes", "Errors", "Counts");
 	my @value_transformations = ((lc($config->{temperature_scale}) eq "f" ? ",9,*,5,/,32,+" : ""), "", "", ",512000,*", "", "");
 	my @legend_labels = ("%2.0lf", "%4.0lf%%", "%4.0lf%%", "%7.3lf%s", "%4.0lf%s", "%4.0lf%s");
+	my @alt_axis_scaling = (0, 0, 0, 1, 0, 0);
 
 	my @plot_order = $show_extended_plots ? (0, 3, 1, 2, 4, 5) : (0, 1, 2); # To rearange the plots
 	my $main_smart_plots = $show_extended_plots ? 2 : 1; # Number of smart plots on the left side.
@@ -488,6 +489,9 @@ sub nvme_cgi {
 	}
 	if(scalar(@legend_labels) != $number_of_smart_values_in_use) {
 		push(@output, "ERROR: Size of legend_labels (" . scalar(@legend_labels) . ") has to be equal to number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
+	}
+	if(scalar(@alt_axis_scaling) != $number_of_smart_values_in_use) {
+		push(@output, "ERROR: Size of alt_axis_scaling (" . scalar(@alt_axis_scaling) . ") has to be equal to number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
 	}
 	if(scalar(@plot_order) != $number_of_smart_values_in_use) {
 		push(@output, "ERROR: Size of plot_order (" . scalar(@plot_order) . ") has to be equal to number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
@@ -621,6 +625,11 @@ sub nvme_cgi {
 			if ($gap_on_all_nan) {
 				$cdef_smart_allvalues .= ",0,GT,1,UNKN,IF";
 			}
+			my @scaling_options;
+			if ($alt_axis_scaling[$n_smart]) {
+			  push(@scaling_options, "--alt-autoscale");
+			  push(@scaling_options, "--alt-y-grid");
+			}
 			my $plot_title = $config->{graphs}->{'_nvme' . ($n_smart + 1)};
 			$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 3 + $n_smart]",
 				"--title=$plot_title ($tf->{nwhen}$tf->{twhen})",
@@ -629,6 +638,7 @@ sub nvme_cgi {
 				"--vertical-label=" . $y_axis_titles[$n_smart],
 				"--width=$width",
 				"--height=$height",
+				@scaling_options,
 				@extra,
 				@riglim,
 				$zoom,
@@ -650,6 +660,7 @@ sub nvme_cgi {
 					"--vertical-label=" . $y_axis_titles[$n_smart],
 					"--width=$width",
 					"--height=$height",
+					@scaling_options,
 					@extra,
 					@riglim,
 					$zoom,
