@@ -213,7 +213,7 @@ sub amdgpu_update {
 				$d =~ s/^\"//;
 				$d =~ s/\"$//;
 
-        my $str = trim($gpu_group[$n] || "");
+				my $str = trim($gpu_group[$n] || "");
 				my @sensor_names = split(',', $amdgpu->{sensors}->{$str});
 
 				for(my $i_sensor = 0; $i_sensor < $number_of_values_per_gpu_in_rrd; $i_sensor++) {
@@ -446,43 +446,43 @@ sub amdgpu_cgi {
 	my $temperature_scaling = lc($config->{temperature_scale}) eq "f" ? ",1000,/,9,*,5,/,32,+" : ",1000,/";
 
 	my @y_axis_titles_per_plot = (
-																"Percent (%)",
-																$temperature_unit,
-																$temperature_unit,
-																$temperature_unit,
-																"Watt",
-																"Percent (%)",
-																"Percent (%)",
-																"Hz",
-																"Hz",
-																"bytes"
-															 );
+		"Percent (%)",
+		$temperature_unit,
+		$temperature_unit,
+		$temperature_unit,
+		"Watt",
+		"Percent (%)",
+		"Percent (%)",
+		"Hz",
+		"Hz",
+		"bytes"
+	);
 	my @value_transformations_per_sensor = (
-																					"",
-																					"",
-																					"",
-																					"",
-																					"",
-																					",1000000,/",
-																					",1000000,/",
-																					",2.55,/",
-																					$temperature_scaling,
-																					$temperature_scaling,
-																					$temperature_scaling
-																				);
+		"",
+		"",
+		"",
+		"",
+		"",
+		",1000000,/",
+		",1000000,/",
+		",2.55,/",
+		$temperature_scaling,
+		$temperature_scaling,
+		$temperature_scaling
+	);
 	my @legend_labels_per_sensor = (
-																	"%3.0lf%%",
-																	"%3.0lf%%",
-																	"%4.2lf%s",
-																	"%4.2lf%s",
-																	"%4.2lf%s",
-																	"%5.0lf%s",
-																	"%5.0lf%s",
-																	"%3.1lf%%",
-																	"%3.1lf",
-																	"%3.1lf",
-																	"%3.1lf"
-																);
+		"%3.0lf%%",
+		"%3.0lf%%",
+		"%4.2lf%s",
+		"%4.2lf%s",
+		"%4.2lf%s",
+		"%5.0lf%s",
+		"%5.0lf%s",
+		"%3.1lf%%",
+		"%3.1lf",
+		"%3.1lf",
+		"%3.1lf"
+	);
 
 	my @graphs_per_plot = (7, 8, 10, 9, [5, 6], 0, 1, 2, 3, 4); # To rearange the graphs
 	my $main_sensor_plots = 4; # Number of sensor plots on the left side.
