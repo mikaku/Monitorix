@@ -1362,7 +1362,7 @@ This graph is able to monitor an unlimited number of AMD GPUs as long as the dri
 .P
 .BI list
 .RS
-This is a list of groups of GPUs that you want to monitor. Each group will become a graph and there may be an unlimited number of groups. You can define device names or paths to devices like \fI/dev/amd-w6800\fP.
+This is a list of groups of GPUs that you want to monitor. Each group will become a graph and there may be an unlimited number of groups. You can define device names like \fIamd-w6800\fP.
 .P
 WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIamdgpu.rrd\fP file accordingly, removing all historical data.
 .P
@@ -1375,9 +1375,9 @@ You can add it to the group 0 like this:
 .RS
 <list>
 .br
-	0 = /dev/amd-w6800, /dev/amd-rx6900
+	0 = amd-w6800, amd-rx6900
 .br
-	1 = /dev/amd-wx5100
+	1 = amd-wx5100
 .br
 </list>
 .RE
@@ -1387,14 +1387,14 @@ The maximum number of GPUs allowed per group is 8.
 .P
 .BI sensors
 .RS
-This list specifies the sensor locations. If a certain card does not have this specific sensor you can disable it by writing /fiN/A/fP instead. The order has to be: GPU busy percent, memory busy percent, GPU clock, memory clock, memory used, power consumption, power limit, fan pwm value, GPU temperature, junction temperature, memory temperature. Power consumption and limit will be shown in one plot.
+This list specifies the sensor locations in absolute paths. If a certain card does not have a specific sensor you leave the entry empty instead (\fI/path/sensor_file1, , /path/sensor_file2\fP). The order has to be: GPU busy percent, memory busy percent, GPU clock, memory clock, memory used, power consumption, power limit, fan pwm value, GPU temperature, junction temperature, memory temperature. Power consumption and limit will be shown in one plot.
 .P
 .RS
 <sensors>
 .br
-	/dev/amd-rx6900 = device/gpu_busy_percent, device/mem_busy_percent, freq1_input, freq2_input, device/mem_info_vram_used, power1_average, power1_cap, pwm1, temp1_input, temp2_input, temp3_input
+	amd-rx6900 = /dev/amd-rx6900/device/gpu_busy_percent, /dev/amd-rx6900/device/mem_busy_percent, /dev/amd-rx6900/freq1_input, /dev/amd-rx6900/freq2_input, /dev/amd-rx6900/device/mem_info_vram_used, /dev/amd-rx6900/power1_average, /dev/amd-rx6900/power1_cap, /dev/amd-rx6900/pwm1, /dev/amd-rx6900/temp1_input, /dev/amd-rx6900/temp2_input, /dev/amd-rx6900/temp3_input
 .br
-	/dev/amd-wx5100 = device/gpu_busy_percent, device/mem_busy_percent, freq1_input, freq2_input, device/mem_info_vram_used, power1_average, power1_cap, pwm1, temp1_input, N/A, N/A
+	amd-wx5100 = /dev/amd-wx5100/device/gpu_busy_percent, /dev/amd-wx5100/device/mem_busy_percent, /dev/amd-wx5100/freq1_input, /dev/amd-wx5100/freq2_input, /dev/amd-wx5100/device/mem_info_vram_used, /dev/amd-wx5100/power1_average, /dev/amd-wx5100/power1_cap, /dev/amd-wx5100/pwm1, /dev/amd-wx5100/temp1_input, ,
 .br
 </sensors>
 .RE
@@ -1406,9 +1406,9 @@ This list complements the \fBlist\fP option. It basically allows you to change t
 .RS
 <map>
 .br
-	/dev/amd-w6800 = W 6800
+	amd-w6800 = W 6800
 .br
-	/dev/amd-rx6900 = RX 6900
+	amd-rx6900 = RX 6900
 .br
 </map>
 .RE

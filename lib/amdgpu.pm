@@ -58,12 +58,25 @@ sub amdgpu_init {
 				$d =~ s/^\"//;
 				$d =~ s/\"$//;
 				$d =~ s/^(.+?) .*$/$1/;
-				next if -e $d;
-				logger("$myself: ERROR: invalid or inexistent device name '$d'.");
-				if(lc($amdgpu->{accept_invalid_amdgpu} || "") ne "y") {
-					logger("$myself: 'accept_invalid_amdgpu' option is not set.");
-					logger("$myself: WARNING: initialization aborted.");
-					return;
+				my $str = trim($gpu_group[$n] || "");
+				my @sensor_names = split(',', $amdgpu->{sensors}->{$str});
+				for(my $i_sensor = 0; $i_sensor < $number_of_values_per_gpu_in_rrd; $i_sensor++) {
+					if ($i_sensor < scalar(@sensor_names)) {
+						my $sensor_name = $sensor_names[$i_sensor];
+						chomp($sensor_name);
+						$sensor_name = trim($sensor_name);
+						if ($sensor_name ne "") {
+							my $sensor_file = $sensor_name;
+							unless(-e $sensor_file) {
+								logger("$myself: ERROR: invalid or inexistent device name '$sensor_file'.");
+								if(lc($amdgpu->{accept_invalid_amdgpu} || "") ne "y") {
+									logger("$myself: 'accept_invalid_amdgpu' option is not set.");
+									logger("$myself: WARNING: initialization aborted.");
+									return;
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -201,13 +214,15 @@ sub amdgpu_update {
 				$d =~ s/\"$//;
 
         my $str = trim($gpu_group[$n] || "");
-				my @sensor_names = split(', ', $amdgpu->{sensors}->{$str});
+				my @sensor_names = split(',', $amdgpu->{sensors}->{$str});
 
 				for(my $i_sensor = 0; $i_sensor < $number_of_values_per_gpu_in_rrd; $i_sensor++) {
 				  if ($i_sensor < scalar(@sensor_names)) {
-					  my $sensor_name = $sensor_names[$i_sensor];
-					  if ($sensor_name ne "N/A") {
-							my $sensor_file = $d . "/" . $sensor_name;
+						my $sensor_name = $sensor_names[$i_sensor];
+						chomp($sensor_name);
+						$sensor_name = trim($sensor_name);
+						if ($sensor_name ne "") {
+							my $sensor_file = $sensor_name;
 							if(open(IN, $sensor_file)) {
 								my $val = <IN>;
 								close(IN);
@@ -515,10 +530,10 @@ sub amdgpu_cgi {
 			my $n_sensor;
 			my $n_sensor2;
 			if (ref($graphs_per_plot[$n_graph]) eq 'ARRAY') {
-    		$n_sensor = $graphs_per_plot[$n_plot]->[0];
+				$n_sensor = $graphs_per_plot[$n_plot]->[0];
 				$n_sensor2 = $graphs_per_plot[$n_plot]->[1];
 				$n_graph += 1
-  		} else {
+			} else {
 				$n_sensor = $graphs_per_plot[$n_plot];
 			}
 
@@ -569,11 +584,16 @@ sub amdgpu_cgi {
 						push(@tmpz, "LINE2:trans_" . $value_name2 . $LC[$n] . "BB" . ":dashes=1,3:");
 					}
 
+					my @gpu_group = split(', ', $amdgpu->{list}->{$k});
+					my $device_str = trim($gpu_group[$n] || "");
+					my @sensor_names = split(',', $amdgpu->{sensors}->{$device_str});
+					if($n_sensor >= scalar(@sensor_names)) {
+						$sensor_names[$n_sensor] = "";
+					}
+					chomp($sensor_names[$n_sensor]);
+					$sensor_names[$n_sensor] = trim($sensor_names[$n_sensor]);
 					if($n_plot < $main_sensor_plots) {
-					  my @gpu_group = split(', ', $amdgpu->{list}->{$k});
-					  my $device_str = trim($gpu_group[$n] || "");
-					  my @sensor_names = split(', ', $amdgpu->{sensors}->{$device_str});
-						if($sensor_names[$n_sensor] eq "N/A") {
+						if($sensor_names[$n_sensor] eq "") {
 							push(@tmp, "COMMENT:      N/A\\n");
 						} else {
 							if($main_plots_with_average[$n_plot]) {
@@ -587,11 +607,15 @@ sub amdgpu_cgi {
 						}
 					} else {
 						if($show_current_values) {
-						  if($n_sensor2 && $value_name2) {
-								push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:" . $legend_labels_per_sensor[$n_sensor] . "\\g");
-								push(@tmp, "GPRINT:trans_" . $value_name2 . ":LAST: /" . $legend_labels_per_sensor[$n_sensor2] . " (actual/limit)\\n");
+							if($sensor_names[$n_sensor] eq "") {
+								push(@tmp, "COMMENT:N/A\\n");
 							} else {
-								push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:" . $legend_labels_per_sensor[$n_sensor] . (($n%2 || !$d[$n+1]) ? "\\n" : ""));
+								if($n_sensor2 && $value_name2) {
+									push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:" . $legend_labels_per_sensor[$n_sensor] . "\\g");
+									push(@tmp, "GPRINT:trans_" . $value_name2 . ":LAST: /" . $legend_labels_per_sensor[$n_sensor2] . " (actual/limit)\\n");
+								} else {
+									push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:" . $legend_labels_per_sensor[$n_sensor] . (($n%2 || !$d[$n+1]) ? "\\n" : ""));
+								}
 							}
 						}
 					}
