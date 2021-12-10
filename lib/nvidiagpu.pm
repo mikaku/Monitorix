@@ -214,7 +214,6 @@ sub nvidiagpu_update {
 			if(lc($nvidiagpu->{alerts}->{coretemp_enabled}) eq "y") {
 				my $sensorIndex = 1;
 				$config->{nvidiagpu_hist_alert1}->{$n} = 0
-				if(!$config->{nvidiagpu_hist_alert1}->{$n});
 				if($sensors[$sensorIndex] >= $nvidiagpu->{alerts}->{coretemp_threshold} && $config->{nvidiagpu_hist_alert1}->{$n} < $sensors[$sensorIndex]) {
 					if(-x $nvidiagpu->{alerts}->{coretemp_script}) {
 						logger("$myself: ALERT: executing script '$nvidiagpu->{alerts}->{coretemp_script}'.");
@@ -228,7 +227,6 @@ sub nvidiagpu_update {
 			if(lc($nvidiagpu->{alerts}->{memorytemp_enabled}) eq "y") {
 				my $sensorIndex = 2;
 				$config->{nvidiagpu_hist_alert2}->{$n} = 0
-				if(!$config->{nvidiagpu_hist_alert2}->{$n});
 				if($sensors[$sensorIndex] >= $nvidiagpu->{alerts}->{memorytemp_threshold} && $config->{nvidiagpu_hist_alert2}->{$n} < $sensors[$sensorIndex]) {
 					if(-x $nvidiagpu->{alerts}->{memorytemp_script}) {
 						logger("$myself: ALERT: executing script '$nvidiagpu->{alerts}->{memorytemp_script}'.");
