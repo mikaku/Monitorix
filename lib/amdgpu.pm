@@ -217,7 +217,7 @@ sub amdgpu_update {
 				my @sensor_names = split(',', $amdgpu->{sensors}->{$str});
 
 				for(my $i_sensor = 0; $i_sensor < $number_of_values_per_gpu_in_rrd; $i_sensor++) {
-				  if ($i_sensor < scalar(@sensor_names)) {
+					if ($i_sensor < scalar(@sensor_names)) {
 						my $sensor_name = $sensor_names[$i_sensor];
 						chomp($sensor_name);
 						$sensor_name = trim($sensor_name);
@@ -551,7 +551,7 @@ sub amdgpu_cgi {
 					$dstr =~ s/^\"//;
 					$dstr =~ s/\"$//;
 
-					#				$dstr =~ s/^(.+?) .*$/$1/;
+					# $dstr =~ s/^(.+?) .*$/$1/;
 					if($base && defined($amdgpu->{map}->{$base})) {
 						$dstr = $amdgpu->{map}->{$base};
 					} else {
@@ -561,7 +561,7 @@ sub amdgpu_cgi {
 					}
 					if($n_plot < $main_sensor_plots) {
 						if($main_plots_with_average[$n_plot]) {
-						  $str = sprintf("%-20s", $dstr);
+							$str = sprintf("%-20s", $dstr);
 						} else {
 							$str = sprintf("%-57s", $dstr);
 						}
@@ -579,7 +579,7 @@ sub amdgpu_cgi {
 					push(@tmpz, "LINE2:trans_" . $value_name . $LC[$n] . ":$dstr");
 
 					if ($n_sensor2) {
-					  $value_name2 = "gpu" . $n . "_val" . $n_sensor2;
+						$value_name2 = "gpu" . $n . "_val" . $n_sensor2;
 						push(@tmp, "LINE2:trans_" . $value_name2 . $LC[$n] . "BB" . ":dashes=1,3:");
 						push(@tmpz, "LINE2:trans_" . $value_name2 . $LC[$n] . "BB" . ":dashes=1,3:");
 					}
@@ -661,7 +661,7 @@ sub amdgpu_cgi {
 				my $value_name = "gpu" . $n_gpu . "_val" . $n_sensor;
 				push(@def_sensor_average, "DEF:" . $value_name . "=$rrd:amdgpu" . $e . "_" . $value_name . ":AVERAGE");
 				if($n_sensor2) {
-				  my $value_name2 = "gpu" . $n_gpu . "_val" . $n_sensor2;
+					my $value_name2 = "gpu" . $n_gpu . "_val" . $n_sensor2;
 					push(@def_sensor_average, "DEF:" . $value_name2 . "=$rrd:amdgpu" . $e . "_" . $value_name2 . ":AVERAGE");
 				}
 
