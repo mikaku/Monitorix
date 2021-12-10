@@ -263,7 +263,7 @@ sub nvme_update {
 			# nvme alert
 			if(lc($nvme->{alerts}->{availspare_enabled}) eq "y") {
 				my $smartIndex = 1;
-				$config->{nvme_hist_alert1}->{$n} = 0
+				$config->{nvme_hist_alert1}->{$n} = 0 if(!$config->{nvme_hist_alert1}->{$n});
 				if($smart[$smartIndex] <= $nvme->{alerts}->{availspare_threshold} && $config->{nvme_hist_alert1}->{$n} < $smart[$smartIndex]) {
 					if(-x $nvme->{alerts}->{availspare_script}) {
 						logger("$myself: ALERT: executing script '$nvme->{alerts}->{availspare_script}'.");
@@ -276,7 +276,7 @@ sub nvme_update {
 			}
 			if(lc($nvme->{alerts}->{percentused_enabled}) eq "y") {
 				my $smartIndex = 2;
-				$config->{nvme_hist_alert2}->{$n} = 0
+				$config->{nvme_hist_alert2}->{$n} = 0 if(!$config->{nvme_hist_alert2}->{$n});
 				if($smart[$smartIndex] >= $nvme->{alerts}->{percentused_threshold} && $config->{nvme_hist_alert2}->{$n} < $smart[$smartIndex]) {
 					if(-x $nvme->{alerts}->{percentused_script}) {
 						logger("$myself: ALERT: executing script '$nvme->{alerts}->{percentused_script}'.");

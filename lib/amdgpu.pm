@@ -244,7 +244,7 @@ sub amdgpu_update {
 			# amdgpu alert
 			if(lc($amdgpu->{alerts}->{coretemp_enabled}) eq "y") {
 				my $sensorIndex = 1;
-				$config->{amdgpu_hist_alert1}->{$n} = 0
+				$config->{amdgpu_hist_alert1}->{$n} = 0 if(!$config->{amdgpu_hist_alert1}->{$n});
 				if($sensors[$sensorIndex] >= $amdgpu->{alerts}->{coretemp_threshold} && $config->{amdgpu_hist_alert1}->{$n} < $sensors[$sensorIndex]) {
 					if(-x $amdgpu->{alerts}->{coretemp_script}) {
 						logger("$myself: ALERT: executing script '$amdgpu->{alerts}->{coretemp_script}'.");
@@ -257,7 +257,7 @@ sub amdgpu_update {
 			}
 			if(lc($amdgpu->{alerts}->{memorytemp_enabled}) eq "y") {
 				my $sensorIndex = 2;
-				$config->{amdgpu_hist_alert2}->{$n} = 0
+				$config->{amdgpu_hist_alert2}->{$n} = 0 if(!$config->{amdgpu_hist_alert2}->{$n});
 				if($sensors[$sensorIndex] >= $amdgpu->{alerts}->{memorytemp_threshold} && $config->{amdgpu_hist_alert2}->{$n} < $sensors[$sensorIndex]) {
 					if(-x $amdgpu->{alerts}->{memorytemp_script}) {
 						logger("$myself: ALERT: executing script '$amdgpu->{alerts}->{memorytemp_script}'.");

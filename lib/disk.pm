@@ -267,8 +267,7 @@ sub disk_update {
 
 			# DISK alert
 			if(lc($disk->{alerts}->{realloc_enabled}) eq "y") {
-				$config->{disk_hist_alert1}->{$n} = 0
-					if(!$config->{disk_hist_alert1}->{$n});
+				$config->{disk_hist_alert1}->{$n} = 0 if(!$config->{disk_hist_alert1}->{$n});
 				if($smart1 >= $disk->{alerts}->{realloc_threshold} && $config->{disk_hist_alert1}->{$n} < $smart1) {
 					if(-x $disk->{alerts}->{realloc_script}) {
 						logger("$myself: ALERT: executing script '$disk->{alerts}->{realloc_script}'.");
@@ -280,8 +279,7 @@ sub disk_update {
 				}
 			}
 			if(lc($disk->{alerts}->{pendsect_enabled}) eq "y") {
-				$config->{disk_hist_alert2}->{$n} = 0
-					if(!$config->{disk_hist_alert2}->{$n});
+				$config->{disk_hist_alert2}->{$n} = 0 if(!$config->{disk_hist_alert2}->{$n});
 				if($smart2 >= $disk->{alerts}->{pendsect_threshold} && $config->{disk_hist_alert2}->{$n} < $smart2) {
 					if(-x $disk->{alerts}->{pendsect_script}) {
 						logger("$myself: ALERT: executing script '$disk->{alerts}->{pendsect_script}'.");
