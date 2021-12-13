@@ -518,38 +518,38 @@ sub bind_update {
 
 		if($major eq "2") {
 			foreach my $counters ($data->findnodes('/isc/bind/statistics/memory/summary')) {
-				$rrdata .= ":" . $counters->findvalue('./TotalUse');
-				$rrdata .= ":" . $counters->findvalue('./InUse');
-				$rrdata .= ":" . $counters->findvalue('./BlockSize');
-				$rrdata .= ":" . $counters->findvalue('./ContextSize');
-				$rrdata .= ":" . $counters->findvalue('./Lost');
+				$rrdata .= ":" . ($counters->findvalue('./TotalUse') || 0);
+				$rrdata .= ":" . ($counters->findvalue('./InUse') || 0);
+				$rrdata .= ":" . ($counters->findvalue('./BlockSize') || 0);
+				$rrdata .= ":" . ($counters->findvalue('./ContextSize') || 0);
+				$rrdata .= ":" . ($counters->findvalue('./Lost') || 0);
 			}
 			$rrdata .= ":0:0:0";
 		}
 		if($major eq "3") {
 			foreach my $counters ($data->findnodes('/statistics/memory/summary')) {
-				$rrdata .= ":" . $counters->findvalue('./TotalUse');
-				$rrdata .= ":" . $counters->findvalue('./InUse');
-				$rrdata .= ":" . $counters->findvalue('./BlockSize');
-				$rrdata .= ":" . $counters->findvalue('./ContextSize');
-				$rrdata .= ":" . $counters->findvalue('./Lost');
+				$rrdata .= ":" . ($counters->findvalue('./TotalUse') || 0);
+				$rrdata .= ":" . ($counters->findvalue('./InUse') || 0);
+				$rrdata .= ":" . ($counters->findvalue('./BlockSize') || 0);
+				$rrdata .= ":" . ($counters->findvalue('./ContextSize') || 0);
+				$rrdata .= ":" . ($counters->findvalue('./Lost') || 0);
 			}
 			$rrdata .= ":0:0:0";
 		}
 
 		if($major eq "2") {
 			foreach my $counters ($data->findnodes('/isc/bind/statistics/taskmgr/thread-model')) {
-				$rrdata .= ":" . $counters->findvalue('./worker-threads');
-				$rrdata .= ":" . $counters->findvalue('./default-quantum');
-				$rrdata .= ":" . $counters->findvalue('./tasks-running');
+				$rrdata .= ":" . ($counters->findvalue('./worker-threads') || 0);
+				$rrdata .= ":" . ($counters->findvalue('./default-quantum') || 0);
+				$rrdata .= ":" . ($counters->findvalue('./tasks-running') || 0);
 			}
 			$rrdata .= ":0:0:0";
 		}
 		if($major eq "3") {
 			foreach my $counters ($data->findnodes('/statistics/taskmgr/thread-model')) {
-				$rrdata .= ":" . $counters->findvalue('./worker-threads');
-				$rrdata .= ":" . $counters->findvalue('./default-quantum');
-				$rrdata .= ":" . $counters->findvalue('./tasks-running');
+				$rrdata .= ":" . ($counters->findvalue('./worker-threads') || 0);
+				$rrdata .= ":" . ($counters->findvalue('./default-quantum') || 0);
+				$rrdata .= ":" . ($counters->findvalue('./tasks-running') || 0);
 			}
 			$rrdata .= ":0:0:0";
 		}
