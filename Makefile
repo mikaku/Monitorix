@@ -103,6 +103,7 @@ install-bin:
 	$(INSTALL_DATA) lib/ntp.pm "$(DESTDIR)$(LIBDIR)/ntp.pm"
 	$(INSTALL_DATA) lib/nut.pm "$(DESTDIR)$(LIBDIR)/nut.pm"
 	$(INSTALL_DATA) lib/nvidia.pm "$(DESTDIR)$(LIBDIR)/nvidia.pm"
+	$(INSTALL_DATA) lib/nvidiagpu.pm "$(DESTDIR)$(LIBDIR)/nvidiagpu.pm"
 	$(INSTALL_DATA) lib/nvme.pm "$(DESTDIR)$(LIBDIR)/nvme.pm"
 	$(INSTALL_DATA) lib/pagespeed.pm "$(DESTDIR)$(LIBDIR)/pagespeed.pm"
 	$(INSTALL_DATA) lib/pgsql.pm "$(DESTDIR)$(LIBDIR)/pgsql.pm"
