@@ -53,7 +53,7 @@ sub amdgpu_init {
 		# values delimitted by ", " (comma + space)
 		my @gpu_group = split(', ', $amdgpu->{list}->{$k});
 		for(my $n = 0; $n < $max_number_of_gpus; $n++) {
-			if($gpu_group[$n]) {
+			if($n < scalar(@gpu_group)) {
 				my $d = trim($gpu_group[$n]);
 				$d =~ s/^\"//;
 				$d =~ s/\"$//;
@@ -543,7 +543,7 @@ sub amdgpu_cgi {
 				push(@tmp, "COMMENT: \\n");
 			}
 			for($n = 0; $n < $max_number_of_gpus; $n += 1) {
-				if($d[$n]) {
+				if($n < scalar(@d)) {
 					my $dstr = trim($d[$n]);
 					my $base = "";
 					$dstr =~ s/^\"//;
@@ -573,7 +573,7 @@ sub amdgpu_cgi {
 
 					my $value_name = "gpu" . $n . "_val" . $n_sensor;
 					my $value_name2;
-					push(@tmp, "LINE2:trans_" . $value_name . $LC[$n] . ":$str" . ($n_plot < $main_sensor_plots ? "" : ( $show_current_values ? "\\: \\g" : (($n%2 || !$d[$n+1]) ? "\\n" : ""))));
+					push(@tmp, "LINE2:trans_" . $value_name . $LC[$n] . ":$str" . ($n_plot < $main_sensor_plots ? "" : ( $show_current_values ? "\\: \\g" : (($n%2 || ($n+1 == scalar(@d))) ? "\\n" : ""))));
 					push(@tmpz, "LINE2:trans_" . $value_name . $LC[$n] . ":$dstr");
 
 					if ($n_sensor2) {
@@ -612,7 +612,7 @@ sub amdgpu_cgi {
 									push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:" . $legend_labels_per_sensor[$n_sensor] . "\\g");
 									push(@tmp, "GPRINT:trans_" . $value_name2 . ":LAST: /" . $legend_labels_per_sensor[$n_sensor2] . " (actual/limit)\\n");
 								} else {
-									push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:" . $legend_labels_per_sensor[$n_sensor] . (($n%2 || !$d[$n+1]) ? "\\n" : ""));
+									push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:" . $legend_labels_per_sensor[$n_sensor] . (($n%2 || ($n+1 == scalar(@d))) ? "\\n" : ""));
 								}
 							}
 						}
