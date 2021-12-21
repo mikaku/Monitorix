@@ -685,7 +685,7 @@ sub wowza_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 5] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 5] . "' border='0'></a>\n");
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 5], IMG => $IMG[$e * 5]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 5] . "'>\n");
@@ -804,7 +804,7 @@ sub wowza_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 5 + 1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 5 + 1] . "' border='0'></a>\n");
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 5 + 1], IMG => $IMG[$e * 5 + 1]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 5 + 1] . "'>\n");
@@ -903,7 +903,7 @@ sub wowza_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 5 + 2] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 5 + 2] . "' border='0'></a>\n");
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 5 + 2], IMG => $IMG[$e * 5 + 2]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 5 + 2] . "'>\n");
@@ -997,7 +997,7 @@ sub wowza_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 5 + 3] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 5 + 3] . "' border='0'></a>\n");
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 5 + 3], IMG => $IMG[$e * 5 + 3]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 5 + 3] . "'>\n");
@@ -1091,7 +1091,7 @@ sub wowza_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 5 + 4] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 5 + 4] . "' border='0'></a>\n");
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 5 + 4], IMG => $IMG[$e * 5 + 4]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 5 + 4] . "'>\n");

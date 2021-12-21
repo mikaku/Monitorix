@@ -25,7 +25,7 @@ use warnings;
 use Exporter 'import';
 use POSIX qw(setuid setgid setsid getgid getuid);
 use Socket;
-our @EXPORT = qw(logger trim min max celsius_to uptime2str setup_riglim httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
+our @EXPORT = qw(logger trim min max celsius_to picz_js_link uptime2str setup_riglim httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
 
 sub logger {
 	my ($msg) = @_;
@@ -68,6 +68,17 @@ sub celsius_to {
 		return ($celsius * (9 / 5)) + 32;
 	}
 	return $celsius;
+}
+
+sub picz_js_link {
+	my %params = @_;
+
+	my $zoom = ($params{config}->{image_format} eq "SVG") ? (4 / 3) : 1;
+
+	my $picz_width = POSIX::ceil($params{width} * $zoom);
+	my $picz_height = POSIX::ceil($params{height} * $zoom);
+
+	return "      <a href=\"javascript:void(window.open('" . $params{config}->{url} . "/" . $params{config}->{imgs_dir} . $params{IMGz} . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $params{config}->{url} . "/" . $params{config}->{imgs_dir} . $params{IMG} . "' border='0'></a>\n";
 }
 
 sub uptime2str {
@@ -203,7 +214,7 @@ sub get_nvidia_data {
 				next;
 			}
 		}
-		if($check_mem) {	
+		if($check_mem) {
 			if($data[$l] =~ /Total/) {
 				my (undef, $tmp) = split(':', $data[$l]);
 				if($tmp eq "\n") {
@@ -237,7 +248,7 @@ sub get_nvidia_data {
 			$check_cpu = 1;
 			next;
 		}
-		if($check_cpu) {	
+		if($check_cpu) {
 			if($data[$l] =~ /Gpu/) {
 				my (undef, $tmp) = split(':', $data[$l]);
 				if($tmp eq "\n") {
@@ -274,7 +285,7 @@ sub get_nvidia_data {
 			$check_temp = 1;
 			next;
 		}
-		if($check_temp) {	
+		if($check_temp) {
 			if($data[$l] =~ /Gpu.*?(?:Current Temp)?/i) {
 				my (undef, $tmp) = split(':', $data[$l]);
 				if($tmp eq "\n") {

@@ -824,7 +824,7 @@ sub lmsens_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
+				push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG1z, IMG => $IMG1));
 			}
 		} else {
 			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "'>\n");
@@ -1011,7 +1011,7 @@ sub lmsens_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
+				push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG2z, IMG => $IMG2));
 			}
 		} else {
 			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "'>\n");
@@ -1145,7 +1145,7 @@ sub lmsens_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
+				push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG3z, IMG => $IMG3));
 			}
 		} else {
 			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "'>\n");
@@ -1289,7 +1289,7 @@ sub lmsens_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "' border='0'></a>\n");
+				push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG4z, IMG => $IMG4));
 			}
 		} else {
 			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "'>\n");
@@ -1446,7 +1446,7 @@ sub lmsens_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "' border='0'></a>\n");
+				push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG5z, IMG => $IMG5));
 			}
 		} else {
 			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "'>\n");

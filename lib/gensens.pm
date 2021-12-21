@@ -574,7 +574,7 @@ sub gensens_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e] . "' border='0'></a>\n");
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e], IMG => $IMG[$e]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e] . "'>\n");

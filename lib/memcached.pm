@@ -712,7 +712,7 @@ sub memcached_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7] . "' border='0'></a>\n");
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 7], IMG => $IMG[$e * 7]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7] . "'>\n");
@@ -847,7 +847,7 @@ sub memcached_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 1] . "' border='0'></a>\n");
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 7 + 1], IMG => $IMG[$e * 7 + 1]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 1] . "'>\n");
@@ -940,7 +940,7 @@ sub memcached_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 2] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 2] . "' border='0'></a>\n");
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 7 + 2], IMG => $IMG[$e * 7 + 2]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 2] . "'>\n");
@@ -1022,7 +1022,7 @@ sub memcached_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 3] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 3] . "' border='0'></a>\n");
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 7 + 3], IMG => $IMG[$e * 7 + 3]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 3] . "'>\n");
@@ -1114,7 +1114,7 @@ sub memcached_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 4] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 4] . "' border='0'></a>\n");
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 7 + 4], IMG => $IMG[$e * 7 + 4]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 4] . "'>\n");
@@ -1206,7 +1206,7 @@ sub memcached_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 5] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 5] . "' border='0'></a>\n");
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 7 + 5], IMG => $IMG[$e * 7 + 5]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 5] . "'>\n");
@@ -1299,7 +1299,7 @@ sub memcached_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 6] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 6] . "' border='0'></a>\n");
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 7 + 6], IMG => $IMG[$e * 7 + 6]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 6] . "'>\n");

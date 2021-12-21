@@ -667,7 +667,7 @@ sub traffacct_cgi {
 							$picz_width = $width + 115;
 							$picz_height = $height + 100;
 						}
-						print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$n] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "' border='0'></a>\n");
+						print(picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$n], IMG => $IMG[$n]));
 					}
 				} else {
 					print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "'>\n");
@@ -784,7 +784,7 @@ sub traffacct_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				print("      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$cgi->{val}] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$cgi->{val}] . "' border='0'></a>\n");
+				print(picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$cgi->{val}], IMG => $IMG[$cgi->{val}]));
 			}
 		} else {
 			print("      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$cgi->{val}] . "'>\n");
