@@ -592,7 +592,7 @@ sub tc_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 4] . "','','width=" . int($picz_width * ($imgfmt_uc == "SVG" ? (4 / 3) : 1) + 0.5) . ",height=" . int($picz_height * ($imgfmt_uc == "SVG" ? (4 / 3) : 1) + 0.5) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 4] . "' border='0'></a>\n");
+					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 4] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 4] . "' border='0'></a>\n");
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 4] . "'>\n");
@@ -704,7 +704,7 @@ sub tc_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 4 + 1] . "','','width=" . int($picz_width * ($imgfmt_uc == "SVG" ? (4 / 3) : 1) + 0.5) . ",height=" . int($picz_height * ($imgfmt_uc == "SVG" ? (4 / 3) : 1) + 0.5) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 4 + 1] . "' border='0'></a>\n");
+					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 4 + 1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 4 + 1] . "' border='0'></a>\n");
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 4 + 1] . "'>\n");
@@ -812,7 +812,7 @@ sub tc_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 4 + 2] . "','','width=" . int($picz_width * ($imgfmt_uc == "SVG" ? (4 / 3) : 1) + 0.5) . ",height=" . int($picz_height * ($imgfmt_uc == "SVG" ? (4 / 3) : 1) + 0.5) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 4 + 2] . "' border='0'></a>\n");
+					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 4 + 2] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 4 + 2] . "' border='0'></a>\n");
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 4 + 2] . "'>\n");
@@ -924,7 +924,7 @@ sub tc_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 4 + 3] . "','','width=" . int($picz_width * ($imgfmt_uc == "SVG" ? (4 / 3) : 1) + 0.5) . ",height=" . int($picz_height * ($imgfmt_uc == "SVG" ? (4 / 3) : 1) + 0.5) . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 4 + 3] . "' border='0'></a>\n");
+					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 4 + 3] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 4 + 3] . "' border='0'></a>\n");
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 4 + 3] . "'>\n");
