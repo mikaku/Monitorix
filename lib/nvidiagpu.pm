@@ -182,8 +182,8 @@ sub nvidiagpu_update {
 		for($n = 0; $n < $max_number_of_gpus; $n++) {
 			@sensors = ($use_nan_for_missing_data ? (0+"nan") : 0) x $number_of_values_per_gpu_in_rrd;
 
-			if($gpu_group[$n]) {
-        my $str = trim($gpu_group[$n] || "");
+			if($n < scalar(@gpu_group)) {
+				my $str = trim($gpu_group[$n]);
 
         open(IN, "nvidia-smi --format=csv,noheader,nounits -i $str --query-gpu=clocks.current.graphics,clocks.current.memory,utilization.gpu,utilization.memory,temperature.gpu,temperature.memory,fan.speed,pstate,power.draw,power.limit,memory.used,memory.total |");
 				while(<IN>) {
@@ -512,7 +512,7 @@ sub nvidiagpu_cgi {
 				push(@tmp, "COMMENT: \\n");
 			}
 			for($n = 0; $n < $max_number_of_gpus; $n += 1) {
-				if($d[$n]) {
+				if($n < scalar(@d)) {
 					my $dstr = trim($d[$n]);
 					my $base = "";
 					$dstr =~ s/^\"//;
@@ -542,7 +542,7 @@ sub nvidiagpu_cgi {
 
 					my $value_name = "gpu" . $n . "_val" . $n_sensor;
 					my $value_name2;
-					push(@tmp, "LINE2:trans_" . $value_name . $LC[$n] . ":$str" . ($n_plot < $main_sensor_plots ? "" : ( $show_current_values ? "\\: \\g" : (($n%2 || !$d[$n+1]) ? "\\n" : ""))));
+					push(@tmp, "LINE2:trans_" . $value_name . $LC[$n] . ":$str" . ($n_plot < $main_sensor_plots ? "" : ( $show_current_values ? "\\: \\g" : (($n%2 || ($n+1 == scalar(@d))) ? "\\n" : ""))));
 					push(@tmpz, "LINE2:trans_" . $value_name . $LC[$n] . ":$dstr");
 
 					if ($n_sensor2) {
@@ -566,7 +566,7 @@ sub nvidiagpu_cgi {
 								push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:" . $legend_labels_per_sensor[$n_sensor] . "\\g");
 								push(@tmp, "GPRINT:trans_" . $value_name2 . ":LAST: /" . $legend_labels_per_sensor[$n_sensor2] . " (actual/limit)\\n");
 							} else {
-								push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:" . $legend_labels_per_sensor[$n_sensor] . (($n%2 || !$d[$n+1]) ? "\\n" : ""));
+								push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:" . $legend_labels_per_sensor[$n_sensor] . (($n%2 || ($n+1 == scalar(@d))) ? "\\n" : ""));
 							}
 						}
 					}
