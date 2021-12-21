@@ -73,7 +73,7 @@ sub celsius_to {
 sub picz_js_link {
 	my %params = @_;
 
-	my $zoom = ($params{config}->{image_format} eq "SVG") ? (4 / 3) : 1;
+	my $zoom = (uc($params{config}->{image_format}) eq "SVG") ? (4 / 3) : 1;
 
 	my $picz_width = POSIX::ceil($params{width} * $zoom + 0.5);
 	my $picz_height = POSIX::ceil($params{height} * $zoom + 0.5);
