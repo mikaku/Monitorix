@@ -437,6 +437,7 @@ sub ipmi_cgi {
 					"--vertical-label=$unit",
 					"--width=$width",
 					"--height=$height",
+					"--full-size-mode",
 					@extra,
 					@riglim,
 					$zoom,

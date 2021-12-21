@@ -658,6 +658,7 @@ sub nvidiagpu_cgi {
 					"--vertical-label=" . $y_axis_titles_per_plot[$n_plot],
 					"--width=$width",
 					"--height=$height",
+					"--full-size-mode",
 					@extra,
 					@riglim,
 					$zoom,

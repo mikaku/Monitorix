@@ -496,6 +496,7 @@ sub du_cgi {
 					"--vertical-label=$type_label",
 					"--width=$width",
 					"--height=$height",
+					"--full-size-mode",
 					@extra,
 					@riglim,
 					$zoom,

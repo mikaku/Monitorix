@@ -659,6 +659,7 @@ sub nvme_cgi {
 					"--width=$width",
 					"--height=$height",
 					@scaling_options,
+					"--full-size-mode",
 					@extra,
 					@riglim,
 					$zoom,

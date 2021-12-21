@@ -453,6 +453,7 @@ sub fail2ban_cgi {
 					"--vertical-label=$vlabel",
 					"--width=$width",
 					"--height=$height",
+					"--full-size-mode",
 					@extra,
 					@riglim,
 					$zoom,

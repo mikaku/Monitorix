@@ -924,6 +924,7 @@ sub apache_cgi {
 				"--vertical-label=Workers",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1055,6 +1056,7 @@ sub apache_cgi {
 				"--vertical-label=Workers",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1085,7 +1087,7 @@ sub apache_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6], IMG => $IMG[$e * 6]));
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6 + 1], IMG => $IMG[$e * 6 + 1]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 1] . "'>\n");
@@ -1147,6 +1149,7 @@ sub apache_cgi {
 				"--vertical-label=Percent",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1173,7 +1176,7 @@ sub apache_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6], IMG => $IMG[$e * 6]));
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6 + 2], IMG => $IMG[$e * 6 + 2]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 2] . "'>\n");
@@ -1231,6 +1234,7 @@ sub apache_cgi {
 				"--vertical-label=Requests/s",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1257,7 +1261,7 @@ sub apache_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6], IMG => $IMG[$e * 6]));
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6 + 3], IMG => $IMG[$e * 6 + 3]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 3] . "'>\n");
@@ -1325,6 +1329,7 @@ sub apache_cgi {
 				"--vertical-label=Workers",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1354,7 +1359,7 @@ sub apache_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6], IMG => $IMG[$e * 6]));
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6 + 4], IMG => $IMG[$e * 6 + 4]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 4] . "'>\n");
@@ -1412,6 +1417,7 @@ sub apache_cgi {
 				"--vertical-label=Slots",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1438,7 +1444,7 @@ sub apache_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6], IMG => $IMG[$e * 6]));
+					push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6 + 5], IMG => $IMG[$e * 6 + 5]));
 				}
 			} else {
 				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 5] . "'>\n");

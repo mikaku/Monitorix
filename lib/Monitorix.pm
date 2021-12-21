@@ -75,7 +75,7 @@ sub picz_js_link {
 
 	my $zoom = (uc($params{config}->{image_format}) eq "SVG") ? (4 / 3) : 1;
 
-	my $picz_width = POSIX::ceil($params{width} * $zoom + 0.5);
+	my $picz_width = POSIX::ceil($params{width} * $zoom);
 	my $picz_height = POSIX::ceil($params{height} * $zoom + 0.5);
 
 	return "      <a href=\"javascript:void(window.open('" . $params{config}->{url} . "/" . $params{config}->{imgs_dir} . $params{IMGz} . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $params{config}->{url} . "/" . $params{config}->{imgs_dir} . $params{IMG} . "' border='0'></a>\n";
