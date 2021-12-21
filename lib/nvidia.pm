@@ -151,7 +151,7 @@ sub nvidia_alerts {
 		my $timeintvl = trim($al[0]);
 		my $threshold = trim($al[1]);
 		my $script = trim($al[2]);
-	
+
 		if(!$threshold || $val < $threshold) {
 			$config->{nvidia_hist_alerts}->{$sensor} = 0;
 		} else {

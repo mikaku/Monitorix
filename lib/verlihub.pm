@@ -125,14 +125,14 @@ sub verlihub_update {
 
 	my $dbh;
 	my $sth;
-	
+
 	my $host = $verlihub->{host};
 	my $port = $verlihub->{port};
 	my $user = $verlihub->{user};
 	my $pass = $verlihub->{password};
 	my $db   = $verlihub->{database};
 	my $sql = "SELECT users_total,upload_total,share_total_gb FROM pi_stats ORDER BY realtime DESC LIMIT 0, 1";
-	
+
 	# Connect to the database.
 	$dbh = DBI->connect("DBI:mysql:host=$host;port=$port;database=$db",$user,$pass, { PrintError => $print_error })
 		or logger("$myself: Cannot connect to MySQL '$host:$port'.");
@@ -142,14 +142,14 @@ sub verlihub_update {
 		$sth = $dbh->prepare($sql);
         	$sth->execute;
 		my $row = $sth->fetchrow_hashref();
-	
+
         	$users_total = int($row->{users_total});
         	$upload_total = int($row->{upload_total});
         	$share_total = int($row->{share_total_gb});
-	
+
 		$sth->finish;
         	$dbh->disconnect;
-	
+
 		$rrdata .= ":$users_total:$upload_total:$share_total";
 		RRDs::update($rrd, $rrdata);
 		logger("$myself: $rrdata") if $debug;
@@ -226,7 +226,7 @@ sub verlihub_cgi {
 		my $line;
 		my @row;
 		my $time;
-		
+
 		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
 			$line = @$data[$n];
 			my ($users_total, $upload_total, $share_total) = @$line;

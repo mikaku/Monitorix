@@ -145,7 +145,7 @@ sub kern_update {
 	my $val03 = 0;
 	my $val04 = 0;
 	my $val05 = 0;
-	
+
 	my $lastuser = 0;
 	my $lastnice = 0;
 	my $lastsys = 0;
@@ -624,7 +624,7 @@ sub kern_cgi {
 				push(@tmp, "GPRINT:irq:MIN:    Min\\: %4.1lf%%");
 				push(@tmp, "GPRINT:irq:MAX:    Max\\: %4.1lf%%\\n");
 			}
-		}	
+		}
 		if(lc($kern->{list}->{iow}) eq "y") {
 			push(@tmp, "AREA:s_iow#EE44EE:I/O wait");
 			push(@tmpz, "AREA:s_iow#EE44EE:I/O wait");
@@ -666,7 +666,7 @@ sub kern_cgi {
 			push(@tmpz, "LINE1:s_sirq#D86612");
 			push(@tmp, "LINE1:s_irq#CCCCCC");
 			push(@tmpz, "LINE1:s_irq#CCCCCC");
-		}	
+		}
 		push(@tmp, "LINE1:s_iow#EE00EE");
 		push(@tmpz, "LINE1:s_iow#EE00EE");
 		push(@tmp, "LINE1:s_sys#00EEEE");
@@ -898,7 +898,7 @@ sub kern_cgi {
 	if($config->{os} eq "Linux") {
 		push(@tmp, "LINE2:dentry#EEEE00");
 		push(@tmpz, "LINE2:dentry#EEEE00");
-	}	
+	}
 	push(@tmp, "LINE2:file#EE00EE");
 	push(@tmpz, "LINE2:file#EE00EE");
 	if(lc($config->{show_gaps}) eq "y") {

@@ -269,10 +269,10 @@ sub nfss_update {
 		# LINUX: @rc = reply cache = (hits, misses, nocache)
 		# FreeBSD: Server Cache Stats: Inprog, idem, Non-idem, Misses
 		@rc = (
-			$stats->{'Idem'}, 
-			$stats->{'Misses'}, 
+			$stats->{'Idem'},
+			$stats->{'Misses'},
 			$stats->{'Non-idem'}
-		); 
+		);
 
 		# LINUX: @fh = file handles = (stale, total_lookups, anonlookups, dirnocache, nodirnocahe)
 		# FreeBSD: No data
@@ -281,8 +281,8 @@ sub nfss_update {
 		# LINUX: @io = I/O = (read, wright)
 		# FreeBSD: Server Info: Read, Write
 		@io = (
-			$stats->{'Read'}, 
-			$stats->{'Write'} 
+			$stats->{'Read'},
+			$stats->{'Write'}
 		);
 
 		# LINUX: @th = Threads = (11 values)
@@ -298,34 +298,34 @@ sub nfss_update {
 		@rpc = (0,0,0,0,0);
 
 		# LINUX: @nfss = Server stats = for v3, 22 stats:
-		#   null / getattr / setattr / lookup / access 
+		#   null / getattr / setattr / lookup / access
 		#   readlink / read / write / create / mkdir / symlink
 		#   mknod / remove / rmdir / rename / link / readdir
 		#   readdirplus / fsstat / fsinfo / pathconf / commit
 		# FreeBSD: Server Info: has all those items with similar names
 		@nfss = (
 			0,
-			$stats->{'Getattr'}, 
-			$stats->{'Setattr'}, 
-			$stats->{'Lookup'}, 
-			$stats->{'Access'}, 
-			$stats->{'Readlink'}, 
-			$stats->{'Read'}, 
-			$stats->{'Write'}, 
-			$stats->{'Create'}, 
-			$stats->{'Mkdir'}, 
-			$stats->{'Symlink'}, 
-			$stats->{'Mknod'}, 
-			$stats->{'Remove'}, 
-			$stats->{'Rmdir'}, 
-			$stats->{'Rename'}, 
-			$stats->{'Link'}, 
-			$stats->{'Readdir'}, 
-			$stats->{'RdirPlus'}, 
-			$stats->{'Fsstat'}, 
-			$stats->{'Fsinfo'}, 
-			$stats->{'PathConf'}, 
-			$stats->{'Commit'} 
+			$stats->{'Getattr'},
+			$stats->{'Setattr'},
+			$stats->{'Lookup'},
+			$stats->{'Access'},
+			$stats->{'Readlink'},
+			$stats->{'Read'},
+			$stats->{'Write'},
+			$stats->{'Create'},
+			$stats->{'Mkdir'},
+			$stats->{'Symlink'},
+			$stats->{'Mknod'},
+			$stats->{'Remove'},
+			$stats->{'Rmdir'},
+			$stats->{'Rename'},
+			$stats->{'Link'},
+			$stats->{'Readdir'},
+			$stats->{'RdirPlus'},
+			$stats->{'Fsstat'},
+			$stats->{'Fsinfo'},
+			$stats->{'PathConf'},
+			$stats->{'Commit'}
 		);
 
 	}

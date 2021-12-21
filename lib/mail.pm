@@ -318,7 +318,7 @@ sub mail_update {
 				if(/^-- (\d+) Kbytes in (\d+) Request/) {
 					$queues = $1;
 					$queued = $2;
-				}  
+				}
 			}
 			close(IN);
 		}
@@ -357,7 +357,7 @@ sub mail_update {
 					$queues += int($size * 1024) if $unit eq "K";
 					$queues += int($size * 1024 * 1024) if $unit eq "M";
 					$queued++;
-				}  
+				}
 			}
 			close(IN);
 		}
@@ -417,7 +417,7 @@ sub mail_update {
 				if(/amavis\[.* INFECTED|amavis\[.* BANNED/) {
 					$virus++;
 				}
-				# postfix-policyd-spf-perl 
+				# postfix-policyd-spf-perl
 				if (/policy-spf/) {
 					if(/: pass/) {
 						$spf_pass++;

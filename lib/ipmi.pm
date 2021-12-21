@@ -169,7 +169,7 @@ sub ipmi_update {
 						my $timeintvl = trim($al[0]);
 						my $threshold = trim($al[1]);
 						my $script = trim($al[2]);
-			
+
 						if(!$threshold || $val < $threshold) {
 							$config->{ipmi_hist_alerts}->{$str} = 0;
 						} else {

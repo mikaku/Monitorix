@@ -177,7 +177,7 @@ sub lmsens_alerts {
 		my $timeintvl = trim($al[0]);
 		my $threshold = trim($al[1]);
 		my $script = trim($al[2]);
-	
+
 		if(!$threshold || $val < $threshold) {
 			$config->{lmsens_hist_alerts}->{$sensor} = 0;
 		} else {
@@ -929,7 +929,7 @@ sub lmsens_cgi {
 	}
 	($width, $height) = split('x', $config->{graph_size}->{main});
 	if($silent =~ /imagetag/) {
-		($width, $height) = split('x', $config->{graph_size}->{remote}) 
+		($width, $height) = split('x', $config->{graph_size}->{remote})
 		if $silent eq "imagetag";
 		($width, $height) = split('x', $config->{graph_size}->{main}) if
 		 $silent eq "imagetagbig";

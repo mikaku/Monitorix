@@ -508,13 +508,13 @@ sub bind_update {
 			$rrdata .= ":";
 			$rrdata .= defined($crr{$str}) ? $crr{$str} : 0;
 		}
-#		@i = split(',', $bind->{sio_stats_list}->{$l});                                
-		for($n2 = 0; $n2 < 20; $n2++) {                                                
+#		@i = split(',', $bind->{sio_stats_list}->{$l});
+		for($n2 = 0; $n2 < 20; $n2++) {
 			my $j = "";     #trim($i[$n2] || 0);
-			$str = $n . "sio_$j";                                                  
-			$rrdata .= ":";                                                        
-			$rrdata .= defined($sio{$str}) ? $sio{$str} : 0;                       
-		}                                                                        
+			$str = $n . "sio_$j";
+			$rrdata .= ":";
+			$rrdata .= defined($sio{$str}) ? $sio{$str} : 0;
+		}
 
 		if($major eq "2") {
 			foreach my $counters ($data->findnodes('/isc/bind/statistics/memory/summary')) {

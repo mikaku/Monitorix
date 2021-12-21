@@ -140,7 +140,7 @@ sub proc_update {
 
 	my @procs;
 	my $total;
-	
+
 	my $n;
 	my @lastproc;
 

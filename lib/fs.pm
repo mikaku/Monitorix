@@ -1332,7 +1332,7 @@ sub fs_cgi {
 				if($f[$n]) {
 					$f[$n] = trim($f[$n]);
 					my $color;
-	
+
 					$str = $fs->{desc}->{$f[$n]} || $f[$n];
 					if($f[$n] eq "/") {
 						$color = "#EE4444";
@@ -1358,7 +1358,7 @@ sub fs_cgi {
 				if($f[$n]) {
 					$f[$n] = trim($f[$n]);
 					my $color;
-	
+
 					$str = $fs->{desc}->{$f[$n]} || $f[$n];
 					if($f[$n] eq "/") {
 						$color = "#EE4444";

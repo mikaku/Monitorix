@@ -1250,15 +1250,15 @@ sub zfs_cgi {
 
 # Turn readable numbers back into integers, like 1M -> 1048576
 sub zfs_uglify_numbers {
-	my (@numbers) = @_;     
-				
+	my (@numbers) = @_;
+
 	my $mult = 1;
 	my $numstr = '';
 	my $num = 0;
 	my $unit = '';
 	my $ignore = '';
 	my @answers = ();
-	 
+
 	foreach $numstr (@numbers) {
 		($num, $ignore ,$unit) = ($numstr =~ m/(\d+(\.\d+)?)([BKMGTPEZ]?)/i);
 		$unit = uc($unit);

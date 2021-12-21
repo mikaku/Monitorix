@@ -39,7 +39,7 @@ sub emailreports_send {
 	my $images;
 	my $mime;
 	my $subject;
-	
+
 	logger("$myself: sending $report reports.");
 
 	my $uri = URI->new($emailreports->{url_prefix});

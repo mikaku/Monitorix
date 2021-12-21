@@ -406,7 +406,7 @@ sub serv_update {
 		while(<IN>) {
 			if(/^$date/) {
 				if(/to=/ && /stat(us)?=sent/i) {
-					$smtp++;	
+					$smtp++;
 				}
 				if(/MailScanner/ && /Spam Checks:/ && /Found/ && /spam messages/) {
 					$spam++;
