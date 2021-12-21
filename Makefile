@@ -69,6 +69,7 @@ install-bin:
 	
 	$(INSTALL_DIR) "$(DESTDIR)$(LIBDIR)"
 	$(INSTALL_DATA) lib/ambsens.pm "$(DESTDIR)$(LIBDIR)/ambsens.pm"
+	$(INSTALL_DATA) lib/amdgpu.pm "$(DESTDIR)$(LIBDIR)/amdgpu.pm"
 	$(INSTALL_DATA) lib/apache.pm "$(DESTDIR)$(LIBDIR)/apache.pm"
 	$(INSTALL_DATA) lib/apcupsd.pm "$(DESTDIR)$(LIBDIR)/apcupsd.pm"
 	$(INSTALL_DATA) lib/bind.pm "$(DESTDIR)$(LIBDIR)/bind.pm"
@@ -102,6 +103,8 @@ install-bin:
 	$(INSTALL_DATA) lib/ntp.pm "$(DESTDIR)$(LIBDIR)/ntp.pm"
 	$(INSTALL_DATA) lib/nut.pm "$(DESTDIR)$(LIBDIR)/nut.pm"
 	$(INSTALL_DATA) lib/nvidia.pm "$(DESTDIR)$(LIBDIR)/nvidia.pm"
+	$(INSTALL_DATA) lib/nvidiagpu.pm "$(DESTDIR)$(LIBDIR)/nvidiagpu.pm"
+	$(INSTALL_DATA) lib/nvme.pm "$(DESTDIR)$(LIBDIR)/nvme.pm"
 	$(INSTALL_DATA) lib/pagespeed.pm "$(DESTDIR)$(LIBDIR)/pagespeed.pm"
 	$(INSTALL_DATA) lib/pgsql.pm "$(DESTDIR)$(LIBDIR)/pgsql.pm"
 	$(INSTALL_DATA) lib/phpapc.pm "$(DESTDIR)$(LIBDIR)/phpapc.pm"

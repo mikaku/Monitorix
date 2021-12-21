@@ -492,12 +492,18 @@ EOF
 	if($config{refresh_rate}) {
 		print("    <meta http-equiv='Refresh' content='" . $config{refresh_rate} . "'>\n");
 	}
+	print("    <meta name='apple-mobile-web-app-capable' content='yes' />\n");
+	print("    <meta name='apple-mobile-web-app-status-bar-style' content='black' />\n");
 	print("  </head>\n");
 	print("  <body>\n");
 	print("  $piwik_code\n");
 	print("  <center>\n");
 	push(@output, "  <table class='cgi-header-table' >\n");
 	push(@output, "  <tr>\n");
+
+        if(lc($config{enable_mainmenu_button} || "") eq "y") {
+                push(@output, "  <span style='color:#888888;position:fixed;left:3em;font-size:32px;letter-spacing:-1px;'><a href='" . $config{url} . "/index.html' style='text-decoration:none;'>&#8962;</a>\n");
+        }
 
 	if(lc($config{enable_back_button} || "") eq "y") {
 		push(@output, "  <span style='color:#888888;position:fixed;left:1em;font-size:32px;letter-spacing:-1px;'><a href='javascript:history.back()' style='text-decoration:none;'>&#9664;</a>\n");

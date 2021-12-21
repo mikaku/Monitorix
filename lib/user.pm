@@ -144,7 +144,7 @@ sub user_update {
 		}
 	}
 	close(IN);
-	$smb--;
+	$smb-- if $smb > 0;
 
 	open(IN, "macusers 2>/dev/null |");
 	@data = <IN>;

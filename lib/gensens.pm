@@ -153,9 +153,7 @@ sub gensens_update {
 					$val = <IN>;
 					$val = trim($val);
 					$unit = $gensens->{unit}->{$str} || 0;
-					$c = () = $unit =~ /0/g;
-					$val /= 10**$c if $unit > 1;
-					$val *= 10**$c if $unit > 0 && $unit < 1;
+					$val /= $unit if $unit != 0;
 					close(IN);
 				} else {
 					logger("$myself: ERROR: unable to open '$gensens->{desc}->{$str}'.");
@@ -424,13 +422,21 @@ sub gensens_cgi {
 	foreach my $sg (sort keys %{$gensens->{list}}) {
 		my @ls = split(',', $gensens->{list}->{$sg});
 
-		# determine if we are dealing with a 'temp', 'cpu' or 'bat' graph
+		# determine if we are dealing with a 'temp', 'cpu', 'bat', 'pwr', 'fan', 'pct' or 'byt' graph
 		if(index($ls[0], "temp") == 0) {
 			$vlabel = $temp_scale;
 		} elsif(index($ls[0], "cpu") == 0) {
 			$vlabel = "Hz";
 		} elsif(index($ls[0], "bat") == 0) {
 			$vlabel = "Charge";
+		} elsif(index($ls[0], "pwr") == 0) {
+			$vlabel = "Watt";
+		} elsif(index($ls[0], "fan") == 0) {
+			$vlabel = "RPM";
+		} elsif(index($ls[0], "pct") == 0) {
+			$vlabel = "Percent (%)";
+		} elsif(index($ls[0], "byt") == 0) {
+			$vlabel = "bytes";
 		} else {
 			# not supported yet
 		}

@@ -980,7 +980,7 @@ This graph helps to monitor up to three (so far) different sensors: temperatures
 .P
 .BI list
 .RS
-This is a list of an unlimited number of groups to define the sensors to monitor. Each group is numbered starting from 0, and each one can hold up to 9 different entries separated by comma which corresponds to the names of the sensors present in your computer that you want to monitor. This module is capable to identify the type of the group by searching the substrings \fItemp\fP, \fIcpu\fP and \fIbat\fP, so it will put automatically the vertical label in the graph accordingly (\fICelsius\fP or \fIFahrenheit\fP, \fIHz\fP or \fICharge\fP respectively). Of course, it cannot supports mixed sensors in a same group. For example, if you need to monitor more than 9 temperature sensors just create a new group in \fBlist\fP.
+This is a list of an unlimited number of groups to define the sensors to monitor. Each group is numbered starting from 0, and each one can hold up to 9 different entries separated by comma which corresponds to the names of the sensors present in your computer that you want to monitor. This module is capable to identify the type of the group by searching the substrings \fItemp\fP, \fIcpu\fP, \fIbat\fP, \fIpwr\fP, \fIfan\fP, \fIpct\fP and \fIbyt\fP, so it will put automatically the vertical label in the graph accordingly (\fICelsius\fP or \fIFahrenheit\fP, \fIHz\fP, \fICharge\fP, \fIWatts\fP, \fIRPM\fP, \fIPercent (%)\fP and \fIbytes\fP respectively). Of course, it cannot supports mixed sensors in a same group. For example, if you need to monitor more than 9 temperature sensors just create a new group in \fBlist\fP.
 .P
 An example would be:
 .P
@@ -1038,7 +1038,7 @@ In this option you must associate the complete pathname of the file from where t
 .RE
 .BI unit
 .RS
-With this option you can define the order of magnitude associated to a specific value. This is used in both temperatures and CPU frequencies, since this kind of temperature sensors tend to give the value in 1000ths of degrees Celsius. In the case of CPU frequencies the values come in Mhz which means that they need to be converted to Hz by multiplying them by 1000. Since the battery value represents a percentage, it doesn't need any special calculation. Therefore you can define something like this:
+With this option you can define the order of magnitude associated to a specific value. The value collected will be divided by the value defined here. For instance, the temperature sensors tend to give the value in 1000ths of degrees Celsius, something like 28300, which will need to be divided by 1000 to get the real temperature of 28.3. In the case of CPU frequencies the values come in Mhz which means that they need to be converted to Hz by dividing them by 0.001. Since the battery value represents a percentage, it doesn't need any special calculation. Therefore you can define something like this:
 .P
 .RS
 <unit>
@@ -1221,6 +1221,29 @@ This is the number of graphs that will be put in a row.
 .P
 Default value: \fI2\fP
 .RE
+
+.P
+.RE
+.RE
+.BI use_nan_for_missing_data
+.RS
+This option, when enabled via \fIy\fP, shows \fnan\fP values for missing data instead of \f0\fP. This is useful when \f0\fP could be mistaken for valid data.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.RE
+.RE
+.BI gap_on_all_nan
+.RS
+This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option shows gaps only if all data points are \fInan\fP instead of requiring only one to be \fInan\fP for a gap. This can be useful if not all sensor data are required for normal operation.
+.P
+Default value: \fIn\fP
+.RE
+
+
+
+
 .P
 .BI extra_args
 .RS
@@ -1271,7 +1294,7 @@ This is the class of sensor for each type. It's important to not mix different t
 .P
 .BI cmd
 .RS
-This list complements the \fBdesc\fP option. It basically allows you to associate a script or program that will be executed to retrieve the value for each sensor.
+This list complements the \fBdesc\fP option. It basically allows you to associate a script or program (which may include arguments) that will be executed to retrieve the value for each sensor.
 .RE
 .P
 .BI map
@@ -1334,6 +1357,350 @@ This is the number of graphs that will be put in a row.
 .P
 Default value: \fI2\fP
 .RE
+.SS AMD GPU temperatures and usage (amdgpu.pm)
+This graph is able to monitor an unlimited number of AMD GPUs as long as the driver provides a hwmon interface. Usually it is not guaranteed to always get the same hwmon path so it is advised to assign fixed links via udev rules.
+.P
+.BI list
+.RS
+This is a list of groups of GPUs that you want to monitor. Each group will become a graph and there may be an unlimited number of groups. You can define device names like \fIamd-w6800\fP.
+.P
+WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIamdgpu.rrd\fP file accordingly, removing all historical data.
+.P
+To collect the GPU temperatures and usage data the \fIhwmon\fP subsystem is used.
+.P
+It is recommended that you first check if the \fIhwmon\fP subsystem is able to provide data from the GPU(s) that you plan to monitor. For example check \fI/sys/class/hwmon/hwmon1\fP for available sensors.
+
+You can add it to the group 0 like this:
+.P
+.RS
+<list>
+.br
+	0 = amd-w6800, amd-rx6900
+.br
+	1 = amd-wx5100
+.br
+</list>
+.RE
+.P
+The maximum number of GPUs allowed per group is 8.
+.RE
+.P
+.BI sensors
+.RS
+This list specifies the sensor locations in absolute paths. If a certain card does not have a specific sensor you leave the entry empty instead (\fI/path/sensor_file1, , /path/sensor_file2\fP). The order has to be: GPU busy percent, memory busy percent, GPU clock, memory clock, memory used, power consumption, power limit, fan pwm value, GPU temperature, junction temperature, memory temperature. Power consumption and limit will be shown in one plot.
+.P
+.RS
+<sensors>
+.br
+	amd-rx6900 = /dev/amd-rx6900/device/gpu_busy_percent, /dev/amd-rx6900/device/mem_busy_percent, /dev/amd-rx6900/freq1_input, /dev/amd-rx6900/freq2_input, /dev/amd-rx6900/device/mem_info_vram_used, /dev/amd-rx6900/power1_average, /dev/amd-rx6900/power1_cap, /dev/amd-rx6900/pwm1, /dev/amd-rx6900/temp1_input, /dev/amd-rx6900/temp2_input, /dev/amd-rx6900/temp3_input
+.br
+	amd-wx5100 = /dev/amd-wx5100/device/gpu_busy_percent, /dev/amd-wx5100/device/mem_busy_percent, /dev/amd-wx5100/freq1_input, /dev/amd-wx5100/freq2_input, /dev/amd-wx5100/device/mem_info_vram_used, /dev/amd-wx5100/power1_average, /dev/amd-wx5100/power1_cap, /dev/amd-wx5100/pwm1, /dev/amd-wx5100/temp1_input, ,
+.br
+</sensors>
+.RE
+.RE
+.P
+.BI map
+.RS
+This list complements the \fBlist\fP option. It basically allows you to change the GPU name that will appear in the graph, hiding the real device name. If no association is defined, then Monitorix will display the name of the GPU device as it is.
+.P
+.RS
+<map>
+.br
+	amd-w6800 = W 6800
+.br
+	amd-rx6900 = RX 6900
+.br
+</map>
+.RE
+.RE
+.P
+.BI desc
+.RS
+This list complements the \fBlist\fP option. It basically allows you to include a title for every group of GPUs. The title will appear in the title of the graph.
+.P
+.RS
+<desc>
+.br
+	0 = Host
+.br
+	1 = Virtual
+.br
+</desc>
+.RE
+.RE
+.P
+.BI coretemp_enabled
+.RS
+This section enables or disables one of the alert capabilities for this graph; the alert for the core temperature. It works as follows:
+.P
+If the core temperature of any of the specified GPU device names reaches or subceeds the \fBcoretemp_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBcoretemp_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI coretemp_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fI0\fP
+.RE
+.P
+.BI coretemp_threshold
+.RS
+This is the value that needs to be reached or subceeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fI10\fP
+.RE
+.P
+.BI coretemp_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBcoretemp_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBcoretemp_threshold\fP.
+.br
+3rd - the current core temperature.
+.P
+Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI memorytemp_enabled
+.RS
+This section enables or disables one of the alert capabilities for this graph; the alert for the memory temperature. It works as follows:
+.P
+If the memory temperature of any of the specified GPU names reaches or exceeds the \fBmemorytemp_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBmemorytemp_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI memorytemp_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fI0\fP
+.RE
+.P
+.BI memorytemp_threshold
+.RS
+This is the value that needs to be reached or exceeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fI90\fP
+.RE
+.P
+.BI memorytemp_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBmemorytemp_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBmemorytemp_threshold\fP.
+.br
+3rd - the current memory temperature.
+.P
+Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI accept_invalid_amdgpu
+.RS
+During the init stage this graph verifies that every defined device name does exist in the system. If not, then the graph disables itself.
+.P
+This option changes this behaviour and permits to continue working even if the device names defined doesn't exist. Keep in mind that you will continue seeing error messages in the logfile.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI show_current_values
+.RS
+.P
+Print current values in the legend of the small righthand plots.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI use_nan_for_missing_data
+.RS
+This option, when enabled via \fIy\fP, shows \fnan\fP values for missing data instead of \f0\fP. This is useful when \f0\fP could be mistaken for valid data.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.RE
+.RE
+.BI gap_on_all_nan
+.RS
+This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option shows gaps only if all data points are \fInan\fP instead of requiring only one to be \fInan\fP for a gap. This can be useful if not all sensor data are required for normal operation.
+.P
+Default value: \fIn\fP
+.RE
+.SS NVIDIA GPU temperatures and usage (nvidiagpu.pm)
+This graph is able to monitor an unlimited number of Nvidia GPUs via \fInvidia-smi\fP.
+.P
+.BI list
+.RS
+This is a list of groups of GPUs that you want to monitor. Each group will become a graph and there may be an unlimited number of groups.
+.P
+WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fInvidiagpu.rrd\fP file accordingly, removing all historical data.
+.P
+As identifier you can either use the GPU ID or the GPU UUID found via \fInvidia-smi --list-gpus\fP. You can add it to the group 0 like this:
+.P
+.RS
+<list>
+.br
+	0 = 0, GPU-531b3e21-2fa4-1254-1215-2361f2d345ef
+.br
+	1 = 2
+.br
+</list>
+.RE
+.P
+The maximum number of GPUs allowed per group is 8.
+.RE
+.P
+.BI map
+.RS
+This list complements the \fBlist\fP option. It basically allows you to change the GPU name that will appear in the graph, hiding the real device name. If no association is defined, then Monitorix will display the name of the GPU device as it is.
+.P
+.RS
+<map>
+.br
+	0 = RTX 3090
+.br
+	GPU-531b3e21-2fa4-1254-1215-2361f2d345ef = RTX 3080
+.br
+	2 = RTX 3080 Ti
+.br
+</map>
+.RE
+.RE
+.P
+.BI desc
+.RS
+This list complements the \fBlist\fP option. It basically allows you to include a title for every group of GPUs. The title will appear in the title of the graph.
+.P
+.RS
+<desc>
+.br
+	0 = Host
+.br
+	1 = Virtual
+.br
+</desc>
+.RE
+.RE
+.P
+.BI coretemp_enabled
+.RS
+This section enables or disables one of the alert capabilities for this graph; the alert for the core temperature. It works as follows:
+.P
+If the core temperature of any of the specified GPU device names reaches or subceeds the \fBcoretemp_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBcoretemp_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI coretemp_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fI0\fP
+.RE
+.P
+.BI coretemp_threshold
+.RS
+This is the value that needs to be reached or subceeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fI10\fP
+.RE
+.P
+.BI coretemp_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBcoretemp_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBcoretemp_threshold\fP.
+.br
+3rd - the current core temperature.
+.P
+Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI memorytemp_enabled
+.RS
+This section enables or disables one of the alert capabilities for this graph; the alert for the memory temperature. It works as follows:
+.P
+If the memory temperature of any of the specified GPU names reaches or exceeds the \fBmemorytemp_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBmemorytemp_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI memorytemp_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fI0\fP
+.RE
+.P
+.BI memorytemp_threshold
+.RS
+This is the value that needs to be reached or exceeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fI90\fP
+.RE
+.P
+.BI memorytemp_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBmemorytemp_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBmemorytemp_threshold\fP.
+.br
+3rd - the current memory temperature.
+.P
+Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI show_current_values
+.RS
+.P
+Print current values in the legend of the small righthand plots.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI use_nan_for_missing_data
+.RS
+This option, when enabled via \fIy\fP, shows \fnan\fP values for missing data instead of \f0\fP. This is useful when \f0\fP could be mistaken for valid data.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.RE
+.RE
+.BI gap_on_all_nan
+.RS
+This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option shows gaps only if all data points are \fInan\fP instead of requiring only one to be \fInan\fP for a gap. This can be useful if not all sensor data are required for normal operation.
+.P
+Default value: \fIn\fP
+.RE
 .SS NVIDIA temperatures and usage (nvidia.pm)
 This graph requires to have installed the official NVIDIA drivers.
 .P
@@ -1354,7 +1721,7 @@ This is a list of groups of disk drives that you want to monitor. Each group wil
 .P
 WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIdisk.rrd\fP file accordingly, removing all historical data.
 .P
-To collect the disk drive temperatures and health the \fIsmartmontools\fP or the \fIhddtemp\fP command are required.
+To collect the disk drive temperatures and health the \fIsmartmontools\fP or the \fIhddtemp\fP command are required. Depending on the disk model reading smart values will wake up the disk and reset the sleep timer. To avoid waking them up set \fIrespect_standby = y\fP but they still won't got to sleep automatically.
 .P
 It is recommended that you first check if either \fIsmartctl\fP(8) or \fIhddtemp\fP are able to collect data from the disk drive(s) that you plan to monitor. You may test this with the following command:
 .P
@@ -1494,6 +1861,255 @@ Default value: \fI/path/to/script.sh\fP
 During the init stage this graph verifies that every defined device name does exist in the system. If not, then the graph disables itself.
 .P
 This option changes this behavior and permits to continue working even if the device names defined doesn't exist. Keep in mind that you will continue seeing error messages in the logfile.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.RE
+.BI respect_standby
+.RS
+This option, when enabled via \fIy\fP, won't wake up disks if they are already in standby but also won't report new smart during standby.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.RE
+.BI use_nan_for_missing_data
+.RS
+This option, when enabled via \fIy\fP, shows \fnan\fP values for missing data instead of \f0\fP. This is useful when \f0\fP could be mistaken for valid data.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.RE
+.BI gap_on_all_nan
+.RS
+This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option shows gaps only if all data points are \fInan\fP instead of requiring only one to be \fInan\fP for a gap. This can be useful if not all sensor data are required for normal operation.
+.P
+Default value: \fIn\fP
+.RE
+.SS NVME drive temperatures and health (nvme.pm)
+This graph is able to monitor an unlimited number of nvme drives.
+.P
+.BI list
+.RS
+This is a list of groups of nvme drives that you want to monitor. Each group will become a graph and there may be an unlimited number of groups. You can define device names or paths to devices like \fI/dev/nvme0\fP.
+.P
+WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fInvme.rrd\fP file accordingly, removing all historical data.
+.P
+To collect the nvme drive temperatures and health the \fIsmartmontools\fP command are required.
+.P
+It is recommended that you first check if \fIsmartctl\fP(8) is able to collect data from the nvme drive(s) that you plan to monitor. You may test this with the following command:
+.P
+.RS
+# smartctl -A /dev/nvme0
+.br
+=== START OF SMART DATA SECTION ===
+.br
+SMART/Health Information (NVMe Log 0x02)
+.br
+Critical Warning:                   0x00
+.br
+Temperature:                        32 Celsius
+.br
+Available Spare:                    100%
+.br
+Available Spare Threshold:          10%
+.br
+Percentage Used:                    0%
+.br
+Data Units Read:                    15,134,801 [7.74 TB]
+.br
+Data Units Written:                 11,639,110 [5.95 TB]
+.br
+Host Read Commands:                 108,213,874
+.br
+Host Write Commands:                84,023,019
+.br
+Controller Busy Time:               819
+.br
+Power Cycles:                       94
+.br
+Power On Hours:                     701
+.br
+Unsafe Shutdowns:                   15
+.br
+Media and Data Integrity Errors:    0
+.br
+Error Information Log Entries:      0
+.br
+Warning  Comp. Temperature Time:    0
+.br
+Critical Comp. Temperature Time:    0
+.br
+Temperature Sensor 1:               32 Celsius
+.br
+Temperature Sensor 2:               35 Celsius
+.br
+.P
+.RE
+If you see good results as above, you can add it to the group 0 like this:
+.P
+.RS
+<list>
+.br
+	0 = /dev/nvme0, /dev/nvme1
+.br
+	1 = /dev/nvme2
+.br
+</list>
+.RE
+.P
+The maximum number of nvme device names allowed per group is 8.
+.RE
+.P
+.BI map
+.RS
+This list complements the \fBlist\fP option. It basically allows you to change the nvme drive name that will appear in the graph, hiding the real device name. If no association is defined, then Monitorix will display the name of the nvme drive as it is.
+.P
+.RS
+<map>
+.br
+	/dev/nvme = "system disk"
+.br
+	pci-0000:00:11.0-scsi-0:0:0:0 = "data disk"
+.br
+</map>
+.RE
+.RE
+.P
+.BI desc
+.RS
+This list complements the \fBlist\fP option. It basically allows you to include a title for every group of nvme drives. The title will appear in the bottom of the graph.
+.P
+.RS
+<desc>
+.br
+	0 = Individual drives
+.br
+	1 = RAID
+.br
+</desc>
+.RE
+.RE
+.P
+.BI availspare_enabled
+.RS
+This section enables or disables one of the alert capabilities for this graph; the alert for the normalized percentage (0 to 100%) of the remaining spare capacity available. It works as follows:
+.P
+If the percentage of available spare space in any of the specified nvme device names reaches or subceeds the \fBavailspare_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBavailspare_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI availspare_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fI0\fP
+.RE
+.P
+.BI availspare_threshold
+.RS
+This is the value that needs to be reached or subceeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fI10\fP
+.RE
+.P
+.BI availspare_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBavailspare_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBavailspare_threshold\fP.
+.br
+3rd - the current percentage number of available spare space.
+.P
+Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI percentused_enabled
+.RS
+This section enables or disables one of the alert capabilities for this graph; the alert for the the percentage of NVM subsystem life used based on the actual usage and the manufacturer's prediction of NVM life. It works as follows:
+.P
+If the life percentage used in any of the specified nvme device names reaches or exceeds the \fBpercentused_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBpercentused_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI percentused_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fI0\fP
+.RE
+.P
+.BI percentused_threshold
+.RS
+This is the value that needs to be reached or exceeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fI90\fP
+.RE
+.P
+.BI percentused_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBpercentused_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBpercentused_threshold\fP.
+.br
+3rd - the current number of life percentage used.
+.P
+Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI accept_invalid_nvme
+.RS
+During the init stage this graph verifies that every defined device name does exist in the system. If not, then the graph disables itself.
+.P
+This option changes this behavior and permits to continue working even if the device names defined doesn't exist. Keep in mind that you will continue seeing error messages in the logfile.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI show_extended_plots
+.RS
+.P
+Show additional plots.
+.P
+Default value: \fIn\fP
+.RE.RE
+.P
+.BI show_current_values
+.RS
+.P
+Print current values in the legend of the small righthand plots.
+.P
+Default value: \fIn\fP
+.RE
+.RE
+.BI use_nan_for_missing_data
+.RS
+This option, when enabled via \fIy\fP, shows \fnan\fP values for missing data instead of \f0\fP. This is useful when \f0\fP could be mistaken for valid data.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.RE
+.RE
+.BI gap_on_all_nan
+.RS
+This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option shows gaps only if all data points are \fInan\fP instead of requiring only one to be \fInan\fP for a gap. This can be useful if not all sensor data are required for normal operation.
 .P
 Default value: \fIn\fP
 .RE
@@ -1637,7 +2253,7 @@ This is a comma-separated list of pool names. The number of pool names defined h
 .SS Directory usage statistics (du.pm)
 This graph is able to monitor the usage of an unlimited number of directories.
 .P
-IMPORTANT NOTE: The \fIdu\fP command makes intensive disk I/O access that might slow down the whole system. Moreover, continued executions of this command will affect the buffer cache mechanism and this will also increase the system response time.
+IMPORTANT NOTE: The \fIdu\fP command makes intensive disk I/O access that might slow down the whole system. Moreover, continued executions of this command will affect the buffer cache mechanism and this will also increase the system response time. To reduce executions \fIrefresh_interval\fP can be specified in seconds (Use 0 for default refresh interval).
 .P
 .BI list
 .RS
@@ -1707,6 +2323,15 @@ extra_args = "-x"
 .RE
 .P
 IMPORTANT NOTICE: Keep in mind that including certain flags like '-h' (which gives results in human readable format) could make Monitorix unable to interpret the results.
+.P
+.RE
+.BI refresh_interval
+.RS
+Refresh interval in seconds. This is an option to reduce the execution of the \fIdu\fP command and undesired side effects caused by this. Default value 0 means normal refresh with all other plots. Besides the default meaningful values are from 60 to 86400.
+Keep in mind that changing the \fBrefresh_interval\fP is possible without loosing history but changing the interval to a smaller one will introduce gaps in the data at the transition point.
+.P
+Default value: \fI0\fP
+.RE
 .SS Network traffic and usage (net.pm)
 .P
 .BI max

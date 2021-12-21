@@ -134,6 +134,7 @@ sub ipmi_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $ipmi = $config->{ipmi};
 	my $args = $ipmi->{extra_args} || "";
+	my $use_nan_for_missing_data = lc($ipmi->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
 
 	my @sens;
 
@@ -153,8 +154,7 @@ sub ipmi_update {
 		my $e2 = 0;
 		foreach my $i (split(',', $ipmi->{desc}->{$e})) {
 			my $unit;
-
-			$sens[$e][$e2] = 0 unless defined $sens[$e][$e2];
+			$sens[$e][$e2] = ($use_nan_for_missing_data ? (0+"nan") : 0) unless defined $sens[$e][$e2];
 			$str = trim($i);
 			$unit = $ipmi->{units}->{$e};
 			foreach(@data) {
@@ -214,6 +214,7 @@ sub ipmi_cgi {
 	my @output;
 
 	my $ipmi = $config->{ipmi};
+	my $gap_on_all_nan = lc($ipmi->{gap_on_all_nan} || "") eq "y" ? 1 : 0;
 	my @rigid = split(',', ($ipmi->{rigid} || ""));
 	my @limit = split(',', ($ipmi->{limit} || ""));
 	my $tf = $cgi->{tf};
@@ -361,7 +362,6 @@ sub ipmi_cgi {
 		}
 	}
 
-	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	$n = 0;
 	while($n < scalar(my @sl = split(',', $ipmi->{list}))) {
 		if($title) {
@@ -375,6 +375,7 @@ sub ipmi_cgi {
 			if($title) {
 				push(@output, "    <td>\n");
 			}
+			@riglim = @{setup_riglim($rigid[$n], $limit[$n])};
 			undef(@tmp);
 			undef(@tmpz);
 			undef(@CDEF);
@@ -400,6 +401,7 @@ sub ipmi_cgi {
 			}
 			($width, $height) = split('x', $config->{graph_size}->{medium});
 			$str = substr(trim($sl[$n]), 0, 25);
+			my $cdef_allvalues = $gap_on_all_nan ? "CDEF:allvalues=s1,UN,0,1,IF,s2,UN,0,1,IF,s3,UN,0,1,IF,s4,UN,0,1,IF,s5,UN,0,1,IF,s6,UN,0,1,IF,s7,UN,0,1,IF,s8,UN,0,1,IF,s9,UN,0,1,IF,+,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=s1,s2,s3,s4,s5,s6,s7,s8,s9,+,+,+,+,+,+,+,+";
 			$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$n]",
 				"--title=$str  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -421,7 +423,7 @@ sub ipmi_cgi {
 				"DEF:s7=$rrd:ipmi" . $n . "_s7:AVERAGE",
 				"DEF:s8=$rrd:ipmi" . $n . "_s8:AVERAGE",
 				"DEF:s9=$rrd:ipmi" . $n . "_s9:AVERAGE",
-				"CDEF:allvalues=s1,s2,s3,s4,s5,s6,s7,s8,s9,+,+,+,+,+,+,+,+",
+				$cdef_allvalues,
 				@CDEF,
 				@tmp);
 			$err = RRDs::error;
@@ -449,7 +451,7 @@ sub ipmi_cgi {
 					"DEF:s7=$rrd:ipmi" . $n . "_s7:AVERAGE",
 					"DEF:s8=$rrd:ipmi" . $n . "_s8:AVERAGE",
 					"DEF:s9=$rrd:ipmi" . $n . "_s9:AVERAGE",
-					"CDEF:allvalues=s1,s2,s3,s4,s5,s6,s7,s8,s9,+,+,+,+,+,+,+,+",
+					$cdef_allvalues,
 					@CDEF,
 					@tmpz);
 				$err = RRDs::error;
