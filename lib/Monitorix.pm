@@ -94,11 +94,11 @@ sub picz_js_a_element {
 	my $zoom = (uc($params{config}->{image_format}) eq "SVG") ? (4 / 3) : 1;
 
 	my $js = sprintf "javascript:void(window.open('%s/%s%s','','width=%d,height=%d,scrollbars=0,resizable=0'))",
-					  $params{config}->{url},
-					  $params{config}->{imgs_dir},
-					  $params{IMGz},
-					  ceil($params{width} * $zoom),
-					  ceil($params{height} * $zoom + 0.5);
+					   $params{config}->{url},
+					   $params{config}->{imgs_dir},
+					   $params{IMGz},
+					   ceil($params{width} * $zoom),
+					   ceil($params{height} * $zoom + 0.5);
 
 	return sprintf '<a href="%s">%s</a>',
 					 $js,
