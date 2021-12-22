@@ -23,7 +23,7 @@ package Monitorix;
 use strict;
 use warnings;
 use Exporter 'import';
-use POSIX qw(setuid setgid setsid getgid getuid);
+use POSIX qw(setuid setgid setsid getgid getuid ceil);
 use Socket;
 our @EXPORT = qw(logger trim min max celsius_to img_element picz_a_element picz_js_a_element uptime2str setup_riglim httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
 
@@ -85,8 +85,8 @@ sub picz_js_a_element {
 
 	my $zoom = (uc($params{config}->{image_format}) eq "SVG") ? (4 / 3) : 1;
 
-	my $picz_width = POSIX::ceil($params{width} * $zoom);
-	my $picz_height = POSIX::ceil($params{height} * $zoom + 0.5);
+	my $picz_width = ceil($params{width} * $zoom);
+	my $picz_height = ceil($params{height} * $zoom + 0.5);
 
 	return "<a href=\"javascript:void(window.open('" . $params{config}->{url} . "/" . $params{config}->{imgs_dir} . $params{IMGz} . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\">" . img_element(config => $params{config}, IMG => $params{IMG}) . "</a>";
 }
