@@ -1153,7 +1153,7 @@ sub mail_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /mail1/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG1z, IMG => $IMG1) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1162,10 +1162,10 @@ sub mail_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG1z, IMG => $IMG1));
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG1z, IMG => $IMG1) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG1) . "\n");
 		}
 	}
 
@@ -1272,7 +1272,7 @@ sub mail_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /mail2/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG2z, IMG => $IMG2) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1281,10 +1281,10 @@ sub mail_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG2z, IMG => $IMG2));
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG2z, IMG => $IMG2) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG2) . "\n");
 		}
 	}
 
@@ -1360,7 +1360,7 @@ sub mail_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /mail3/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG3z, IMG => $IMG3) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1369,10 +1369,10 @@ sub mail_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG3z, IMG => $IMG3));
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG3z, IMG => $IMG3) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG3) . "\n");
 		}
 	}
 
@@ -1445,7 +1445,7 @@ sub mail_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /mail4/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG4z, IMG => $IMG4) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1454,10 +1454,10 @@ sub mail_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG4z, IMG => $IMG4));
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG4z, IMG => $IMG4) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG4) . "\n");
 		}
 	}
 
@@ -1542,7 +1542,7 @@ sub mail_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /mail5/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG5z, IMG => $IMG5) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1551,10 +1551,10 @@ sub mail_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG5z, IMG => $IMG5));
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG5z, IMG => $IMG5) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG5) . "\n");
 		}
 	}
 
@@ -1656,7 +1656,7 @@ sub mail_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /mail6/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG6z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG6 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG6z, IMG => $IMG6) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1665,10 +1665,10 @@ sub mail_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG6z, IMG => $IMG6));
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG6z, IMG => $IMG6) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG6 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG6) . "\n");
 		}
 	}
 

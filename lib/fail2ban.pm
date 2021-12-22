@@ -477,7 +477,7 @@ sub fail2ban_cgi {
 			if($title || ($silent =~ /imagetag/ && $graph =~ /fail2ban$n/)) {
 				if(lc($config->{enable_zoom}) eq "y") {
 					if(lc($config->{disable_javascript_void}) eq "y") {
-						push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$n] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "' border='0'></a>\n");
+						push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$n], IMG => $IMG[$n]) . "\n");
 					} else {
 						if($version eq "new") {
 							$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -486,10 +486,10 @@ sub fail2ban_cgi {
 							$picz_width = $width + 115;
 							$picz_height = $height + 100;
 						}
-						push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$n], IMG => $IMG[$n]));
+						push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$n], IMG => $IMG[$n]) . "\n");
 					}
 				} else {
-					push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$n] . "'>\n");
+					push(@output, "      " . img_element(config => $config, IMG => $IMG[$n]) . "\n");
 				}
 			}
 			if($title) {

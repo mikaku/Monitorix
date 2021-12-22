@@ -723,7 +723,7 @@ sub amdgpu_cgi {
 			if($title || ($silent =~ /imagetag/ && $graph =~ /amdgpu$e2/)) {
 				if(lc($config->{enable_zoom}) eq "y") {
 					if(lc($config->{disable_javascript_void}) eq "y") {
-						push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 3 + $n_plot] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 3 + $n_plot] . "' border='0'></a>\n");
+						push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 3 + $n_plot], IMG => $IMG[$e * 3 + $n_plot]) . "\n");
 					} else {
 						if($version eq "new") {
 							$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -732,10 +732,10 @@ sub amdgpu_cgi {
 							$picz_width = $width + 115;
 							$picz_height = $height + 100;
 						}
-						push(@output, picz_js_link(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 3 + $n_plot], IMG => $IMG[$e * 3 + $n_plot]));
+						push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 3 + $n_plot], IMG => $IMG[$e * 3 + $n_plot]) . "\n");
 					}
 				} else {
-					push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 3 + $n_plot] . "'>\n");
+					push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 3 + $n_plot]) . "\n");
 				}
 			}
 		}
