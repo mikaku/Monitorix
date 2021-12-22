@@ -72,12 +72,14 @@ sub celsius_to {
 
 sub img_element {
 	my %params = @_;
-	return "<img src='" . $params{config}->{url} . "/" . $params{config}->{imgs_dir} . $params{IMG} . "' border='0'>"
+	return "<img src='" . $params{config}->{url} . "/" . $params{config}->{imgs_dir} . $params{IMG} . "' border='0'>";
 }
 
 sub picz_a_element {
 	my %params = @_;
-	return "<a href=\"" . $params{config}->{url} . "/" . $params{config}->{imgs_dir} . $params{IMGz} . "\">" . img_element(config => $params{config}, IMG => $params{IMG}) . "</a>"
+	return "<a href=\"" . $params{config}->{url} . "/" . $params{config}->{imgs_dir} . $params{IMGz} . "\">" .
+				   img_element(%params) .
+				 "</a>";
 }
 
 sub picz_js_a_element {
@@ -85,10 +87,12 @@ sub picz_js_a_element {
 
 	my $zoom = (uc($params{config}->{image_format}) eq "SVG") ? (4 / 3) : 1;
 
-	my $picz_width = ceil($params{width} * $zoom);
-	my $picz_height = ceil($params{height} * $zoom + 0.5);
+	my $width = ceil($params{width} * $zoom);
+	my $height = ceil($params{height} * $zoom + 0.5);
 
-	return "<a href=\"javascript:void(window.open('" . $params{config}->{url} . "/" . $params{config}->{imgs_dir} . $params{IMGz} . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\">" . img_element(config => $params{config}, IMG => $params{IMG}) . "</a>";
+	return "<a href=\"javascript:void(window.open('" . $params{config}->{url} . "/" . $params{config}->{imgs_dir} . $params{IMGz} . "','','width=" . $width . ",height=" . $height . ",scrollbars=0,resizable=0'))\">" .
+				   img_element(%params) .
+				 "</a>";
 }
 
 sub uptime2str {
