@@ -764,6 +764,7 @@ sub mysql_cgi {
 				"--vertical-label=Queries/s",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -789,7 +790,7 @@ sub mysql_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /mysql$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6] . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 6], IMG => $IMG[$e * 6]) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -798,10 +799,10 @@ sub mysql_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6] . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6], IMG => $IMG[$e * 6]) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6] . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 6]) . "\n");
 			}
 		}
 
@@ -897,6 +898,7 @@ sub mysql_cgi {
 				"--vertical-label=Percent (%)",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -919,7 +921,7 @@ sub mysql_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /mysql$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 1] . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 6 + 1], IMG => $IMG[$e * 6 + 1]) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -928,10 +930,10 @@ sub mysql_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 1] . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6 + 1], IMG => $IMG[$e * 6 + 1]) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 1] . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 6 + 1]) . "\n");
 			}
 		}
 
@@ -997,6 +999,7 @@ sub mysql_cgi {
 				"--vertical-label=Open & Locks/min",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1015,7 +1018,7 @@ sub mysql_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /mysql$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 2] . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 6 + 2], IMG => $IMG[$e * 6 + 2]) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1024,10 +1027,10 @@ sub mysql_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 2] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 2] . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6 + 2], IMG => $IMG[$e * 6 + 2]) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 2] . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 6 + 2]) . "\n");
 			}
 		}
 
@@ -1089,6 +1092,7 @@ sub mysql_cgi {
 				"--vertical-label=Queries/s",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1107,7 +1111,7 @@ sub mysql_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /mysql$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 3] . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 6 + 3], IMG => $IMG[$e * 6 + 3]) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1116,10 +1120,10 @@ sub mysql_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 3] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 3] . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6 + 3], IMG => $IMG[$e * 6 + 3]) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 3] . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 6 + 3]) . "\n");
 			}
 		}
 
@@ -1187,6 +1191,7 @@ sub mysql_cgi {
 				"--vertical-label=Connectionss/s",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1206,7 +1211,7 @@ sub mysql_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /mysql$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 4] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 4] . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 6 + 4], IMG => $IMG[$e * 6 + 4]) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1215,10 +1220,10 @@ sub mysql_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 4] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 4] . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6 + 4], IMG => $IMG[$e * 6 + 4]) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 4] . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 6 + 4]) . "\n");
 			}
 		}
 
@@ -1296,6 +1301,7 @@ sub mysql_cgi {
 				"--vertical-label=$vlabel",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1314,7 +1320,7 @@ sub mysql_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /mysql$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 5] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 5] . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 6 + 5], IMG => $IMG[$e * 6 + 5]) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1323,10 +1329,10 @@ sub mysql_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 6 + 5] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 5] . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6 + 5], IMG => $IMG[$e * 6 + 5]) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 6 + 5] . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 6 + 5]) . "\n");
 			}
 		}
 

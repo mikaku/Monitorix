@@ -610,6 +610,7 @@ sub varnish_cgi {
 			"--vertical-label=Values/s",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -631,7 +632,7 @@ sub varnish_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /varnish1/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG1z, IMG => $IMG1) . "\n");
 		} else {
 			if($version eq "new") {
 				$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -640,10 +641,10 @@ sub varnish_cgi {
 				$picz_width = $width + 115;
 				$picz_height = $height + 100;
 			}
-			push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
+			push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG1z, IMG => $IMG1) . "\n");
 				}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG1) . "\n");
 		}
 	}
 
@@ -744,6 +745,7 @@ sub varnish_cgi {
 			"--vertical-label=Values/s",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -766,7 +768,7 @@ sub varnish_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /varnish2/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG2z, IMG => $IMG2) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -775,10 +777,10 @@ sub varnish_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG2z, IMG => $IMG2) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG2) . "\n");
 		}
 	}
 
@@ -844,6 +846,7 @@ sub varnish_cgi {
 			"--vertical-label=Connections/s",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -862,7 +865,7 @@ sub varnish_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /varnish3/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG3z, IMG => $IMG3) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -871,10 +874,10 @@ sub varnish_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG3z, IMG => $IMG3) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG3) . "\n");
 		}
 	}
 
@@ -935,6 +938,7 @@ sub varnish_cgi {
 			"--vertical-label=Values/s",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -953,7 +957,7 @@ sub varnish_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /varnish4/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG4z, IMG => $IMG4) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -962,10 +966,10 @@ sub varnish_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG4z, IMG => $IMG4) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG4) . "\n");
 		}
 	}
 
@@ -1030,6 +1034,7 @@ sub varnish_cgi {
 			"--vertical-label=Objects",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -1049,7 +1054,7 @@ sub varnish_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /varnish5/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG5z, IMG => $IMG5) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1058,10 +1063,10 @@ sub varnish_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG5z, IMG => $IMG5) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG5) . "\n");
 		}
 	}
 
@@ -1124,6 +1129,7 @@ sub varnish_cgi {
 			"--vertical-label=bytes/s",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -1141,7 +1147,7 @@ sub varnish_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /varnish6/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG6z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG6 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG6z, IMG => $IMG6) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1150,10 +1156,10 @@ sub varnish_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG6z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG6 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG6z, IMG => $IMG6) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG6 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG6) . "\n");
 		}
 	}
 

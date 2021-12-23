@@ -508,13 +508,13 @@ sub bind_update {
 			$rrdata .= ":";
 			$rrdata .= defined($crr{$str}) ? $crr{$str} : 0;
 		}
-#		@i = split(',', $bind->{sio_stats_list}->{$l});                                
-		for($n2 = 0; $n2 < 20; $n2++) {                                                
+#		@i = split(',', $bind->{sio_stats_list}->{$l});
+		for($n2 = 0; $n2 < 20; $n2++) {
 			my $j = "";     #trim($i[$n2] || 0);
-			$str = $n . "sio_$j";                                                  
-			$rrdata .= ":";                                                        
-			$rrdata .= defined($sio{$str}) ? $sio{$str} : 0;                       
-		}                                                                        
+			$str = $n . "sio_$j";
+			$rrdata .= ":";
+			$rrdata .= defined($sio{$str}) ? $sio{$str} : 0;
+		}
 
 		if($major eq "2") {
 			foreach my $counters ($data->findnodes('/isc/bind/statistics/memory/summary')) {
@@ -900,6 +900,7 @@ sub bind_cgi {
 				"--vertical-label=Queries/s",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -934,7 +935,7 @@ sub bind_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /bind1/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7] . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 7], IMG => $IMG[$e * 7]) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -943,10 +944,10 @@ sub bind_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7] . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 7], IMG => $IMG[$e * 7]) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7] . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 7]) . "\n");
 			}
 		}
 		if($title) {
@@ -1026,6 +1027,7 @@ sub bind_cgi {
 				"--vertical-label=Queries/s",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1060,7 +1062,7 @@ sub bind_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /bind2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 1] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 1] . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 7 + 1], IMG => $IMG[$e * 7 + 1]) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1069,10 +1071,10 @@ sub bind_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 1] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 1] . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 7 + 1], IMG => $IMG[$e * 7 + 1]) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 1] . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 7 + 1]) . "\n");
 			}
 		}
 
@@ -1150,6 +1152,7 @@ sub bind_cgi {
 				"--vertical-label=Requests/s",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1184,7 +1187,7 @@ sub bind_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /bind3/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 2] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 2] . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 7 + 2], IMG => $IMG[$e * 7 + 2]) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1193,10 +1196,10 @@ sub bind_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 2] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 2] . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 7 + 2], IMG => $IMG[$e * 7 + 2]) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 2] . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 7 + 2]) . "\n");
 			}
 		}
 		if($title) {
@@ -1276,6 +1279,7 @@ sub bind_cgi {
 				"--vertical-label=Requests/s",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1310,7 +1314,7 @@ sub bind_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /bind4/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 3] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 3] . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 7 + 3], IMG => $IMG[$e * 7 + 3]) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1319,10 +1323,10 @@ sub bind_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 3] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 3] . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 7 + 3], IMG => $IMG[$e * 7 + 3]) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 3] . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 7 + 3]) . "\n");
 			}
 		}
 
@@ -1400,6 +1404,7 @@ sub bind_cgi {
 				"--vertical-label=RRsets",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1434,7 +1439,7 @@ sub bind_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /bind5/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 4] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 4] . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 7 + 4], IMG => $IMG[$e * 7 + 4]) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1443,10 +1448,10 @@ sub bind_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 4] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 4] . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 7 + 4], IMG => $IMG[$e * 7 + 4]) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 4] . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 7 + 4]) . "\n");
 			}
 		}
 		if($title) {
@@ -1518,6 +1523,7 @@ sub bind_cgi {
 				"--vertical-label=bytes",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1538,7 +1544,7 @@ sub bind_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /bind6/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 5] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 5] . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 7 + 5], IMG => $IMG[$e * 7 + 5]) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1547,10 +1553,10 @@ sub bind_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 5] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 5] . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 7 + 5], IMG => $IMG[$e * 7 + 5]) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 5] . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 7 + 5]) . "\n");
 			}
 		}
 
@@ -1603,6 +1609,7 @@ sub bind_cgi {
 				"--vertical-label=Tasks",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -1621,7 +1628,7 @@ sub bind_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /bind7/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 6] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 6] . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 7 + 6], IMG => $IMG[$e * 7 + 6]) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1630,10 +1637,10 @@ sub bind_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 7 + 6] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 6] . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 7 + 6], IMG => $IMG[$e * 7 + 6]) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 7 + 6] . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 7 + 6]) . "\n");
 			}
 		}
 

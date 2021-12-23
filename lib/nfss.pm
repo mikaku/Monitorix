@@ -269,10 +269,10 @@ sub nfss_update {
 		# LINUX: @rc = reply cache = (hits, misses, nocache)
 		# FreeBSD: Server Cache Stats: Inprog, idem, Non-idem, Misses
 		@rc = (
-			$stats->{'Idem'}, 
-			$stats->{'Misses'}, 
+			$stats->{'Idem'},
+			$stats->{'Misses'},
 			$stats->{'Non-idem'}
-		); 
+		);
 
 		# LINUX: @fh = file handles = (stale, total_lookups, anonlookups, dirnocache, nodirnocahe)
 		# FreeBSD: No data
@@ -281,8 +281,8 @@ sub nfss_update {
 		# LINUX: @io = I/O = (read, wright)
 		# FreeBSD: Server Info: Read, Write
 		@io = (
-			$stats->{'Read'}, 
-			$stats->{'Write'} 
+			$stats->{'Read'},
+			$stats->{'Write'}
 		);
 
 		# LINUX: @th = Threads = (11 values)
@@ -298,34 +298,34 @@ sub nfss_update {
 		@rpc = (0,0,0,0,0);
 
 		# LINUX: @nfss = Server stats = for v3, 22 stats:
-		#   null / getattr / setattr / lookup / access 
+		#   null / getattr / setattr / lookup / access
 		#   readlink / read / write / create / mkdir / symlink
 		#   mknod / remove / rmdir / rename / link / readdir
 		#   readdirplus / fsstat / fsinfo / pathconf / commit
 		# FreeBSD: Server Info: has all those items with similar names
 		@nfss = (
 			0,
-			$stats->{'Getattr'}, 
-			$stats->{'Setattr'}, 
-			$stats->{'Lookup'}, 
-			$stats->{'Access'}, 
-			$stats->{'Readlink'}, 
-			$stats->{'Read'}, 
-			$stats->{'Write'}, 
-			$stats->{'Create'}, 
-			$stats->{'Mkdir'}, 
-			$stats->{'Symlink'}, 
-			$stats->{'Mknod'}, 
-			$stats->{'Remove'}, 
-			$stats->{'Rmdir'}, 
-			$stats->{'Rename'}, 
-			$stats->{'Link'}, 
-			$stats->{'Readdir'}, 
-			$stats->{'RdirPlus'}, 
-			$stats->{'Fsstat'}, 
-			$stats->{'Fsinfo'}, 
-			$stats->{'PathConf'}, 
-			$stats->{'Commit'} 
+			$stats->{'Getattr'},
+			$stats->{'Setattr'},
+			$stats->{'Lookup'},
+			$stats->{'Access'},
+			$stats->{'Readlink'},
+			$stats->{'Read'},
+			$stats->{'Write'},
+			$stats->{'Create'},
+			$stats->{'Mkdir'},
+			$stats->{'Symlink'},
+			$stats->{'Mknod'},
+			$stats->{'Remove'},
+			$stats->{'Rmdir'},
+			$stats->{'Rename'},
+			$stats->{'Link'},
+			$stats->{'Readdir'},
+			$stats->{'RdirPlus'},
+			$stats->{'Fsstat'},
+			$stats->{'Fsinfo'},
+			$stats->{'PathConf'},
+			$stats->{'Commit'}
 		);
 
 	}
@@ -631,6 +631,7 @@ sub nfss_cgi {
 			"--vertical-label=Requests/s",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -645,7 +646,7 @@ sub nfss_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss1/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG1z, IMG => $IMG1) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -654,10 +655,10 @@ sub nfss_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG1z, IMG => $IMG1) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG1) . "\n");
 		}
 	}
 
@@ -726,6 +727,7 @@ sub nfss_cgi {
 			"--vertical-label=Requests/s",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -740,7 +742,7 @@ sub nfss_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss2/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG2z, IMG => $IMG2) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -749,10 +751,10 @@ sub nfss_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG2z, IMG => $IMG2) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG2) . "\n");
 		}
 	}
 
@@ -821,6 +823,7 @@ sub nfss_cgi {
 			"--vertical-label=Requests/s",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -835,7 +838,7 @@ sub nfss_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss3/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG3z, IMG => $IMG3) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -844,10 +847,10 @@ sub nfss_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG3z, IMG => $IMG3) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG3) . "\n");
 		}
 	}
 
@@ -914,6 +917,7 @@ sub nfss_cgi {
 			"--vertical-label=bytes/s",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -931,7 +935,7 @@ sub nfss_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss4/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG4z, IMG => $IMG4) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -940,10 +944,10 @@ sub nfss_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG4z, IMG => $IMG4) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG4 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG4) . "\n");
 		}
 	}
 
@@ -1011,6 +1015,7 @@ sub nfss_cgi {
 			"--vertical-label=Values/s",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -1030,7 +1035,7 @@ sub nfss_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss5/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG5z, IMG => $IMG5) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1039,10 +1044,10 @@ sub nfss_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG5z, IMG => $IMG5) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG5 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG5) . "\n");
 		}
 	}
 
@@ -1111,6 +1116,7 @@ sub nfss_cgi {
 			"--vertical-label=Values/s",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -1131,7 +1137,7 @@ sub nfss_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss6/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG6z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG6 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG6z, IMG => $IMG6) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1140,10 +1146,10 @@ sub nfss_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG6z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG6 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG6z, IMG => $IMG6) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG6 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG6) . "\n");
 		}
 	}
 
@@ -1236,6 +1242,7 @@ sub nfss_cgi {
 			"--vertical-label=Values/s",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -1262,7 +1269,7 @@ sub nfss_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss7/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG7z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG7 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG7z, IMG => $IMG7) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1271,10 +1278,10 @@ sub nfss_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG7z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG7 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG7z, IMG => $IMG7) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG7 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG7) . "\n");
 		}
 	}
 
@@ -1341,6 +1348,7 @@ sub nfss_cgi {
 			"--vertical-label=Requests/s",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -1359,7 +1367,7 @@ sub nfss_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss8/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG8z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG8 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG8z, IMG => $IMG8) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1368,10 +1376,10 @@ sub nfss_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG8z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG8 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG8z, IMG => $IMG8) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG8 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG8) . "\n");
 		}
 	}
 
@@ -1440,6 +1448,7 @@ sub nfss_cgi {
 			"--vertical-label=Values/s",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -1460,7 +1469,7 @@ sub nfss_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /nfss9/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG9z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG9 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG9z, IMG => $IMG9) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -1469,10 +1478,10 @@ sub nfss_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG9z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG9 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG9z, IMG => $IMG9) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG9 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG9) . "\n");
 		}
 	}
 

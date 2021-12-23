@@ -658,6 +658,7 @@ sub nvidiagpu_cgi {
 					"--vertical-label=" . $y_axis_titles_per_plot[$n_plot],
 					"--width=$width",
 					"--height=$height",
+					"--full-size-mode",
 					@extra,
 					@riglim,
 					$zoom,
@@ -675,7 +676,7 @@ sub nvidiagpu_cgi {
 			if($title || ($silent =~ /imagetag/ && $graph =~ /nvidiagpu$e2/)) {
 				if(lc($config->{enable_zoom}) eq "y") {
 					if(lc($config->{disable_javascript_void}) eq "y") {
-						push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 3 + $n_plot] . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 3 + $n_plot] . "' border='0'></a>\n");
+						push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 3 + $n_plot], IMG => $IMG[$e * 3 + $n_plot]) . "\n");
 					} else {
 						if($version eq "new") {
 							$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -684,10 +685,10 @@ sub nvidiagpu_cgi {
 							$picz_width = $width + 115;
 							$picz_height = $height + 100;
 						}
-						push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMGz[$e * 3 + $n_plot] . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 3 + $n_plot] . "' border='0'></a>\n");
+						push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 3 + $n_plot], IMG => $IMG[$e * 3 + $n_plot]) . "\n");
 					}
 				} else {
-					push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG[$e * 3 + $n_plot] . "'>\n");
+					push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 3 + $n_plot]) . "\n");
 				}
 			}
 		}

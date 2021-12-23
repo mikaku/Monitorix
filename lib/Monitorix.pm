@@ -23,9 +23,9 @@ package Monitorix;
 use strict;
 use warnings;
 use Exporter 'import';
-use POSIX qw(setuid setgid setsid getgid getuid);
+use POSIX qw(setuid setgid setsid getgid getuid ceil);
 use Socket;
-our @EXPORT = qw(logger trim min max celsius_to uptime2str setup_riglim httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
+our @EXPORT = qw(logger trim min max celsius_to img_element picz_a_element picz_js_a_element uptime2str setup_riglim httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
 
 sub logger {
 	my ($msg) = @_;
@@ -68,6 +68,41 @@ sub celsius_to {
 		return ($celsius * (9 / 5)) + 32;
 	}
 	return $celsius;
+}
+
+sub img_element {
+	my %params = @_;
+	return sprintf '<img src="%s/%s%s" border="0">',
+					 $params{config}->{url},
+					 $params{config}->{imgs_dir},
+					 $params{IMG};
+}
+
+sub picz_a_element {
+	my %params = @_;
+	return sprintf '<a href="%s/%s%s">%s</a>',
+					 $params{config}->{url},
+					 $params{config}->{imgs_dir},
+					 $params{IMGz},
+					 img_element(%params);
+
+}
+
+sub picz_js_a_element {
+	my %params = @_;
+
+	my $zoom = (uc($params{config}->{image_format}) eq "SVG") ? (4 / 3) : 1;
+
+	my $js = sprintf "javascript:void(window.open('%s/%s%s','','width=%d,height=%d,scrollbars=0,resizable=0'))",
+					   $params{config}->{url},
+					   $params{config}->{imgs_dir},
+					   $params{IMGz},
+					   ceil($params{width} * $zoom),
+					   ceil($params{height} * $zoom + 0.5);
+
+	return sprintf '<a href="%s">%s</a>',
+					 $js,
+					 img_element(%params);
 }
 
 sub uptime2str {
@@ -203,7 +238,7 @@ sub get_nvidia_data {
 				next;
 			}
 		}
-		if($check_mem) {	
+		if($check_mem) {
 			if($data[$l] =~ /Total/) {
 				my (undef, $tmp) = split(':', $data[$l]);
 				if($tmp eq "\n") {
@@ -237,7 +272,7 @@ sub get_nvidia_data {
 			$check_cpu = 1;
 			next;
 		}
-		if($check_cpu) {	
+		if($check_cpu) {
 			if($data[$l] =~ /Gpu/) {
 				my (undef, $tmp) = split(':', $data[$l]);
 				if($tmp eq "\n") {
@@ -274,7 +309,7 @@ sub get_nvidia_data {
 			$check_temp = 1;
 			next;
 		}
-		if($check_temp) {	
+		if($check_temp) {
 			if($data[$l] =~ /Gpu.*?(?:Current Temp)?/i) {
 				my (undef, $tmp) = split(':', $data[$l]);
 				if($tmp eq "\n") {

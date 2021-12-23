@@ -125,14 +125,14 @@ sub verlihub_update {
 
 	my $dbh;
 	my $sth;
-	
+
 	my $host = $verlihub->{host};
 	my $port = $verlihub->{port};
 	my $user = $verlihub->{user};
 	my $pass = $verlihub->{password};
 	my $db   = $verlihub->{database};
 	my $sql = "SELECT users_total,upload_total,share_total_gb FROM pi_stats ORDER BY realtime DESC LIMIT 0, 1";
-	
+
 	# Connect to the database.
 	$dbh = DBI->connect("DBI:mysql:host=$host;port=$port;database=$db",$user,$pass, { PrintError => $print_error })
 		or logger("$myself: Cannot connect to MySQL '$host:$port'.");
@@ -142,14 +142,14 @@ sub verlihub_update {
 		$sth = $dbh->prepare($sql);
         	$sth->execute;
 		my $row = $sth->fetchrow_hashref();
-	
+
         	$users_total = int($row->{users_total});
         	$upload_total = int($row->{upload_total});
         	$share_total = int($row->{share_total_gb});
-	
+
 		$sth->finish;
         	$dbh->disconnect;
-	
+
 		$rrdata .= ":$users_total:$upload_total:$share_total";
 		RRDs::update($rrd, $rrdata);
 		logger("$myself: $rrdata") if $debug;
@@ -226,7 +226,7 @@ sub verlihub_cgi {
 		my $line;
 		my @row;
 		my $time;
-		
+
 		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
 			$line = @$data[$n];
 			my ($users_total, $upload_total, $share_total) = @$line;
@@ -329,6 +329,7 @@ sub verlihub_cgi {
 			"--vertical-label=Users",
 			"--width=$width",
 			"--height=$height",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -344,7 +345,7 @@ sub verlihub_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /_verlihub1/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG1z, IMG => $IMG1) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -353,10 +354,10 @@ sub verlihub_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG1z, IMG => $IMG1) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG1) . "\n");
 		}
 	}
 
@@ -419,6 +420,7 @@ sub verlihub_cgi {
 			"--width=$width",
 			"--height=$height",
 			"--units-exponent=0",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -435,7 +437,7 @@ sub verlihub_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /_verlihub2/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG2z, IMG => $IMG2) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -444,10 +446,10 @@ sub verlihub_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG2z, IMG => $IMG2) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG2) . "\n");
 		}
 	}
 
@@ -504,6 +506,7 @@ sub verlihub_cgi {
 			"--width=$width",
 			"--height=$height",
 			"--units-exponent=0",
+			"--full-size-mode",
 			@extra,
 			@riglim,
 			$zoom,
@@ -520,7 +523,7 @@ sub verlihub_cgi {
 	if($title || ($silent =~ /imagetag/ && $graph =~ /_verlihub3/)) {
 		if(lc($config->{enable_zoom}) eq "y") {
 			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
+				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG3z, IMG => $IMG3) . "\n");
 			} else {
 				if($version eq "new") {
 					$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -529,10 +532,10 @@ sub verlihub_cgi {
 					$picz_width = $width + 115;
 					$picz_height = $height + 100;
 				}
-				push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
+				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG3z, IMG => $IMG3) . "\n");
 			}
 		} else {
-			push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "'>\n");
+			push(@output, "      " . img_element(config => $config, IMG => $IMG3) . "\n");
 		}
 	}
 

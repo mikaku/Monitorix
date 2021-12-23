@@ -502,6 +502,7 @@ sub net_cgi {
 				"--vertical-label=$vlabel",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -519,7 +520,7 @@ sub net_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /$netname/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG1z, IMG => $IMG1) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -528,10 +529,10 @@ sub net_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG1z, IMG => $IMG1) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG1 . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG1) . "\n");
 			}
 		}
 
@@ -604,6 +605,7 @@ sub net_cgi {
 				"--vertical-label=Packets/s",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -622,7 +624,7 @@ sub net_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /$netname/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG2z, IMG => $IMG2) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -631,10 +633,10 @@ sub net_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG2z, IMG => $IMG2) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG2 . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG2) . "\n");
 			}
 		}
 
@@ -703,6 +705,7 @@ sub net_cgi {
 				"--vertical-label=Errors/s",
 				"--width=$width",
 				"--height=$height",
+				"--full-size-mode",
 				@extra,
 				@riglim,
 				$zoom,
@@ -721,7 +724,7 @@ sub net_cgi {
 		if($title || ($silent =~ /imagetag/ && $graph =~ /$netname/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      <a href=\"" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG3z, IMG => $IMG3) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -730,10 +733,10 @@ sub net_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      <a href=\"javascript:void(window.open('" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3z . "','','width=" . $picz_width . ",height=" . $picz_height . ",scrollbars=0,resizable=0'))\"><img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "' border='0'></a>\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG3z, IMG => $IMG3) . "\n");
 				}
 			} else {
-				push(@output, "      <img src='" . $config->{url} . "/" . $config->{imgs_dir} . $IMG3 . "'>\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG3) . "\n");
 			}
 		}
 
