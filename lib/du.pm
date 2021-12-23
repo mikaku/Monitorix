@@ -68,7 +68,7 @@ sub du_init {
 			}
 			if(index($key, 'ds[') == 0) {
 				if(index($key, '.minimal_heartbeat') != -1) {
-					$rrd_heartbeat = %$info{$key};
+					$rrd_heartbeat = $info->{$key};
 					if($rrd_heartbeat != $heartbeat) {
 						my $ds_name = substr($key, 3, index($key, ']') - 3);
 						push(@ds_to_change_heartbeat, $ds_name);
