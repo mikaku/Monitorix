@@ -1,0 +1,155 @@
+---
+name: Syntax Check, Install & Test
+
+on:
+  - pull_request
+  - push
+
+jobs:
+  syntax-check-install-test:
+    name: ${{ matrix.image }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - archlinux:latest
+          - centos:7
+          - almalinux:8
+          - rockylinux:8
+          - debian:10
+          - debian:11
+          - fedora:34
+          - fedora:35
+          - ubuntu:20.04
+          - ubuntu:21.10
+      fail-fast: false
+    container:
+      image: ${{ matrix.image }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Dependencies (Arch Linux)
+        uses: ./.github/actions/pacman/install
+        with:
+          packages: ${{ env.archlinux-dependencies }}
+        if: |
+          startsWith(matrix.image, 'archlinux:')
+
+      - name: Install Dependencies (AlmaLinux/CentOS/Rocky Linux)
+        uses: ./.github/actions/yum/install
+        with:
+          dependencies: epel-release
+          groups: ${{ env.almalinux-centos-rockylinux-group-dependencies }}
+          packages: ${{ env.almalinux-centos-rockylinux-dependencies }}
+        if: |
+          startsWith(matrix.image, 'almalinux:') ||
+          startsWith(matrix.image, 'centos:') ||
+          startsWith(matrix.image, 'rockylinux:')
+
+      - name: Install Dependencies (Debian/Ubuntu)
+        uses: ./.github/actions/apt-get/install
+        with:
+          packages: ${{ env.debian-ubuntu-dependencies }}
+        if: |
+          startsWith(matrix.image, 'debian:') ||
+          startsWith(matrix.image, 'ubuntu:')
+
+      - name: Install Dependencies (Fedora)
+        uses: ./.github/actions/yum/install
+        with:
+          groups: ${{ env.fedora-group-dependencies }}
+          packages: ${{ env.fedora-dependencies }}
+        if: |
+          startsWith(matrix.image, 'fedora:')
+
+      - name: Install Perl Modules
+        run: |
+          cpanm --notest install ${{ env.perl-modules }}
+
+      - name: Check syntax
+        env:
+          PERL5LIB: lib
+        run: |
+          for FILE in monitorix monitorix.cgi lib/*.pm
+          do
+            perl -Mstrict -Mdiagnostics -cw $FILE
+          done
+
+      - name: Install `Monitorix`
+        uses: ./.github/actions/install
+
+      - name: Test `Monitorix` with `image_format = PNG`
+        uses: ./.github/actions/test
+        with:
+          image_format: PNG
+        timeout-minutes: 5
+
+      - name: Test `Monitorix` with `image_format = SVG`
+        uses: ./.github/actions/test
+        with:
+          image_format: SVG
+        timeout-minutes: 5
+
+      - name: Tar `Monitorix` artifacts
+        run: |
+          echo "image_name=$(echo ${{ matrix.image }} | sed 's/:/-/g')" >> \
+            $GITHUB_ENV
+          tar --create --gzip --verbose --file /tmp/artifacts.tar.gz \
+            /var/lib/monitorix/www \
+            /var/log/monitorix*
+
+      - name: Upload `Monitorix` artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.image_name }}
+          path: /tmp/artifacts.tar.gz
+          retention-days: 5
+
+env:
+  archlinux-dependencies: >-
+    base-devel
+    cpanminus
+    rrdtool
+  almalinux-centos-rockylinux-group-dependencies: >-
+    "Development Tools"
+  almalinux-centos-rockylinux-dependencies: >-
+    expat-devel
+    openssl
+    openssl-devel
+    perl-App-cpanminus
+    rrdtool
+    rrdtool-perl
+  debian-ubuntu-dependencies: >-
+    build-essential
+    cpanminus
+    curl
+    libexpat1-dev
+    librrds-perl
+    libssl-dev
+    openssl
+    rrdtool
+    zlib1g-dev
+  fedora-group-dependencies: >-
+    "C Development Tools and Libraries"
+    "Development Libraries"
+    "Development Tools"
+  fedora-dependencies: >-
+    expat-devel
+    openssl
+    openssl-devel
+    perl-App-cpanminus
+    rrdtool
+    rrdtool-perl
+  perl-modules: >-
+    Config::General
+    DBI
+    Env
+    FindBin
+    HTTP::Server::Simple
+    IO::Socket::SSL
+    LWP::UserAgent
+    MIME::Lite
+    Net::IP
+    XML::LibXML
+    XML::Simple

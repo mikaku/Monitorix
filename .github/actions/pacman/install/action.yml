@@ -1,0 +1,17 @@
+---
+inputs:
+  packages:
+    description: List of package(s) to install
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install package(s)
+      run: |
+        pacman --sync --refresh --sysupgrade --noconfirm ${{ inputs.packages }}
+      shell: bash --noprofile --norc -euxo pipefail {0}
+
+    - name: Add /usr/bin/vendor_perl to PATH
+      run: echo "PATH=$PATH:/usr/bin/vendor_perl" >> $GITHUB_ENV
+      shell: bash --noprofile --norc -euxo pipefail {0}
