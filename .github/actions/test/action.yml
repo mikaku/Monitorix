@@ -1,0 +1,67 @@
+---
+inputs:
+  base_url:
+    description: Base URL
+    required: false
+    default: http://0.0.0.0:8080/monitorix
+  cgi_url:
+    description: CGI URL
+    required: false
+    default: http://0.0.0.0:8080/monitorix-cgi/monitorix.cgi
+  image_format:
+    description: Image Format
+    required: false
+    default: PNG
+
+runs:
+  using: composite
+  steps:
+    - name: Update `image_format`
+      run: |
+        sed --in-place \
+          "s/image_format = PNG/image_format = ${{ inputs.image_format }}/g" \
+          /etc/monitorix/monitorix.conf
+      shell: bash --noprofile --norc -euxo pipefail {0}
+
+    - name: Update `httpd_builtin.group`
+      run: |
+        sed --in-place \
+          "s/group = nobody/group = $(groups nobody | cut -d: -f2)/g" \
+          /etc/monitorix/monitorix.conf
+      shell: bash --noprofile --norc -euxo pipefail {0}
+
+    - name: Start `Monitorix`
+      run: |
+        monitorix -c /etc/monitorix/monitorix.conf -p monitorix.pid
+      shell: bash --noprofile --norc -euxo pipefail {0}
+
+    - name: Wait for `Monitorix`
+      run: |
+        while ! curl --fail "${{ inputs.cgi_url }}" &> /dev/null
+        do
+          sleep 5
+        done
+      shell: bash --noprofile --norc -euxo pipefail {0}
+
+    - name: Curl `index.html`
+      run: |
+        curl --silent "${{ inputs.base_url }}/index.html"
+      shell: bash --noprofile --norc -euxo pipefail {0}
+
+    - name: Curl `monitorix.cgi`
+      run: |
+        curl --silent "${{ inputs.cgi_url }}?mode=localhost&graph=all&when=1day"
+      shell: bash --noprofile --norc -euxo pipefail {0}
+
+    - name: Curl `imgs/system1z.1day.*`
+      run: |
+        format="${{ inputs.image_format }}"
+        suffix="${format,,}"
+        curl --silent "${{ inputs.base_url }}/imgs/system1z.1day.${suffix}"
+      shell: bash --noprofile --norc -euxo pipefail {0}
+
+    - name: Kill `Monitorix`
+      run: |
+        kill $(cat monitorix.pid)
+        rm --force monitorix.pid
+      shell: bash --noprofile --norc -euxo pipefail {0}
