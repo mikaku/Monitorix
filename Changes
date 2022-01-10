@@ -1,5 +1,10 @@
-3.NN.N - DD-MMM-2021
+3.NN.N - DD-MMM-2022
 ====================
+- Added a complete graph to support NVMe device statistics ('nvme.pm'). [#352]
+- Added a complete graph to support AMD graphic cards statistics ('amdgpu.pm').
+  [#367]
+- Added a complete graph to support NVIDIA graphic cards with more extended
+  statistics ('nvidiagpu.pm'). [#333]
 - Added support in 'redis.pm' to connect to a socket file. [#316]
 - Added support to get temperature values for gpu[n] keys using the output of
   lm_sensors in 'lmsens.pm'. [#320]
@@ -36,8 +41,11 @@
   to collect the value for each sensor. [#347].
 - Added the new option 'refresh_interval' in 'du.pm' to reduce the execution of
   the 'du' command and its undesired side effects. [#353]
+- Added a new option to show nan instead of 0 for missing data in 'ipmi'. [#349]
 - Changed to simplify the unit correction in 'gensens.pm'. [#350]
 - Enhanced the quality of the favicon image.
+- Added the option 'respect_standby' to avoid waking up disk(s) while reading
+  SMART values. Also adds 'nan' for missing values in 'disk.pm'. [#357]
 - Fixed to include the DBI->connect parameter 'dbname=postgres' in 'pgsql.pm' to
   avoid connection problems. [#310]
 - Fixed to use $options{u} instead of $config{u}.
@@ -52,6 +60,10 @@
 - Fixed Samba users counter in 'user.pm' in case Samba is not installed. [#348]
 - Fixed the 'rigid' and 'limit' values in 'ipmi.pm' to extend their effect to
   the rest of graphs. [#354]
+- Fixed some undefined values in 'bind.pm' that led to the message: "Function
+  update_pdp_prep, case DST_GAUGE - Cannot convert '' to float". [#374]
+- Fixed all zoomed images to fit in the pop-up window when using the SVG image
+  format. [#342]
 - Small cosmetic changes.
 
 
