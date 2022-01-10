@@ -160,12 +160,12 @@ sub nvme_init {
 	}
 
 	# check dependencies
-	if(lc($nvme->{alerts}->{availspare_enabled} || "") eq "y") {
+	if(defined($nvme->{alerts}) && lc($nvme->{alerts}->{availspare_enabled} || "") eq "y") {
 		if(! -x $nvme->{alerts}->{availspare_script}) {
 			logger("$myself: ERROR: script '$nvme->{alerts}->{availspare_script}' doesn't exist or don't has execution permissions.");
 		}
 	}
-	if(lc($nvme->{alerts}->{percentused_enabled} || "") eq "y") {
+	if(defined($nvme->{alerts}) && lc($nvme->{alerts}->{percentused_enabled} || "") eq "y") {
 		if(! -x $nvme->{alerts}->{percentused_script}) {
 			logger("$myself: ERROR: script '$nvme->{alerts}->{percentused_script}' doesn't exist or don't has execution permissions.");
 		}
@@ -261,7 +261,7 @@ sub nvme_update {
 			}
 
 			# nvme alert
-			if(lc($nvme->{alerts}->{availspare_enabled}) eq "y") {
+			if(defined($nvme->{alerts}) && lc($nvme->{alerts}->{availspare_enabled}) eq "y") {
 				my $smartIndex = 1;
 				$config->{nvme_hist_alert1}->{$n} = 0 if(!$config->{nvme_hist_alert1}->{$n});
 				if($smart[$smartIndex] <= $nvme->{alerts}->{availspare_threshold} && $config->{nvme_hist_alert1}->{$n} < $smart[$smartIndex]) {
@@ -274,7 +274,7 @@ sub nvme_update {
 					$config->{nvme_hist_alert1}->{$n} = $smart[$smartIndex];
 				}
 			}
-			if(lc($nvme->{alerts}->{percentused_enabled}) eq "y") {
+			if(defined($nvme->{alerts}) && lc($nvme->{alerts}->{percentused_enabled}) eq "y") {
 				my $smartIndex = 2;
 				$config->{nvme_hist_alert2}->{$n} = 0 if(!$config->{nvme_hist_alert2}->{$n});
 				if($smart[$smartIndex] >= $nvme->{alerts}->{percentused_threshold} && $config->{nvme_hist_alert2}->{$n} < $smart[$smartIndex]) {
