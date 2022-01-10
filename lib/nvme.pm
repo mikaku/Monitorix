@@ -462,7 +462,7 @@ sub nvme_cgi {
 	my @y_axis_titles = ((lc($config->{temperature_scale}) eq "f" ? "Fahrenheit" : "Celsius"), "Percent (%)", "Percent (%)", "bytes", "Errors", "Counts");
 	my @value_transformations = ((lc($config->{temperature_scale}) eq "f" ? ",9,*,5,/,32,+" : ""), "", "", ",512000,*", "", "");
 	my @legend_labels = ("%2.0lf", "%4.0lf%%", "%4.0lf%%", "%7.3lf%s", "%4.0lf%s", "%4.0lf%s");
-	my @alt_axis_scaling = (0, 0, 0, 1, 0, 0);
+	my @alt_axis_scaling = $show_extended_plots ? (0, 0, 0, 1, 0, 0) : (0, 0, 0);
 
 	my @plot_order = $show_extended_plots ? (0, 3, 1, 2, 4, 5) : (0, 1, 2); # To rearange the plots
 	my $main_smart_plots = $show_extended_plots ? 2 : 1; # Number of smart plots on the left side.
