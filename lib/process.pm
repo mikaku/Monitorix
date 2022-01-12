@@ -157,6 +157,17 @@ sub process_update {
 	my $n;
 	my $rrdata = "N";
 
+	# check if 'ps' command accepts the argument 'etimes'
+	my $ps = "";
+	my $ticks;
+	my $starttime;
+	my ($sysuptime) = split(' ', `cat /proc/uptime`);
+	if(system("ps -eo etimes >/dev/null 2>/dev/null")) {
+		$ps = "old";
+		$ticks = `getconf CLK_TCK`;
+	}
+
+
 	my $e = 0;
 	foreach my $pg (sort keys %{$process->{list}}) {
 		my @lp = split(',', $process->{list}->{$pg});
@@ -179,38 +190,90 @@ sub process_update {
 			my $s_usage = 0;
 
 			# check if that process is running
-			if(open(IN, "ps -eo pid,comm,etimes,command |")) {
-				my $pidwidth = length(`cat /proc/sys/kernel/pid_max`);
+			if($ps eq "old") {
+				if(open(IN, "ps -eo pid,comm,command |")) {
+					my $pidwidth = length(`cat /proc/sys/kernel/pid_max`);
 
-				while(<IN>) {
-					if(m/^\s*(\d+)\s+(\S+)\s*(\d+)\s+(.*?)$/) {
-						if($p eq trim($2)) {
-							push(@pids, $1);
-							$pro++;
-							$upt = $3 if !$upt;
-							next;
+					while(<IN>) {
+						if(m/^\s*(\d+)\s+(\S+)\s+(.*?)$/) {
+							if($p eq trim($2)) {
+								push(@pids, $1);
+								$pro++;
+								if(!$upt) {
+									my @stat = split(' ', `cat /proc/$1/stat`);
+									$starttime = $stat[21] / $ticks;
+									$upt = $sysuptime - $starttime;
+								}
+								next;
+							}
+							if($p eq trim($3)) {
+								push(@pids, $1);
+								$pro++;
+								if(!$upt) {
+									my @stat = split(' ', `cat /proc/$1/stat`);
+									$starttime = $stat[21] / $ticks;
+									$upt = $sysuptime - $starttime;
+								}
+								next;
+							}
+							if(index($3, $p) != -1) {
+								push(@pids, $1);
+								$pro++;
+								if(!$upt) {
+									my @stat = split(' ', `cat /proc/$1/stat`);
+									$starttime = $stat[21] / $ticks;
+									$upt = $sysuptime - $starttime;
+								}
+								next;
+							}
 						}
-						if($p eq trim($4)) {
+						if(substr($p, 0, 15) eq substr($_, $pidwidth, 15)) {
 							push(@pids, $1);
 							$pro++;
-							$upt = $3 if !$upt;
-							next;
-						}
-						if(index($4, $p) != -1) {
-							push(@pids, $1);
-							$pro++;
-							$upt = $3 if !$upt;
+							if(!$upt) {
+								my @stat = split(' ', `cat /proc/$1/stat`);
+								$starttime = $stat[21] / $ticks;
+								$upt = $sysuptime - $starttime;
+							}
 							next;
 						}
 					}
-					if(substr($p, 0, 15) eq substr($_, $pidwidth, 15)) {
-						push(@pids, $1);
-						$pro++;
-						$upt = $3 if !$upt;
-						next;
-					}
+					close(IN);
 				}
-				close(IN);
+			} else {
+				if(open(IN, "ps -eo pid,comm,etimes,command 2>/dev/null |")) {
+					my $pidwidth = length(`cat /proc/sys/kernel/pid_max`);
+
+					while(<IN>) {
+						if(m/^\s*(\d+)\s+(\S+)\s*(\d+)\s+(.*?)$/) {
+							if($p eq trim($2)) {
+								push(@pids, $1);
+								$pro++;
+								$upt = $3 if !$upt;
+								next;
+							}
+							if($p eq trim($4)) {
+								push(@pids, $1);
+								$pro++;
+								$upt = $3 if !$upt;
+								next;
+							}
+							if(index($4, $p) != -1) {
+								push(@pids, $1);
+								$pro++;
+								$upt = $3 if !$upt;
+								next;
+							}
+						}
+						if(substr($p, 0, 15) eq substr($_, $pidwidth, 15)) {
+							push(@pids, $1);
+							$pro++;
+							$upt = $3 if !$upt;
+							next;
+						}
+					}
+					close(IN);
+				}
 			}
 
 			if(open(IN, "/proc/stat")) {
