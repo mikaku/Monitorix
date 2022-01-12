@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2020 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2022 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -591,6 +591,7 @@ sub mongodb_cgi {
 		'old' => \&RRDs::graph,
 	);
 	my $version = "new";
+	my @full_size_mode;
 	my $pic;
 	my $picz;
 	my $picz_width;
@@ -616,6 +617,7 @@ sub mongodb_cgi {
 	my $err;
 
 	$version = "old" if $RRDs::VERSION < 1.3;
+	push(@full_size_mode, "--full-size-mode") if $RRDs::VERSION > 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
 	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
@@ -862,7 +864,7 @@ sub mongodb_cgi {
 				"--vertical-label=Operations/s",
 				"--width=$width",
 				"--height=$height",
-				"--full-size-mode",
+				@full_size_mode,
 				@extra,
 				@riglim,
 				$zoom,
@@ -970,7 +972,7 @@ sub mongodb_cgi {
 				"--vertical-label=Values/s",
 				"--width=$width",
 				"--height=$height",
-				"--full-size-mode",
+				@full_size_mode,
 				@extra,
 				@riglim,
 				$zoom,
@@ -1063,7 +1065,7 @@ sub mongodb_cgi {
 				"--vertical-label=ms",
 				"--width=$width",
 				"--height=$height",
-				"--full-size-mode",
+				@full_size_mode,
 				@extra,
 				@riglim,
 				$zoom,
@@ -1151,7 +1153,7 @@ sub mongodb_cgi {
 				"--vertical-label=Connections",
 				"--width=$width",
 				"--height=$height",
-				"--full-size-mode",
+				@full_size_mode,
 				@extra,
 				@riglim,
 				$zoom,
@@ -1239,7 +1241,7 @@ sub mongodb_cgi {
 				"--vertical-label=Values/s",
 				"--width=$width",
 				"--height=$height",
-				"--full-size-mode",
+				@full_size_mode,
 				@extra,
 				@riglim,
 				$zoom,
@@ -1348,7 +1350,7 @@ sub mongodb_cgi {
 				"--vertical-label=$vlabel",
 				"--width=$width",
 				"--height=$height",
-				"--full-size-mode",
+				@full_size_mode,
 				@extra,
 				@riglim,
 				$zoom,
@@ -1467,7 +1469,7 @@ sub mongodb_cgi {
 					"--vertical-label=Values",
 					"--width=$width",
 					"--height=$height",
-					"--full-size-mode",
+					@full_size_mode,
 					@extra,
 					@riglim,
 					$zoom,
@@ -1565,7 +1567,7 @@ sub mongodb_cgi {
 					"--vertical-label=bytes",
 					"--width=$width",
 					"--height=$height",
-					"--full-size-mode",
+					@full_size_mode,
 					@extra,
 					@riglim,
 					$zoom,

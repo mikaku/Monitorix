@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2021 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2022 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -313,6 +313,7 @@ sub nvme_cgi {
 		'old' => \&RRDs::graph,
 		);
 	my $version = "new";
+	my @full_size_mode;
 	my $pic;
 	my $picz;
 	my $picz_width;
@@ -354,6 +355,7 @@ sub nvme_cgi {
 	my $show_current_values = lc($nvme->{show_current_values} || "") eq "y" ? 1 : 0;
 
 	$version = "old" if $RRDs::VERSION < 1.3;
+	push(@full_size_mode, "--full-size-mode") if $RRDs::VERSION > 1.3;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
 	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
@@ -659,7 +661,7 @@ sub nvme_cgi {
 					"--width=$width",
 					"--height=$height",
 					@scaling_options,
-					"--full-size-mode",
+					@full_size_mode,
 					@extra,
 					@riglim,
 					$zoom,
