@@ -406,6 +406,10 @@ sub ambsens_cgi {
 		}
 	}
 
+	my $use_scientific_notation = lc($ambsens->{scientific_notation} || "") eq "y" ? 1 : 0;
+	my $show_average = lc($ambsens->{show_average} || "") eq "y" ? 1 : 0;
+	my $value_format = $use_scientific_notation ? "%6.1lf%s" : "%7.1lf" ;
+
 	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	$n = 0;
 	while($n < scalar(my @sl = split(',', $ambsens->{list}))) {
@@ -428,9 +432,19 @@ sub ambsens_cgi {
 			foreach my $i (split(',', $ambsens->{desc}->{$n})) {
 				$i = trim($i);
 				$str = $ambsens->{map}->{$i} || $i;
-				$str = sprintf("%-40s", substr($str, 0, 40));
-				push(@tmp, "LINE2:s" . ($e + 1) . $LC[$e] . ":$str");
-				push(@tmp, "GPRINT:s" . ($e + 1) . ":LAST: Current\\:%7.1lf\\n");
+				if ($show_average) {
+					$str = sprintf("%-10s", substr($str, 0, 10));
+					push(@tmp, "LINE2:s" . ($e + 1) . $LC[$e] . ":$str");
+					push(@tmp, "GPRINT:s" . ($e + 1) . ":LAST: Cur\\:" . $value_format);
+					push(@tmp, "GPRINT:s" . ($e + 1) . ":AVERAGE:Avg\\:" . $value_format);
+					push(@tmp, "GPRINT:s" . ($e + 1) . ":MIN:Min\\:" . $value_format);
+					push(@tmp, "GPRINT:s" . ($e + 1) . ":MAX:Max\\:" . $value_format . "\\n");
+				}
+				else {
+					$str = sprintf("%-40s", substr($str, 0, 40));
+					push(@tmp, "LINE2:s" . ($e + 1) . $LC[$e] . ":$str");
+					push(@tmp, "GPRINT:s" . ($e + 1) . ":LAST: Current\\:" . $value_format . "\\n");
+				}
 				push(@tmpz, "LINE2:s" . ($e + 1) . $LC[$e] . ":$str");
 				$e++;
 			}
