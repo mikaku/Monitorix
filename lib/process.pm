@@ -156,6 +156,8 @@ sub process_update {
 
 	my $n;
 	my $rrdata = "N";
+	my $ticks = `getconf CLK_TCK`;
+	my ($sysuptime) = split(' ', `cat /proc/uptime`);
 
 	my $e = 0;
 	foreach my $pg (sort keys %{$process->{list}}) {
@@ -179,34 +181,30 @@ sub process_update {
 			my $s_usage = 0;
 
 			# check if that process is running
-			if(open(IN, "ps -eo pid,comm,etimes,command |")) {
+			if(open(IN, "ps -eo pid,comm,command |")) {
 				my $pidwidth = length(`cat /proc/sys/kernel/pid_max`);
 
 				while(<IN>) {
-					if(m/^\s*(\d+)\s+(\S+)\s*(\d+)\s+(.*?)$/) {
+					if(m/^\s*(\d+)\s+(\S+)\s+(.*?)$/) {
 						if($p eq trim($2)) {
 							push(@pids, $1);
 							$pro++;
-							$upt = $3 if !$upt;
 							next;
 						}
-						if($p eq trim($4)) {
+						if($p eq trim($3)) {
 							push(@pids, $1);
 							$pro++;
-							$upt = $3 if !$upt;
 							next;
 						}
-						if(index($4, $p) != -1) {
+						if(index($3, $p) != -1) {
 							push(@pids, $1);
 							$pro++;
-							$upt = $3 if !$upt;
 							next;
 						}
 					}
 					if(substr($p, 0, 15) eq substr($_, $pidwidth, 15)) {
 						push(@pids, $1);
 						$pro++;
-						$upt = $3 if !$upt;
 						next;
 					}
 				}
@@ -230,6 +228,7 @@ sub process_update {
 					my $utime = 0;
 					my $stime = 0;
 					my $v_nth = 0;
+					my $starttime = 0;
 					my $v_mem = 0;
 					my $rest;
 
@@ -238,10 +237,13 @@ sub process_update {
 					(undef, $rest) = <IN> =~ m/^(\d+\s\(.*?\)\s\S\s)(.*?)$/;
 					close(IN);
 					if($rest) {
-						(undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, $utime, $stime, undef, undef, undef, undef, $v_nth, undef, undef, undef, $v_mem) = split(' ', $rest);
+						(undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, $utime, $stime, undef, undef, undef, undef, $v_nth, undef, $starttime, undef, $v_mem) = split(' ', $rest);
 						$mem += ($v_mem *= 4096);
 						$nth += ($v_nth - 1);
 						$p_usage += $utime + $stime;
+						$starttime /= $ticks;
+						my $diff = $sysuptime - $starttime;
+						$upt = $diff unless $diff < $upt;
 					} else {
 						logger("$myself: WARNING: PID $pid ('$p') has vanished while accounting!");
 					}
