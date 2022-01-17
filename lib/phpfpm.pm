@@ -177,7 +177,7 @@ sub phpfpm_update {
 			$ssl = "ssl_opts => {verify_hostname => 0}",
 			$ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0
 				if lc($config->{accept_selfsigned_certs}) eq "y";
-			my $ua = LWP::UserAgent->new(timeout => 30, $ssl);
+			my $ua = LWP::UserAgent->new(timeout => 5, $ssl);
 			$ua->agent($config->{user_agent_id}) if $config->{user_agent_id} || "";
 			my $response = $ua->request(HTTP::Request->new('GET', $url));
 			if(!$response->is_success) {
