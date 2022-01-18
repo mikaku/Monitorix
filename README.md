@@ -7,7 +7,7 @@ Community
 - [Website](https://www.monitorix.org)
 - [Documentation](https://www.monitorix.org/documentation.html)
 - [Mailing List](https://lists.sourceforge.net/lists/listinfo/monitorix-general)
-- [IRC](https://webchat.freenode.net/?channels=monitorix)
+- [IRC](https://web.libera.chat/?channels=#monitorix)
 
 License
 -------
