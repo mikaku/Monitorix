@@ -1,4 +1,4 @@
-3.NN.N - DD-Jan-2022
+3.14.0 - 18-Jan-2022
 ====================
 - Added a complete graph to support NVMe device statistics ('nvme.pm'). [#215]
 - Added a complete graph to support AMD graphic cards statistics ('amdgpu.pm').

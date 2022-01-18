@@ -170,7 +170,7 @@ CONTACT
 In case of help, bugs, ideas or suggestions please contact using any of the
 following ways:
 
-- IRC at freenode: #monitorix
+- IRC at Libera.Chat: #monitorix
 - Mailing List: https://lists.sourceforge.net/lists/listinfo/monitorix-general
 - Direct Email: Jordi Sanfeliu <jordi@fibranet.cat>
 
@@ -187,6 +187,6 @@ LICENSE AND COPYRIGHT
 Monitorix is distributed under the terms of the GNU General Public License.
 See the included file "COPYING".
 
-Copyright (C) 2005-2021 Jordi Sanfeliu.
+Copyright (C) 2005-2022 Jordi Sanfeliu.
 https://www.monitorix.org
 
