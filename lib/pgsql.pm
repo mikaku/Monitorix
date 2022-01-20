@@ -244,7 +244,7 @@ sub pgsql_update {
 		$uptime = @{$result}[0];
 		$sth->finish;
 
-		$sth = $dbh->prepare("SELECT SUM(pg_database_size(datid)) AS total_size FROM pg_stat_database");
+		$sth = $dbh->prepare("SELECT SUM(pg_database_size(datid)) AS total_size FROM pg_stat_database WHERE datid>0");
 		$sth->execute;
 		$result = $sth->fetchrow_arrayref();
 		$tsize = @{$result}[0];
