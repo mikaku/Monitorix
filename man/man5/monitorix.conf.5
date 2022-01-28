@@ -666,6 +666,131 @@ This option will completely enable or disable the legend in the processor graphs
 .P
 Default value: \fIy\fP
 .RE
+.SS AMD power consumption (amdenergy.pm)
+This graph is able to monitor the power draw of an unlimited number of AMD CPUs if the amd_energy driver and \fIsensors\fP is available. I will show power draw of the cores and the socket and the non-core part of the power draw. It is calculated by subtracting the sum of the core power draw from the socket power draw.
+.P
+.BI list
+.RS
+This is a list of groups of CPU sensors you want to monitor with the same names as they appear in your \fIsensors\fP(1) command. Each group will become a plot and there may be an unlimited number of groups. You can define device names like \fIamd_energy-isa-0000\fP.
+.P
+WARNING: Every time the number of groups or the size of the groups in this option changes, Monitorix will resize the \fIamdenergy.rrd\fP file accordingly, removing all historical data.
+.P
+To collect the CPU power usage the energy counters from the \fIsensors\fP command via the amd_energy driver is used and a power consumption in the monitoring time interval calculated.
+.P
+It is recommended that you first check if the \fIsensors\fP output is able to provide energy counters (EcoreXXX and EsocketX) from the CPU(s) that you plan to monitor. For example check \fIsensors\fP for available sensors.
+
+You can add it to the group 0 like this:
+.P
+.RS
+<list>
+.br
+	0 = amd_energy-isa-0000
+.br
+	1 = amd_energy-isa-0001
+.br
+</list>
+.RE
+.P
+.RE
+.P
+.BI number_of_cores
+.RS
+This list sets the number of cores for the CPUs specified in the \fBlist\fP option. It is required to specify the number of cores is for each CPU in \fBlist\f.
+.P
+.RS
+<number_of_cores>
+.br
+	amd_energy-isa-0000 = 64
+.br
+	amd_energy-isa-0001 = 32
+.br
+</number_of_cores>
+.RE
+.RE
+.P
+.BI map
+.RS
+This list complements the \fBlist\fP option. It basically allows you to change the CPU name that will appear in the graph, hiding the sensor name. If no association is defined, then Monitorix will display the name of the CPU device as it is specified in the config file.
+.P
+.RS
+<map>
+.br
+	amd_energy-isa-0000 = AMD CPU 1
+.br
+	amd_energy-isa-0001 = AMD CPU 2
+.br
+</map>
+.RE
+.RE
+.P
+.BI desc
+.RS
+This list complements the \fBlist\fP option. It allows you to include a title for every group of CPUs. The title will appear in the title above the plot.
+.P
+.RS
+<desc>
+.br
+	0 = Socket 1 power distribution
+.br
+	1 = Socket 2 power distribution
+.br
+</desc>
+.RE
+.RE
+.P
+.BI socketpower_enabled
+.RS
+This section enables or disables the alert capabilities for this graph; the alert for the socket power draw. It works as follows:
+.P
+If the socket power draw of any of the specified CPU device reaches or succeeds the \fBsocketpower_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBsocketpower_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI socketpower_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fINone\fP
+.RE
+.P
+.BI socketpower_threshold
+.RS
+This is the value that needs to be reached or succeeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fINone\fP
+.RE
+.P
+.BI socketpower_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBsocketpower_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBsocketpower_threshold\fP.
+.br
+3rd - the current socket power draw.
+.P
+Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI use_nan_for_missing_data
+.RS
+This option, when enabled via \fIy\fP, shows \fnan\fP values for missing data instead of \f0\fP. This is useful when \f0\fP could be mistaken for valid data.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI gap_on_all_nan
+.RS
+This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option shows gaps only if all data points are \fInan\fP instead of requiring only one to be \fInan\fP for a gap. This can be useful if not all sensor data are required for normal operation.
+.P
+Default value: \fIn\fP
+.RE
 .SS HP ProLiant System Health (hptemp.pm)
 .BI list
 .RS
