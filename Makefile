@@ -85,6 +85,7 @@ install-bin:
 	$(INSTALL_DATA) lib/HTTPServer.pm "$(DESTDIR)$(LIBDIR)/HTTPServer.pm"
 	$(INSTALL_DATA) lib/icecast.pm "$(DESTDIR)$(LIBDIR)/icecast.pm"
 	$(INSTALL_DATA) lib/int.pm "$(DESTDIR)$(LIBDIR)/int.pm"
+	$(INSTALL_DATA) lib/intelrapl.pm "$(DESTDIR)$(LIBDIR)/intelrapl.pm"
 	$(INSTALL_DATA) lib/ipmi.pm "$(DESTDIR)$(LIBDIR)/ipmi.pm"
 	$(INSTALL_DATA) lib/kern.pm "$(DESTDIR)$(LIBDIR)/kern.pm"
 	$(INSTALL_DATA) lib/libvirt.pm "$(DESTDIR)$(LIBDIR)/libvirt.pm"
