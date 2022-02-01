@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use Monitorix;
 use RRDs;
+use Time::HiRes;
 use Cwd 'abs_path';
 use File::Basename;
 use Exporter 'import';
@@ -31,6 +32,162 @@ our @EXPORT = qw(nvme_init nvme_update nvme_cgi);
 
 my $max_number_of_hds = 8;		# Changing this number destroys history.
 my $number_of_smart_values_in_rrd = 9;	# Changing this number destroys history.
+
+my $epoc_identifier = "last_epoc";
+my $data_units_written_identifier = "last_duw";
+my $data_units_read_identifier = "last_dur";
+
+sub measure {
+	my ($myself, $config, $nvme) = @_;
+	my $use_nan_for_missing_data = lc($nvme->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
+
+	my @smart_all;
+	my $rrdata = "N";
+
+	foreach my $k (sort keys %{$nvme->{list}}) {
+		# values delimitted by ", " (comma + space)
+		my @dsk = split(', ', $nvme->{list}->{$k});
+		for(my $n = 0; $n < $max_number_of_hds; $n++) {
+			my @smart = ($use_nan_for_missing_data ? (0+"nan") : 0) x $number_of_smart_values_in_rrd;
+
+			if($dsk[$n]) {
+				my $d = trim($dsk[$n]);
+				$d =~ s/^\"//;
+				$d =~ s/\"$//;
+
+				# check if device name is a symbolic link
+				# e.g. /dev/nvme/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+				if(-l $d) {
+					$d = abs_path(dirname($d) . "/" . readlink($d));
+					chomp($d);
+				}
+
+				my $last_epoc = ($config->{nvme_hist}->{$k}->{$n}->{$epoc_identifier} || 0);
+				my $epoc = Time::HiRes::time();
+				$config->{nvme_hist}->{$k}->{$n}->{$epoc_identifier} = $epoc;
+				my $data_units_written_index;
+				my $data_units_read_index;
+
+				open(IN, "smartctl -A $d --json |");
+				while(<IN>) {
+					if(/\"temperature\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						if (index($tmp[1], "{") == -1) {
+							my $smartIndex = 0;
+							$smart[$smartIndex] = trim($tmp[1]);
+							chomp($smart[$smartIndex]);
+						}
+					}
+					if(/\"available_spare\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						my $smartIndex = 1;
+						$smart[$smartIndex] = trim($tmp[1]);
+						chomp($smart[$smartIndex]);
+					}
+					if(/\"percentage_used\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						my $smartIndex = 2;
+						$smart[$smartIndex] = trim($tmp[1]);
+						chomp($smart[$smartIndex]);
+					}
+					if(/\"data_units_written\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						my $smartIndex = 3;
+						$data_units_written_index = $smartIndex;
+						$smart[$smartIndex] = trim($tmp[1]);
+						chomp($smart[$smartIndex]);
+					}
+					if(/\"media_errors\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						my $smartIndex = 4;
+						$smart[$smartIndex] = trim($tmp[1]);
+						chomp($smart[$smartIndex]);
+					}
+					if(/\"unsafe_shutdowns\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						my $smartIndex = 5;
+						$smart[$smartIndex] = trim($tmp[1]);
+						chomp($smart[$smartIndex]);
+					}
+					if(/\"data_units_read\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						my $smartIndex = 6;
+						$data_units_read_index = $smartIndex;
+						$smart[$smartIndex] = trim($tmp[1]);
+						chomp($smart[$smartIndex]);
+					}
+				}
+				close(IN);
+
+				if (defined($data_units_written_index)) {
+				  my $smartIndex = 7;
+					my $last_data_units_written = ($config->{nvme_hist}->{$k}->{$n}->{$data_units_written_identifier} || 0);
+					my $data_units_written = $smart[$data_units_written_index];
+					$config->{nvme_hist}->{$k}->{$n}->{$data_units_written_identifier} = $data_units_written;
+#					logger("$myself: HUHU duw=". $data_units_written . ", lduw=".$last_data_units_written);
+					if ($last_epoc ne 0 && $data_units_written >= $last_data_units_written) {
+						$smart[$smartIndex] = ($data_units_written - $last_data_units_written) / ($epoc - $last_epoc); # Calculation of data units per seconds.
+#						logger("$myself: HUHU duw/s=". ($smart[$smartIndex] * 512000). " bytes/s");
+					}
+				}
+				if (defined($data_units_read_index)) {
+				  my $smartIndex = 8;
+					my $last_data_units_read = ($config->{nvme_hist}->{$k}->{$n}->{$data_units_read_identifier} || 0);
+					my $data_units_read = $smart[$data_units_read_index];
+					$config->{nvme_hist}->{$k}->{$n}->{$data_units_read_identifier} = $data_units_read;
+#					logger("$myself: HUHU dur=". $data_units_read . ", ldur=".$last_data_units_read);
+					if ($last_epoc ne 0 && $data_units_read >= $last_data_units_read) {
+						$smart[$smartIndex] = ($data_units_read - $last_data_units_read) / ($epoc - $last_epoc); # Calculation of data units per seconds.
+#						logger("$myself: HUHU dur/s=". ($smart[$smartIndex] * 512000). " bytes/s");
+					}
+				}
+			}
+
+			push(@smart_all, @smart);
+
+			# nvme alert
+			if(defined($nvme->{alerts}) && lc($nvme->{alerts}->{availspare_enabled}) eq "y") {
+				my $smartIndex = 1;
+				$config->{nvme_hist_alert1}->{$n} = 0 if(!$config->{nvme_hist_alert1}->{$n});
+				if($smart[$smartIndex] <= $nvme->{alerts}->{availspare_threshold} && $config->{nvme_hist_alert1}->{$n} < $smart[$smartIndex]) {
+					if(-x $nvme->{alerts}->{availspare_script}) {
+						logger("$myself: ALERT: executing script '$nvme->{alerts}->{availspare_script}'.");
+						system($nvme->{alerts}->{availspare_script} . " " .$nvme->{alerts}->{availspare_timeintvl} . " " . $nvme->{alerts}->{availspare_threshold} . " " . $smart[$smartIndex]);
+					} else {
+						logger("$myself: ERROR: script '$nvme->{alerts}->{availspare_script}' doesn't exist or don't has execution permissions.");
+					}
+					$config->{nvme_hist_alert1}->{$n} = $smart[$smartIndex];
+				}
+			}
+			if(defined($nvme->{alerts}) && lc($nvme->{alerts}->{percentused_enabled}) eq "y") {
+				my $smartIndex = 2;
+				$config->{nvme_hist_alert2}->{$n} = 0 if(!$config->{nvme_hist_alert2}->{$n});
+				if($smart[$smartIndex] >= $nvme->{alerts}->{percentused_threshold} && $config->{nvme_hist_alert2}->{$n} < $smart[$smartIndex]) {
+					if(-x $nvme->{alerts}->{percentused_script}) {
+						logger("$myself: ALERT: executing script '$nvme->{alerts}->{percentused_script}'.");
+						system($nvme->{alerts}->{percentused_script} . " " .$nvme->{alerts}->{percentused_timeintvl} . " " . $nvme->{alerts}->{percentused_threshold} . " " . $smart[$smartIndex]);
+					} else {
+						logger("$myself: ERROR: script '$nvme->{alerts}->{percentused_script}' doesn't exist or don't has execution permissions.");
+					}
+					$config->{nvme_hist_alert2}->{$n} = $smart[$smartIndex];
+				}
+			}
+		}
+	}
+
+	foreach(@smart_all) {
+ 		$rrdata .= ":$_";
+ 	}
+
+ 	return $rrdata;
+}
 
 sub nvme_init {
 	my $myself = (caller(0))[3];
@@ -173,7 +330,11 @@ sub nvme_init {
 
 	$config->{nvme_hist_alert1} = ();
 	$config->{nvme_hist_alert2} = ();
+	$config->{nvme_hist} = ();
 	push(@{$config->{func_update}}, $package);
+
+	measure($myself, $config, $nvme);
+
 	logger("$myself: Ok") if $debug;
 }
 
@@ -182,113 +343,8 @@ sub nvme_update {
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $nvme = $config->{nvme};
-	my $use_nan_for_missing_data = lc($nvme->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
 
-	my @smart;
-
-	my $n;
-	my $rrdata = "N";
-
-	foreach my $k (sort keys %{$nvme->{list}}) {
-		# values delimitted by ", " (comma + space)
-		my @dsk = split(', ', $nvme->{list}->{$k});
-		for($n = 0; $n < $max_number_of_hds; $n++) {
-			@smart = ($use_nan_for_missing_data ? (0+"nan") : 0) x $number_of_smart_values_in_rrd;
-
-			if($dsk[$n]) {
-				my $d = trim($dsk[$n]);
-				$d =~ s/^\"//;
-				$d =~ s/\"$//;
-
-				# check if device name is a symbolic link
-				# e.g. /dev/nvme/by-path/pci-0000:07:07.0-scsi-0:0:0:0
-				if(-l $d) {
-					$d = abs_path(dirname($d) . "/" . readlink($d));
-					chomp($d);
-				}
-
-				open(IN, "smartctl -A $d --json |");
-				while(<IN>) {
-					if(/\"temperature\"/) {
-						my @tmp = split(':', $_);
-						$tmp[1] =~ tr/,//d;
-						if (index($tmp[1], "{") == -1) {
-							my $smartIndex = 0;
-							$smart[$smartIndex] = trim($tmp[1]);
-							chomp($smart[$smartIndex]);
-						}
-					}
-					if(/\"available_spare\"/) {
-						my @tmp = split(':', $_);
-						$tmp[1] =~ tr/,//d;
-						my $smartIndex = 1;
-						$smart[$smartIndex] = trim($tmp[1]);
-						chomp($smart[$smartIndex]);
-					}
-					if(/\"percentage_used\"/) {
-						my @tmp = split(':', $_);
-						$tmp[1] =~ tr/,//d;
-						my $smartIndex = 2;
-						$smart[$smartIndex] = trim($tmp[1]);
-						chomp($smart[$smartIndex]);
-					}
-					if(/\"data_units_written\"/) {
-						my @tmp = split(':', $_);
-						$tmp[1] =~ tr/,//d;
-						my $smartIndex = 3;
-						$smart[$smartIndex] = trim($tmp[1]);
-						chomp($smart[$smartIndex]);
-					}
-					if(/\"media_errors\"/) {
-						my @tmp = split(':', $_);
-						$tmp[1] =~ tr/,//d;
-						my $smartIndex = 4;
-						$smart[$smartIndex] = trim($tmp[1]);
-						chomp($smart[$smartIndex]);
-					}
-					if(/\"unsafe_shutdowns\"/) {
-						my @tmp = split(':', $_);
-						$tmp[1] =~ tr/,//d;
-						my $smartIndex = 5;
-						$smart[$smartIndex] = trim($tmp[1]);
-						chomp($smart[$smartIndex]);
-					}
-				}
-				close(IN);
-			}
-			foreach(@smart) {
-				$rrdata .= ":$_";
-			}
-
-			# nvme alert
-			if(defined($nvme->{alerts}) && lc($nvme->{alerts}->{availspare_enabled}) eq "y") {
-				my $smartIndex = 1;
-				$config->{nvme_hist_alert1}->{$n} = 0 if(!$config->{nvme_hist_alert1}->{$n});
-				if($smart[$smartIndex] <= $nvme->{alerts}->{availspare_threshold} && $config->{nvme_hist_alert1}->{$n} < $smart[$smartIndex]) {
-					if(-x $nvme->{alerts}->{availspare_script}) {
-						logger("$myself: ALERT: executing script '$nvme->{alerts}->{availspare_script}'.");
-						system($nvme->{alerts}->{availspare_script} . " " .$nvme->{alerts}->{availspare_timeintvl} . " " . $nvme->{alerts}->{availspare_threshold} . " " . $smart[$smartIndex]);
-					} else {
-						logger("$myself: ERROR: script '$nvme->{alerts}->{availspare_script}' doesn't exist or don't has execution permissions.");
-					}
-					$config->{nvme_hist_alert1}->{$n} = $smart[$smartIndex];
-				}
-			}
-			if(defined($nvme->{alerts}) && lc($nvme->{alerts}->{percentused_enabled}) eq "y") {
-				my $smartIndex = 2;
-				$config->{nvme_hist_alert2}->{$n} = 0 if(!$config->{nvme_hist_alert2}->{$n});
-				if($smart[$smartIndex] >= $nvme->{alerts}->{percentused_threshold} && $config->{nvme_hist_alert2}->{$n} < $smart[$smartIndex]) {
-					if(-x $nvme->{alerts}->{percentused_script}) {
-						logger("$myself: ALERT: executing script '$nvme->{alerts}->{percentused_script}'.");
-						system($nvme->{alerts}->{percentused_script} . " " .$nvme->{alerts}->{percentused_timeintvl} . " " . $nvme->{alerts}->{percentused_threshold} . " " . $smart[$smartIndex]);
-					} else {
-						logger("$myself: ERROR: script '$nvme->{alerts}->{percentused_script}' doesn't exist or don't has execution permissions.");
-					}
-					$config->{nvme_hist_alert2}->{$n} = $smart[$smartIndex];
-				}
-			}
-		}
-	}
+	my $rrdata = measure($myself, $config, $nvme);
 
 	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;
