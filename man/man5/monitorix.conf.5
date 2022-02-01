@@ -677,9 +677,84 @@ WARNING: Every time the number of groups or the size of the groups in this optio
 .P
 To collect the CPU power usage the energy counters from the \fIsensors\fP command via the amd_energy driver is used and a power consumption in the monitoring time interval calculated.
 .P
-It is recommended that you first check if the \fIsensors\fP output is able to provide energy counters (EcoreXXX and EsocketX) from the CPU(s) that you plan to monitor. For example check \fIsensors\fP for available sensors.
-
-You can add it to the group 0 like this:
+It is recommended that you first check if the \fIsensors\fP output is able to provide energy counters (EcoreXXX and EsocketX) from the CPU(s) that you plan to monitor. For example check \fIsensors\fP for available sensors. You may test this with the following command (root privileges might be needed to access the energy counters):
+.P
+.RS
+# sensors amd_energy-isa-0000
+.br
+amd_energy-isa-0000
+.br
+Adapter: ISA adapter
+.br
+Ecore000:     31.81 kJ
+.br
+Ecore001:     27.54 kJ
+.br
+Ecore002:     25.44 kJ
+.br
+Ecore003:     27.08 kJ
+.br
+Ecore004:     48.45 kJ
+.br
+Ecore005:     41.39 kJ
+.br
+Ecore006:     42.49 kJ
+.br
+Ecore007:     39.88 kJ
+.br
+Ecore008:    109.67 kJ
+.br
+Ecore009:    107.59 kJ
+.br
+Ecore010:    115.21 kJ
+.br
+Ecore011:    168.80 kJ
+.br
+Ecore012:     61.64 kJ
+.br
+Ecore013:     49.86 kJ
+.br
+Ecore014:     42.20 kJ
+.br
+Ecore015:     51.55 kJ
+.br
+Ecore016:     35.41 kJ
+.br
+Ecore017:     35.87 kJ
+.br
+Ecore018:     33.91 kJ
+.br
+Ecore019:     34.40 kJ
+.br
+Ecore020:    102.11 kJ
+.br
+Ecore021:    238.25 kJ
+.br
+Ecore022:     86.68 kJ
+.br
+Ecore023:     99.13 kJ
+.br
+Ecore024:     23.79 kJ
+.br
+Ecore025:     23.30 kJ
+.br
+Ecore026:     23.48 kJ
+.br
+Ecore027:     23.63 kJ
+.br
+Ecore028:     23.53 kJ
+.br
+Ecore029:     22.10 kJ
+.br
+Ecore030:     20.83 kJ
+.br
+Ecore031:     19.45 kJ
+.br
+Esocket0:     21.12 MJ
+.br
+.P
+.RE
+If you see good results as above, you can add it to the group 0 like this:
 .P
 .RS
 <list>
