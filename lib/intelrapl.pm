@@ -35,7 +35,6 @@ my $val_identifier = "last_val";
 my $list_delimiter = ",";
 
 sub get_max_number_of_values_per_group {
-
 	my ($intelrapl) = @_;
 	my $default_max_number_of_values_per_group = 10; # Can be overwritten via config file but changes will break history.
 	if(defined($intelrapl->{max_number_of_values_per_group})) {
@@ -107,7 +106,6 @@ sub line_color {
 }
 
 sub measure {
-
 	my ($myself, $config, $intelrapl) = @_;
 	my $use_nan_for_missing_data = lc($intelrapl->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
 
@@ -335,7 +333,7 @@ sub intelrapl_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $intelrapl = $config->{intelrapl};
 
-	my $ rrdata = measure($myself, $config, $intelrapl);
+	my $rrdata = measure($myself, $config, $intelrapl);
 
 	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;
@@ -345,11 +343,10 @@ sub intelrapl_update {
 
 sub round {
 	my ($float) = @_;
-  return int($float + $float/abs($float*2 || 1));
+	return int($float + $float/abs($float*2 || 1));
 }
 
 sub intelrapl_cgi {
-
 	my ($package, $config, $cgi) = @_;
 	my @output;
 
