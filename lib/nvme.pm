@@ -131,10 +131,8 @@ sub measure {
 					my $last_data_units_written = ($config->{nvme_hist}->{$k}->{$n}->{$data_units_written_identifier} || 0);
 					my $data_units_written = $smart[$data_units_written_index];
 					$config->{nvme_hist}->{$k}->{$n}->{$data_units_written_identifier} = $data_units_written;
-#					logger("$myself: HUHU duw=". $data_units_written . ", lduw=".$last_data_units_written);
 					if ($last_epoc ne 0 && $data_units_written >= $last_data_units_written) {
 						$smart[$smartIndex] = ($data_units_written - $last_data_units_written) / ($epoc - $last_epoc); # Calculation of data units per seconds.
-#						logger("$myself: HUHU duw/s=". ($smart[$smartIndex] * 512000). " bytes/s");
 					}
 				}
 				if (defined($data_units_read_index)) {
@@ -142,10 +140,8 @@ sub measure {
 					my $last_data_units_read = ($config->{nvme_hist}->{$k}->{$n}->{$data_units_read_identifier} || 0);
 					my $data_units_read = $smart[$data_units_read_index];
 					$config->{nvme_hist}->{$k}->{$n}->{$data_units_read_identifier} = $data_units_read;
-#					logger("$myself: HUHU dur=". $data_units_read . ", ldur=".$last_data_units_read);
 					if ($last_epoc ne 0 && $data_units_read >= $last_data_units_read) {
 						$smart[$smartIndex] = ($data_units_read - $last_data_units_read) / ($epoc - $last_epoc); # Calculation of data units per seconds.
-#						logger("$myself: HUHU dur/s=". ($smart[$smartIndex] * 512000). " bytes/s");
 					}
 				}
 			}
@@ -513,7 +509,7 @@ sub nvme_cgi {
 
 	# Array index is the plot index:
 	my @alt_axis_scaling = $show_extended_plots ? (0, 0, 0, 0, 0, 0, 0, 1, 1) : (0, 0, 0);
-	my @plot_order = $show_extended_plots ? (0, 8, 7, 1, 2, 4, 5, 3, 6) : (0, 1, 2); # To rearange the plots
+	my @plot_order = $show_extended_plots ? (0, 8, 7, 1, 2, 4, 5, 6, 3) : (0, 1, 2); # To rearange the plots
 	my $main_smart_plots = $show_extended_plots ? 3 : 1; # Number of smart plots on the left side.
 	my @main_plot_with_average = $show_extended_plots ? (1, 1, 1) : (1); # Wether or not the main plots show average, min and max or only the last value in the legend.
 
