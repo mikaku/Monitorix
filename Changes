@@ -1,3 +1,16 @@
+N.NN.N - DD-MMM-YYYY
+====================
+- Added the 'additional_graph_name' configuration option. [#388]
+- Fixed an error in 'pgsql.pm' if a non-privileged user is used to read the
+  statistics. [#384]
+- Fixed the amdgpu section in 'monitorix.conf'. [#385]
+- Fixed a change in the quotation marks introduced in 3.14 that prevented from
+  sending reports. [#391]
+       (thanks to Michael Bronzini, mb20 AT bronzeware.se for pointing this out)
+- Fixed wrong index for image directory in 'amdgpu.pm', 'nvidiagpu.pm' and
+  'nvme.pm'. [#387]
+
+
 3.14.0 - 18-Jan-2022
 ====================
 - Added a complete graph to support NVMe device statistics ('nvme.pm'). [#215]
