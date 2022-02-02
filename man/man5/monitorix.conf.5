@@ -180,6 +180,13 @@ All the configuration files in there will be loaded in alphabetic order, so the 
 Default value: \fI/etc/monitorix/conf.d\fP
 .RE
 .P
+.BI additional_graph_name
+.RS
+This is an optional configuration option for configuration files in \fIinclude_dir\fP. It takes a comma separated list of additional modules that is appended to the \fIgraph_name\fP option. This enables you to add custom modules without changing the \fImonitorix.conf\fP or copy all names from \fIgraph_name\fP to your config file.
+.P
+Default value: \fINone\fP
+.RE
+.P
 .BI ip_default_table
 .RS
 This option will define in which table Monitorix will put all \fIiptables\fP rules for network traffic accounting monitoring. It only works on Linux.
