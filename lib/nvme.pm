@@ -508,10 +508,11 @@ sub nvme_cgi {
 	my @legend_labels = ("%5.1lf", "%4.0lf%%", "%4.0lf%%", $total_bytes_format, "%4.0lf%s", "%4.0lf%s", $total_bytes_format, $byte_speed_format, $byte_speed_format);
 
 	# Array index is the plot index:
-	my @alt_axis_scaling = $show_extended_plots ? (0, 0, 0, 0, 0, 0, 0, 1, 1) : (0, 0, 0);
 	my @plot_order = $show_extended_plots ? (0, 8, 7, 1, 2, 4, 5, 6, 3) : (0, 1, 2); # To rearange the plots
 	my $main_smart_plots = $show_extended_plots ? 3 : 1; # Number of smart plots on the left side.
 	my @main_plot_with_average = $show_extended_plots ? (1, 1, 1) : (1); # Wether or not the main plots show average, min and max or only the last value in the legend.
+	my @alt_axis_scaling = $show_extended_plots ? (0, 0, 0, 0, 0, 0, 0, 1, 1) : (0, 0, 0);
+	my @logarithmic_axis_scaling = $show_extended_plots ? (0, 0, 0, 0, 0, 0, 0, 0, 0) : (0, 0, 0);
 
 	if(!$show_extended_plots) {
 		for(my $index = 0; $index < scalar(@plot_order); $index++) {
@@ -536,6 +537,9 @@ sub nvme_cgi {
 	}
 	if(scalar(@alt_axis_scaling) != $number_of_plots) {
 		push(@output, "ERROR: Size of alt_axis_scaling (" . scalar(@alt_axis_scaling) . ") has to be equal to number_of_plots (" . $number_of_plots . ")");
+	}
+	if(scalar(@logarithmic_axis_scaling) != $number_of_plots) {
+		push(@output, "ERROR: Size of logarithmic_axis_scaling (" . scalar(@logarithmic_axis_scaling) . ") has to be equal to number_of_plots (" . $number_of_plots . ")");
 	}
 	if(scalar(@plot_order) > $number_of_smart_values_in_use) {
 		push(@output, "ERROR: Size of plot_order (" . scalar(@plot_order) . ") has to be smaller or equal to number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
@@ -707,6 +711,10 @@ sub nvme_cgi {
 			if ($alt_axis_scaling[$n_plot]) {
 			  push(@scaling_options, "--alt-autoscale");
 			  push(@scaling_options, "--alt-y-grid");
+			}
+			if ($logarithmic_axis_scaling[$n_plot]) {
+			  push(@scaling_options, "--logarithmic");
+			  @riglim = ();
 			}
 			my $plot_title = $config->{graphs}->{'_nvme' . ($n_plot + 1)};
 			$pic = $rrd{$version}->("$IMG_DIR" . $IMG[$e * $number_of_plots + $n_plot],
