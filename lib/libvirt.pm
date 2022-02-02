@@ -24,8 +24,160 @@ use strict;
 use warnings;
 use Monitorix;
 use RRDs;
+use Time::HiRes;
 use Exporter 'import';
 our @EXPORT = qw(libvirt_init libvirt_update libvirt_cgi);
+
+sub measure {
+	my ($myself, $config, $libvirt) = @_;
+	my $rrdata = "N";
+	my $e = 0;
+	foreach my $vmg (sort keys %{$libvirt->{list}}) {
+		my @lvl = split(',', $libvirt->{list}->{$vmg});
+		for(my $n = 0; $n < 8; $n++) {
+			my $cpu = 0;
+			my $mem = 0;
+			my $dsk = 0;
+			my $net = 0;
+
+			my $str;
+			my $state = "";
+			my $vm = trim($lvl[$n] || "");
+
+			my @vda;
+			my @vmac;
+
+			# convert from old configuration to new
+			if(ref($libvirt->{desc}->{$vm} || "") ne "HASH") {
+				my $val;
+
+				$val = trim((split(',', $libvirt->{desc}->{$vm} || ""))[1]);
+				push(@vda, $val) if $val;
+				$val = trim((split(',', $libvirt->{desc}->{$vm} || ""))[2]);
+				push(@vmac, $val) if $val;
+			} else {
+				@vda = split(',', $libvirt->{desc}->{$vm}->{disk} || "");
+				@vmac = split(',', $libvirt->{desc}->{$vm}->{net} || "");
+			}
+
+			my $vnet = "";
+
+			if($vm && (!scalar(@vda) || !scalar(@vmac))) {
+				logger("$myself: missing parameters in '$vm' virtual machine.");
+				$vm = "";	# invalidates this vm
+			}
+
+			# check first if that 'vm' is running
+			if($vm && open(IN, "$libvirt->{cmd} domstate $vm |")) {
+				$state = trim(<IN>);
+				close(IN);
+			}
+
+			if($state eq "running") {
+
+				my $epoc_identifier = "last_epoc_" . $e . "_" . $n;
+				my $last_epoc = ($config->{libvirt_hist}->{$epoc_identifier} || 0);
+				my $epoc = Time::HiRes::time();
+				$config->{libvirt_hist}->{$epoc_identifier} = $epoc;
+				my $delta_t = ($last_epoc ne 0) ? ($epoc - $last_epoc) : 60;
+
+				my $t;
+
+				if(open(IN, "$libvirt->{cmd} cpu-stats $vm --total |")) {
+					my $c = 0;
+					while(<IN>) {
+						if(/^\s+cpu_time\s+(\d+\.\d+) seconds$/) {
+							$c = $1;
+						}
+					}
+					close(IN);
+					$str = $e . "_cpu" . $n;
+					$cpu = $c - ($config->{libvirt_hist}->{$str} || 0);
+					$cpu = 0 unless $c != $cpu;
+					$cpu = $cpu * 100 / $delta_t;
+					$cpu = $cpu > 100 ? 100 : $cpu;
+					$config->{libvirt_hist}->{$str} = $c;
+				}
+				if(open(IN, "$libvirt->{cmd} dommemstat $vm |")) {
+					while(<IN>) {
+						if(/^rss\s+(\d+)$/) {
+							$mem = $1 * 1024;
+						}
+					}
+					close(IN);
+				}
+
+				# summarizes all virtual disks stats for each 'vm'
+				$t = 0;
+				foreach my $vd (@vda) {
+					$vd = trim($vd);
+					if(open(IN, "$libvirt->{cmd} domblkstat $vm $vd |")) {
+						my $r = 0;
+						my $w = 0;
+						while(<IN>) {
+							if(/^$vd\s+rd_bytes\s+(\d+)$/) {
+								$r = $1;
+							}
+							if(/^$vd\s+wr_bytes\s+(\d+)$/) {
+								$w = $1;
+								last;
+							}
+						}
+						close(IN);
+						$t += ($r + $w);
+					}
+				}
+				$str = $e . "_dsk" . $n;
+				$dsk = $t - ($config->{libvirt_hist}->{$str} || 0);
+				$dsk = 0 unless $t != $dsk;
+				$dsk /= $delta_t;
+				$config->{libvirt_hist}->{$str} = $t;
+
+				# summarizes all virtual network stats for each 'vm'
+				$t = 0;
+				foreach my $vn (@vmac) {
+					$vn = trim($vn);
+					if(open(IN, "$libvirt->{cmd} domiflist $vm |")) {
+						while(<IN>) {
+							if(/^\s*(\S+)\s+.*?\s+$vn$/) {
+								$vnet = $1;
+							}
+						}
+						close(IN);
+					}
+					if(!$vnet) {
+						logger("$myself: invalid MAC address '$vn' in '$vm'.");
+						next;
+					}
+
+					if(open(IN, "$libvirt->{cmd} domifstat $vm $vnet |")) {
+						my $r = 0;
+						my $w = 0;
+						while(<IN>) {
+							if(/^$vnet\s+rx_bytes\s+(\d+)$/) {
+								$r = $1;
+							}
+							if(/^$vnet\s+tx_bytes\s+(\d+)$/) {
+								$w = $1;
+								last;
+							}
+						}
+						close(IN);
+						$t += ($r + $w);
+					}
+				}
+				$str = $e . "_net" . $n;
+				$net = $t - ($config->{libvirt_hist}->{$str} || 0);
+				$net = 0 unless $t != $net;
+				$net /= $delta_t;
+				$config->{libvirt_hist}->{$str} = $t;
+			}
+			$rrdata .= ":$cpu:$mem:$dsk:$net:0:0:0:0";
+		}
+		$e++;
+	}
+	return $rrdata;
+}
 
 sub libvirt_init {
 	my $myself = (caller(0))[3];
@@ -133,6 +285,7 @@ sub libvirt_init {
 
 	$config->{libvirt_hist} = ();
 	push(@{$config->{func_update}}, $package);
+	measure($myself, $config, $libvirt); # Call to measuring routine to initialize the last values for calculating the differences. This way, the first update call will actually measure correct values.
 	logger("$myself: Ok") if $debug;
 }
 
@@ -142,147 +295,7 @@ sub libvirt_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $libvirt = $config->{libvirt};
 
-	my $n;
-	my $rrdata = "N";
-
-	my $e = 0;
-	foreach my $vmg (sort keys %{$libvirt->{list}}) {
-		my @lvl = split(',', $libvirt->{list}->{$vmg});
-		for($n = 0; $n < 8; $n++) {
-			my $cpu = 0;
-			my $mem = 0;
-			my $dsk = 0;
-			my $net = 0;
-
-			my $str;
-			my $state = "";
-			my $vm = trim($lvl[$n] || "");
-
-			my @vda;
-			my @vmac;
-
-			# convert from old configuration to new
-			if(ref($libvirt->{desc}->{$vm} || "") ne "HASH") {
-				my $val;
-
-				$val = trim((split(',', $libvirt->{desc}->{$vm} || ""))[1]);
-				push(@vda, $val) if $val;
-				$val = trim((split(',', $libvirt->{desc}->{$vm} || ""))[2]);
-				push(@vmac, $val) if $val;
-			} else {
-				@vda = split(',', $libvirt->{desc}->{$vm}->{disk} || "");
-				@vmac = split(',', $libvirt->{desc}->{$vm}->{net} || "");
-			}
-
-			my $vnet = "";
-
-			if($vm && (!scalar(@vda) || !scalar(@vmac))) {
-				logger("$myself: missing parameters in '$vm' virtual machine.");
-				$vm = "";	# invalidates this vm
-			}
-
-			# check first if that 'vm' is running
-			if($vm && open(IN, "$libvirt->{cmd} domstate $vm |")) {
-				$state = trim(<IN>);
-				close(IN);
-			}
-
-			if($state eq "running") {
-				my $t;
-
-				if(open(IN, "$libvirt->{cmd} cpu-stats $vm --total |")) {
-					my $c = 0;
-					while(<IN>) {
-						if(/^\s+cpu_time\s+(\d+\.\d+) seconds$/) {
-							$c = $1;
-						}
-					}
-					close(IN);
-					$str = $e . "_cpu" . $n;
-					$cpu = $c - ($config->{libvirt_hist}->{$str} || 0);
-					$cpu = 0 unless $c != $cpu;
-					$cpu = $cpu * 100 / 60;
-					$cpu = $cpu > 100 ? 100 : $cpu;
-					$config->{libvirt_hist}->{$str} = $c;
-				}
-				if(open(IN, "$libvirt->{cmd} dommemstat $vm |")) {
-					while(<IN>) {
-						if(/^rss\s+(\d+)$/) {
-							$mem = $1 * 1024;
-						}
-					}
-					close(IN);
-				}
-
-				# summarizes all virtual disks stats for each 'vm'
-				$t = 0;
-				foreach my $vd (@vda) {
-					$vd = trim($vd);
-					if(open(IN, "$libvirt->{cmd} domblkstat $vm $vd |")) {
-						my $r = 0;
-						my $w = 0;
-						while(<IN>) {
-							if(/^$vd\s+rd_bytes\s+(\d+)$/) {
-								$r = $1;
-							}
-							if(/^$vd\s+wr_bytes\s+(\d+)$/) {
-								$w = $1;
-								last;
-							}
-						}
-						close(IN);
-						$t += ($r + $w);
-					}
-				}
-				$str = $e . "_dsk" . $n;
-				$dsk = $t - ($config->{libvirt_hist}->{$str} || 0);
-				$dsk = 0 unless $t != $dsk;
-				$dsk /= 60;
-				$config->{libvirt_hist}->{$str} = $t;
-
-				# summarizes all virtual network stats for each 'vm'
-				$t = 0;
-				foreach my $vn (@vmac) {
-					$vn = trim($vn);
-					if(open(IN, "$libvirt->{cmd} domiflist $vm |")) {
-						while(<IN>) {
-							if(/^\s*(\S+)\s+.*?\s+$vn$/) {
-								$vnet = $1;
-							}
-						}
-						close(IN);
-					}
-					if(!$vnet) {
-						logger("$myself: invalid MAC address '$vn' in '$vm'.");
-						next;
-					}
-
-					if(open(IN, "$libvirt->{cmd} domifstat $vm $vnet |")) {
-						my $r = 0;
-						my $w = 0;
-						while(<IN>) {
-							if(/^$vnet\s+rx_bytes\s+(\d+)$/) {
-								$r = $1;
-							}
-							if(/^$vnet\s+tx_bytes\s+(\d+)$/) {
-								$w = $1;
-								last;
-							}
-						}
-						close(IN);
-						$t += ($r + $w);
-					}
-				}
-				$str = $e . "_net" . $n;
-				$net = $t - ($config->{libvirt_hist}->{$str} || 0);
-				$net = 0 unless $t != $net;
-				$net /= 60;
-				$config->{libvirt_hist}->{$str} = $t;
-			}
-			$rrdata .= ":$cpu:$mem:$dsk:$net:0:0:0:0";
-		}
-		$e++;
-	}
+	my $rrdata = measure($myself, $config, $libvirt);
 
 	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;

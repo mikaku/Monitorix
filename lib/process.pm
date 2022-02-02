@@ -24,8 +24,187 @@ use strict;
 use warnings;
 use Monitorix;
 use RRDs;
+use Time::HiRes;
 use Exporter 'import';
 our @EXPORT = qw(process_init process_update process_cgi);
+
+sub measure {
+	my ($myself, $config, $process) = @_;
+	my $rrdata = "N";
+	my $ticks = `getconf CLK_TCK`;
+	my ($sysuptime) = split(' ', `cat /proc/uptime`);
+
+	my $e = 0;
+	foreach my $pg (sort keys %{$process->{list}}) {
+		my @lp = split(',', $process->{list}->{$pg});
+		for(my $n = 0; $n < 10; $n++) {
+			my $cpu = 0;
+			my $mem = 0;
+			my $dsk = 0;
+			my $net = 0;
+			my $nof = 0;
+			my $pro = 0;
+			my $nth = 0;
+			my $vcs = 0;
+			my $ics = 0;
+			my $upt = 0;
+
+			my $str;
+			my @pids;
+			my $p = trim($lp[$n] || "");
+			my $val;
+			my $s_usage = 0;
+
+			# check if that process is running
+			if(open(IN, "ps -eo pid,comm,command |")) {
+				my $pidwidth = length(`cat /proc/sys/kernel/pid_max`);
+
+				while(<IN>) {
+					if(m/^\s*(\d+)\s+(\S+)\s+(.*?)$/) {
+						if($p eq trim($2)) {
+							push(@pids, $1);
+							$pro++;
+							next;
+						}
+						if($p eq trim($3)) {
+							push(@pids, $1);
+							$pro++;
+							next;
+						}
+						if(index($3, $p) != -1) {
+							push(@pids, $1);
+							$pro++;
+							next;
+						}
+					}
+					if(substr($p, 0, 15) eq substr($_, $pidwidth, 15)) {
+						push(@pids, $1);
+						$pro++;
+						next;
+					}
+				}
+				close(IN);
+			}
+
+			if(open(IN, "/proc/stat")) {
+				while(<IN>) {
+					if(/^cpu /) {
+						my (undef, $user, $nice, $sys, $idle, $iow, $irq, $sirq, $steal, $guest) = split(' ', $_);
+						$s_usage = $user + $nice + $sys + $idle + $iow + $irq + $sirq + $steal + ($guest || 0);
+						last;
+					}
+				}
+				close(IN);
+			}
+
+			my $p_usage = 0;
+			foreach my $pid (@pids) {
+				if(open(IN, "/proc/$pid/stat")) {
+					my $utime = 0;
+					my $stime = 0;
+					my $v_nth = 0;
+					my $starttime = 0;
+					my $v_mem = 0;
+					my $rest;
+
+					# since a process name can include spaces an 'split(' ', <IN>)' wouldn't work here,
+					# therefore we discard the first part of the process information (pid, comm and state).
+					(undef, $rest) = <IN> =~ m/^(\d+\s\(.*?\)\s\S\s)(.*?)$/;
+					close(IN);
+					if($rest) {
+						(undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, $utime, $stime, undef, undef, undef, undef, $v_nth, undef, $starttime, undef, $v_mem) = split(' ', $rest);
+						$mem += ($v_mem *= 4096);
+						$nth += ($v_nth - 1);
+						$p_usage += $utime + $stime;
+						$starttime /= $ticks;
+						my $diff = $sysuptime - $starttime;
+						$upt = $diff unless $diff < $upt;
+					} else {
+						logger("$myself: WARNING: PID $pid ('$p') has vanished while accounting!");
+					}
+				}
+			}
+			$str = $e . "_cpu" . $n;
+			$cpu += 100 * ($p_usage - ($config->{process_hist}->{$str}->{pusage} || 0)) / ($s_usage - ($config->{process_hist}->{$str}->{susage} || 0));
+			$config->{process_hist}->{$str}->{pusage} = $p_usage;
+			$config->{process_hist}->{$str}->{susage} = $s_usage;
+
+			my $v_dsk = 0;
+			my $v_net = 0;
+			foreach my $pid (@pids) {
+				if(open(IN, "/proc/$pid/io")) {
+					my $rchar = 0;
+					my $wchar = 0;
+					my $readb = 0;
+					my $writb = 0;
+					while(<IN>) {
+						$rchar = $1 if /^rchar:\s+(\d+)$/;
+						$wchar = $1 if /^wchar:\s+(\d+)$/;
+						$readb = $1 if /^read_bytes:\s+(\d+)$/;
+						$writb = $1 if /^write_bytes:\s+(\d+)$/;
+					}
+					close(IN);
+					$v_dsk += $readb + $writb;
+					$v_net += ($rchar + $wchar) - ($readb + $writb);
+				}
+			}
+			my $epoc_identifier = "last_epoc_" . $e . "_" . $n;
+			my $last_epoc = ($config->{process_hist}->{$epoc_identifier} || 0);
+			my $epoc = Time::HiRes::time();
+			$config->{process_hist}->{$epoc_identifier} = $epoc;
+			my $delta_t = ($last_epoc ne 0) ? ($epoc - $last_epoc) : 60;
+
+			$str = $e . "_dsk" . $n;
+			$dsk = $v_dsk - ($config->{process_hist}->{$str} || 0);
+			$dsk = 0 unless $v_dsk != $dsk;
+			$dsk /= $delta_t;
+			$config->{process_hist}->{$str} = $v_dsk;
+			$str = $e . "_net" . $n;
+			$net = $v_net - ($config->{process_hist}->{$str} || 0);
+			$net = 0 unless $v_net != $net;
+			$net /= $delta_t;
+			$config->{process_hist}->{$str} = $v_net;
+			$net = 0 if $net < 0;
+
+			my $v_vcs = 0;
+			my $v_ics = 0;
+			foreach my $pid (@pids) {
+				if(opendir(DIR, "/proc/$pid/fdinfo")) {
+					my @files = grep { !/^[.]/ } readdir(DIR);
+					$nof += scalar(@files);
+					closedir(DIR);
+				}
+
+				if(open(IN, "/proc/$pid/status")) {
+					while(<IN>) {
+						if(/^voluntary_ctxt_switches:\s+(\d+)$/) {
+							$v_vcs += $1;
+						}
+						if(/^nonvoluntary_ctxt_switches:\s+(\d+)$/) {
+							$v_ics += $1;
+						}
+					}
+					close(IN);
+				}
+			}
+			$str = $e . "_vcs" . $n;
+			$vcs = $v_vcs - ($config->{process_hist}->{$str} || 0);
+			$vcs = 0 unless $v_vcs != $vcs;
+			$vcs /= $delta_t;
+			$config->{process_hist}->{$str} = $v_vcs;
+			$str = $e . "_ics" . $n;
+			$ics = $v_ics - ($config->{process_hist}->{$str} || 0);
+			$ics = 0 unless $v_ics != $ics;
+			$ics /= $delta_t;
+			$config->{process_hist}->{$str} = $v_ics;
+
+			$rrdata .= ":$cpu:$mem:$dsk:$net:$nof:$pro:$nth:$vcs:$ics:$upt:0";
+		}
+		$e++;
+	}
+
+	return $rrdata;
+}
 
 sub process_init {
 	my $myself = (caller(0))[3];
@@ -145,6 +324,7 @@ sub process_init {
 
 	$config->{process_hist} = ();
 	push(@{$config->{func_update}}, $package);
+	measure($myself, $config, $process); # Call to measuring routine to initialize the last values for calculating the differences. This way, the first update call will actually measure correct values.
 	logger("$myself: Ok") if $debug;
 }
 
@@ -154,173 +334,7 @@ sub process_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $process = $config->{process};
 
-	my $n;
-	my $rrdata = "N";
-	my $ticks = `getconf CLK_TCK`;
-	my ($sysuptime) = split(' ', `cat /proc/uptime`);
-
-	my $e = 0;
-	foreach my $pg (sort keys %{$process->{list}}) {
-		my @lp = split(',', $process->{list}->{$pg});
-		for($n = 0; $n < 10; $n++) {
-			my $cpu = 0;
-			my $mem = 0;
-			my $dsk = 0;
-			my $net = 0;
-			my $nof = 0;
-			my $pro = 0;
-			my $nth = 0;
-			my $vcs = 0;
-			my $ics = 0;
-			my $upt = 0;
-
-			my $str;
-			my @pids;
-			my $p = trim($lp[$n] || "");
-			my $val;
-			my $s_usage = 0;
-
-			# check if that process is running
-			if(open(IN, "ps -eo pid,comm,command |")) {
-				my $pidwidth = length(`cat /proc/sys/kernel/pid_max`);
-
-				while(<IN>) {
-					if(m/^\s*(\d+)\s+(\S+)\s+(.*?)$/) {
-						if($p eq trim($2)) {
-							push(@pids, $1);
-							$pro++;
-							next;
-						}
-						if($p eq trim($3)) {
-							push(@pids, $1);
-							$pro++;
-							next;
-						}
-						if(index($3, $p) != -1) {
-							push(@pids, $1);
-							$pro++;
-							next;
-						}
-					}
-					if(substr($p, 0, 15) eq substr($_, $pidwidth, 15)) {
-						push(@pids, $1);
-						$pro++;
-						next;
-					}
-				}
-				close(IN);
-			}
-
-			if(open(IN, "/proc/stat")) {
-				while(<IN>) {
-					if(/^cpu /) {
-						my (undef, $user, $nice, $sys, $idle, $iow, $irq, $sirq, $steal, $guest) = split(' ', $_);
-						$s_usage = $user + $nice + $sys + $idle + $iow + $irq + $sirq + $steal + ($guest || 0);
-						last;
-					}
-				}
-				close(IN);
-			}
-
-			my $p_usage = 0;
-			foreach my $pid (@pids) {
-				if(open(IN, "/proc/$pid/stat")) {
-					my $utime = 0;
-					my $stime = 0;
-					my $v_nth = 0;
-					my $starttime = 0;
-					my $v_mem = 0;
-					my $rest;
-
-					# since a process name can include spaces an 'split(' ', <IN>)' wouldn't work here,
-					# therefore we discard the first part of the process information (pid, comm and state).
-					(undef, $rest) = <IN> =~ m/^(\d+\s\(.*?\)\s\S\s)(.*?)$/;
-					close(IN);
-					if($rest) {
-						(undef, undef, undef, undef, undef, undef, undef, undef, undef, undef, $utime, $stime, undef, undef, undef, undef, $v_nth, undef, $starttime, undef, $v_mem) = split(' ', $rest);
-						$mem += ($v_mem *= 4096);
-						$nth += ($v_nth - 1);
-						$p_usage += $utime + $stime;
-						$starttime /= $ticks;
-						my $diff = $sysuptime - $starttime;
-						$upt = $diff unless $diff < $upt;
-					} else {
-						logger("$myself: WARNING: PID $pid ('$p') has vanished while accounting!");
-					}
-				}
-			}
-			$str = $e . "_cpu" . $n;
-			$cpu += 100 * ($p_usage - ($config->{process_hist}->{$str}->{pusage} || 0)) / ($s_usage - ($config->{process_hist}->{$str}->{susage} || 0));
-			$config->{process_hist}->{$str}->{pusage} = $p_usage;
-			$config->{process_hist}->{$str}->{susage} = $s_usage;
-
-			my $v_dsk = 0;
-			my $v_net = 0;
-			foreach my $pid (@pids) {
-				if(open(IN, "/proc/$pid/io")) {
-					my $rchar = 0;
-					my $wchar = 0;
-					my $readb = 0;
-					my $writb = 0;
-					while(<IN>) {
-						$rchar = $1 if /^rchar:\s+(\d+)$/;
-						$wchar = $1 if /^wchar:\s+(\d+)$/;
-						$readb = $1 if /^read_bytes:\s+(\d+)$/;
-						$writb = $1 if /^write_bytes:\s+(\d+)$/;
-					}
-					close(IN);
-					$v_dsk += $readb + $writb;
-					$v_net += ($rchar + $wchar) - ($readb + $writb);
-				}
-			}
-			$str = $e . "_dsk" . $n;
-			$dsk = $v_dsk - ($config->{process_hist}->{$str} || 0);
-			$dsk = 0 unless $v_dsk != $dsk;
-			$dsk /= 60;
-			$config->{process_hist}->{$str} = $v_dsk;
-			$str = $e . "_net" . $n;
-			$net = $v_net - ($config->{process_hist}->{$str} || 0);
-			$net = 0 unless $v_net != $net;
-			$net /= 60;
-			$config->{process_hist}->{$str} = $v_net;
-			$net = 0 if $net < 0;
-
-			my $v_vcs = 0;
-			my $v_ics = 0;
-			foreach my $pid (@pids) {
-				if(opendir(DIR, "/proc/$pid/fdinfo")) {
-					my @files = grep { !/^[.]/ } readdir(DIR);
-					$nof += scalar(@files);
-					closedir(DIR);
-				}
-
-				if(open(IN, "/proc/$pid/status")) {
-					while(<IN>) {
-						if(/^voluntary_ctxt_switches:\s+(\d+)$/) {
-							$v_vcs += $1;
-						}
-						if(/^nonvoluntary_ctxt_switches:\s+(\d+)$/) {
-							$v_ics += $1;
-						}
-					}
-					close(IN);
-				}
-			}
-			$str = $e . "_vcs" . $n;
-			$vcs = $v_vcs - ($config->{process_hist}->{$str} || 0);
-			$vcs = 0 unless $v_vcs != $vcs;
-			$vcs /= 60;
-			$config->{process_hist}->{$str} = $v_vcs;
-			$str = $e . "_ics" . $n;
-			$ics = $v_ics - ($config->{process_hist}->{$str} || 0);
-			$ics = 0 unless $v_ics != $ics;
-			$ics /= 60;
-			$config->{process_hist}->{$str} = $v_ics;
-
-			$rrdata .= ":$cpu:$mem:$dsk:$net:$nof:$pro:$nth:$vcs:$ics:$upt:0";
-		}
-		$e++;
-	}
+	my $rrdata = measure($myself, $config, $process);
 
 	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;

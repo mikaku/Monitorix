@@ -24,8 +24,112 @@ use strict;
 use warnings;
 use Monitorix;
 use RRDs;
+use Time::HiRes;
 use Exporter 'import';
 our @EXPORT = qw(net_init net_update net_cgi);
+
+sub measure {
+	my ($myself, $config, $net) = @_;
+	my $rrdata = "N";
+	for(my $n = 0; $n < $net->{max} ; $n++) {
+		my ($bytes_in, $bi) = (0, 0);
+		my ($bytes_out, $bo) = (0, 0);
+		my ($packs_in, $pi) = (0, 0);
+		my ($packs_out, $po) = (0, 0);
+		my ($error_in, $ei) = (0, 0);
+		my ($error_out, $eo) = (0, 0);
+		my $str;
+
+		if($n < scalar(my @nl = split(',', $net->{list}))) {
+			$nl[$n] = trim($nl[$n]);
+			if($config->{os} eq "Linux") {
+				open(IN, "/proc/net/dev");
+				while(<IN>) {
+					my ($dev, $data) = split(':', $_);
+					if(trim($dev) eq $nl[$n]) {
+						($bi, $pi, $ei, undef, undef, undef, undef, undef, $bo, $po, $eo) = split(' ', $data);
+						last;
+					}
+				}
+				close(IN);
+			} elsif($config->{os} eq "FreeBSD") {
+				open(IN, "netstat -nibdW |");
+				while(<IN>) {
+					if(/Link/ && /$nl[$n]/) {
+						# Idrop column added in 8.0
+						if($config->{kernel} > "7.2") {
+							(undef, undef, undef, undef, $pi, $ei, undef, $bi, $po, $eo, $bo) = split(' ', $_);
+						} else {
+							(undef, undef, undef, undef, $pi, $ei, $bi, $po, $eo, $bo) = split(' ', $_);
+						}
+						last;
+					}
+				}
+				close(IN);
+			} elsif($config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
+				open(IN, "netstat -nibd |");
+				while(<IN>) {
+					if(/Link/ && /^$nl[$n]/) {
+						(undef, undef, undef, undef, $bi, $bo) = split(' ', $_);
+						$pi = 0;
+						$ei = 0;
+						$po = 0;
+						$eo = 0;
+						last;
+					}
+				}
+				close(IN);
+			}
+		}
+		chomp($bi, $bo, $pi, $po, $ei, $eo);
+
+		my $epoc_identifier = "last_epoc_" . $n;
+		my $last_epoc = ($config->{net_hist}->{$epoc_identifier} || 0);
+		my $epoc = Time::HiRes::time();
+		$config->{net_hist}->{$epoc_identifier} = $epoc;
+		my $delta_t = ($last_epoc ne 0) ? ($epoc - $last_epoc) : 60;
+
+		$str = $n . "_bytes_in";
+		$bytes_in = $bi - ($config->{net_hist}->{$str} || 0);
+		$bytes_in = 0 unless $bytes_in != $bi;
+		$config->{net_hist}->{$str} = $bi;
+		$bytes_in /= $delta_t;
+
+		$str = $n . "_bytes_out";
+		$bytes_out = $bo - ($config->{net_hist}->{$str} || 0);
+		$bytes_out = 0 unless $bytes_out != $bo;
+		$config->{net_hist}->{$str} = $bo;
+		$bytes_out /= $delta_t;
+
+		$str = $n . "_packs_in";
+		$packs_in = $pi - ($config->{net_hist}->{$str} || 0);
+		$packs_in = 0 unless $packs_in != $pi;
+		$config->{net_hist}->{$str} = $pi;
+		$packs_in /= $delta_t;
+
+		$str = $n . "_packs_out";
+		$packs_out = $po - ($config->{net_hist}->{$str} || 0);
+		$packs_out = 0 unless $packs_out != $po;
+		$config->{net_hist}->{$str} = $po;
+		$packs_out /= $delta_t;
+
+		$str = $n . "_error_in";
+		$error_in = $ei - ($config->{net_hist}->{$str} || 0);
+		$error_in = 0 unless $error_in != $ei;
+		$config->{net_hist}->{$str} = $ei;
+		$error_in /= $delta_t;
+
+		$str = $n . "_error_out";
+		$error_out = $eo - ($config->{net_hist}->{$str} || 0);
+		$error_out = 0 unless $error_out != $eo;
+		$config->{net_hist}->{$str} = $eo;
+		$error_out /= $delta_t;
+
+		$rrdata .= ":$bytes_in:$bytes_out:$packs_in:$packs_out:$error_in:$error_out";
+	}
+
+	return $rrdata;
+}
 
 sub net_init {
 	my $myself = (caller(0))[3];
@@ -137,6 +241,7 @@ sub net_init {
 
 	$config->{net_hist} = ();
 	push(@{$config->{func_update}}, $package);
+	measure($myself, $config, $net); # Call to measuring routine to initialize the last values for calculating the differences. This way, the first update call will actually measure correct values.
 	logger("$myself: Ok") if $debug;
 }
 
@@ -146,100 +251,7 @@ sub net_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $net = $config->{net};
 
-	my $n;
-	my $rrdata = "N";
-
-	for($n = 0; $n < $net->{max} ; $n++) {
-		my ($bytes_in, $bi) = (0, 0);
-		my ($bytes_out, $bo) = (0, 0);
-		my ($packs_in, $pi) = (0, 0);
-		my ($packs_out, $po) = (0, 0);
-		my ($error_in, $ei) = (0, 0);
-		my ($error_out, $eo) = (0, 0);
-		my $str;
-
-		if($n < scalar(my @nl = split(',', $net->{list}))) {
-			$nl[$n] = trim($nl[$n]);
-			if($config->{os} eq "Linux") {
-				open(IN, "/proc/net/dev");
-				while(<IN>) {
-					my ($dev, $data) = split(':', $_);
-					if(trim($dev) eq $nl[$n]) {
-						($bi, $pi, $ei, undef, undef, undef, undef, undef, $bo, $po, $eo) = split(' ', $data);
-						last;
-					}
-				}
-				close(IN);
-			} elsif($config->{os} eq "FreeBSD") {
-				open(IN, "netstat -nibdW |");
-				while(<IN>) {
-					if(/Link/ && /$nl[$n]/) {
-						# Idrop column added in 8.0
-						if($config->{kernel} > "7.2") {
-							(undef, undef, undef, undef, $pi, $ei, undef, $bi, $po, $eo, $bo) = split(' ', $_);
-						} else {
-							(undef, undef, undef, undef, $pi, $ei, $bi, $po, $eo, $bo) = split(' ', $_);
-						}
-						last;
-					}
-				}
-				close(IN);
-			} elsif($config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
-				open(IN, "netstat -nibd |");
-				while(<IN>) {
-					if(/Link/ && /^$nl[$n]/) {
-						(undef, undef, undef, undef, $bi, $bo) = split(' ', $_);
-						$pi = 0;
-						$ei = 0;
-						$po = 0;
-						$eo = 0;
-						last;
-					}
-				}
-				close(IN);
-			}
-		}
-		chomp($bi, $bo, $pi, $po, $ei, $eo);
-
-		$str = $n . "_bytes_in";
-		$bytes_in = $bi - ($config->{net_hist}->{$str} || 0);
-		$bytes_in = 0 unless $bytes_in != $bi;
-		$config->{net_hist}->{$str} = $bi;
-		$bytes_in /= 60;
-
-		$str = $n . "_bytes_out";
-		$bytes_out = $bo - ($config->{net_hist}->{$str} || 0);
-		$bytes_out = 0 unless $bytes_out != $bo;
-		$config->{net_hist}->{$str} = $bo;
-		$bytes_out /= 60;
-
-		$str = $n . "_packs_in";
-		$packs_in = $pi - ($config->{net_hist}->{$str} || 0);
-		$packs_in = 0 unless $packs_in != $pi;
-		$config->{net_hist}->{$str} = $pi;
-		$packs_in /= 60;
-
-		$str = $n . "_packs_out";
-		$packs_out = $po - ($config->{net_hist}->{$str} || 0);
-		$packs_out = 0 unless $packs_out != $po;
-		$config->{net_hist}->{$str} = $po;
-		$packs_out /= 60;
-
-		$str = $n . "_error_in";
-		$error_in = $ei - ($config->{net_hist}->{$str} || 0);
-		$error_in = 0 unless $error_in != $ei;
-		$config->{net_hist}->{$str} = $ei;
-		$error_in /= 60;
-
-		$str = $n . "_error_out";
-		$error_out = $eo - ($config->{net_hist}->{$str} || 0);
-		$error_out = 0 unless $error_out != $eo;
-		$config->{net_hist}->{$str} = $eo;
-		$error_out /= 60;
-
-
-		$rrdata .= ":$bytes_in:$bytes_out:$packs_in:$packs_out:$error_in:$error_out";
-	}
+	my $rrdata = measure($myself, $config, $net);
 
 	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;
