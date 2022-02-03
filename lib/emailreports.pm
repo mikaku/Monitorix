@@ -1,7 +1,7 @@
 #
 # Monitorix - A lightweight system monitoring tool.
 #
-# Copyright (C) 2005-2017 by Jordi Sanfeliu <jordi@fibranet.cat>
+# Copyright (C) 2005-2022 by Jordi Sanfeliu <jordi@fibranet.cat>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -83,7 +83,7 @@ EOF
   <a href='https://www.monitorix.org'><img src='cid:image_logo' border='0'></a>
   <br>
   <font face='Verdana, sans-serif' color='000000' size='-2'>
-Copyright &copy; 2005-2017 Jordi Sanfeliu
+Copyright &copy; 2005-2022 Jordi Sanfeliu
   </font>
   </body>
 </html>
@@ -135,7 +135,7 @@ EOF
 			foreach (split('\n', $graph)) {
 				if(/<img src=/) {
 					push(@tmp, "<img src='cid:image_$g$e$n.$imgfmt_lc' border='0'>");
-					($url) = $_ =~ m/<img src='(.*?)' /;
+					($url) = $_ =~ m/<img src=['"](.*?)['"] /;
 					my $uri = URI->new($url);
 					my $path = $uri->path || "";
 					$response = $ua->request(HTTP::Request->new('GET', "$prefix$path"));

@@ -631,7 +631,7 @@ sub nvme_cgi {
 			  push(@scaling_options, "--alt-y-grid");
 			}
 			my $plot_title = $config->{graphs}->{'_nvme' . ($n_smart + 1)};
-			$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 3 + $n_smart]",
+			$pic = $rrd{$version}->("$IMG_DIR" . $IMG[$e * $number_of_smart_values_in_use + $n_smart],
 				"--title=$plot_title ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=$imgfmt_uc",
@@ -650,10 +650,10 @@ sub nvme_cgi {
 				@CDEF,
 				@tmp);
 			$err = RRDs::error;
-			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$e * 3 + $n_smart]: $err\n") if $err;
+			push(@output, "ERROR: while graphing $IMG_DIR" . $IMG[$e * $number_of_smart_values_in_use + $n_smart]. ": $err\n") if $err;
 			if(lc($config->{enable_zoom}) eq "y") {
 				($width, $height) = split('x', $config->{graph_size}->{zoom});
-				$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 3 + $n_smart]",
+				$picz = $rrd{$version}->("$IMG_DIR" . $IMGz[$e * $number_of_smart_values_in_use + $n_smart],
 					"--title=$plot_title  ($tf->{nwhen}$tf->{twhen})",
 					"--start=-$tf->{nwhen}$tf->{twhen}",
 					"--imgformat=$imgfmt_uc",
@@ -673,13 +673,13 @@ sub nvme_cgi {
 					@CDEF,
 					@tmpz);
 				$err = RRDs::error;
-				push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 3 + $n_smart]: $err\n") if $err;
+				push(@output, "ERROR: while graphing $IMG_DIR" . $IMGz[$e * $number_of_smart_values_in_use + $n_smart]. ": $err\n") if $err;
 			}
 			$e2 = $e + $n_smart + 1;
 			if($title || ($silent =~ /imagetag/ && $graph =~ /nvme$e2/)) {
 				if(lc($config->{enable_zoom}) eq "y") {
 					if(lc($config->{disable_javascript_void}) eq "y") {
-						push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 3 + $n_smart], IMG => $IMG[$e * 3 + $n_smart]) . "\n");
+						push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * $number_of_smart_values_in_use + $n_smart], IMG => $IMG[$e * $number_of_smart_values_in_use + $n_smart]) . "\n");
 					} else {
 						if($version eq "new") {
 							$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -688,10 +688,10 @@ sub nvme_cgi {
 							$picz_width = $width + 115;
 							$picz_height = $height + 100;
 						}
-						push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 3 + $n_smart], IMG => $IMG[$e * 3 + $n_smart]) . "\n");
+						push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * $number_of_smart_values_in_use + $n_smart], IMG => $IMG[$e * $number_of_smart_values_in_use + $n_smart]) . "\n");
 					}
 				} else {
-					push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 3 + $n_smart]) . "\n");
+					push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * $number_of_smart_values_in_use + $n_smart]) . "\n");
 				}
 			}
 		}

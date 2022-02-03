@@ -679,7 +679,7 @@ sub amdgpu_cgi {
 				$cdef_sensor_allvalues .= ",0,GT,1,UNKN,IF";
 			}
 			my $plot_title = $config->{graphs}->{'_amdgpu' . ($n_plot + 1)};
-			$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 3 + $n_plot]",
+			$pic = $rrd{$version}->("$IMG_DIR" . $IMG[$e * $number_of_sensor_values_in_use + $n_plot],
 				"--title=$plot_title ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=$imgfmt_uc",
@@ -697,10 +697,10 @@ sub amdgpu_cgi {
 				@CDEF,
 				@tmp);
 			$err = RRDs::error;
-			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$e * 3 + $n_plot]: $err\n") if $err;
+			push(@output, "ERROR: while graphing $IMG_DIR" . $IMG[$e * $number_of_sensor_values_in_use + $n_plot]. ": $err\n") if $err;
 			if(lc($config->{enable_zoom}) eq "y") {
 				($width, $height) = split('x', $config->{graph_size}->{zoom});
-				$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 3 + $n_plot]",
+				$picz = $rrd{$version}->("$IMG_DIR" . $IMGz[$e * $number_of_sensor_values_in_use + $n_plot],
 					"--title=$plot_title  ($tf->{nwhen}$tf->{twhen})",
 					"--start=-$tf->{nwhen}$tf->{twhen}",
 					"--imgformat=$imgfmt_uc",
@@ -719,13 +719,13 @@ sub amdgpu_cgi {
 					@CDEF,
 					@tmpz);
 				$err = RRDs::error;
-				push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 3 + $n_plot]: $err\n") if $err;
+				push(@output, "ERROR: while graphing $IMG_DIR" . $IMGz[$e * $number_of_sensor_values_in_use + $n_plot]. ": $err\n") if $err;
 			}
 			$e2 = $e + $n_plot + 1;
 			if($title || ($silent =~ /imagetag/ && $graph =~ /amdgpu$e2/)) {
 				if(lc($config->{enable_zoom}) eq "y") {
 					if(lc($config->{disable_javascript_void}) eq "y") {
-						push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 3 + $n_plot], IMG => $IMG[$e * 3 + $n_plot]) . "\n");
+						push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * $number_of_sensor_values_in_use + $n_plot], IMG => $IMG[$e * $number_of_sensor_values_in_use + $n_plot]) . "\n");
 					} else {
 						if($version eq "new") {
 							$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -734,10 +734,10 @@ sub amdgpu_cgi {
 							$picz_width = $width + 115;
 							$picz_height = $height + 100;
 						}
-						push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 3 + $n_plot], IMG => $IMG[$e * 3 + $n_plot]) . "\n");
+						push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * $number_of_sensor_values_in_use + $n_plot], IMG => $IMG[$e * $number_of_sensor_values_in_use + $n_plot]) . "\n");
 					}
 				} else {
-					push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 3 + $n_plot]) . "\n");
+					push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * $number_of_sensor_values_in_use + $n_plot]) . "\n");
 				}
 			}
 		}
