@@ -1173,7 +1173,7 @@ This is the type of sensor in each group. It's important to not mix different ty
 .P
 .BI map
 .RS
-This list complements the \fBdesc\fP option. It basically allows you to change the name that will appear in the graph, hiding the real name of the sensor. If no association is defined, then Monitorix will display the name specified in the \fBdesc\fP option. Note, this only works in names that don't include whitespaces.
+This list complements the \fBdesc\fP option. It basically allows you to change the name that will appear in the graph, hiding the real name of the sensor. If no association is defined, then Monitorix will display the name specified in the \fBdesc\fP option. Note, this only works in names that don't include whitespaces unless you use the \fBwhitespace_key_support\fP option and replace whitespaces with underscores in the key.
 .RE
 .P
 .BI alerts
@@ -1214,6 +1214,12 @@ The external script will receive the following arguments:
 3rd - the value of the sensor.
 .P
 .RE
+.RE
+.BI whitespace_key_support
+.RS
+This list complements the \fBmap\fP option. It changes the handling of the key names. Without this option enabled you can't rename keys with whitespaces using the \fBmap\fP option. When enabled, whitespaces in the map key will be replaced by underscores(_) and enables you to specify the key names this way.
+.P
+Default value: \fIn\fP
 .RE
 .BI graphs_per_row
 .RS
