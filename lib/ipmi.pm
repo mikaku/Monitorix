@@ -385,6 +385,8 @@ sub ipmi_cgi {
 			}
 		}
 	}
+  
+	my $whitespace_key_support = lc($ipmi->{whitespace_key_support} || "") eq "y" ? 1 : 0;
 
 	$n = 0;
 	while($n < scalar(@sensor_list)) {
@@ -407,6 +409,9 @@ sub ipmi_cgi {
 			my $unit = $ipmi->{units}->{$n};
 			foreach my $i (split(',', $ipmi->{desc}->{$n})) {
 				$i = trim($i);
+				if ($whitespace_key_support) {
+					$i=~s/ /_/g;
+				}
 				$str = $ipmi->{map}->{$i} || $i;
 				$str = sprintf("%-40s", substr($str, 0, 40));
 				push(@tmp, "LINE2:s" . ($e + 1) . $LC[$e] . ":$str");
