@@ -684,18 +684,16 @@ sub intelrapl_cgi {
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
 			push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 		}
-		($width, $height) = split('x', $config->{graph_size}->{'main'});
+		my $graph_size_name = "large";
+		($width, $height) = split('x', $config->{graph_size}->{$graph_size_name});
 		if($silent =~ /imagetag/) {
 			($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
-			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
+			($width, $height) = split('x', $config->{graph_size}->{$graph_size_name}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-
-		$height *= 1.2;
-		$width += 300;
 
 		my @def_sensor_average;
 		my $cdef_sensor_allvalues = "CDEF:allvalues=";
