@@ -613,7 +613,7 @@ sub nvme_cgi {
 				push(@output, "    <td class='td-valign-top'>\n");
 			}
 			my $n_smart = $plot_order[$n_plot];
-			@riglim = @{setup_riglim($rigid[$n_smart], $limit[$n_smart])};
+			@riglim = @{setup_riglim($rigid[$n_plot], $limit[$n_plot])};
 			undef(@tmp);
 			undef(@tmpz);
 			undef(@CDEF);
