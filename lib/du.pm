@@ -53,6 +53,8 @@ sub du_init {
 		$heartbeat = 2 * $refresh_interval;
 	}
 
+	my @disk_list = split(',', $du->{list});
+
 	if(-e $rrd) {
 		$info = RRDs::info($rrd);
 		for my $key (keys %$info) {
@@ -76,8 +78,8 @@ sub du_init {
 				}
 			}
 		}
-		if(scalar(@ds) / 9 != scalar(my @fl = split(',', $du->{list}))) {
-			logger("$myself: Detected size mismatch between 'list' (" . scalar(my @fl = split(',', $du->{list})) . ") and $rrd (" . scalar(@ds) / 9 . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
+		if(scalar(@ds) / 9 != scalar(@disk_list)) {
+			logger("$myself: Detected size mismatch between 'list' (" . scalar(@disk_list) . ") and $rrd (" . scalar(@ds) / 9 . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
 			rename($rrd, "$rrd.bak");
 		}
 		if(scalar(@rra) < 12 + (4 * $config->{max_historic_years})) {
@@ -106,7 +108,7 @@ sub du_init {
 			push(@max, "RRA:MAX:0.5:1440:" . (365 * $n));
 			push(@last, "RRA:LAST:0.5:1440:" . (365 * $n));
 		}
-		for($n = 0; $n < scalar(my @fl = split(',', $du->{list})); $n++) {
+		for($n = 0; $n < scalar(@disk_list); $n++) {
 			push(@tmp, "DS:du" . $n . "_d1:GAUGE:" . $heartbeat . ":0:U");
 			push(@tmp, "DS:du" . $n . "_d2:GAUGE:" . $heartbeat . ":0:U");
 			push(@tmp, "DS:du" . $n . "_d3:GAUGE:" . $heartbeat . ":0:U");
@@ -177,8 +179,10 @@ sub du_update {
 		return if(($min + 60 * $hour) % int($refresh_interval / 60));
 	}
 
+	my @disk_list = split(',', $du->{list});
+
 	my $e = 0;
-	while($e < scalar(my @dl = split(',', $du->{list}))) {
+	while($e < scalar(@disk_list)) {
 		my $type;
 		my $e2 = 0;
 
@@ -215,7 +219,7 @@ sub du_update {
 	}
 
 	$e = 0;
-	while($e < scalar(my @dl = split(',', $du->{list}))) {
+	while($e < scalar(@disk_list)) {
 		for($n = 0; $n < 9; $n++) {
 			$dirs[$e][$n] = 0 unless defined $dirs[$e][$n];
 			$rrdata .= ":" . $dirs[$e][$n];
@@ -291,7 +295,7 @@ sub du_cgi {
 	}
 
 	$title = !$silent ? $title : "";
-
+	my @disk_list = split(',', $du->{list});
 
 	# text mode
 	#
@@ -312,7 +316,7 @@ sub du_cgi {
 		my $line3;
 		push(@output, "    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
 		push(@output, "    ");
-		for($n = 0; $n < scalar(my @dl = split(',', $du->{list})); $n++) {
+		for($n = 0; $n < scalar(@disk_list); $n++) {
 			$line1 = "";
 			foreach my $i (split(',', $du->{desc}->{$n})) {
 				$i = trim($i);
@@ -324,7 +328,7 @@ sub du_cgi {
 			}
 			if($line1) {
 				my $i = length($line1);
-				push(@output, sprintf(sprintf("%${i}s", sprintf("%s", trim($dl[$n])))));
+				push(@output, sprintf(sprintf("%${i}s", sprintf("%s", trim($disk_list[$n])))));
 			}
 		}
 		push(@output, "\n");
@@ -341,7 +345,7 @@ sub du_cgi {
 			$line = @$data[$n];
 			$time = $time - (1 / $tf->{ts});
 			push(@output, sprintf(" %2d$tf->{tc} ", $time));
-			for($n2 = 0; $n2 < scalar(my @dl = split(',', $du->{list})); $n2++) {
+			for($n2 = 0; $n2 < scalar(@disk_list); $n2++) {
 				$n3 = 0;
 				foreach my $i (split(',', $du->{desc}->{$n2})) {
 					$from = $n2 * 9 + $n3++;
@@ -375,7 +379,7 @@ sub du_cgi {
 		$u = "";
 	}
 
-	for($n = 0; $n < scalar(my @dl = split(',', $du->{list})); $n++) {
+	for($n = 0; $n < scalar(@disk_list); $n++) {
 		$str = $u . $package . $n . "." . $tf->{when} . ".$imgfmt_lc";
 		push(@IMG, $str);
 		unlink("$IMG_DIR" . $str);
@@ -386,21 +390,41 @@ sub du_cgi {
 		}
 	}
 
+	my $graphs_per_row = $du->{graphs_per_row};
+	my @linpad =(0) x scalar(@disk_list);
+	if ($graphs_per_row > 1) {
+		for(my $n = 0; $n < scalar(@disk_list); $n++) {
+			my @ls = split(',', $du->{desc}->{$n});
+			$linpad[$n] = scalar(@ls);
+		}
+		for(my $n = 0; $n < scalar(@linpad); $n++) {
+			if ($n % $graphs_per_row == 0) {
+				my $max_number_of_lines = 0;
+				for (my $sub_n = $n; $sub_n < min($n + $graphs_per_row, scalar(@linpad)); $sub_n++) {
+					$max_number_of_lines = max($max_number_of_lines, $linpad[$sub_n]);
+				}
+				for (my $sub_n = $n; $sub_n < min($n + $graphs_per_row, scalar(@linpad)); $sub_n++) {
+					$linpad[$sub_n] = $max_number_of_lines;
+				}
+			}
+		}
+	}
+
 	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	$n = 0;
-	while($n < scalar(my @dl = split(',', $du->{list}))) {
+	while($n < scalar(@disk_list)) {
 		if($title) {
 			if($n == 0) {
-				push(@output, main::graph_header($title, $du->{graphs_per_row}));
+				push(@output, main::graph_header($title, $graphs_per_row));
 			}
 			push(@output, "    <tr>\n");
 		}
-		for($n2 = 0; $n2 < $du->{graphs_per_row}; $n2++) {
+		for($n2 = 0; $n2 < $graphs_per_row; $n2++) {
 			my $type;
 			my @DEF0;
 			my @CDEF0;
 
-			last unless $n < scalar(my @dl = split(',', $du->{list}));
+			last unless $n < scalar(@disk_list);
 			if($title) {
 				push(@output, "    <td>\n");
 			}
@@ -460,7 +484,7 @@ sub du_cgi {
 				push(@tmpz, "LINE2:d" . ($e + 1) . $LC[$e] . ":$str");
 				$e++;
 			}
-			while($e < 9) {
+			while($e < $linpad[$n]) {
 				push(@tmp, "COMMENT: \\n");
 				$e++;
 			}
@@ -470,7 +494,7 @@ sub du_cgi {
 				push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 			}
 			($width, $height) = split('x', $config->{graph_size}->{medium});
-			$str = substr(trim($dl[$n]), 0, 25);
+			$str = substr(trim($disk_list[$n]), 0, 25);
 			$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$n]",
 				"--title=$str  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",

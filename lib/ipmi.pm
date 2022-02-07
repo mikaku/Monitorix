@@ -77,7 +77,7 @@ sub ipmi_init {
 			push(@max, "RRA:MAX:0.5:1440:" . (365 * $n));
 			push(@last, "RRA:LAST:0.5:1440:" . (365 * $n));
 		}
-		for($n = 0; $n < scalar(my @sl = split(',', $ipmi->{list})); $n++) {
+		for($n = 0; $n < scalar(my @sensor_list = split(',', $ipmi->{list})); $n++) {
 			push(@tmp, "DS:ipmi" . $n . "_s1:GAUGE:120:U:U");
 			push(@tmp, "DS:ipmi" . $n . "_s2:GAUGE:120:U:U");
 			push(@tmp, "DS:ipmi" . $n . "_s3:GAUGE:120:U:U");
@@ -149,8 +149,10 @@ sub ipmi_update {
 	my @data = <IN>;
 	close(IN);
 
+	my @sensor_list = split(',', $ipmi->{list});
+
 	my $e = 0;
-	while($e < scalar(my @sl = split(',', $ipmi->{list}))) {
+	while($e < scalar(@sensor_list)) {
 		my $e2 = 0;
 		foreach my $i (split(',', $ipmi->{desc}->{$e})) {
 			my $unit;
@@ -195,7 +197,7 @@ sub ipmi_update {
 	}
 
 	$e = 0;
-	while($e < scalar(my @sl = split(',', $ipmi->{list}))) {
+	while($e < scalar(@sensor_list)) {
 		for($n = 0; $n < 9; $n++) {
 			$sens[$e][$n] = 0 unless defined $sens[$e][$n];
 			$rrdata .= ":" . $sens[$e][$n];
@@ -271,7 +273,7 @@ sub ipmi_cgi {
 	}
 
 	$title = !$silent ? $title : "";
-
+	my @sensor_list = split(',', $ipmi->{list});
 
 	# text mode
 	#
@@ -292,7 +294,7 @@ sub ipmi_cgi {
 		my $line3;
 		push(@output, "    <pre style='font-size: 12px; color: $colors->{fg_color}';>\n");
 		push(@output, "    ");
-		for($n = 0; $n < scalar(my @sl = split(',', $ipmi->{list})); $n++) {
+		for($n = 0; $n < scalar(@sensor_list); $n++) {
 			$line1 = "";
 			foreach my $i (split(',', $ipmi->{desc}->{$n})) {
 				$i = trim($i);
@@ -304,7 +306,7 @@ sub ipmi_cgi {
 			}
 			if($line1) {
 				my $i = length($line1);
-				push(@output, sprintf(sprintf("%${i}s", sprintf("%s", trim($sl[$n])))));
+				push(@output, sprintf(sprintf("%${i}s", sprintf("%s", trim($sensor_list[$n])))));
 			}
 		}
 		push(@output, "\n");
@@ -320,7 +322,7 @@ sub ipmi_cgi {
 			$line = @$data[$n];
 			$time = $time - (1 / $tf->{ts});
 			push(@output, sprintf(" %2d$tf->{tc} ", $time));
-			for($n2 = 0; $n2 < scalar(my @sl = split(',', $ipmi->{list})); $n2++) {
+			for($n2 = 0; $n2 < scalar(@sensor_list); $n2++) {
 				$n3 = $n2 * 9;
 				foreach my $i (split(',', $ipmi->{desc}->{$n2})) {
 					$from = $n3++;
@@ -353,7 +355,7 @@ sub ipmi_cgi {
 		$u = "";
 	}
 
-	for($n = 0; $n < scalar(my @sl = split(',', $ipmi->{list})); $n++) {
+	for($n = 0; $n < scalar(@sensor_list); $n++) {
 		$str = $u . $package . $n . "." . $tf->{when} . ".$imgfmt_lc";
 		push(@IMG, $str);
 		unlink("$IMG_DIR" . $str);
@@ -364,16 +366,38 @@ sub ipmi_cgi {
 		}
 	}
 
+	my $graphs_per_row = $ipmi->{graphs_per_row};
+	my @linpad =(0) x scalar(@sensor_list);
+	if ($graphs_per_row > 1) {
+		for(my $n = 0; $n < scalar(@sensor_list); $n++) {
+			my @ls = split(',', $ipmi->{desc}->{$n});
+			$linpad[$n] = scalar(@ls);
+		}
+		for(my $n = 0; $n < scalar(@linpad); $n++) {
+			if ($n % $graphs_per_row == 0) {
+				my $max_number_of_lines = 0;
+				for (my $sub_n = $n; $sub_n < min($n + $graphs_per_row, scalar(@linpad)); $sub_n++) {
+					$max_number_of_lines = max($max_number_of_lines, $linpad[$sub_n]);
+				}
+				for (my $sub_n = $n; $sub_n < min($n + $graphs_per_row, scalar(@linpad)); $sub_n++) {
+					$linpad[$sub_n] = $max_number_of_lines;
+				}
+			}
+		}
+	}
+  
+	my $whitespace_key_support = lc($ipmi->{whitespace_key_support} || "") eq "y" ? 1 : 0;
+
 	$n = 0;
-	while($n < scalar(my @sl = split(',', $ipmi->{list}))) {
+	while($n < scalar(@sensor_list)) {
 		if($title) {
 			if($n == 0) {
-				push(@output, main::graph_header($title, $ipmi->{graphs_per_row}));
+				push(@output, main::graph_header($title, $graphs_per_row));
 			}
 			push(@output, "    <tr>\n");
 		}
-		for($n2 = 0; $n2 < $ipmi->{graphs_per_row}; $n2++) {
-			last unless $n < scalar(my @sl = split(',', $ipmi->{list}));
+		for($n2 = 0; $n2 < $graphs_per_row; $n2++) {
+			last unless $n < scalar(@sensor_list);
 			if($title) {
 				push(@output, "    <td>\n");
 			}
@@ -385,6 +409,9 @@ sub ipmi_cgi {
 			my $unit = $ipmi->{units}->{$n};
 			foreach my $i (split(',', $ipmi->{desc}->{$n})) {
 				$i = trim($i);
+				if ($whitespace_key_support) {
+					$i=~s/ /_/g;
+				}
 				$str = $ipmi->{map}->{$i} || $i;
 				$str = sprintf("%-40s", substr($str, 0, 40));
 				push(@tmp, "LINE2:s" . ($e + 1) . $LC[$e] . ":$str");
@@ -392,7 +419,7 @@ sub ipmi_cgi {
 				push(@tmpz, "LINE2:s" . ($e + 1) . $LC[$e] . ":$str");
 				$e++;
 			}
-			while($e < 9) {
+			while($e < $linpad[$n]) {
 				push(@tmp, "COMMENT: \\n");
 				$e++;
 			}
@@ -402,7 +429,7 @@ sub ipmi_cgi {
 				push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
 			}
 			($width, $height) = split('x', $config->{graph_size}->{medium});
-			$str = substr(trim($sl[$n]), 0, 25);
+			$str = substr(trim($sensor_list[$n]), 0, 25);
 			my $cdef_allvalues = $gap_on_all_nan ? "CDEF:allvalues=s1,UN,0,1,IF,s2,UN,0,1,IF,s3,UN,0,1,IF,s4,UN,0,1,IF,s5,UN,0,1,IF,s6,UN,0,1,IF,s7,UN,0,1,IF,s8,UN,0,1,IF,s9,UN,0,1,IF,+,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=s1,s2,s3,s4,s5,s6,s7,s8,s9,+,+,+,+,+,+,+,+";
 			$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$n]",
 				"--title=$str  ($tf->{nwhen}$tf->{twhen})",

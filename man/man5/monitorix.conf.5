@@ -180,6 +180,13 @@ All the configuration files in there will be loaded in alphabetic order, so the 
 Default value: \fI/etc/monitorix/conf.d\fP
 .RE
 .P
+.BI additional_graph_name
+.RS
+This is an optional configuration option for configuration files in \fIinclude_dir\fP. It takes a comma separated list of additional modules that is appended to the \fIgraph_name\fP option. This enables you to add custom modules without changing the \fImonitorix.conf\fP or copy all names from \fIgraph_name\fP to your config file.
+.P
+Default value: \fINone\fP
+.RE
+.P
 .BI ip_default_table
 .RS
 This option will define in which table Monitorix will put all \fIiptables\fP rules for network traffic accounting monitoring. It only works on Linux.
@@ -644,6 +651,8 @@ This option sets the size of all processors graphs.
 .P
 The possible values are:
 .RS
+\fIlarge\fP    for 750x180 graphs.
+.br
 \fImain\fP     for 450x150 graphs.
 .br
 \fImedium\fP   for 325x150 graphs.
@@ -865,6 +874,235 @@ Default value: \fIn\fP
 This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option shows gaps only if all data points are \fInan\fP instead of requiring only one to be \fInan\fP for a gap. This can be useful if not all sensor data are required for normal operation.
 .P
 Default value: \fIn\fP
+.RE
+.SS Intel RAPL power consumption (intelrapl.pm)
+This graph is able to monitor the power draw of an unlimited number of Intel RAPL supporting devices like Intel CPU packages. For example it can (if the device RAPL data is available) show power draw of the cores, integrated GPU, package, DRAM and the non-core part of the power draw. The non-core power draw composition can be specified by setting which parts will be subtracted from the package power draw.
+.P
+.BI list
+.RS
+This is a list of groups of CPU sensors you want to monitor with an arbitrary name. Each group will become a plot and there may be an unlimited number of groups. You can define sensor names like \fcore\fP and \fpackage\fP.
+.P
+WARNING: Every time the number of groups or the size of the groups in this option changes, Monitorix will resize the \fIintelrapl.rrd\fP file accordingly, removing all historical data.
+.P
+To collect the CPU power usage the energy counters from the \fIintel-rapl\fP framework are used and a power consumption in the monitored time interval calculated.
+.P
+It is recommended that you first check if the \fIintel-rapl\fP class tree and collect your desired energy counters from the devices that you plan to monitor. For example check \fItree /sys/class/powercap/intel-rapl\fP for available \fIenergy_uj\fP energy counters. The corresponding \fIname\fP files helps identifying the sensors.
+
+You can add it to the group 0 like this:
+.P
+.RS
+<list>
+.br
+	0 = core, uncore, package, dram
+.br
+	1 = dram
+.br
+</list>
+.RE
+.P
+.RE
+.P
+.BI list_item_names
+.RS
+This list complements the \fBlist\fP option. It allows you to change the group name that will appear in the graph, hiding the sensor name. If no association is defined, then Monitorix will display the name of the device as it is specified in the config file.
+.P
+.RS
+<list_item_names>
+.br
+	0 = CPU 1
+.br
+	1 = DRAM modules
+.br
+</list_item_names>
+.RE
+.RE
+.P
+.BI sensors
+.RS
+This list sets the energy counter files for the devices specified in the \fBlist\fP option.
+.P
+.RS
+<sensors>
+.br
+	core = /sys/class/powercap/intel-rapl:0:0/energy_uj
+.br
+	uncore = /sys/class/powercap/intel-rapl:0:1/energy_uj
+.br
+	package = /sys/class/powercap/intel-rapl:0/energy_uj
+.br
+	dram = /sys/class/powercap/intel-rapl:0:2/energy_uj
+.br
+</sensors>
+.RE
+.RE
+.P
+.BI sensor_names
+.RS
+This list complements the \fBsensors\fP option. It allows you to change the device name that will appear in the graph, hiding the device name. If no association is defined, then Monitorix will display the name of the device as it is specified in the config file.
+.P
+.RS
+<sensor_names>
+.br
+	package = Package
+.br
+	core = Cores
+.br
+	uncore = IGP
+.br
+	dram = DRAM
+.br
+</sensor_names>
+.RE
+.RE
+.P
+.BI package_sensors
+.RS
+This list allows you to set a device name for the package device. This specified device is used as total power draw to calculate the non-core power draw by subtracting the power draw of the devices specified for the same group in \fBackage_sensors\fP. Non-core power draw will not be shown if no package sensor is specified for a certain group.
+.P
+.RS
+<package_sensors>
+.br
+	0 = package
+.br
+</package_sensors>
+.RE
+.RE
+.P
+.BI package_content
+.RS
+This list complements the \fBpackage_sensors\fP option. It allows specify the devices that are contained in the total package power draw. This information is needed if you want to visualize non-core power draw. Non-core power draw will be calculated by subtracting the  sum power draw of a package content group from the package power draw.
+.P
+.RS
+<package_content>
+.br
+	0 = core, uncore
+.br
+</package_content>
+.RE
+.RE
+.P
+.BI noncore_names
+.RS
+This list allows you to change the non-core name for a certain group that will appear in the graph legend.
+.P
+.RS
+<noncore_names>
+.br
+	0 = Non-Core
+.br
+</noncore_names>
+.RE
+.RE
+.P
+.BI desc
+.RS
+This list complements the \fBlist\fP option. It allows you to include a title for every group of devicess. The title will appear in the title above the plot.
+.P
+.RS
+<desc>
+.br
+	0 = CPU power distribution
+.br
+	1 = Memory power distribution
+.br
+</desc>
+.RE
+.RE
+.P
+.BI sum
+.RS
+This list allows you to add a specific sum of devices to the plot of a certain group. No sum will be shown if not specified for the group.
+.P
+.RS
+<sum>
+.br
+	0 = package, dram
+.br
+</sum>
+.RE
+.RE
+.P
+.BI sum_names
+.RS
+This list complements the \fBseum\fP option. It allows specify the name of the sum if desired.
+.P
+.RS
+<sum_names>
+.br
+	0 = Package + DRAM
+.br
+</sum_names>
+.RE
+.RE
+.P
+.BI packagepower_enabled
+.RS
+This section enables or disables the alert capabilities for this graph; the alert for the package power draw. It works as follows:
+.P
+If the package power draw specified by \fBpackage_sensors\fP of any of the specified device reaches or succeeds the \fBpackagepower_threshold\fP (the interval of time is not used here), Monitorix will execute the external alert script defined in \fBpackagepower_script\fP.
+.P
+The default Monitorix installation includes an example of a shell-script alert called \fBmonitorix-alert.sh\fP which you can use as a base for your own script.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI packagepower_timeintvl
+.RS
+Not used in this alert.
+.P
+Default value: \fINone\fP
+.RE
+.P
+.BI packagepower_threshold
+.RS
+This is the value that needs to be reached or succeeded to trigger the mechanism for a particular action, which in this case is the execution of an external alert script.
+.P
+Default value: \fINone\fP
+.RE
+.P
+.BI packagepower_script
+.RS
+This is the full path name of the script that will be executed by this alert.
+.P
+It will receive the following three parameters:
+.P
+1st - the value currently defined in \fBpackagepower_timeintvl\fP.
+.br
+2nd - the value currently defined in \fBpackagepower_threshold\fP.
+.br
+3rd - the current package power draw.
+.P
+Default value: \fI/path/to/script.sh\fP
+.RE
+.P
+.BI use_nan_for_missing_data
+.RS
+This option, when enabled via \fIy\fP, shows \fnan\fP values for missing data instead of \f0\fP. This is useful when \f0\fP could be mistaken for valid data.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI gap_on_all_nan
+.RS
+This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option shows gaps only if all data points are \fInan\fP instead of requiring only one to be \fInan\fP for a gap. This can be useful if not all sensor data are required for normal operation.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI show_noncore_info
+.RS
+This option, when enabled via \fIy\fP, enable showing description string in the legend how the non-core part is calculated.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI max_number_of_values_per_group
+.RS
+This option sets the maximum number of devices per group if more values are required.
+.P
+WARNING: Every time the \fImax_number_of_values_per_group\fP value changes, Monitorix will resize the \fIintelrapl.rrd\fP file accordingly, removing all historical data.
+.P
+Default value: \fI10\fP
 .RE
 .SS HP ProLiant System Health (hptemp.pm)
 .BI list
@@ -1373,7 +1611,7 @@ This is the type of sensor in each group. It's important to not mix different ty
 .P
 .BI map
 .RS
-This list complements the \fBdesc\fP option. It basically allows you to change the name that will appear in the graph, hiding the real name of the sensor. If no association is defined, then Monitorix will display the name specified in the \fBdesc\fP option. Note, this only works in names that don't include whitespaces.
+This list complements the \fBdesc\fP option. It basically allows you to change the name that will appear in the graph, hiding the real name of the sensor. If no association is defined, then Monitorix will display the name specified in the \fBdesc\fP option. Note, this only works in names that don't include whitespaces unless you use the \fBwhitespace_key_support\fP option and replace whitespaces with underscores in the key.
 .RE
 .P
 .BI alerts
@@ -1414,6 +1652,12 @@ The external script will receive the following arguments:
 3rd - the value of the sensor.
 .P
 .RE
+.RE
+.BI whitespace_key_support
+.RS
+This list complements the \fBmap\fP option. It changes the handling of the key names. Without this option enabled you can't rename keys with whitespaces using the \fBmap\fP option. When enabled, whitespaces in the map key will be replaced by underscores(_) and enables you to specify the key names this way.
+.P
+Default value: \fIn\fP
 .RE
 .BI graphs_per_row
 .RS
@@ -3044,7 +3288,7 @@ Default value: \fI3\fP
 .P
 .BI size
 .RS
-This is the size of the graphs of the ports. It currently accepts up to 8 different size names: \fImain\fP, \fImedium\fP, \fImedium2\fP, \fIsmall\fP, \fImini\fP, \fItiny\fP, \fIzoom\fP and \fIremote\fP. You can check the resolution of each size in the configuration file, inside the list named \fBgraph_size\fP.
+This is the size of the graphs of the ports. It currently accepts up to 8 different size names: \fIlarge\fP, \fImain\fP, \fImedium\fP, \fImedium2\fP, \fIsmall\fP, \fImini\fP, \fItiny\fP, \fIzoom\fP and \fIremote\fP. You can check the resolution of each size in the configuration file, inside the list named \fBgraph_size\fP.
 .P
 Default value: \fImini\fP
 .RE

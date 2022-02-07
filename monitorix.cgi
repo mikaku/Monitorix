@@ -295,7 +295,11 @@ if($config{include_dir} && opendir(DIR, $config{include_dir})) {
 			#	delete $config_inc{graph_name};
 			#	next;
 			#}
-
+			if($key eq "additional_graph_name") {
+				$config{graph_name} .= ", $val";
+				delete $config_inc{$key};
+				next;
+			}
 			# one level options
 			$config{$key} = $val;
 			delete $config_inc{$key};
