@@ -520,11 +520,11 @@ sub amdenergy_cgi {
 	my $plots_per_list_item = 1;
 	foreach my $k (sort keys %{$amdenergy->{list}}) {
 		for($n = 0; $n < $plots_per_list_item; $n++) {
-			$str = $u . $package . $k . $n . "." . $tf->{when} . ".$imgfmt_lc";
+			$str = $u . $package . $k . "_" . $n . "." . $tf->{when} . ".$imgfmt_lc";
 			push(@IMG, $str);
 			unlink("$IMG_DIR" . $str);
 			if(lc($config->{enable_zoom}) eq "y") {
-				$str = $u . $package . $k . $n . "z." . $tf->{when} . ".$imgfmt_lc";
+				$str = $u . $package . $k . "_" . $n . "z." . $tf->{when} . ".$imgfmt_lc";
 				push(@IMGz, $str);
 				unlink("$IMG_DIR" . $str);
 			}
