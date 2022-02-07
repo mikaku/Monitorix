@@ -485,11 +485,11 @@ sub intelrapl_cgi {
 	for($n = 0; $n < keys(%{$intelrapl->{list}}); $n++) {
 		my @sensor_group = split($list_delimiter, $intelrapl->{list}->{$n});
 		for($n2 = 0; $n2 < $plots_per_list_item; $n2++) {
-			$str = $u . $package . $n . "_" . $n2 . "." . $tf->{when} . ".$imgfmt_lc";
+			$str = $u . $package . $n . $n2 . "." . $tf->{when} . ".$imgfmt_lc";
 			push(@IMG, $str);
 			unlink("$IMG_DIR" . $str);
 			if(lc($config->{enable_zoom}) eq "y") {
-				$str = $u . $package . $n . "_" . $n2 . "z." . $tf->{when} . ".$imgfmt_lc";
+				$str = $u . $package . $n . $n2 . "z." . $tf->{when} . ".$imgfmt_lc";
 				push(@IMGz, $str);
 				unlink("$IMG_DIR" . $str);
 			}
