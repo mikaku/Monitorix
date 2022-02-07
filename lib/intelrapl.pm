@@ -506,7 +506,7 @@ sub intelrapl_cgi {
 			push(@output, "    <td>\n");
 		}
 
-		my $n_plot = $k;
+		my $n_plot = 0;
 		@riglim = @{setup_riglim($rigid[$n_plot], $limit[$n_plot])};
 		undef(@tmp);
 		undef(@tmpz);
