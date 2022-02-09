@@ -411,9 +411,9 @@ sub intelrapl_cgi {
 			push(@output, "    <td>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
-		"--resolution=$tf->{res}",
-		"--start=-$tf->{nwhen}$tf->{twhen}",
-		"AVERAGE");
+			"--resolution=$tf->{res}",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"AVERAGE");
 		$err = RRDs::error;
 		push(@output, "ERROR: while fetching $rrd: $err\n") if $err;
 		my $line1;
