@@ -41,7 +41,7 @@ my $socket_offset = 0;
 
 sub round {
 	my ($float) = @_;
-  return int($float + $float/abs($float*2 || 1));
+	return int($float + $float/abs($float*2 || 1));
 }
 
 sub hue_to_rgb {
@@ -445,9 +445,9 @@ sub amdenergy_cgi {
 			push(@output, "    <td>\n");
 		}
 		my (undef, undef, undef, $data) = RRDs::fetch("$rrd",
-		"--resolution=$tf->{res}",
-		"--start=-$tf->{nwhen}$tf->{twhen}",
-		"AVERAGE");
+			"--resolution=$tf->{res}",
+			"--start=-$tf->{nwhen}$tf->{twhen}",
+			"AVERAGE");
 		$err = RRDs::error;
 		push(@output, "ERROR: while fetching $rrd: $err\n") if $err;
 		my $line1;
@@ -603,7 +603,7 @@ sub amdenergy_cgi {
 				}
 
 				if ($i_core == 0) {
-				  push(@tmp, "COMMENT:" . $cpu_label);
+					push(@tmp, "COMMENT:" . $cpu_label);
 				}
 				push(@tmp, "AREA:trans_" . $value_name . $hex_color . ":" . $legend_label . (($i_core == 0) ? "" : ":STACK"));
 				push(@tmpz, "AREA:trans_" . $value_name . $hex_color . ":" . $legend_label . (($i_core == 0) ? "" : ":STACK"));
