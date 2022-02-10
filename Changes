@@ -1,6 +1,12 @@
 N.NN.N - DD-MMM-YYYY
 ====================
+- Added a complete graph to monitor the power consumption of Intel-RAPL capable
+  devices ('intelrapl.pm'). [#390]
+- Added a complete graph to monitor AMD CPU power consumption ('amdenergy.pm').
+  [#389]
 - Added the 'additional_graph_name' configuration option. [#388]
+- Added support to be able to rename ipmi sensors that include whitespaces in
+  their name. [#393]
 - Fixed an error in 'pgsql.pm' if a non-privileged user is used to read the
   statistics. [#384]
 - Fixed the amdgpu section in 'monitorix.conf'. [#385]
@@ -9,6 +15,7 @@ N.NN.N - DD-MMM-YYYY
        (thanks to Michael Bronzini, mb20 AT bronzeware.se for pointing this out)
 - Fixed wrong index for image directory in 'amdgpu.pm', 'nvidiagpu.pm' and
   'nvme.pm'. [#387]
+- Fixed the extra padding in 'ipmi.pm' and 'du.pm'. [#392]
 
 
 3.14.0 - 18-Jan-2022
