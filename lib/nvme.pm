@@ -399,7 +399,16 @@ sub nvme_cgi {
 	);
 
 	my $show_extended_plots = lc($nvme->{show_extended_plots} || "") eq "y" ? 1 : 0;
-	my $number_of_smart_values_in_use = $show_extended_plots ? 9 : 3;
+	my $show_more_extened_plots = lc($nvme->{show_more_extened_plots} || "") eq "y" ? 1 : 0;
+	my $number_of_smart_values_in_use = 3;
+	if ($show_more_extened_plots) {
+		$number_of_smart_values_in_use = 9;
+	} else {
+		if ($show_extended_plots) {
+			$number_of_smart_values_in_use = 6;
+		}
+	}
+
 	if($number_of_smart_values_in_use > $number_of_smart_values_in_rrd) {
 		logger(@output, "ERROR: Number of smart values (" . $number_of_smart_values_in_use . ") has smaller or equal to number of smart values in rrd (" . $number_of_smart_values_in_rrd . ")!");
 		return;
@@ -508,32 +517,34 @@ sub nvme_cgi {
 	my @legend_labels = ("%5.1lf", "%4.0lf%%", "%4.0lf%%", $total_bytes_format, "%4.0lf%s", "%4.0lf%s", $total_bytes_format, $byte_speed_format, $byte_speed_format);
 
 	# Array index is the plot index:
-	my @plot_order = $show_extended_plots ? (0, 8, 7, 1, 2, 4, 5, 6, 3) : (0, 1, 2); # To rearange the plots
-	my $main_smart_plots = $show_extended_plots ? 3 : 1; # Number of smart plots on the left side.
-	my @main_plot_with_average = $show_extended_plots ? (1, 1, 1) : (1); # Wether or not the main plots show average, min and max or only the last value in the legend.
-	my @alt_axis_scaling = $show_extended_plots ? (0, 0, 0, 0, 0, 0, 0, 1, 1) : (0, 0, 0);
-	my @logarithmic_axis_scaling = $show_extended_plots ? (0, 0, 0, 0, 0, 0, 0, 0, 0) : (0, 0, 0);
-
-	if(!$show_extended_plots) {
-		for(my $index = 0; $index < scalar(@plot_order); $index++) {
-			$y_axis_titles[$index] = $y_axis_titles[$plot_order[$index]];
-			$value_transformations[$index] = $value_transformations[$plot_order[$index]];
-			$legend_labels[$index] = $legend_labels[$plot_order[$index]];
+	my @plot_order = (0, 1, 2); # To rearange the plots
+	my @main_plot_with_average = (1); # Wether or not the main plots show average, min and max or only the last value in the legend.
+	my @alt_axis_scaling = (0, 0, 0);
+	my @logarithmic_axis_scaling = (0, 0, 0);
+	if ($show_more_extened_plots) {
+		@plot_order = (0, 8, 7, 1, 2, 4, 5, 6, 3);
+		@main_plot_with_average = (1, 1, 1);
+		@alt_axis_scaling = (0, 0, 0, 0, 0, 0, 0, 1, 1);
+		@logarithmic_axis_scaling = (0, 0, 0, 0, 0, 0, 0, 0, 0);
+	} else {
+		if ($show_extended_plots) {
+			@plot_order = (0, 3, 1, 2, 4, 5);
+			@main_plot_with_average = (1, 0);
+			@alt_axis_scaling = (0, 0, 0, 1, 0, 0);
+			@logarithmic_axis_scaling = (0, 0, 0, 0, 0, 0);
 		}
-		$#y_axis_titles = scalar(@plot_order)-1;
-		$#value_transformations = scalar(@plot_order)-1;
-		$#legend_labels = scalar(@plot_order)-1;
 	}
+	my $main_smart_plots = scalar(@main_plot_with_average); # Number of smart plots on the left side.
 	my $number_of_plots = scalar(@plot_order);
 
-	if(scalar(@y_axis_titles) != $number_of_smart_values_in_use) {
-		push(@output, "ERROR: Size of y_axis_titles (" . scalar(@y_axis_titles) . ") has to be equal to number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
+	if(scalar(@y_axis_titles) < $number_of_smart_values_in_use) {
+		push(@output, "ERROR: Size of y_axis_titles (" . scalar(@y_axis_titles) . ") has to be >= number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
 	}
-	if(scalar(@value_transformations) != $number_of_smart_values_in_use) {
-		push(@output, "ERROR: Size of value_transformations (" . scalar(@value_transformations) . ") has to be equal to number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
+	if(scalar(@value_transformations) < $number_of_smart_values_in_use) {
+		push(@output, "ERROR: Size of value_transformations (" . scalar(@value_transformations) . ") has to be >= number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
 	}
-	if(scalar(@legend_labels) != $number_of_smart_values_in_use) {
-		push(@output, "ERROR: Size of legend_labels (" . scalar(@legend_labels) . ") has to be equal to number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
+	if(scalar(@legend_labels) < $number_of_smart_values_in_use) {
+		push(@output, "ERROR: Size of legend_labels (" . scalar(@legend_labels) . ") has to be >= number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
 	}
 	if(scalar(@alt_axis_scaling) != $number_of_plots) {
 		push(@output, "ERROR: Size of alt_axis_scaling (" . scalar(@alt_axis_scaling) . ") has to be equal to number_of_plots (" . $number_of_plots . ")");
@@ -543,9 +554,6 @@ sub nvme_cgi {
 	}
 	if(scalar(@plot_order) > $number_of_smart_values_in_use) {
 		push(@output, "ERROR: Size of plot_order (" . scalar(@plot_order) . ") has to be smaller or equal to number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
-	}
-	if(scalar(@main_plot_with_average) != $main_smart_plots) {
-		push(@output, "ERROR: Size of main_plot_with_average (" . scalar(@main_plot_with_average) . ") has to be equal to main_smart_plots (" . $main_smart_plots . ")");
 	}
 
 	for($n = 0; $n < keys(%{$nvme->{list}}); $n++) {
@@ -716,7 +724,7 @@ sub nvme_cgi {
 			  push(@scaling_options, "--logarithmic");
 			  @riglim = ();
 			}
-			my $plot_title = $config->{graphs}->{'_nvme' . ($n_plot + 1)};
+			my $plot_title = $config->{graphs}->{'_nvme' . ($n_smart + 1)};
 			$pic = $rrd{$version}->("$IMG_DIR" . $IMG[$e * $number_of_plots + $n_plot],
 				"--title=$plot_title ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
