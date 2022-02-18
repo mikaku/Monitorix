@@ -399,16 +399,7 @@ sub nvme_cgi {
 	);
 
 	my $show_extended_plots = lc($nvme->{show_extended_plots} || "") eq "y" ? 1 : 0;
-	my $show_more_extened_plots = lc($nvme->{show_more_extened_plots} || "") eq "y" ? 1 : 0;
-	my $number_of_smart_values_in_use = 3;
-	if ($show_more_extened_plots) {
-		$number_of_smart_values_in_use = 9;
-	} else {
-		if ($show_extended_plots) {
-			$number_of_smart_values_in_use = 6;
-		}
-	}
-
+	my $number_of_smart_values_in_use = $show_extended_plots ? 9 : 3;
 	if($number_of_smart_values_in_use > $number_of_smart_values_in_rrd) {
 		logger(@output, "ERROR: Number of smart values (" . $number_of_smart_values_in_use . ") has smaller or equal to number of smart values in rrd (" . $number_of_smart_values_in_rrd . ")!");
 		return;
@@ -521,18 +512,11 @@ sub nvme_cgi {
 	my @main_plot_with_average = (1); # Wether or not the main plots show average, min and max or only the last value in the legend.
 	my @alt_axis_scaling = (0, 0, 0);
 	my @logarithmic_axis_scaling = (0, 0, 0);
-	if ($show_more_extened_plots) {
+	if ($show_extended_plots) {
 		@plot_order = (0, 8, 7, 1, 2, 4, 5, 6, 3);
 		@main_plot_with_average = (1, 1, 1);
 		@alt_axis_scaling = (0, 0, 0, 0, 0, 0, 0, 1, 1);
 		@logarithmic_axis_scaling = (0, 0, 0, 0, 0, 0, 0, 0, 0);
-	} else {
-		if ($show_extended_plots) {
-			@plot_order = (0, 3, 1, 2, 4, 5);
-			@main_plot_with_average = (1, 0);
-			@alt_axis_scaling = (0, 0, 0, 1, 0, 0);
-			@logarithmic_axis_scaling = (0, 0, 0, 0, 0, 0);
-		}
 	}
 	my $main_smart_plots = scalar(@main_plot_with_average); # Number of smart plots on the left side.
 	my $number_of_plots = scalar(@plot_order);
