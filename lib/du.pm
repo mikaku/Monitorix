@@ -164,6 +164,7 @@ sub du_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $du = $config->{du};
 	my $args = $du->{extra_args} || "";
+	my $use_nan_for_missing_data = lc($du->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
 
 	my @dirs;
 
@@ -194,7 +195,7 @@ sub du_update {
 		foreach my $i (split(',', $du->{desc}->{$e})) {
 			my $line;
 
-			$dirs[$e][$e2] = 0 unless defined $dirs[$e][$e2];
+			$dirs[$e][$e2] = ($use_nan_for_missing_data ? (0+"nan") : 0) unless defined $dirs[$e][$e2];
 			$str = trim($i);
 			if(-d $str) {
 				if($type eq "size") {
@@ -221,7 +222,7 @@ sub du_update {
 	$e = 0;
 	while($e < scalar(@disk_list)) {
 		for($n = 0; $n < 9; $n++) {
-			$dirs[$e][$n] = 0 unless defined $dirs[$e][$n];
+			$dirs[$e][$n] = ($use_nan_for_missing_data ? (0+"nan") : 0) unless defined $dirs[$e][$n];
 			$rrdata .= ":" . $dirs[$e][$n];
 		}
 		$e++;
