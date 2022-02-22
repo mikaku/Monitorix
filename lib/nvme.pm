@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use Monitorix;
 use RRDs;
+use Time::HiRes;
 use Cwd 'abs_path';
 use File::Basename;
 use Exporter 'import';
@@ -31,6 +32,158 @@ our @EXPORT = qw(nvme_init nvme_update nvme_cgi);
 
 my $max_number_of_hds = 8;		# Changing this number destroys history.
 my $number_of_smart_values_in_rrd = 9;	# Changing this number destroys history.
+
+my $epoc_identifier = "last_epoc";
+my $data_units_written_identifier = "last_duw";
+my $data_units_read_identifier = "last_dur";
+
+sub measure {
+	my ($myself, $config, $nvme) = @_;
+	my $use_nan_for_missing_data = lc($nvme->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
+
+	my @smart_all;
+	my $rrdata = "N";
+
+	foreach my $k (sort keys %{$nvme->{list}}) {
+		# values delimitted by ", " (comma + space)
+		my @dsk = split(', ', $nvme->{list}->{$k});
+		for(my $n = 0; $n < $max_number_of_hds; $n++) {
+			my @smart = ($use_nan_for_missing_data ? (0+"nan") : 0) x $number_of_smart_values_in_rrd;
+
+			if($dsk[$n]) {
+				my $d = trim($dsk[$n]);
+				$d =~ s/^\"//;
+				$d =~ s/\"$//;
+
+				# check if device name is a symbolic link
+				# e.g. /dev/nvme/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+				if(-l $d) {
+					$d = abs_path(dirname($d) . "/" . readlink($d));
+					chomp($d);
+				}
+
+				my $last_epoc = ($config->{nvme_hist}->{$k}->{$n}->{$epoc_identifier} || 0);
+				my $epoc = Time::HiRes::time();
+				$config->{nvme_hist}->{$k}->{$n}->{$epoc_identifier} = $epoc;
+				my $data_units_written_index;
+				my $data_units_read_index;
+
+				open(IN, "smartctl -A $d --json |");
+				while(<IN>) {
+					if(/\"temperature\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						if (index($tmp[1], "{") == -1) {
+							my $smartIndex = 0;
+							$smart[$smartIndex] = trim($tmp[1]);
+							chomp($smart[$smartIndex]);
+						}
+					}
+					if(/\"available_spare\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						my $smartIndex = 1;
+						$smart[$smartIndex] = trim($tmp[1]);
+						chomp($smart[$smartIndex]);
+					}
+					if(/\"percentage_used\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						my $smartIndex = 2;
+						$smart[$smartIndex] = trim($tmp[1]);
+						chomp($smart[$smartIndex]);
+					}
+					if(/\"data_units_written\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						my $smartIndex = 3;
+						$data_units_written_index = $smartIndex;
+						$smart[$smartIndex] = trim($tmp[1]);
+						chomp($smart[$smartIndex]);
+					}
+					if(/\"media_errors\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						my $smartIndex = 4;
+						$smart[$smartIndex] = trim($tmp[1]);
+						chomp($smart[$smartIndex]);
+					}
+					if(/\"unsafe_shutdowns\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						my $smartIndex = 5;
+						$smart[$smartIndex] = trim($tmp[1]);
+						chomp($smart[$smartIndex]);
+					}
+					if(/\"data_units_read\"/) {
+						my @tmp = split(':', $_);
+						$tmp[1] =~ tr/,//d;
+						my $smartIndex = 6;
+						$data_units_read_index = $smartIndex;
+						$smart[$smartIndex] = trim($tmp[1]);
+						chomp($smart[$smartIndex]);
+					}
+				}
+				close(IN);
+
+				if (defined($data_units_written_index)) {
+				  my $smartIndex = 7;
+					my $last_data_units_written = ($config->{nvme_hist}->{$k}->{$n}->{$data_units_written_identifier} || 0);
+					my $data_units_written = $smart[$data_units_written_index];
+					$config->{nvme_hist}->{$k}->{$n}->{$data_units_written_identifier} = $data_units_written;
+					if ($last_epoc ne 0 && $data_units_written >= $last_data_units_written) {
+						$smart[$smartIndex] = ($data_units_written - $last_data_units_written) / ($epoc - $last_epoc); # Calculation of data units per seconds.
+					}
+				}
+				if (defined($data_units_read_index)) {
+				  my $smartIndex = 8;
+					my $last_data_units_read = ($config->{nvme_hist}->{$k}->{$n}->{$data_units_read_identifier} || 0);
+					my $data_units_read = $smart[$data_units_read_index];
+					$config->{nvme_hist}->{$k}->{$n}->{$data_units_read_identifier} = $data_units_read;
+					if ($last_epoc ne 0 && $data_units_read >= $last_data_units_read) {
+						$smart[$smartIndex] = ($data_units_read - $last_data_units_read) / ($epoc - $last_epoc); # Calculation of data units per seconds.
+					}
+				}
+			}
+
+			push(@smart_all, @smart);
+
+			# nvme alert
+			if(defined($nvme->{alerts}) && lc($nvme->{alerts}->{availspare_enabled}) eq "y") {
+				my $smartIndex = 1;
+				$config->{nvme_hist_alert1}->{$n} = 0 if(!$config->{nvme_hist_alert1}->{$n});
+				if($smart[$smartIndex] <= $nvme->{alerts}->{availspare_threshold} && $config->{nvme_hist_alert1}->{$n} < $smart[$smartIndex]) {
+					if(-x $nvme->{alerts}->{availspare_script}) {
+						logger("$myself: ALERT: executing script '$nvme->{alerts}->{availspare_script}'.");
+						system($nvme->{alerts}->{availspare_script} . " " .$nvme->{alerts}->{availspare_timeintvl} . " " . $nvme->{alerts}->{availspare_threshold} . " " . $smart[$smartIndex]);
+					} else {
+						logger("$myself: ERROR: script '$nvme->{alerts}->{availspare_script}' doesn't exist or don't has execution permissions.");
+					}
+					$config->{nvme_hist_alert1}->{$n} = $smart[$smartIndex];
+				}
+			}
+			if(defined($nvme->{alerts}) && lc($nvme->{alerts}->{percentused_enabled}) eq "y") {
+				my $smartIndex = 2;
+				$config->{nvme_hist_alert2}->{$n} = 0 if(!$config->{nvme_hist_alert2}->{$n});
+				if($smart[$smartIndex] >= $nvme->{alerts}->{percentused_threshold} && $config->{nvme_hist_alert2}->{$n} < $smart[$smartIndex]) {
+					if(-x $nvme->{alerts}->{percentused_script}) {
+						logger("$myself: ALERT: executing script '$nvme->{alerts}->{percentused_script}'.");
+						system($nvme->{alerts}->{percentused_script} . " " .$nvme->{alerts}->{percentused_timeintvl} . " " . $nvme->{alerts}->{percentused_threshold} . " " . $smart[$smartIndex]);
+					} else {
+						logger("$myself: ERROR: script '$nvme->{alerts}->{percentused_script}' doesn't exist or don't has execution permissions.");
+					}
+					$config->{nvme_hist_alert2}->{$n} = $smart[$smartIndex];
+				}
+			}
+		}
+	}
+
+	foreach(@smart_all) {
+ 		$rrdata .= ":$_";
+ 	}
+
+ 	return $rrdata;
+}
 
 sub nvme_init {
 	my $myself = (caller(0))[3];
@@ -173,7 +326,11 @@ sub nvme_init {
 
 	$config->{nvme_hist_alert1} = ();
 	$config->{nvme_hist_alert2} = ();
+	$config->{nvme_hist} = ();
 	push(@{$config->{func_update}}, $package);
+
+	measure($myself, $config, $nvme);
+
 	logger("$myself: Ok") if $debug;
 }
 
@@ -182,113 +339,8 @@ sub nvme_update {
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $nvme = $config->{nvme};
-	my $use_nan_for_missing_data = lc($nvme->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
 
-	my @smart;
-
-	my $n;
-	my $rrdata = "N";
-
-	foreach my $k (sort keys %{$nvme->{list}}) {
-		# values delimitted by ", " (comma + space)
-		my @dsk = split(', ', $nvme->{list}->{$k});
-		for($n = 0; $n < $max_number_of_hds; $n++) {
-			@smart = ($use_nan_for_missing_data ? (0+"nan") : 0) x $number_of_smart_values_in_rrd;
-
-			if($dsk[$n]) {
-				my $d = trim($dsk[$n]);
-				$d =~ s/^\"//;
-				$d =~ s/\"$//;
-
-				# check if device name is a symbolic link
-				# e.g. /dev/nvme/by-path/pci-0000:07:07.0-scsi-0:0:0:0
-				if(-l $d) {
-					$d = abs_path(dirname($d) . "/" . readlink($d));
-					chomp($d);
-				}
-
-				open(IN, "smartctl -A $d --json |");
-				while(<IN>) {
-					if(/\"temperature\"/) {
-						my @tmp = split(':', $_);
-						$tmp[1] =~ tr/,//d;
-						if (index($tmp[1], "{") == -1) {
-							my $smartIndex = 0;
-							$smart[$smartIndex] = trim($tmp[1]);
-							chomp($smart[$smartIndex]);
-						}
-					}
-					if(/\"available_spare\"/) {
-						my @tmp = split(':', $_);
-						$tmp[1] =~ tr/,//d;
-						my $smartIndex = 1;
-						$smart[$smartIndex] = trim($tmp[1]);
-						chomp($smart[$smartIndex]);
-					}
-					if(/\"percentage_used\"/) {
-						my @tmp = split(':', $_);
-						$tmp[1] =~ tr/,//d;
-						my $smartIndex = 2;
-						$smart[$smartIndex] = trim($tmp[1]);
-						chomp($smart[$smartIndex]);
-					}
-					if(/\"data_units_written\"/) {
-						my @tmp = split(':', $_);
-						$tmp[1] =~ tr/,//d;
-						my $smartIndex = 3;
-						$smart[$smartIndex] = trim($tmp[1]);
-						chomp($smart[$smartIndex]);
-					}
-					if(/\"media_errors\"/) {
-						my @tmp = split(':', $_);
-						$tmp[1] =~ tr/,//d;
-						my $smartIndex = 4;
-						$smart[$smartIndex] = trim($tmp[1]);
-						chomp($smart[$smartIndex]);
-					}
-					if(/\"unsafe_shutdowns\"/) {
-						my @tmp = split(':', $_);
-						$tmp[1] =~ tr/,//d;
-						my $smartIndex = 5;
-						$smart[$smartIndex] = trim($tmp[1]);
-						chomp($smart[$smartIndex]);
-					}
-				}
-				close(IN);
-			}
-			foreach(@smart) {
-				$rrdata .= ":$_";
-			}
-
-			# nvme alert
-			if(defined($nvme->{alerts}) && lc($nvme->{alerts}->{availspare_enabled}) eq "y") {
-				my $smartIndex = 1;
-				$config->{nvme_hist_alert1}->{$n} = 0 if(!$config->{nvme_hist_alert1}->{$n});
-				if($smart[$smartIndex] <= $nvme->{alerts}->{availspare_threshold} && $config->{nvme_hist_alert1}->{$n} < $smart[$smartIndex]) {
-					if(-x $nvme->{alerts}->{availspare_script}) {
-						logger("$myself: ALERT: executing script '$nvme->{alerts}->{availspare_script}'.");
-						system($nvme->{alerts}->{availspare_script} . " " .$nvme->{alerts}->{availspare_timeintvl} . " " . $nvme->{alerts}->{availspare_threshold} . " " . $smart[$smartIndex]);
-					} else {
-						logger("$myself: ERROR: script '$nvme->{alerts}->{availspare_script}' doesn't exist or don't has execution permissions.");
-					}
-					$config->{nvme_hist_alert1}->{$n} = $smart[$smartIndex];
-				}
-			}
-			if(defined($nvme->{alerts}) && lc($nvme->{alerts}->{percentused_enabled}) eq "y") {
-				my $smartIndex = 2;
-				$config->{nvme_hist_alert2}->{$n} = 0 if(!$config->{nvme_hist_alert2}->{$n});
-				if($smart[$smartIndex] >= $nvme->{alerts}->{percentused_threshold} && $config->{nvme_hist_alert2}->{$n} < $smart[$smartIndex]) {
-					if(-x $nvme->{alerts}->{percentused_script}) {
-						logger("$myself: ALERT: executing script '$nvme->{alerts}->{percentused_script}'.");
-						system($nvme->{alerts}->{percentused_script} . " " .$nvme->{alerts}->{percentused_timeintvl} . " " . $nvme->{alerts}->{percentused_threshold} . " " . $smart[$smartIndex]);
-					} else {
-						logger("$myself: ERROR: script '$nvme->{alerts}->{percentused_script}' doesn't exist or don't has execution permissions.");
-					}
-					$config->{nvme_hist_alert2}->{$n} = $smart[$smartIndex];
-				}
-			}
-		}
-	}
+	my $rrdata = measure($myself, $config, $nvme);
 
 	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;
@@ -347,7 +399,7 @@ sub nvme_cgi {
 	);
 
 	my $show_extended_plots = lc($nvme->{show_extended_plots} || "") eq "y" ? 1 : 0;
-	my $number_of_smart_values_in_use = $show_extended_plots ? 6 : 3;
+	my $number_of_smart_values_in_use = $show_extended_plots ? 9 : 3;
 	if($number_of_smart_values_in_use > $number_of_smart_values_in_rrd) {
 		logger(@output, "ERROR: Number of smart values (" . $number_of_smart_values_in_use . ") has smaller or equal to number of smart values in rrd (" . $number_of_smart_values_in_rrd . ")!");
 		return;
@@ -447,8 +499,49 @@ sub nvme_cgi {
 		$u = "";
 	}
 
+	# Plot settings in order of the smart array.
+	# Array index is the smart sensor index:
+	my $total_bytes_format = "%5.1lf%s";
+	my $byte_speed_format = "%6.1lf%s";
+	my @y_axis_titles = ((lc($config->{temperature_scale}) eq "f" ? "Fahrenheit" : "Celsius"), "Percent (%)", "Percent (%)", "bytes", "Errors", "Counts", "bytes", "bytes/s", "bytes/s");
+	my @value_transformations = ((lc($config->{temperature_scale}) eq "f" ? ",9,*,5,/,32,+" : ""), "", "", ",512000,*", "", "", ",512000,*", ",512000,*", ",512000,*");
+	my @legend_labels = ("%5.1lf", "%4.0lf%%", "%4.0lf%%", $total_bytes_format, "%4.0lf%s", "%4.0lf%s", $total_bytes_format, $byte_speed_format, $byte_speed_format);
+
+	# Array index is the plot index:
+	my @plot_order = (0, 1, 2); # To rearange the plots
+	my @main_plot_with_average = (1); # Wether or not the main plots show average, min and max or only the last value in the legend.
+	my @alt_axis_scaling = (0, 0, 0);
+	my @logarithmic_axis_scaling = (0, 0, 0);
+	if ($show_extended_plots) {
+		@plot_order = (0, 8, 7, 1, 2, 4, 5, 6, 3);
+		@main_plot_with_average = (1, 1, 1);
+		@alt_axis_scaling = (0, 0, 0, 0, 0, 0, 0, 1, 1);
+		@logarithmic_axis_scaling = (0, 0, 0, 0, 0, 0, 0, 0, 0);
+	}
+	my $main_smart_plots = scalar(@main_plot_with_average); # Number of smart plots on the left side.
+	my $number_of_plots = scalar(@plot_order);
+
+	if(scalar(@y_axis_titles) < $number_of_smart_values_in_use) {
+		push(@output, "ERROR: Size of y_axis_titles (" . scalar(@y_axis_titles) . ") has to be >= number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
+	}
+	if(scalar(@value_transformations) < $number_of_smart_values_in_use) {
+		push(@output, "ERROR: Size of value_transformations (" . scalar(@value_transformations) . ") has to be >= number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
+	}
+	if(scalar(@legend_labels) < $number_of_smart_values_in_use) {
+		push(@output, "ERROR: Size of legend_labels (" . scalar(@legend_labels) . ") has to be >= number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
+	}
+	if(scalar(@alt_axis_scaling) != $number_of_plots) {
+		push(@output, "ERROR: Size of alt_axis_scaling (" . scalar(@alt_axis_scaling) . ") has to be equal to number_of_plots (" . $number_of_plots . ")");
+	}
+	if(scalar(@logarithmic_axis_scaling) != $number_of_plots) {
+		push(@output, "ERROR: Size of logarithmic_axis_scaling (" . scalar(@logarithmic_axis_scaling) . ") has to be equal to number_of_plots (" . $number_of_plots . ")");
+	}
+	if(scalar(@plot_order) > $number_of_smart_values_in_use) {
+		push(@output, "ERROR: Size of plot_order (" . scalar(@plot_order) . ") has to be smaller or equal to number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
+	}
+
 	for($n = 0; $n < keys(%{$nvme->{list}}); $n++) {
-		for($n2 = 0; $n2 < $number_of_smart_values_in_use; $n2++) {
+		for($n2 = 0; $n2 < $number_of_plots; $n2++) {
 			$str = $u . $package . $n . $n2 . "." . $tf->{when} . ".$imgfmt_lc";
 			push(@IMG, $str);
 			unlink("$IMG_DIR" . $str);
@@ -458,46 +551,6 @@ sub nvme_cgi {
 				unlink("$IMG_DIR" . $str);
 			}
 		}
-	}
-
-	# Plot settings in order of the smart array.
-	my @y_axis_titles = ((lc($config->{temperature_scale}) eq "f" ? "Fahrenheit" : "Celsius"), "Percent (%)", "Percent (%)", "bytes", "Errors", "Counts");
-	my @value_transformations = ((lc($config->{temperature_scale}) eq "f" ? ",9,*,5,/,32,+" : ""), "", "", ",512000,*", "", "");
-	my @legend_labels = ("%2.0lf", "%4.0lf%%", "%4.0lf%%", "%7.3lf%s", "%4.0lf%s", "%4.0lf%s");
-	my @alt_axis_scaling = $show_extended_plots ? (0, 0, 0, 1, 0, 0) : (0, 0, 0);
-
-	my @plot_order = $show_extended_plots ? (0, 3, 1, 2, 4, 5) : (0, 1, 2); # To rearange the plots
-	my $main_smart_plots = $show_extended_plots ? 2 : 1; # Number of smart plots on the left side.
-	my @main_plot_with_average = $show_extended_plots ? (1, 0) : (1); # Wether or not the main plots show average, min and max or only the last value in the legend.
-
-	if(!$show_extended_plots) {
-		for(my $index = 0; $index < scalar(@plot_order); $index++) {
-			$y_axis_titles[$index] = $y_axis_titles[$plot_order[$index]];
-			$value_transformations[$index] = $value_transformations[$plot_order[$index]];
-			$legend_labels[$index] = $legend_labels[$plot_order[$index]];
-		}
-		$#y_axis_titles = scalar(@plot_order)-1;
-		$#value_transformations = scalar(@plot_order)-1;
-		$#legend_labels = scalar(@plot_order)-1;
-	}
-
-	if(scalar(@y_axis_titles) != $number_of_smart_values_in_use) {
-		push(@output, "ERROR: Size of y_axis_titles (" . scalar(@y_axis_titles) . ") has to be equal to number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
-	}
-	if(scalar(@value_transformations) != $number_of_smart_values_in_use) {
-		push(@output, "ERROR: Size of value_transformations (" . scalar(@value_transformations) . ") has to be equal to number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
-	}
-	if(scalar(@legend_labels) != $number_of_smart_values_in_use) {
-		push(@output, "ERROR: Size of legend_labels (" . scalar(@legend_labels) . ") has to be equal to number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
-	}
-	if(scalar(@alt_axis_scaling) != $number_of_smart_values_in_use) {
-		push(@output, "ERROR: Size of alt_axis_scaling (" . scalar(@alt_axis_scaling) . ") has to be equal to number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
-	}
-	if(scalar(@plot_order) != $number_of_smart_values_in_use) {
-		push(@output, "ERROR: Size of plot_order (" . scalar(@plot_order) . ") has to be equal to number_of_smart_values_in_use (" . $number_of_smart_values_in_use . ")");
-	}
-	if(scalar(@main_plot_with_average) != $main_smart_plots) {
-		push(@output, "ERROR: Size of main_plot_with_average (" . scalar(@main_plot_with_average) . ") has to be equal to main_smart_plots (" . $main_smart_plots . ")");
 	}
 
 	$e = 0;
@@ -512,13 +565,47 @@ sub nvme_cgi {
 			push(@output, "    <tr>\n");
 			push(@output, "    <td>\n");
 		}
-		for(my $n_plot = 0; $n_plot < $number_of_smart_values_in_use; $n_plot += 1) {
+
+		my @device_strings;
+		my $max_device_string_length = 0;
+		for($n = 0; $n < $max_number_of_hds; $n += 1) {
+			if($d[$n]) {
+				my $dstr = trim($d[$n]);
+				my $base = "";
+				$dstr =~ s/^\"//;
+				$dstr =~ s/\"$//;
+
+				# check if device name is a symbolic link
+				# e.g. /dev/nvme/by-path/pci-0000:07:07.0-scsi-0:0:0:0
+				if(-l $dstr) {
+					$base = basename($dstr);
+					$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
+					chomp($dstr);
+				}
+
+				#				$dstr =~ s/^(.+?) .*$/$1/;
+				if($base && defined($nvme->{map}->{$base})) {
+					$dstr = $nvme->{map}->{$base};
+				} else {
+					if(defined($nvme->{map}->{$dstr})) {
+						$dstr = $nvme->{map}->{$dstr};
+					}
+				}
+				$dstr = trim($dstr);
+				push(@device_strings, $dstr);
+				if (length($dstr) > $max_device_string_length) {
+					$max_device_string_length = length($dstr);
+				}
+			}
+		}
+
+		for(my $n_plot = 0; $n_plot < $number_of_plots; $n_plot += 1) {
 			if($title && $n_plot == $main_smart_plots) {
 				push(@output, "    </td>\n");
 				push(@output, "    <td class='td-valign-top'>\n");
 			}
 			my $n_smart = $plot_order[$n_plot];
-			@riglim = @{setup_riglim($rigid[$n_smart], $limit[$n_smart])};
+			@riglim = @{setup_riglim($rigid[$n_plot], $limit[$n_plot])};
 			undef(@tmp);
 			undef(@tmpz);
 			undef(@CDEF);
@@ -527,51 +614,35 @@ sub nvme_cgi {
 			}
 			for($n = 0; $n < $max_number_of_hds; $n += 1) {
 				if($d[$n]) {
-					my $dstr = trim($d[$n]);
-					my $base = "";
-					$dstr =~ s/^\"//;
-					$dstr =~ s/\"$//;
-
-					# check if device name is a symbolic link
-					# e.g. /dev/nvme/by-path/pci-0000:07:07.0-scsi-0:0:0:0
-					if(-l $dstr) {
-						$base = basename($dstr);
-						$dstr = abs_path(dirname($dstr) . "/" . readlink($dstr));
-						chomp($dstr);
-					}
-
-					#				$dstr =~ s/^(.+?) .*$/$1/;
-					if($base && defined($nvme->{map}->{$base})) {
-						$dstr = $nvme->{map}->{$base};
-					} else {
-						if(defined($nvme->{map}->{$dstr})) {
-							$dstr = $nvme->{map}->{$dstr};
-						}
-					}
+					my $dstr = $device_strings[$n];
+					my $legend_string_length;
 					if($n_plot < $main_smart_plots) {
+						$legend_string_length = 57;
 						if($main_plot_with_average[$n_plot]) {
-						  $str = sprintf("%-20s", $dstr);
-						} else {
-							$str = sprintf("%-57s", $dstr);
+							$legend_string_length = 20;
 						}
 					} else {
+						$legend_string_length = 19;
 						if($show_current_values) {
-							$str = sprintf("%-13s", substr($dstr, 0, 13));
-						} else {
-							$str = sprintf("%-19s", substr($dstr, 0, 19));
+							$legend_string_length = min(13, $max_device_string_length);
 						}
 					}
+					$str = sprintf("%-" . $legend_string_length . "s", substr($dstr, 0, $legend_string_length)) if defined($legend_string_length);
 					my $value_name = "hd" . $n . "_smv" . $n_smart;
-					push(@tmp, "LINE2:trans_" . $value_name . $LC[$n] . ":$str" . ($n_plot < $main_smart_plots ? "" : ( $show_current_values ? "\\: \\g" : (($n%2 || !$d[$n+1]) ? "\\n" : ""))));
+					push(@tmp, "LINE2:trans_" . $value_name . $LC[$n] . ":$str" . ($n_plot < $main_smart_plots ? "" : ( $show_current_values ? "\\:\\g" : (($n%2 || !$d[$n+1]) ? "\\n" : ""))));
 					push(@tmpz, "LINE2:trans_" . $value_name . $LC[$n] . ":$dstr");
 					if($n_plot < $main_smart_plots) {
 						if($main_plot_with_average[$n_plot]) {
-							push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:   Current\\: " . $legend_labels[$n_smart]);
-							push(@tmp, "GPRINT:trans_" . $value_name . ":AVERAGE:   Average\\: " . $legend_labels[$n_smart]);
-							push(@tmp, "GPRINT:trans_" . $value_name . ":MIN:   Min\\: " . $legend_labels[$n_smart]);
-							push(@tmp, "GPRINT:trans_" . $value_name . ":MAX:   Max\\: " . $legend_labels[$n_smart] . "\\n");
+							if ($n_smart == 0) {
+								push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:        Current\\:" . $legend_labels[$n_smart]);
+							} else {
+								push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:Current\\:" . $legend_labels[$n_smart]);
+							}
+							push(@tmp, "GPRINT:trans_" . $value_name . ":AVERAGE:Average\\:" . $legend_labels[$n_smart]);
+							push(@tmp, "GPRINT:trans_" . $value_name . ":MIN:Min\\:" . $legend_labels[$n_smart]);
+							push(@tmp, "GPRINT:trans_" . $value_name . ":MAX:Max\\:" . $legend_labels[$n_smart] . "\\n");
 						} else {
-						  push(@tmp, "GPRINT:trans_" . $value_name . ":LAST: Current\\: " . $legend_labels[$n_smart] . "\\n");
+						  push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:Current\\:" . $legend_labels[$n_smart] . "\\n");
 						}
 					} else {
 						if($show_current_values) {
@@ -606,6 +677,9 @@ sub nvme_cgi {
 				push(@tmp, "COMMENT: \\n");
 				push(@tmp, "COMMENT: \\n");
 			}
+			if ($n_plot < $main_smart_plots) {
+				$height *= 1.03;
+			}
 
 			my @def_smart_average;
 			my $cdef_smart_allvalues = "CDEF:allvalues=";
@@ -626,12 +700,16 @@ sub nvme_cgi {
 				$cdef_smart_allvalues .= ",0,GT,1,UNKN,IF";
 			}
 			my @scaling_options;
-			if ($alt_axis_scaling[$n_smart]) {
+			if ($alt_axis_scaling[$n_plot]) {
 			  push(@scaling_options, "--alt-autoscale");
 			  push(@scaling_options, "--alt-y-grid");
 			}
+			if ($logarithmic_axis_scaling[$n_plot]) {
+			  push(@scaling_options, "--logarithmic");
+			  @riglim = ();
+			}
 			my $plot_title = $config->{graphs}->{'_nvme' . ($n_smart + 1)};
-			$pic = $rrd{$version}->("$IMG_DIR" . $IMG[$e * $number_of_smart_values_in_use + $n_smart],
+			$pic = $rrd{$version}->("$IMG_DIR" . $IMG[$e * $number_of_plots + $n_plot],
 				"--title=$plot_title ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=$imgfmt_uc",
@@ -650,10 +728,10 @@ sub nvme_cgi {
 				@CDEF,
 				@tmp);
 			$err = RRDs::error;
-			push(@output, "ERROR: while graphing $IMG_DIR" . $IMG[$e * $number_of_smart_values_in_use + $n_smart]. ": $err\n") if $err;
+			push(@output, "ERROR: while graphing $IMG_DIR" . $IMG[$e * $number_of_plots + $n_plot]. ": $err\n") if $err;
 			if(lc($config->{enable_zoom}) eq "y") {
 				($width, $height) = split('x', $config->{graph_size}->{zoom});
-				$picz = $rrd{$version}->("$IMG_DIR" . $IMGz[$e * $number_of_smart_values_in_use + $n_smart],
+				$picz = $rrd{$version}->("$IMG_DIR" . $IMGz[$e * $number_of_plots + $n_plot],
 					"--title=$plot_title  ($tf->{nwhen}$tf->{twhen})",
 					"--start=-$tf->{nwhen}$tf->{twhen}",
 					"--imgformat=$imgfmt_uc",
@@ -673,13 +751,13 @@ sub nvme_cgi {
 					@CDEF,
 					@tmpz);
 				$err = RRDs::error;
-				push(@output, "ERROR: while graphing $IMG_DIR" . $IMGz[$e * $number_of_smart_values_in_use + $n_smart]. ": $err\n") if $err;
+				push(@output, "ERROR: while graphing $IMG_DIR" . $IMGz[$e * $number_of_plots + $n_plot]. ": $err\n") if $err;
 			}
 			$e2 = $e + $n_smart + 1;
 			if($title || ($silent =~ /imagetag/ && $graph =~ /nvme$e2/)) {
 				if(lc($config->{enable_zoom}) eq "y") {
 					if(lc($config->{disable_javascript_void}) eq "y") {
-						push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * $number_of_smart_values_in_use + $n_smart], IMG => $IMG[$e * $number_of_smart_values_in_use + $n_smart]) . "\n");
+						push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * $number_of_plots + $n_plot], IMG => $IMG[$e * $number_of_plots + $n_plot]) . "\n");
 					} else {
 						if($version eq "new") {
 							$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -688,10 +766,10 @@ sub nvme_cgi {
 							$picz_width = $width + 115;
 							$picz_height = $height + 100;
 						}
-						push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * $number_of_smart_values_in_use + $n_smart], IMG => $IMG[$e * $number_of_smart_values_in_use + $n_smart]) . "\n");
+						push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * $number_of_plots + $n_plot], IMG => $IMG[$e * $number_of_plots + $n_plot]) . "\n");
 					}
 				} else {
-					push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * $number_of_smart_values_in_use + $n_smart]) . "\n");
+					push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * $number_of_plots + $n_plot]) . "\n");
 				}
 			}
 		}
