@@ -515,7 +515,7 @@ sub flush_accounting_rules {
 sub lockfile_handler {
 	my ($config) = @_;
 	if (lc($config->{enable_rrd_lock} || "") eq "y") {
-		my $lock_file = "/tmp/monitorix.flock";
+		my $lock_file = "/tmp/monitorix.lock";
 
 		my $lockfile_was_available = (-e $lock_file);
 		open(my $fh, ">>", $lock_file) or die "Can't open $lock_file: $!";
