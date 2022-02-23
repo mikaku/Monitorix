@@ -31,6 +31,7 @@ use Config::General;
 use POSIX;
 use RRDs;
 use Encode;
+use Fcntl qw(:flock);
 
 my %config;
 my %cgi;
@@ -577,6 +578,8 @@ if($mode eq "localhost") {
 	my @writers;	# array of file descriptors
 	my $children = 0;
 
+	my $lockfile_handler = lockfile_handler(\%config);
+	global_flock($lockfile_handler, LOCK_SH);
 	foreach (split(',', $config{graph_name})) {
 		my $gn = trim($_);
 		my $g = "";
@@ -652,6 +655,7 @@ if($mode eq "localhost") {
 			print @{$outputs{$n}} if $outputs{$n};
 		}
 	}
+	global_flock($lockfile_handler, LOCK_UN);
 
 } elsif($mode eq "multihost") {
 	multihost(\%config, \%colors, \%cgi);

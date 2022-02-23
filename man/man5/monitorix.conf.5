@@ -169,6 +169,13 @@ This option will fork an independent process for each graph in order to speed up
 Default value: \fIy\fP
 .RE
 .P
+.BI enable_rrd_lock
+.RS
+This option will synchronise the rrd file access by creating the file \fI/tmp/monitorix.lock\fP and use it via flock.
+.P
+Default value: \fIn\fP
+.RE
+.P
 .BI include_dir
 .RS
 The main configuration file is usually called \fImonitorix.conf\fP and its location is provided as part of the command line arguments. In addition, other configuration files may be loaded placing them in the directory pointed by this option. The names must end with .conf to be included.
