@@ -570,8 +570,8 @@ sub fs_update {
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $fs = $config->{fs};
+	my $use_nan_for_missing_data = lc($fs->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
 
-	my @tmp;
 	my $val;
 	my $str;
 
@@ -582,13 +582,15 @@ sub fs_update {
 	foreach my $k (sort keys %{$fs->{list}}) {
 		my @fsl = split(',', $fs->{list}->{$k});
 		for($n = 0; $n < 8; $n++) {
-			my $use = 0;
-			my $ioa = 0;
-			my $tim = 0;
-			my $ino = 0;
+			my $use;
+			my $ioa;
+			my $tim;
+			my $ino;
 
-			my $used = 0;
-			my $free = 0;
+			my $used;
+			my $free;
+
+			my @tmp;
 
 			my $f = trim($fsl[$n]) || "";
 			if($f && $f eq "swap") {
@@ -621,12 +623,13 @@ sub fs_update {
 					close(IN);
 				}
 
-				chomp($used, $free);
-				# prevents a division by 0 if swap device is not used
-				$use = ($used * 100) / ($used + $free) unless $used + $free == 0;
+				if(defined($used) && defined($free)) {
+					chomp($used, $free);
+					# prevents a division by 0 if swap device is not used
+					$use = ($used * 100) / ($used + $free) unless $used + $free == 0;
+				}
 			} elsif($f) {
 				my $pid;
-				@tmp = (0) x 10;
 				eval {
 					local $SIG{'ALRM'} = sub {
 						if($pid) {
@@ -635,7 +638,6 @@ sub fs_update {
 						} else {
 							logger("$myself: WARNING: \$pid has no value ('$pid') in ALRM sighandler.");
 						}
-						@tmp = (0, 0, 0, 0);
 					};
 					alarm($config->{timeout});
 					$pid = open(IN, "df -P '$f' |");
@@ -649,9 +651,11 @@ sub fs_update {
 					alarm(0);
 				};
 				(undef, undef, $used, $free) = @tmp;
-				chomp($used, $free);
-				# prevents a division by 0 if device is not responding
-				$use = ($used * 100) / ($used + $free) unless $used + $free == 0;
+				if(defined($used) && defined($free)) {
+					chomp($used, $free);
+					# prevents a division by 0 if device is not responding
+					$use = ($used * 100) / ($used + $free) unless $used + $free == 0;
+				}
 
 				eval {
 					local $SIG{'ALRM'} = sub {
@@ -661,7 +665,6 @@ sub fs_update {
 						} else {
 							logger("$myself: WARNING: \$pid has no value ('$pid') in ALRM sighandler.");
 						}
-						@tmp = (0, 0, 0, 0, 0, 0, 0);
 					};
 					alarm($config->{timeout});
 					if($config->{os} eq "Linux") {
@@ -683,9 +686,11 @@ sub fs_update {
 				} elsif($config->{os} eq "FreeBSD" || $config->{os} eq "OpenBSD") {
 					(undef, undef, undef, undef, undef, $used, $free) = @tmp;
 				}
-				chomp($used, $free);
-				# prevents a division by 0 if device is not responding
-				$ino = ($used * 100) / ($used + $free) unless $used + $free == 0;
+				if(defined($used) && defined($free)) {
+					chomp($used, $free);
+					# prevents a division by 0 if device is not responding
+					$ino = ($used * 100) / ($used + $free) unless $used + $free == 0;
+				}
 
 				# check alerts for each filesystem
 				my @al = split(',', $fs->{alerts}->{$f} || "");
@@ -713,10 +718,10 @@ sub fs_update {
 				}
 			}
 
-			my $read_cnt = 0;
-			my $read_sec = 0;
-			my $write_cnt = 0;
-			my $write_sec = 0;
+			my $read_cnt;
+			my $read_sec;
+			my $write_cnt;
+			my $write_sec;
 			my $d = $fs->{devmap}->{$f};
 			if($d) {
 				if($config->{os} eq "Linux") {
@@ -770,24 +775,32 @@ sub fs_update {
 				}
 			}
 
-			$ioa = ($read_cnt || 0) + ($write_cnt || 0);
-			$tim = ($read_sec || 0) + ($write_sec || 0);
+			if(defined($read_cnt) && defined($write_cnt) &&
+			   defined($read_sec) && defined($write_sec)) {
+				$ioa = ($read_cnt || 0) + ($write_cnt || 0);
+				$tim = ($read_sec || 0) + ($write_sec || 0);
 
-			$str = $e . "_ioa" . $n;
-			$val = $ioa;
-			$ioa = $val - ($config->{fs_hist}->{$str} || 0);
-			$ioa = 0 unless $val != $ioa;
-			$ioa /= 60;
-			$config->{fs_hist}->{$str} = $val;
+				$str = $e . "_ioa" . $n;
+				$val = $ioa;
+				$ioa = $val - ($config->{fs_hist}->{$str} || 0);
+				$ioa = 0 unless $val != $ioa;
+				$ioa /= 60;
+				$config->{fs_hist}->{$str} = $val;
 
-			$str = $e . "_tim" . $n;
-			$val = $tim;
-			$tim = $val - ($config->{fs_hist}->{$str} || 0);
-			$tim = 0 unless $val != $tim;
-			$tim /= 60;
-			$config->{fs_hist}->{$str} = $val;
+				$str = $e . "_tim" . $n;
+				$val = $tim;
+				$tim = $val - ($config->{fs_hist}->{$str} || 0);
+				$tim = 0 unless $val != $tim;
+				$tim /= 60;
+				$config->{fs_hist}->{$str} = $val;
+			}
 
-			$rrdata .= ":$use:$ioa:$tim:$ino:0:0:0:0";
+			$use = ($use_nan_for_missing_data ? (0+"nan") : 0) unless defined $use;
+			$ioa = ($use_nan_for_missing_data ? (0+"nan") : 0) unless defined $ioa;
+			$tim = ($use_nan_for_missing_data ? (0+"nan") : 0) unless defined $tim;
+			$ino = ($use_nan_for_missing_data ? (0+"nan") : 0) unless defined $ino;
+
+			$rrdata .= ":$use:$ioa:$tim:$ino:NaN:NaN:NaN:NaN";
 		}
 		$e++;
 	}
