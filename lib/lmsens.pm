@@ -316,7 +316,9 @@ sub lmsens_update {
 							$l++;
 							$tmp = $data[$l];
 						}
-						my ($value, undef) = split(' ', $tmp);
+						my ($value, $unit) = split(' ', $tmp);
+						($unit, undef) = split(' ', $unit);
+						$value /= 1000 if ($unit eq "mV");
 						$volt[$n] = $value;
 						# check alerts for each sensor defined
 						lmsens_alerts($config, $str, $value);
