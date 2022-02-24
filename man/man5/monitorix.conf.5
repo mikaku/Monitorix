@@ -4206,6 +4206,13 @@ This option, when enabled via \fIy\fP, shows \fInan\fP values for missing data i
 .P
 Default value: \fIn\fP
 .RE
+.P
+.BI gap_on_all_nan
+.RS
+This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option shows gaps only if all data points are \fInan\fP instead of requiring only one to be \fInan\fP for a gap. This can be useful if not all sensor data are required for normal operation.
+.P
+Default value: \fIn\fP
+.RE
 .SS Wowza Media Server (wowza.pm)
 This graph is able to monitor an unlimited number of Wowza servers.
 .P
