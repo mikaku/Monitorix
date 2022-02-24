@@ -187,7 +187,7 @@ sub nut_update {
 		}
 
 		if(!$data) {
-			logger("$myself: unable to execute 'upsc $ups' command or invalid connection.");
+			logger("$myself: unable to execute '$upsc_cmd' command or invalid connection.");
 			$rrdata .= ":$ltran:$htran:$ivolt:$ovolt:$bchar:$loadc:$mbatc:$nxfer:$atemp:$itemp:$humid:$battv:$nomba:$timel:$minti:$linef:0:0:0:0:0";
 			next;
 		}
