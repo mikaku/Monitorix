@@ -1467,11 +1467,10 @@ sub pgsql_cgi {
 				push(@output, "  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n");
 
 				push(@output, "    <tr>\n");
-				push(@output, "      <td bgcolor='$colors->{title_bg_color}' colspan='2'>\n");
-				push(@output, "       <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n");
+				push(@output, "      <td class='td-title' colspan='2'>\n");
 				push(@output, "       <font size='-1'>\n");
-				push(@output, "        <b style='{color: " . $colors->{title_fg_color} . "}'>&nbsp;&nbsp;'$str' database statistics</b>\n");
-				push(@output, "       </font></font>\n");
+				push(@output, "        <b>&nbsp;&nbsp;'$str' database statistics</b>\n");
+				push(@output, "       </font>\n");
 				push(@output, "      </td>\n");
 				push(@output, "    </tr>\n");
 
@@ -1993,11 +1992,10 @@ sub pgsql_cgi {
 			push(@output, "    </tr>\n");
 
 			push(@output, "    <tr>\n");
-			push(@output, "      <td bgcolor='$colors->{title_bg_color}' colspan='2'>\n");
-			push(@output, "       <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n");
+			push(@output, "      <td class='td-title' colspan='2'>\n");
 			push(@output, "       <font size='-1'>\n");
-			push(@output, "        <b style='{color: " . $colors->{title_fg_color} . "}'>&nbsp;&nbsp;$pg</b>\n");
-			push(@output, "       </font></font>\n");
+			push(@output, "        <b>&nbsp;&nbsp;$pg</b>\n");
+			push(@output, "       </font>\n");
 			push(@output, "      </td>\n");
 			push(@output, "    </tr>\n");
 			push(@output, main::graph_footer());

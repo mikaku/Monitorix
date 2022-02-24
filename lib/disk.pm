@@ -933,11 +933,10 @@ sub disk_cgi {
 
 			if($disk->{desc}->{$k}) {
 				push(@output, "    <tr>\n");
-				push(@output, "      <td bgcolor='$colors->{title_bg_color}' colspan='2'>\n");
-				push(@output, "       <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n");
+				push(@output, "      <td class='td-title' colspan='2'>\n");
 				push(@output, "       <font size='-1'>\n");
-				push(@output, "        <b>&nbsp;&nbsp;$disk->{desc}->{$k}<b>\n");
-				push(@output, "       </font></font>\n");
+				push(@output, "        <b>&nbsp;&nbsp;$disk->{desc}->{$k}</b>\n");
+				push(@output, "       </font>\n");
 				push(@output, "      </td>\n");
 				push(@output, "    </tr>\n");
 			}
