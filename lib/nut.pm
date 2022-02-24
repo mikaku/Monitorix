@@ -148,6 +148,7 @@ sub nut_update {
 	my $rrdata = "N";
 
 	my $use_nan_for_missing_data = lc($nut->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
+	my $ignore_error_output = lc($nut->{ignore_error_output} || "") eq "y" ? 1 : 0;
 
 	my $e = 0;
 	foreach my $ups (my @nl = split(',', $nut->{list})) {
@@ -176,7 +177,11 @@ sub nut_update {
 		my $val05 = $default_value;
 
 		my $data;
-		if(open(PIPE, "upsc $ups |")) {
+		my $upsc_cmd = "upsc $ups";
+		if ($ignore_error_output) {
+			$upsc_cmd .= " 2>/dev/null";
+		}
+		if(open(PIPE, "$upsc_cmd |")) {
 			while(<PIPE>) { $data .= $_; }
 			close(PIPE);
 		}
@@ -304,6 +309,7 @@ sub nut_cgi {
 	}
 
 	my $gap_on_all_nan = lc($nut->{gap_on_all_nan} || "") eq "y" ? 1 : 0;
+	my $ignore_error_output = lc($nut->{ignore_error_output} || "") eq "y" ? 1 : 0;
 
 	# text mode
 	#
@@ -394,7 +400,11 @@ sub nut_cgi {
 	foreach my $ups (my @nl = split(',', $nut->{list})) {
 
 		my $data;
-		if(open(PIPE, "upsc $ups |")) {
+		my $upsc_cmd = "upsc $ups";
+		if ($ignore_error_output) {
+			$upsc_cmd .= " 2>/dev/null";
+		}
+		if(open(PIPE, "$upsc_cmd |")) {
 			while(<PIPE>) { $data .= $_; }
 			close(PIPE);
 		}
