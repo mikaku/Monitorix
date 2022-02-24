@@ -1413,6 +1413,13 @@ The external script will receive the following arguments:
 This is the command that will be used to gather statistics. This option may also be used to add new sensors values not covered by LM-Sensors by referencing an external script which executes the command \fIsensors\fP and others.
 .P
 Default value: \fIsensors\fP
+.P
+.BI use_nan_for_missing_data
+.RS
+This option, when enabled via \fIy\fP, shows \fInan\fP values for missing data instead of \fI0\fP. This is useful when \fI0\fP could be mistaken for valid data.
+.P
+Default value: \fIn\fP
+.RE
 .SS Generic sensors statistics (gensens.pm)
 This graph helps to monitor up to three (so far) different sensors: temperatures, CPU frequencies and battery status which, depending of your machine, they should appear in the \fI/sys\fP directory.
 .P

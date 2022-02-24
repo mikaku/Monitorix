@@ -203,12 +203,15 @@ sub lmsens_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $lmsens = $config->{lmsens};
 
-	my @mb = (0) x 2;
-	my @cpu = (0) x 4;
-	my @fan = (0) x 9;
-	my @core = (0) x 16;
-	my @volt = (0) x 12;
-	my @gpu = (0) x 9;
+	my $use_nan_for_missing_data = lc($lmsens->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
+	my $default_value = $use_nan_for_missing_data ? (0+"nan") : 0;
+
+	my @mb = ($default_value) x 2;
+	my @cpu = ($default_value) x 4;
+	my @fan = ($default_value) x 9;
+	my @core = ($default_value) x 16;
+	my @volt = ($default_value) x 12;
+	my @gpu = ($default_value) x 9;
 
 	my $l;
 	my $n;
@@ -246,7 +249,7 @@ sub lmsens_update {
 				}
 				for($n = 0; $n < 4; $n++) {
 					$str = "cpu" . $n;
-					$cpu[$n] = 0 unless $cpu[$n];
+					$cpu[$n] = $default_value unless $cpu[$n];
 					next if !$lmsens->{list}->{$str};
 					if($data[$l] =~ /^$lmsens->{list}->{$str}:/ && $data[$l] !~ /RPM/) {
 						my (undef, $tmp) = split(':', $data[$l]);
@@ -266,7 +269,7 @@ sub lmsens_update {
 				for($n = 0; $n < 9; $n++) {
 					my $str2;
 					$str = "fan" . $n;
-					$fan[$n] = 0 unless $fan[$n];
+					$fan[$n] = $default_value unless $fan[$n];
 					next if !$lmsens->{list}->{$str};
 					if(lc(substr($lmsens->{list}->{$str}, 0, 4) eq "rpm:")) {
 						$str2 = sprintf("%s", substr($lmsens->{list}->{$str}, 4));
@@ -289,7 +292,7 @@ sub lmsens_update {
 				}
 				for($n = 0; $n < 16; $n++) {
 					$str = "core" . $n;
-					$core[$n] = 0 unless $core[$n];
+					$core[$n] = $default_value unless $core[$n];
 					next if !$lmsens->{list}->{$str};
 					if($data[$l] =~ /^$lmsens->{list}->{$str}:/ && $data[$l] !~ /RPM/) {
 						my (undef, $tmp) = split(':', $data[$l]);
@@ -308,7 +311,7 @@ sub lmsens_update {
 				}
 				for($n = 0; $n < 12; $n++) {
 					$str = "volt" . $n;
-					$volt[$n] = 0 unless $volt[$n];
+					$volt[$n] = $default_value unless $volt[$n];
 					next if !$lmsens->{list}->{$str};
 					if($data[$l] =~ /^$lmsens->{list}->{$str}:/ && $data[$l] !~ /RPM/) {
 						my (undef, $tmp) = split(':', $data[$l]);
@@ -326,7 +329,7 @@ sub lmsens_update {
 				}
 				for($n = 0; $n < 9; $n++) {
 					$str = "gpu" . $n;
-					$gpu[$n] = 0 unless $gpu[$n];
+					$gpu[$n] = $default_value unless $gpu[$n];
 					next if !$lmsens->{list}->{$str};
 					if($lmsens->{list}->{$str} =~ m/^lmsensors:\S+/) {
 						my $lmkey = $lmsens->{list}->{$str};
@@ -350,7 +353,7 @@ sub lmsens_update {
 			}
 			for($n = 0; $n < 9; $n++) {
 				$str = "gpu" . $n;
-				$gpu[$n] = 0 unless $gpu[$n];
+				$gpu[$n] = $default_value unless $gpu[$n];
 				next if !$lmsens->{list}->{$str};
 				if($lmsens->{list}->{$str} eq "nvidia") {
 					(undef, undef, $gpu[$n]) = split(' ', get_nvidia_data($n));
