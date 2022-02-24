@@ -1420,6 +1420,13 @@ This option, when enabled via \fIy\fP, shows \fInan\fP values for missing data i
 .P
 Default value: \fIn\fP
 .RE
+.P
+.BI gap_on_all_nan
+.RS
+This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option shows gaps only if all data points are \fInan\fP instead of requiring only one to be \fInan\fP for a gap. This can be useful if not all sensor data are required for normal operation.
+.P
+Default value: \fIn\fP
+.RE
 .SS Generic sensors statistics (gensens.pm)
 This graph helps to monitor up to three (so far) different sensors: temperatures, CPU frequencies and battery status which, depending of your machine, they should appear in the \fI/sys\fP directory.
 .P
