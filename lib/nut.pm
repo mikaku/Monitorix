@@ -147,29 +147,33 @@ sub nut_update {
 	my $n;
 	my $rrdata = "N";
 
+	my $use_nan_for_missing_data = lc($nut->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
+
 	my $e = 0;
 	foreach my $ups (my @nl = split(',', $nut->{list})) {
-		my $ltran = 0;
-		my $htran = 0;
-		my $ivolt = 0;
-		my $ovolt = 0;
-		my $bchar = 0;
-		my $loadc = 0;
-		my $mbatc = 0;
-		my $nxfer = 0;
-		my $atemp = 0;
-		my $itemp = 0;
-		my $humid = 0;
-		my $battv = 0;
-		my $nomba = 0;
-		my $timel = 0;
-		my $minti = 0;
-		my $linef = 0;
-		my $val01 = 0;
-		my $val02 = 0;
-		my $val03 = 0;
-		my $val04 = 0;
-		my $val05 = 0;
+		my $default_value = $use_nan_for_missing_data ? (0+"nan") : 0;
+
+		my $ltran = $default_value;
+		my $htran = $default_value;
+		my $ivolt = $default_value;
+		my $ovolt = $default_value;
+		my $bchar = $default_value;
+		my $loadc = $default_value;
+		my $mbatc = $default_value;
+		my $nxfer = $default_value;
+		my $atemp = $default_value;
+		my $itemp = $default_value;
+		my $humid = $default_value;
+		my $battv = $default_value;
+		my $nomba = $default_value;
+		my $timel = $default_value;
+		my $minti = $default_value;
+		my $linef = $default_value;
+		my $val01 = $default_value;
+		my $val02 = $default_value;
+		my $val03 = $default_value;
+		my $val04 = $default_value;
+		my $val05 = $default_value;
 
 		my $data;
 		if(open(PIPE, "upsc $ups |")) {
