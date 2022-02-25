@@ -518,7 +518,7 @@ sub lockfile_handler {
 		my $lock_file = "/tmp/monitorix.lock";
 
 		my $lockfile_was_available = (-e $lock_file);
-		open(my $fh, ">>", $lock_file) or die "Can't open $lock_file: $!";
+		open(my $fh, ($lockfile_was_available ? "+<" : ">>"), $lock_file) or die "Can't open $lock_file: $!"; # If the file already exists we open it without the O_CREATE flag due to the limitations introduced by fs.protected_regular.
 		if (!$lockfile_was_available) {
 			chmod(0666, $lock_file);
 		}
