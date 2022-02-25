@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use Monitorix;
 use RRDs;
+use Time::HiRes;
 use Cwd 'abs_path';
 use File::Basename;
 use Exporter 'import';
@@ -207,6 +208,251 @@ EOF
 	} else {
 		logger("$myself: WARNING: something went wrong upgrading $rrd. You have an unsupported old version.");
 	}
+}
+
+sub measure {
+	my ($myself, $config, $fs) = @_;
+	my $use_nan_for_missing_data = lc($fs->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
+
+	my $val;
+	my $str;
+
+	my $n;
+	my $rrdata = "N";
+
+	my $e = 0;
+	foreach my $k (sort keys %{$fs->{list}}) {
+		my @fsl = split(',', $fs->{list}->{$k});
+		for($n = 0; $n < 8; $n++) {
+			my $use;
+			my $ioa;
+			my $tim;
+			my $ino;
+
+			my $used;
+			my $free;
+
+			my @tmp;
+
+			my $f = trim($fsl[$n]) || "";
+			if($f && $f eq "swap") {
+				if($config->{os} eq "Linux") {
+					open(IN, "free |");
+					while(<IN>) {
+						if(/^Swap:\s+\d+\s+(\d+)\s+(\d+)\s*$/) {
+							$used = $1;
+							$free = $2;
+						}
+					}
+					close(IN);
+				} elsif($config->{os} eq "FreeBSD") {
+					open(IN, "swapinfo -k |");
+					while(<IN>) {
+						if(/^.*?\s+\d+\s+(\d+)\s+(\d+)\s+\d+\%$/) {
+							$used = $1;
+							$free = $2;
+						}
+					}
+					close(IN);
+				} elsif($config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
+					open(IN, "pstat -sk |");
+					while(<IN>) {
+						if(/^swap_device\s+\d+\s+(\d+)\s+(\d+) /) {
+							$used = $1;
+							$free = $2;
+						}
+					}
+					close(IN);
+				}
+
+				if(defined($used) && defined($free)) {
+					chomp($used, $free);
+					# prevents a division by 0 if swap device is not used
+					$use = ($used * 100) / ($used + $free) unless $used + $free == 0;
+				}
+			} elsif($f) {
+				my $pid;
+				eval {
+					local $SIG{'ALRM'} = sub {
+						if($pid) {
+							logger("$myself: Timeout! Process with PID '$pid' still hung after $config->{timeout} secs. Killed.");
+							kill 9, $pid;
+						} else {
+							logger("$myself: WARNING: \$pid has no value ('$pid') in ALRM sighandler.");
+						}
+					};
+					alarm($config->{timeout});
+					$pid = open(IN, "df -P '$f' |");
+					while(<IN>) {
+						if(/ $f$/) {
+							@tmp = split(' ', $_);
+							last;
+						}
+					}
+					close(IN);
+					alarm(0);
+				};
+				(undef, undef, $used, $free) = @tmp;
+				if(defined($used) && defined($free)) {
+					chomp($used, $free);
+					# prevents a division by 0 if device is not responding
+					$use = ($used * 100) / ($used + $free) unless $used + $free == 0;
+				}
+
+				eval {
+					local $SIG{'ALRM'} = sub {
+						if($pid) {
+							logger("$myself: Timeout! Process with PID '$pid' still hung after $config->{timeout} secs. Killed.");
+							kill 9, $pid;
+						} else {
+							logger("$myself: WARNING: \$pid has no value ('$pid') in ALRM sighandler.");
+						}
+					};
+					alarm($config->{timeout});
+					if($config->{os} eq "Linux") {
+						$pid = open(IN, "df -P -i '$f' |");
+					} elsif($config->{os} eq "FreeBSD" || $config->{os} eq "OpenBSD") {
+						$pid = open(IN, "df -i '$f' |");
+					}
+					while(<IN>) {
+						if(/ $f$/) {
+							@tmp = split(' ', $_);
+							last;
+						}
+					}
+					close(IN);
+					alarm(0);
+				};
+				if($config->{os} eq "Linux") {
+					(undef, undef, $used, $free) = @tmp;
+				} elsif($config->{os} eq "FreeBSD" || $config->{os} eq "OpenBSD") {
+					(undef, undef, undef, undef, undef, $used, $free) = @tmp;
+				}
+				if(defined($used) && defined($free)) {
+					chomp($used, $free);
+					# prevents a division by 0 if device is not responding
+					$ino = ($used * 100) / ($used + $free) unless $used + $free == 0;
+				}
+
+				# check alerts for each filesystem
+				my @al = split(',', $fs->{alerts}->{$f} || "");
+				if(scalar(@al)) {
+					my $timeintvl = trim($al[0]);
+					my $threshold = trim($al[1]);
+					my $script = trim($al[2]);
+
+					if(!$threshold || $use < $threshold) {
+						$config->{fs_hist}->{$f} = 0;
+					} else {
+						if(!$config->{fs_hist}->{$f}) {
+							$config->{fs_hist}->{$f} = time;
+						}
+						if($config->{fs_hist}->{$f} > 0 && (time - $config->{fs_hist}->{$f}) >= $timeintvl) {
+							if(-x $script) {
+								logger("$myself: alert on filesystem '$f': executing script '$script'.");
+								system($script . " " . $timeintvl . " " . $threshold . " " . $use);
+							} else {
+								logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
+							}
+							$config->{fs_hist}->{$f} = time;
+						}
+					}
+				}
+			}
+
+			my $read_cnt;
+			my $read_sec;
+			my $write_cnt;
+			my $write_sec;
+			my $d = $fs->{devmap}->{$f};
+			if($d) {
+				if($config->{os} eq "Linux") {
+					if($config->{kernel} gt "2.4") {
+						if(open(IN, "/proc/diskstats")) {
+							while(<IN>) {
+								if(/ $d /) {
+									@tmp = split(' ', $_);
+									last;
+								}
+							}
+							close(IN);
+						}
+						(undef, undef, undef, $read_cnt, undef, undef, $read_sec, $write_cnt, undef, undef, $write_sec) = @tmp;
+					} else {
+						my $io;
+						open(IN, "/proc/stat");
+						while(<IN>) {
+							if(/^disk_io/) {
+								(undef, undef, $io) = split(':', $_);
+								last;
+							}
+						}
+						close(IN);
+						(undef, $read_cnt, $read_sec, $write_cnt, $write_sec) = split(',', $io);
+						$write_sec =~ s/\).*$//;
+					}
+				} elsif($config->{os} eq "FreeBSD") {
+					@tmp = split(' ', `iostat -xI '$d' | grep -w '$d'`);
+					if(@tmp) {
+						(undef, $read_cnt, $write_cnt, $read_sec, $write_sec) = @tmp;
+						$read_cnt = int($read_cnt);
+						$write_cnt = int($write_cnt);
+						$read_sec = int($read_sec);
+						$write_sec = int($write_sec);
+					} else {
+						@tmp = split(' ', `iostat -dI | tail -1`);
+						(undef, $read_cnt, $read_sec) = @tmp;
+						$write_cnt = 0;
+						$write_sec = 0;
+						chomp($read_sec);
+						$read_sec = int($read_sec);
+					}
+				} elsif($config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
+					@tmp = split(' ', `iostat -DI | tail -1`);
+					($read_cnt, $read_sec) = @tmp;
+					$write_cnt = 0;
+					$write_sec = 0;
+					chomp($read_sec);
+					$read_sec = int($read_sec);
+				}
+			}
+
+			my $epoc_identifier = "last_epoc_" . $e . "_" . $n;
+			my $last_epoc = ($config->{fs_hist}->{$epoc_identifier} || 0);
+			my $epoc = Time::HiRes::time();
+			$config->{fs_hist}->{$epoc_identifier} = $epoc;
+			my $delta_t = ($last_epoc ne 0) ? ($epoc - $last_epoc) : 60;
+
+			if(defined($read_cnt) && defined($write_cnt) &&
+			   defined($read_sec) && defined($write_sec)) {
+				$ioa = ($read_cnt || 0) + ($write_cnt || 0);
+				$tim = ($read_sec || 0) + ($write_sec || 0);
+
+				$str = $e . "_ioa" . $n;
+				$val = $ioa;
+				$ioa = $val - ($config->{fs_hist}->{$str} || 0);
+				$ioa = 0 unless $val != $ioa;
+				$ioa /= $delta_t;
+				$config->{fs_hist}->{$str} = $val;
+
+				$str = $e . "_tim" . $n;
+				$val = $tim;
+				$tim = $val - ($config->{fs_hist}->{$str} || 0);
+				$tim = 0 unless $val != $tim;
+				$tim /= $delta_t;
+				$config->{fs_hist}->{$str} = $val;
+			}
+
+			$use = ($use_nan_for_missing_data ? (0+"nan") : 0) unless defined $use;
+			$ioa = ($use_nan_for_missing_data ? (0+"nan") : 0) unless defined $ioa;
+			$tim = ($use_nan_for_missing_data ? (0+"nan") : 0) unless defined $tim;
+			$ino = ($use_nan_for_missing_data ? (0+"nan") : 0) unless defined $ino;
+
+			$rrdata .= ":$use:$ioa:$tim:$ino:NaN:NaN:NaN:NaN";
+		}
+		$e++;
+	}
+	return $rrdata;
 }
 
 sub fs_init {
@@ -534,6 +780,7 @@ sub fs_init {
 
 	$config->{fs_hist} = ();
 	push(@{$config->{func_update}}, $package);
+	measure($myself, $config, $fs); # Call to measuring routine to initialize the last values for calculating the differences. This way, the first update call will actually measure correct values.
 	logger("$myself: Ok") if $debug;
 }
 
@@ -570,240 +817,8 @@ sub fs_update {
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $fs = $config->{fs};
-	my $use_nan_for_missing_data = lc($fs->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
 
-	my $val;
-	my $str;
-
-	my $n;
-	my $rrdata = "N";
-
-	my $e = 0;
-	foreach my $k (sort keys %{$fs->{list}}) {
-		my @fsl = split(',', $fs->{list}->{$k});
-		for($n = 0; $n < 8; $n++) {
-			my $use;
-			my $ioa;
-			my $tim;
-			my $ino;
-
-			my $used;
-			my $free;
-
-			my @tmp;
-
-			my $f = trim($fsl[$n]) || "";
-			if($f && $f eq "swap") {
-				if($config->{os} eq "Linux") {
-					open(IN, "free |");
-					while(<IN>) {
-						if(/^Swap:\s+\d+\s+(\d+)\s+(\d+)\s*$/) {
-							$used = $1;
-							$free = $2;
-						}
-					}
-					close(IN);
-				} elsif($config->{os} eq "FreeBSD") {
-					open(IN, "swapinfo -k |");
-					while(<IN>) {
-						if(/^.*?\s+\d+\s+(\d+)\s+(\d+)\s+\d+\%$/) {
-							$used = $1;
-							$free = $2;
-						}
-					}
-					close(IN);
-				} elsif($config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
-					open(IN, "pstat -sk |");
-					while(<IN>) {
-						if(/^swap_device\s+\d+\s+(\d+)\s+(\d+) /) {
-							$used = $1;
-							$free = $2;
-						}
-					}
-					close(IN);
-				}
-
-				if(defined($used) && defined($free)) {
-					chomp($used, $free);
-					# prevents a division by 0 if swap device is not used
-					$use = ($used * 100) / ($used + $free) unless $used + $free == 0;
-				}
-			} elsif($f) {
-				my $pid;
-				eval {
-					local $SIG{'ALRM'} = sub {
-						if($pid) {
-							logger("$myself: Timeout! Process with PID '$pid' still hung after $config->{timeout} secs. Killed.");
-							kill 9, $pid;
-						} else {
-							logger("$myself: WARNING: \$pid has no value ('$pid') in ALRM sighandler.");
-						}
-					};
-					alarm($config->{timeout});
-					$pid = open(IN, "df -P '$f' |");
-					while(<IN>) {
-						if(/ $f$/) {
-							@tmp = split(' ', $_);
-							last;
-						}
-					}
-					close(IN);
-					alarm(0);
-				};
-				(undef, undef, $used, $free) = @tmp;
-				if(defined($used) && defined($free)) {
-					chomp($used, $free);
-					# prevents a division by 0 if device is not responding
-					$use = ($used * 100) / ($used + $free) unless $used + $free == 0;
-				}
-
-				eval {
-					local $SIG{'ALRM'} = sub {
-						if($pid) {
-							logger("$myself: Timeout! Process with PID '$pid' still hung after $config->{timeout} secs. Killed.");
-							kill 9, $pid;
-						} else {
-							logger("$myself: WARNING: \$pid has no value ('$pid') in ALRM sighandler.");
-						}
-					};
-					alarm($config->{timeout});
-					if($config->{os} eq "Linux") {
-						$pid = open(IN, "df -P -i '$f' |");
-					} elsif($config->{os} eq "FreeBSD" || $config->{os} eq "OpenBSD") {
-						$pid = open(IN, "df -i '$f' |");
-					}
-					while(<IN>) {
-						if(/ $f$/) {
-							@tmp = split(' ', $_);
-							last;
-						}
-					}
-					close(IN);
-					alarm(0);
-				};
-				if($config->{os} eq "Linux") {
-					(undef, undef, $used, $free) = @tmp;
-				} elsif($config->{os} eq "FreeBSD" || $config->{os} eq "OpenBSD") {
-					(undef, undef, undef, undef, undef, $used, $free) = @tmp;
-				}
-				if(defined($used) && defined($free)) {
-					chomp($used, $free);
-					# prevents a division by 0 if device is not responding
-					$ino = ($used * 100) / ($used + $free) unless $used + $free == 0;
-				}
-
-				# check alerts for each filesystem
-				my @al = split(',', $fs->{alerts}->{$f} || "");
-				if(scalar(@al)) {
-					my $timeintvl = trim($al[0]);
-					my $threshold = trim($al[1]);
-					my $script = trim($al[2]);
-
-					if(!$threshold || $use < $threshold) {
-						$config->{fs_hist}->{$f} = 0;
-					} else {
-						if(!$config->{fs_hist}->{$f}) {
-							$config->{fs_hist}->{$f} = time;
-						}
-						if($config->{fs_hist}->{$f} > 0 && (time - $config->{fs_hist}->{$f}) >= $timeintvl) {
-							if(-x $script) {
-								logger("$myself: alert on filesystem '$f': executing script '$script'.");
-								system($script . " " . $timeintvl . " " . $threshold . " " . $use);
-							} else {
-								logger("$myself: ERROR: script '$script' doesn't exist or don't has execution permissions.");
-							}
-							$config->{fs_hist}->{$f} = time;
-						}
-					}
-				}
-			}
-
-			my $read_cnt;
-			my $read_sec;
-			my $write_cnt;
-			my $write_sec;
-			my $d = $fs->{devmap}->{$f};
-			if($d) {
-				if($config->{os} eq "Linux") {
-					if($config->{kernel} gt "2.4") {
-						if(open(IN, "/proc/diskstats")) {
-							while(<IN>) {
-								if(/ $d /) {
-									@tmp = split(' ', $_);
-									last;
-								}
-							}
-							close(IN);
-						}
-						(undef, undef, undef, $read_cnt, undef, undef, $read_sec, $write_cnt, undef, undef, $write_sec) = @tmp;
-					} else {
-						my $io;
-						open(IN, "/proc/stat");
-						while(<IN>) {
-							if(/^disk_io/) {
-								(undef, undef, $io) = split(':', $_);
-								last;
-							}
-						}
-						close(IN);
-						(undef, $read_cnt, $read_sec, $write_cnt, $write_sec) = split(',', $io);
-						$write_sec =~ s/\).*$//;
-					}
-				} elsif($config->{os} eq "FreeBSD") {
-					@tmp = split(' ', `iostat -xI '$d' | grep -w '$d'`);
-					if(@tmp) {
-						(undef, $read_cnt, $write_cnt, $read_sec, $write_sec) = @tmp;
-						$read_cnt = int($read_cnt);
-						$write_cnt = int($write_cnt);
-						$read_sec = int($read_sec);
-						$write_sec = int($write_sec);
-					} else {
-						@tmp = split(' ', `iostat -dI | tail -1`);
-						(undef, $read_cnt, $read_sec) = @tmp;
-						$write_cnt = 0;
-						$write_sec = 0;
-						chomp($read_sec);
-						$read_sec = int($read_sec);
-					}
-				} elsif($config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
-					@tmp = split(' ', `iostat -DI | tail -1`);
-					($read_cnt, $read_sec) = @tmp;
-					$write_cnt = 0;
-					$write_sec = 0;
-					chomp($read_sec);
-					$read_sec = int($read_sec);
-				}
-			}
-
-			if(defined($read_cnt) && defined($write_cnt) &&
-			   defined($read_sec) && defined($write_sec)) {
-				$ioa = ($read_cnt || 0) + ($write_cnt || 0);
-				$tim = ($read_sec || 0) + ($write_sec || 0);
-
-				$str = $e . "_ioa" . $n;
-				$val = $ioa;
-				$ioa = $val - ($config->{fs_hist}->{$str} || 0);
-				$ioa = 0 unless $val != $ioa;
-				$ioa /= 60;
-				$config->{fs_hist}->{$str} = $val;
-
-				$str = $e . "_tim" . $n;
-				$val = $tim;
-				$tim = $val - ($config->{fs_hist}->{$str} || 0);
-				$tim = 0 unless $val != $tim;
-				$tim /= 60;
-				$config->{fs_hist}->{$str} = $val;
-			}
-
-			$use = ($use_nan_for_missing_data ? (0+"nan") : 0) unless defined $use;
-			$ioa = ($use_nan_for_missing_data ? (0+"nan") : 0) unless defined $ioa;
-			$tim = ($use_nan_for_missing_data ? (0+"nan") : 0) unless defined $tim;
-			$ino = ($use_nan_for_missing_data ? (0+"nan") : 0) unless defined $ino;
-
-			$rrdata .= ":$use:$ioa:$tim:$ino:NaN:NaN:NaN:NaN";
-		}
-		$e++;
-	}
+	my $rrdata = measure($myself, $config, $fs);
 
 	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;
