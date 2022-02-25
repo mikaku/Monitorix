@@ -147,39 +147,48 @@ sub nut_update {
 	my $n;
 	my $rrdata = "N";
 
+	my $use_nan_for_missing_data = lc($nut->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
+	my $ignore_error_output = lc($nut->{ignore_error_output} || "") eq "y" ? 1 : 0;
+
 	my $e = 0;
 	foreach my $ups (my @nl = split(',', $nut->{list})) {
-		my $ltran = 0;
-		my $htran = 0;
-		my $ivolt = 0;
-		my $ovolt = 0;
-		my $bchar = 0;
-		my $loadc = 0;
-		my $mbatc = 0;
-		my $nxfer = 0;
-		my $atemp = 0;
-		my $itemp = 0;
-		my $humid = 0;
-		my $battv = 0;
-		my $nomba = 0;
-		my $timel = 0;
-		my $minti = 0;
-		my $linef = 0;
-		my $val01 = 0;
-		my $val02 = 0;
-		my $val03 = 0;
-		my $val04 = 0;
-		my $val05 = 0;
+		my $default_value = $use_nan_for_missing_data ? (0+"nan") : 0;
+
+		my $ltran = $default_value;
+		my $htran = $default_value;
+		my $ivolt = $default_value;
+		my $ovolt = $default_value;
+		my $bchar = $default_value;
+		my $loadc = $default_value;
+		my $mbatc = $default_value;
+		my $nxfer = $default_value;
+		my $atemp = $default_value;
+		my $itemp = $default_value;
+		my $humid = $default_value;
+		my $battv = $default_value;
+		my $nomba = $default_value;
+		my $timel = $default_value;
+		my $minti = $default_value;
+		my $linef = $default_value;
+		my $val01 = $default_value;
+		my $val02 = $default_value;
+		my $val03 = $default_value;
+		my $val04 = $default_value;
+		my $val05 = $default_value;
 
 		my $data;
-		if(open(PIPE, "upsc $ups |")) {
+		my $upsc_cmd = "upsc $ups";
+		if ($ignore_error_output) {
+			$upsc_cmd .= " 2>/dev/null";
+		}
+		if(open(PIPE, "$upsc_cmd |")) {
 			while(<PIPE>) { $data .= $_; }
 			close(PIPE);
 		}
 
 		if(!$data) {
-			logger("$myself: unable to execute 'upsc $ups' command or invalid connection.");
-			$rrdata .= ":$ltran:$htran:$ivolt:$ovolt:$bchar:$loadc:$mbatc:$nxfer:$atemp:$itemp:$humid:$battv:$nomba:$timel:$minti:$linef:0:0:0:0:0";
+			logger("$myself: unable to execute '$upsc_cmd' command or invalid connection.");
+			$rrdata .= ":$ltran:$htran:$ivolt:$ovolt:$bchar:$loadc:$mbatc:$nxfer:$atemp:$itemp:$humid:$battv:$nomba:$timel:$minti:$linef:$default_value:$default_value:$default_value:$default_value:$default_value";
 			next;
 		}
 
@@ -299,6 +308,9 @@ sub nut_cgi {
 		$temp_scale = "Fahrenheit";
 	}
 
+	my $gap_on_all_nan = lc($nut->{gap_on_all_nan} || "") eq "y" ? 1 : 0;
+	my $ignore_error_output = lc($nut->{ignore_error_output} || "") eq "y" ? 1 : 0;
+
 	# text mode
 	#
 	if(lc($config->{iface_mode}) eq "text") {
@@ -388,7 +400,11 @@ sub nut_cgi {
 	foreach my $ups (my @nl = split(',', $nut->{list})) {
 
 		my $data;
-		if(open(PIPE, "upsc $ups |")) {
+		my $upsc_cmd = "upsc $ups";
+		if ($ignore_error_output) {
+			$upsc_cmd .= " 2>/dev/null";
+		}
+		if(open(PIPE, "$upsc_cmd |")) {
 			while(<PIPE>) { $data .= $_; }
 			close(PIPE);
 		}
@@ -479,6 +495,7 @@ sub nut_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
+		my $cdef_allvalues_volt = $gap_on_all_nan ? "CDEF:allvalues=ltran,UN,0,1,IF,htran,UN,0,1,IF,ivolt,UN,0,1,IF,ovolt,UN,0,1,IF,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=ltran,htran,ivolt,ovolt,+,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6]",
 			"--title=$config->{graphs}->{_nut1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -495,7 +512,7 @@ sub nut_cgi {
 			"DEF:htran=$rrd:nut" . $e . "_htran:AVERAGE",
 			"DEF:ivolt=$rrd:nut" . $e . "_ivolt:AVERAGE",
 			"DEF:ovolt=$rrd:nut" . $e . "_ovolt:AVERAGE",
-			"CDEF:allvalues=ltran,htran,ivolt,ovolt,+,+,+",
+			$cdef_allvalues_volt,
 			@CDEF,
 			"COMMENT: \\n",
 			@tmp,
@@ -522,7 +539,7 @@ sub nut_cgi {
 				"DEF:htran=$rrd:nut" . $e . "_htran:AVERAGE",
 				"DEF:ivolt=$rrd:nut" . $e . "_ivolt:AVERAGE",
 				"DEF:ovolt=$rrd:nut" . $e . "_ovolt:AVERAGE",
-				"CDEF:allvalues=ltran,htran,ivolt,ovolt,+,+,+",
+				$cdef_allvalues_volt,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -584,6 +601,7 @@ sub nut_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
+		my $cdef_allvalues_bat = $gap_on_all_nan ? "CDEF:allvalues=bchar,UN,0,1,IF,mbatc,UN,0,1,IF,loadc,UN,0,1,IF,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=bchar,mbatc,loadc,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 1]",
 			"--title=$config->{graphs}->{_nut2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -599,7 +617,7 @@ sub nut_cgi {
 			"DEF:bchar=$rrd:nut" . $e . "_bchar:AVERAGE",
 			"DEF:loadc=$rrd:nut" . $e . "_loadc:AVERAGE",
 			"DEF:mbatc=$rrd:nut" . $e . "_mbatc:AVERAGE",
-			"CDEF:allvalues=bchar,mbatc,loadc,+,+",
+			$cdef_allvalues_bat,
 			@CDEF,
 			"COMMENT: \\n",
 			@tmp,
@@ -626,7 +644,7 @@ sub nut_cgi {
 				"DEF:bchar=$rrd:nut" . $e . "_bchar:AVERAGE",
 				"DEF:loadc=$rrd:nut" . $e . "_loadc:AVERAGE",
 				"DEF:mbatc=$rrd:nut" . $e . "_mbatc:AVERAGE",
-				"CDEF:allvalues=bchar,mbatc,loadc,+,+",
+				$cdef_allvalues_bat,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -689,6 +707,7 @@ sub nut_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
+		my $cdef_allvalues_temp = $gap_on_all_nan ? "CDEF:allvalues=itemp,UN,0,1,IF,atemp,UN,0,1,IF,humid,UN,0,1,IF,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=itemp,atemp,humid,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 2]",
 			"--title=$config->{graphs}->{_nut3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -705,7 +724,7 @@ sub nut_cgi {
 			"DEF:itemp=$rrd:nut" . $e . "_itemp:AVERAGE",
 			"DEF:atemp=$rrd:nut" . $e . "_atemp:AVERAGE",
 			"DEF:humid=$rrd:nut" . $e . "_humid:AVERAGE",
-			"CDEF:allvalues=itemp,atemp,humid,+,+",
+			$cdef_allvalues_temp,
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -729,7 +748,7 @@ sub nut_cgi {
 				"DEF:itemp=$rrd:nut" . $e . "_itemp:AVERAGE",
 				"DEF:atemp=$rrd:nut" . $e . "_atemp:AVERAGE",
 				"DEF:humid=$rrd:nut" . $e . "_humid:AVERAGE",
-				"CDEF:allvalues=itemp,atemp,humid,+,+",
+				$cdef_allvalues_temp,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -779,6 +798,7 @@ sub nut_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
+		my $cdef_allvalues_batvolt = $gap_on_all_nan ? "CDEF:allvalues=battv,UN,0,1,IF,nomba,UN,0,1,IF,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=battv,nomba,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 3]",
 			"--title=$config->{graphs}->{_nut4}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -794,7 +814,7 @@ sub nut_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:battv=$rrd:nut" . $e . "_battv:AVERAGE",
 			"DEF:nomba=$rrd:nut" . $e . "_nomba:AVERAGE",
-			"CDEF:allvalues=battv,nomba,+",
+			$cdef_allvalues_batvolt,
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -817,7 +837,7 @@ sub nut_cgi {
 				@{$colors->{graph_colors}},
 				"DEF:battv=$rrd:nut" . $e . "_battv:AVERAGE",
 				"DEF:nomba=$rrd:nut" . $e . "_nomba:AVERAGE",
-				"CDEF:allvalues=battv,nomba,+",
+				$cdef_allvalues_batvolt,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -867,6 +887,7 @@ sub nut_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
+		my $cdef_allvalues_timeleft = $gap_on_all_nan ? "CDEF:allvalues=timel,UN,0,1,IF,minti,UN,0,1,IF,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=timel,minti,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 4]",
 			"--title=$config->{graphs}->{_nut5}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -882,7 +903,7 @@ sub nut_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:timel=$rrd:nut" . $e . "_timel:AVERAGE",
 			"DEF:minti=$rrd:nut" . $e . "_minti:AVERAGE",
-			"CDEF:allvalues=timel,minti,+",
+			$cdef_allvalues_timeleft,
 			"CDEF:timel_min=timel,60,/",
 			"CDEF:minti_min=minti,60,/",
 			@CDEF,
@@ -907,7 +928,7 @@ sub nut_cgi {
 				@{$colors->{graph_colors}},
 				"DEF:timel=$rrd:nut" . $e . "_timel:AVERAGE",
 				"DEF:minti=$rrd:nut" . $e . "_minti:AVERAGE",
-				"CDEF:allvalues=timel,minti,+",
+				$cdef_allvalues_timeleft,
 				"CDEF:timel_min=timel,60,/",
 				"CDEF:minti_min=minti,60,/",
 				@CDEF,
@@ -956,6 +977,7 @@ sub nut_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
+		my $cdef_allvalues_freq = $gap_on_all_nan ? "CDEF:allvalues=linef,UN,0,1,IF,0,GT,1,UNKN,IF" : "CDEF:allvalues=linef";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 5]",
 			"--title=$config->{graphs}->{_nut6}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -970,7 +992,7 @@ sub nut_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:linef=$rrd:nut" . $e . "_linef:AVERAGE",
-			"CDEF:allvalues=linef",
+			$cdef_allvalues_freq,
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -992,7 +1014,7 @@ sub nut_cgi {
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
 				"DEF:linef=$rrd:nut" . $e . "_linef:AVERAGE",
-				"CDEF:allvalues=linef",
+				$cdef_allvalues_freq,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;

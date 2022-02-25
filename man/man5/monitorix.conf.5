@@ -4199,6 +4199,27 @@ WARNING: Every time the number of entries in this option changes, Monitorix will
 .P
 Default value: \fIups@localhost\fP
 .RE
+.P
+.BI use_nan_for_missing_data
+.RS
+This option, when enabled via \fIy\fP, shows \fInan\fP values for missing data instead of \fI0\fP. This is useful when \fI0\fP could be mistaken for valid data.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI gap_on_all_nan
+.RS
+This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option shows gaps only if all data points are \fInan\fP instead of requiring only one to be \fInan\fP for a gap. This can be useful if not all sensor data are required for normal operation.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI ignore_error_output
+.RS
+This option, when enabled via \fIy\fP, suppresses error output from upsc.
+.P
+Default value: \fIn\fP
+.RE
 .SS Wowza Media Server (wowza.pm)
 This graph is able to monitor an unlimited number of Wowza servers.
 .P
