@@ -572,10 +572,8 @@ sub traffacct_cgi {
 	if($cgi->{val} eq "all") {
 		print("  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n");
 		print("  <tr>\n");
-		print("  <td bgcolor='$colors->{title_bg_color}' colspan='" . $traffacct->{graphs_per_row}  . "'>\n");
-		print("  <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n");
-		print("    <b>&nbsp;&nbsp;Network traffic<b>\n");
-		print("  </font>\n");
+		print("  <td class='td-title' colspan='" . $traffacct->{graphs_per_row}  . "'>\n");
+		print("    <b>&nbsp;&nbsp;Network traffic</b>\n");
 		print("  </td>\n");
 		print("  </tr>\n");
 		$n = 0;
@@ -686,10 +684,8 @@ sub traffacct_cgi {
 		if(!$silent) {
 			print("  <table cellspacing='5' cellpadding='0' width='1' bgcolor='$colors->{graph_bg_color}' border='1'>\n");
 			print("  <tr>\n");
-			print("  <td bgcolor='$colors->{title_bg_color}' colspan='1'>\n");
-			print("  <font face='Verdana, sans-serif' color='$colors->{title_fg_color}'>\n");
-			print("    <b>&nbsp;&nbsp;Network traffic<b>\n");
-			print("  </font>\n");
+			print("  <td class='td-title' colspan='1'>\n");
+			print("    <b>&nbsp;&nbsp;Network traffic</b>\n");
 			print("  </td>\n");
 			print("  </tr>\n");
 			print("  <tr>\n");
