@@ -269,6 +269,11 @@ sub altscaling_options {
 	return @scaling_options;
 }
 
+sub pad_string {
+	my ($string_length, $string) = @_;
+	return sprintf("%-" . $string_length . "s",$string);
+}
+
 sub nut_cgi {
 	my ($package, $config, $cgi) = @_;
 	my @output;
@@ -438,7 +443,8 @@ sub nut_cgi {
 		my $driver = "";
 		my $model = "";
 		my $status = "";
-		my $transfer = "";
+		my $transfer = "None";
+		my $nominal_power;
 		foreach(my @l = split('\n', $data)) {
 			if(/^driver\.name:\s+(.*?)$/) {
 				$driver = trim($1);
@@ -458,6 +464,10 @@ sub nut_cgi {
 			}
 			if(/^input\.transfer\.reason:\s+(\d+)$/) {
 				$transfer = trim($1);
+				next;
+			}
+			if(/^ups\.realpower\.nominal:\s+(.*?)$/) {
+				$nominal_power = trim($1);
 				next;
 			}
 		}
@@ -591,29 +601,31 @@ sub nut_cgi {
 			}
 		}
 
+		my $nominal_power_string_length = 19;
+		my $nominal_power_string = (defined($nominal_power) ? " (max. " . $nominal_power . "W)" : "");
 		@riglim = @{setup_riglim($rigid[1], $limit[1])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
-		push(@tmp, "AREA:bchar#4444EE:Charge");
+		push(@tmp, "AREA:bchar#4444EE:" . pad_string($nominal_power_string_length, "Charge"));
 		push(@tmp, "GPRINT:bchar:LAST:Cur\\:%5.1lf%%");
 		push(@tmp, "GPRINT:bchar:AVERAGE:   Avg\\:%5.1lf%%");
 		push(@tmp, "GPRINT:bchar:MIN:   Min\\:%5.1lf%%");
 		push(@tmp, "GPRINT:bchar:MAX:   Max\\:%5.1lf%%\\n");
-		push(@tmp, "AREA:loadc#EE4444:Load capacity");
+		push(@tmp, "AREA:loadc#EE4444:" . pad_string($nominal_power_string_length, "Load" . $nominal_power_string));
 		push(@tmp, "GPRINT:loadc:LAST:Cur\\:%5.1lf%%");
 		push(@tmp, "GPRINT:loadc:AVERAGE:   Avg\\:%5.1lf%%");
 		push(@tmp, "GPRINT:loadc:MIN:   Min\\:%5.1lf%%");
 		push(@tmp, "GPRINT:loadc:MAX:   Max\\:%5.1lf%%\\n");
 		push(@tmp, "LINE1:bchar#0000EE");
 		push(@tmp, "LINE1:loadc#EE0000");
-		push(@tmp, "LINE2:mbatc#EEEE44:Shutdown level");
+		push(@tmp, "LINE2:mbatc#EEEE44:" . pad_string($nominal_power_string_length, "Shutdown level"));
 		push(@tmp, "GPRINT:mbatc:LAST:Cur\\:%5.1lf%%");
 		push(@tmp, "GPRINT:mbatc:AVERAGE:   Avg\\:%5.1lf%%");
 		push(@tmp, "GPRINT:mbatc:MIN:   Min\\:%5.1lf%%");
 		push(@tmp, "GPRINT:mbatc:MAX:   Max\\:%5.1lf%%\\n");
 		push(@tmpz, "AREA:bchar#4444EE:Charge");
-		push(@tmpz, "AREA:loadc#EE4444:Load");
+		push(@tmpz, "AREA:loadc#EE4444:Load" . $nominal_power_string);
 		push(@tmpz, "LINE2:mbatc#EEEE44:Shutdown level");
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
