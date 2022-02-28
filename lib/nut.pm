@@ -250,6 +250,15 @@ sub nut_update {
 	logger("ERROR: while updating $rrd: $err") if $err;
 }
 
+sub skipscale_string {
+	my ($skipscale) = @_;
+  if ($skipscale) {
+		return ":skipscale";
+	} else {
+		return "";
+	}
+}
+
 sub nut_cgi {
 	my ($package, $config, $cgi) = @_;
 	my @output;
@@ -310,6 +319,8 @@ sub nut_cgi {
 
 	my $gap_on_all_nan = lc($nut->{gap_on_all_nan} || "") eq "y" ? 1 : 0;
 	my $ignore_error_output = lc($nut->{ignore_error_output} || "") eq "y" ? 1 : 0;
+	my $skipscale_for_transfer_voltage = lc($nut->{skipscale_for_transfer_voltage} || "") eq "y" ? 1 : 0;
+	my $skipscale_for_shutdown_level = lc($nut->{skipscale_for_shutdown_level} || "") eq "y" ? 1 : 0;
 
 	# text mode
 	#
@@ -459,7 +470,7 @@ sub nut_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
-		push(@tmp, "LINE2:htran#EE4444:High input transfer");
+		push(@tmp, "LINE2:htran#EE4444:High input transfer" . skipscale_string($skipscale_for_transfer_voltage));
 		push(@tmp, "GPRINT:htran:LAST:   Cur\\: %5.1lf");
 		push(@tmp, "GPRINT:htran:AVERAGE:  Avg\\: %5.1lf");
 		push(@tmp, "GPRINT:htran:MIN:  Min\\: %5.1lf");
@@ -474,15 +485,15 @@ sub nut_cgi {
 		push(@tmp, "GPRINT:ovolt:AVERAGE:  Avg\\: %5.1lf");
 		push(@tmp, "GPRINT:ovolt:MIN:  Min\\: %5.1lf");
 		push(@tmp, "GPRINT:ovolt:MAX:  Max\\: %5.1lf\\n");
-		push(@tmp, "LINE2:ltran#EE4444:Low input transfer");
+		push(@tmp, "LINE2:ltran#EE4444:Low input transfer" . skipscale_string($skipscale_for_transfer_voltage));
 		push(@tmp, "GPRINT:ltran:LAST:    Cur\\: %5.1lf");
 		push(@tmp, "GPRINT:ltran:AVERAGE:  Avg\\: %5.1lf");
 		push(@tmp, "GPRINT:ltran:MIN:  Min\\: %5.1lf");
 		push(@tmp, "GPRINT:ltran:MAX:  Max\\: %5.1lf\\n");
-		push(@tmpz, "LINE2:htran#EE4444:High input transfer");
+		push(@tmpz, "LINE2:htran#EE4444:High input transfer" . skipscale_string($skipscale_for_transfer_voltage));
 		push(@tmpz, "LINE2:ivolt#44EE44:Input voltage");
 		push(@tmpz, "LINE2:ovolt#4444EE:Output voltage");
-		push(@tmpz, "LINE2:ltran#EE4444:Low input transfer");
+		push(@tmpz, "LINE2:ltran#EE4444:Low input transfer" . skipscale_string($skipscale_for_transfer_voltage));
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -869,10 +880,10 @@ sub nut_cgi {
 		undef(@CDEF);
 		push(@tmp, "LINE2:timel_min#44EEEE:Minutes left");
 		push(@tmp, "GPRINT:timel_min:LAST:         Current\\: %3.0lf\\n");
-		push(@tmp, "LINE2:minti_min#EEEE44:Shutdown level");
+		push(@tmp, "LINE2:minti_min#EEEE44:Shutdown level" . skipscale_string($skipscale_for_shutdown_level));
 		push(@tmp, "GPRINT:minti_min:LAST:       Current\\: %3.0lf\\n");
 		push(@tmpz, "LINE2:timel_min#44EEEE:Minutes left");
-		push(@tmpz, "LINE2:minti_min#EEEE44:Shutdown level");
+		push(@tmpz, "LINE2:minti_min#EEEE44:Shutdown level" . skipscale_string($skipscale_for_shutdown_level));
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
