@@ -259,6 +259,16 @@ sub skipscale_string {
 	}
 }
 
+sub altscaling_options {
+	my ($altscaling) = @_;
+	my @scaling_options;
+  if ($altscaling) {
+		push(@scaling_options, "--alt-autoscale");
+		push(@scaling_options, "--alt-y-grid");
+	}
+	return @scaling_options;
+}
+
 sub nut_cgi {
 	my ($package, $config, $cgi) = @_;
 	my @output;
@@ -321,6 +331,9 @@ sub nut_cgi {
 	my $ignore_error_output = lc($nut->{ignore_error_output} || "") eq "y" ? 1 : 0;
 	my $skipscale_for_transfer_voltage = lc($nut->{skipscale_for_transfer_voltage} || "") eq "y" ? 1 : 0;
 	my $skipscale_for_shutdown_level = lc($nut->{skipscale_for_shutdown_level} || "") eq "y" ? 1 : 0;
+	my $alt_scaling_for_voltage = lc($nut->{alt_scaling_for_voltage} || "") eq "y" ? 1 : 0;
+	my $alt_scaling_for_timeleft = lc($nut->{alt_scaling_for_timeleft} || "") eq "y" ? 1 : 0;
+	my $alt_scaling_for_battery_voltage = lc($nut->{alt_scaling_for_battery_voltage} || "") eq "y" ? 1 : 0;
 
 	# text mode
 	#
@@ -514,6 +527,7 @@ sub nut_cgi {
 			"--vertical-label=Volts",
 			"--width=$width",
 			"--height=$height",
+			altscaling_options($alt_scaling_for_voltage),
 			@extra,
 			@riglim,
 			$zoom,
@@ -541,6 +555,7 @@ sub nut_cgi {
 				"--width=$width",
 				"--height=$height",
 				@full_size_mode,
+				altscaling_options($alt_scaling_for_voltage),
 				@extra,
 				@riglim,
 				$zoom,
@@ -817,6 +832,7 @@ sub nut_cgi {
 			"--vertical-label=Volts",
 			"--width=$width",
 			"--height=$height",
+			altscaling_options($alt_scaling_for_battery_voltage),
 			@extra,
 			@riglim,
 			$zoom,
@@ -840,6 +856,7 @@ sub nut_cgi {
 				"--width=$width",
 				"--height=$height",
 				@full_size_mode,
+				altscaling_options($alt_scaling_for_battery_voltage),
 				@extra,
 				@riglim,
 				$zoom,
@@ -906,6 +923,7 @@ sub nut_cgi {
 			"--vertical-label=Minutes",
 			"--width=$width",
 			"--height=$height",
+			altscaling_options($alt_scaling_for_timeleft),
 			@extra,
 			@riglim,
 			$zoom,
@@ -930,6 +948,7 @@ sub nut_cgi {
 				"--vertical-label=Minutes",
 				"--width=$width",
 				"--height=$height",
+				altscaling_options($alt_scaling_for_timeleft),
 				@full_size_mode,
 				@extra,
 				@riglim,
