@@ -350,7 +350,7 @@ sub chrony_cgi {
 		}
 	}
 
-	$e = 0;
+	$e = $e2 = 0;
 	foreach my $url (my @cl = split(',', $chrony->{list})) {
 
 		my $data;
@@ -426,7 +426,7 @@ sub chrony_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
-		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 5]",
+		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6]",
 			"--title=$config->{graphs}->{_chrony1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=$imgfmt_uc",
@@ -448,10 +448,10 @@ sub chrony_cgi {
 			$leap_status,
 			"COMMENT: \\n");
 		$err = RRDs::error;
-		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$e * 5]: $err\n") if $err;
+		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$e * 6]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
 			($width, $height) = split('x', $config->{graph_size}->{zoom});
-			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 5]",
+			$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e * 6]",
 				"--title=$config->{graphs}->{_chrony1}  ($tf->{nwhen}$tf->{twhen})",
 				"--start=-$tf->{nwhen}$tf->{twhen}",
 				"--imgformat=$imgfmt_uc",
@@ -470,13 +470,13 @@ sub chrony_cgi {
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
-			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 5]: $err\n") if $err;
+			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[$e * 6]: $err\n") if $err;
 		}
 		$e2 = $e + 1;
 		if($title || ($silent =~ /imagetag/ && $graph =~ /chrony$e2/)) {
 			if(lc($config->{enable_zoom}) eq "y") {
 				if(lc($config->{disable_javascript_void}) eq "y") {
-					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 5], IMG => $IMG[$e * 5]) . "\n");
+					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 6], IMG => $IMG[$e * 6]) . "\n");
 				} else {
 					if($version eq "new") {
 						$picz_width = $picz->{image_width} * $config->{global_zoom};
@@ -485,10 +485,10 @@ sub chrony_cgi {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
 					}
-					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 5], IMG => $IMG[$e * 5]) . "\n");
+					push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e * 6], IMG => $IMG[$e * 6]) . "\n");
 				}
 			} else {
-				push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 5]) . "\n");
+				push(@output, "      " . img_element(config => $config, IMG => $IMG[$e * 6]) . "\n");
 			}
 		}
 
