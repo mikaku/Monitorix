@@ -31,6 +31,7 @@ use POSIX qw(WNOHANG LC_TIME setlocale uname pause setsid);
 use Config::General;
 use Getopt::Std;
 use Cwd qw(abs_path);
+use Fcntl qw(:flock);
 
 # Force a standard locale
 $ENV{LANG} = "";
@@ -767,6 +768,8 @@ while(1) {
 
 	# call to all enabled graphs on every minute
 	if($sec == 0) {
+		my $lockfile_handler = lockfile_handler(\%config);
+		global_flock($lockfile_handler, LOCK_EX);
 		foreach my $f (@{$config{func_update}}) {
 			my $update = $f . "_update";
 			my $d = $f;
@@ -785,6 +788,7 @@ while(1) {
 				}
 			}
 		}
+		global_flock($lockfile_handler, LOCK_UN);
 
 		# TRAFFACCT graph daily reports
 		if(lc($config{traffacct}->{enabled} || "") eq "y") {

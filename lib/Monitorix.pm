@@ -24,8 +24,9 @@ use strict;
 use warnings;
 use Exporter 'import';
 use POSIX qw(setuid setgid setsid getgid getuid ceil);
+use Fcntl qw(:flock);
 use Socket;
-our @EXPORT = qw(logger trim min max celsius_to img_element picz_a_element picz_js_a_element uptime2str setup_riglim httpd_setup get_nvidia_data get_ati_data flush_accounting_rules);
+our @EXPORT = qw(logger trim min max celsius_to img_element picz_a_element picz_js_a_element uptime2str setup_riglim httpd_setup get_nvidia_data get_ati_data flush_accounting_rules lockfile_handler global_flock);
 
 sub logger {
 	my ($msg) = @_;
@@ -508,6 +509,28 @@ sub flush_accounting_rules {
 		logger("Flushing out ipfw rules.") if $debug;
 		system("ipfw delete $config->{port}->{rule} 2>/dev/null");
 		system("ipfw delete $config->{nginx}->{rule} 2>/dev/null");
+	}
+}
+
+sub lockfile_handler {
+	my ($config) = @_;
+	if (lc($config->{enable_rrd_lock} || "") eq "y") {
+		my $lock_file = "/tmp/monitorix.lock";
+
+		my $lockfile_was_available = (-e $lock_file);
+		open(my $fh, ($lockfile_was_available ? "+<" : ">>"), $lock_file) or die "Can't open $lock_file: $!"; # If the file already exists we open it without the O_CREATE flag due to the limitations introduced by fs.protected_regular.
+		if (!$lockfile_was_available) {
+			chmod(0666, $lock_file);
+		}
+		return $fh;
+	}
+	return undef;
+}
+
+sub global_flock {
+	my ($fh, $option) = @_;
+	if (defined($fh)) {
+		flock($fh, $option) or die "flock error: $!\n";
 	}
 }
 
