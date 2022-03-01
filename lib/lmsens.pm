@@ -203,12 +203,15 @@ sub lmsens_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $lmsens = $config->{lmsens};
 
-	my @mb = (0) x 2;
-	my @cpu = (0) x 4;
-	my @fan = (0) x 9;
-	my @core = (0) x 16;
-	my @volt = (0) x 12;
-	my @gpu = (0) x 9;
+	my $use_nan_for_missing_data = lc($lmsens->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
+	my $default_value = $use_nan_for_missing_data ? (0+"nan") : 0;
+
+	my @mb = ($default_value) x 2;
+	my @cpu = ($default_value) x 4;
+	my @fan = ($default_value) x 9;
+	my @core = ($default_value) x 16;
+	my @volt = ($default_value) x 12;
+	my @gpu = ($default_value) x 9;
 
 	my $l;
 	my $n;
@@ -246,7 +249,7 @@ sub lmsens_update {
 				}
 				for($n = 0; $n < 4; $n++) {
 					$str = "cpu" . $n;
-					$cpu[$n] = 0 unless $cpu[$n];
+					$cpu[$n] = $default_value unless $cpu[$n];
 					next if !$lmsens->{list}->{$str};
 					if($data[$l] =~ /^$lmsens->{list}->{$str}:/ && $data[$l] !~ /RPM/) {
 						my (undef, $tmp) = split(':', $data[$l]);
@@ -266,7 +269,7 @@ sub lmsens_update {
 				for($n = 0; $n < 9; $n++) {
 					my $str2;
 					$str = "fan" . $n;
-					$fan[$n] = 0 unless $fan[$n];
+					$fan[$n] = $default_value unless $fan[$n];
 					next if !$lmsens->{list}->{$str};
 					if(lc(substr($lmsens->{list}->{$str}, 0, 4) eq "rpm:")) {
 						$str2 = sprintf("%s", substr($lmsens->{list}->{$str}, 4));
@@ -289,7 +292,7 @@ sub lmsens_update {
 				}
 				for($n = 0; $n < 16; $n++) {
 					$str = "core" . $n;
-					$core[$n] = 0 unless $core[$n];
+					$core[$n] = $default_value unless $core[$n];
 					next if !$lmsens->{list}->{$str};
 					if($data[$l] =~ /^$lmsens->{list}->{$str}:/ && $data[$l] !~ /RPM/) {
 						my (undef, $tmp) = split(':', $data[$l]);
@@ -308,7 +311,7 @@ sub lmsens_update {
 				}
 				for($n = 0; $n < 12; $n++) {
 					$str = "volt" . $n;
-					$volt[$n] = 0 unless $volt[$n];
+					$volt[$n] = $default_value unless $volt[$n];
 					next if !$lmsens->{list}->{$str};
 					if($data[$l] =~ /^$lmsens->{list}->{$str}:/ && $data[$l] !~ /RPM/) {
 						my (undef, $tmp) = split(':', $data[$l]);
@@ -316,7 +319,9 @@ sub lmsens_update {
 							$l++;
 							$tmp = $data[$l];
 						}
-						my ($value, undef) = split(' ', $tmp);
+						my ($value, $unit) = split(' ', $tmp);
+						($unit, undef) = split(' ', $unit);
+						$value /= 1000 if ($unit eq "mV");
 						$volt[$n] = $value;
 						# check alerts for each sensor defined
 						lmsens_alerts($config, $str, $value);
@@ -324,7 +329,7 @@ sub lmsens_update {
 				}
 				for($n = 0; $n < 9; $n++) {
 					$str = "gpu" . $n;
-					$gpu[$n] = 0 unless $gpu[$n];
+					$gpu[$n] = $default_value unless $gpu[$n];
 					next if !$lmsens->{list}->{$str};
 					if($lmsens->{list}->{$str} =~ m/^lmsensors:\S+/) {
 						my $lmkey = $lmsens->{list}->{$str};
@@ -348,7 +353,7 @@ sub lmsens_update {
 			}
 			for($n = 0; $n < 9; $n++) {
 				$str = "gpu" . $n;
-				$gpu[$n] = 0 unless $gpu[$n];
+				$gpu[$n] = $default_value unless $gpu[$n];
 				next if !$lmsens->{list}->{$str};
 				if($lmsens->{list}->{$str} eq "nvidia") {
 					(undef, undef, $gpu[$n]) = split(' ', get_nvidia_data($n));
@@ -484,7 +489,7 @@ sub lmsens_cgi {
 	if(lc($config->{temperature_scale}) eq "f") {
 		$temp_scale = "Fahrenheit";
 	}
-
+	my $gap_on_all_nan = lc($lmsens->{gap_on_all_nan} || "") eq "y" ? 1 : 0;
 
 	# text mode
 	#
@@ -745,6 +750,7 @@ sub lmsens_cgi {
 		@tmp = @tmpz;
 		push(@tmp, "COMMENT: \\n");
 	}
+	my $cdef_allvalues_core = $gap_on_all_nan ? "CDEF:allvalues=core0,UN,0,1,IF,core1,UN,0,1,IF,core2,UN,0,1,IF,core3,UN,0,1,IF,core4,UN,0,1,IF,core5,UN,0,1,IF,core6,UN,0,1,IF,core7,UN,0,1,IF,core8,UN,0,1,IF,core9,UN,0,1,IF,core10,UN,0,1,IF,core11,UN,0,1,IF,core12,UN,0,1,IF,core13,UN,0,1,IF,core14,UN,0,1,IF,core15,UN,0,1,IF,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=core0,core1,core2,core3,core4,core5,core6,core7,core8,core9,core10,core11,core12,core13,core14,core15,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+";
 	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG1",
 		"--title=$config->{graphs}->{_lmsens1}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -773,7 +779,7 @@ sub lmsens_cgi {
 		"DEF:core13=$rrd:lmsens_core13:AVERAGE",
 		"DEF:core14=$rrd:lmsens_core14:AVERAGE",
 		"DEF:core15=$rrd:lmsens_core15:AVERAGE",
-		"CDEF:allvalues=core0,core1,core2,core3,core4,core5,core6,core7,core8,core9,core10,core11,core12,core13,core14,core15,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
+		$cdef_allvalues_core,
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
@@ -809,7 +815,7 @@ sub lmsens_cgi {
 			"DEF:core13=$rrd:lmsens_core13:AVERAGE",
 			"DEF:core14=$rrd:lmsens_core14:AVERAGE",
 			"DEF:core15=$rrd:lmsens_core15:AVERAGE",
-			"CDEF:allvalues=core0,core1,core2,core3,core4,core5,core6,core7,core8,core9,core10,core11,core12,core13,core14,core15,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+",
+			$cdef_allvalues_core,
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
@@ -940,6 +946,7 @@ sub lmsens_cgi {
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 	}
+	my $cdef_allvalues_volt = $gap_on_all_nan ? "CDEF:allvalues=volt0,UN,0,1,IF,volt1,UN,0,1,IF,volt2,UN,0,1,IF,volt3,UN,0,1,IF,volt4,UN,0,1,IF,volt5,UN,0,1,IF,volt6,UN,0,1,IF,volt7,UN,0,1,IF,volt8,UN,0,1,IF,volt9,UN,0,1,IF,volt10,UN,0,1,IF,volt11,UN,0,1,IF,+,+,+,+,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=volt0,volt1,volt2,volt3,volt4,volt5,volt6,volt7,volt8,volt9,volt10,volt11,+,+,+,+,+,+,+,+,+,+,+";
 	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG2",
 		"--title=$config->{graphs}->{_lmsens2}  ($tf->{nwhen}$tf->{twhen})
 		",
@@ -965,7 +972,7 @@ sub lmsens_cgi {
 		"DEF:volt9=$rrd:lmsens_volt9:AVERAGE",
 		"DEF:volt10=$rrd:lmsens_volt10:AVERAGE",
 		"DEF:volt11=$rrd:lmsens_volt11:AVERAGE",
-		"CDEF:allvalues=volt0,volt1,volt2,volt3,volt4,volt5,volt6,volt7,volt8,volt9,volt10,volt11,+,+,+,+,+,+,+,+,+,+,+",
+		$cdef_allvalues_volt,
 		@CDEF,
 		@tmp);
 	$err = RRDs::error;
@@ -997,7 +1004,7 @@ sub lmsens_cgi {
 			"DEF:volt9=$rrd:lmsens_volt9:AVERAGE",
 			"DEF:volt10=$rrd:lmsens_volt10:AVERAGE",
 			"DEF:volt11=$rrd:lmsens_volt11:AVERAGE",
-			"CDEF:allvalues=volt0,volt1,volt2,volt3,volt4,volt5,volt6,volt7,volt8,volt9,volt10,volt11,+,+,+,+,+,+,+,+,+,+,+",
+			$cdef_allvalues_volt,
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
@@ -1085,6 +1092,7 @@ sub lmsens_cgi {
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 	}
+	my $cdef_allvalues_cpu = $gap_on_all_nan ? "CDEF:allvalues=mb0,UN,0,1,IF,mb1,UN,0,1,IF,cpu0,UN,0,1,IF,cpu1,UN,0,1,IF,cpu2,UN,0,1,IF,cpu3,UN,0,1,IF,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=mb0,mb1,cpu0,cpu1,cpu2,cpu3,+,+,+,+,+";
 	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG3",
 		"--title=$config->{graphs}->{_lmsens3}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -1104,7 +1112,7 @@ sub lmsens_cgi {
 		"DEF:cpu1=$rrd:lmsens_cpu1:AVERAGE",
 		"DEF:cpu2=$rrd:lmsens_cpu2:AVERAGE",
 		"DEF:cpu3=$rrd:lmsens_cpu3:AVERAGE",
-		"CDEF:allvalues=mb0,mb1,cpu0,cpu1,cpu2,cpu3,+,+,+,+,+",
+		$cdef_allvalues_cpu,
 		@CDEF,
 		"COMMENT: \\n",
 		@tmp);
@@ -1132,7 +1140,7 @@ sub lmsens_cgi {
 			"DEF:cpu1=$rrd:lmsens_cpu1:AVERAGE",
 			"DEF:cpu2=$rrd:lmsens_cpu2:AVERAGE",
 			"DEF:cpu3=$rrd:lmsens_cpu3:AVERAGE",
-			"CDEF:allvalues=mb0,mb1,cpu0,cpu1,cpu2,cpu3,+,+,+,+,+",
+			$cdef_allvalues_cpu,
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
@@ -1224,6 +1232,7 @@ sub lmsens_cgi {
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 	}
+	my $cdef_allvalues_fan = $gap_on_all_nan ? "CDEF:allvalues=fan0,UN,0,1,IF,fan1,UN,0,1,IF,fan2,UN,0,1,IF,fan3,UN,0,1,IF,fan4,UN,0,1,IF,fan5,UN,0,1,IF,fan6,UN,0,1,IF,fan7,UN,0,1,IF,fan8,UN,0,1,IF,+,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=fan0,fan1,fan2,fan3,fan4,fan5,fan6,fan7,fan8,+,+,+,+,+,+,+,+";
 	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG4",
 		"--title=$config->{graphs}->{_lmsens4}  ($tf->{nwhen}$tf->{twhen})",
 		"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -1246,7 +1255,7 @@ sub lmsens_cgi {
 		"DEF:fan6=$rrd:lmsens_fan6:AVERAGE",
 		"DEF:fan7=$rrd:lmsens_fan7:AVERAGE",
 		"DEF:fan8=$rrd:lmsens_fan8:AVERAGE",
-		"CDEF:allvalues=fan0,fan1,fan2,fan3,fan4,fan5,fan6,fan7,fan8,+,+,+,+,+,+,+,+",
+		$cdef_allvalues_fan,
 		@CDEF,
 		"COMMENT: \\n",
 		@tmp);
@@ -1277,7 +1286,7 @@ sub lmsens_cgi {
 			"DEF:fan6=$rrd:lmsens_fan6:AVERAGE",
 			"DEF:fan7=$rrd:lmsens_fan7:AVERAGE",
 			"DEF:fan8=$rrd:lmsens_fan8:AVERAGE",
-			"CDEF:allvalues=fan0,fan1,fan2,fan3,fan4,fan5,fan6,fan7,fan8,+,+,+,+,+,+,+,+",
+			$cdef_allvalues_fan,
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
@@ -1381,6 +1390,7 @@ sub lmsens_cgi {
 		push(@tmp, "COMMENT: \\n");
 		push(@tmp, "COMMENT: \\n");
 	}
+	my $cdef_allvalues_gpu = $gap_on_all_nan ? "CDEF:allvalues=gpu0,UN,0,1,IF,gpu1,UN,0,1,IF,gpu2,UN,0,1,IF,gpu3,UN,0,1,IF,gpu4,UN,0,1,IF,gpu5,UN,0,1,IF,gpu6,UN,0,1,IF,gpu7,UN,0,1,IF,gpu8,UN,0,1,IF,+,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=gpu0,gpu1,gpu2,gpu3,gpu4,gpu5,gpu6,gpu7,gpu8,+,+,+,+,+,+,+,+";
 	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG5",
 		"--title=$config->{graphs}->{_lmsens5}  ($tf->{nwhen}$tf->{twhen})
 		",
@@ -1404,7 +1414,7 @@ sub lmsens_cgi {
 		"DEF:gpu6=$rrd:lmsens_gpu6:AVERAGE",
 		"DEF:gpu7=$rrd:lmsens_gpu7:AVERAGE",
 		"DEF:gpu8=$rrd:lmsens_gpu8:AVERAGE",
-		"CDEF:allvalues=gpu0,gpu1,gpu2,gpu3,gpu4,gpu5,gpu6,gpu7,gpu8,+,+,+,+,+,+,+,+",
+		$cdef_allvalues_gpu,
 		@CDEF,
 		"COMMENT: \\n",
 		@tmp);
@@ -1435,7 +1445,7 @@ sub lmsens_cgi {
 			"DEF:gpu6=$rrd:lmsens_gpu6:AVERAGE",
 			"DEF:gpu7=$rrd:lmsens_gpu7:AVERAGE",
 			"DEF:gpu8=$rrd:lmsens_gpu8:AVERAGE",
-			"CDEF:allvalues=gpu0,gpu1,gpu2,gpu3,gpu4,gpu5,gpu6,gpu7,gpu8,+,+,+,+,+,+,+,+",
+			$cdef_allvalues_gpu,
 			@CDEF,
 			@tmpz);
 		$err = RRDs::error;
