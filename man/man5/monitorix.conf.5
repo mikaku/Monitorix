@@ -2692,6 +2692,13 @@ The external script will receive the following arguments:
 3rd - the filesystem disk usage.
 .P
 .RE
+.RE
+.BI use_nan_for_missing_data
+.RS
+This option, when enabled via \fIy\fP, shows \fInan\fP values for missing data instead of \fI0\fP. This is useful when \fI0\fP could be mistaken for valid data.
+.P
+Default value: \fIn\fP
+.RE
 .SS ZFS statistics (zfs.pm)
 This graph is able to monitor an unlimited number of pools.
 .P
