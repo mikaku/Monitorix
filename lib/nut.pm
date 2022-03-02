@@ -250,6 +250,30 @@ sub nut_update {
 	logger("ERROR: while updating $rrd: $err") if $err;
 }
 
+sub skipscale_string {
+	my ($skipscale) = @_;
+  if ($skipscale) {
+		return ":skipscale";
+	} else {
+		return "";
+	}
+}
+
+sub altscaling_options {
+	my ($altscaling) = @_;
+	my @scaling_options;
+  if ($altscaling) {
+		push(@scaling_options, "--alt-autoscale");
+		push(@scaling_options, "--alt-y-grid");
+	}
+	return @scaling_options;
+}
+
+sub pad_string {
+	my ($string_length, $string) = @_;
+	return sprintf("%-" . $string_length . "s",$string);
+}
+
 sub nut_cgi {
 	my ($package, $config, $cgi) = @_;
 	my @output;
@@ -310,6 +334,11 @@ sub nut_cgi {
 
 	my $gap_on_all_nan = lc($nut->{gap_on_all_nan} || "") eq "y" ? 1 : 0;
 	my $ignore_error_output = lc($nut->{ignore_error_output} || "") eq "y" ? 1 : 0;
+	my $skipscale_for_transfer_voltage = lc($nut->{skipscale_for_transfer_voltage} || "") eq "y" ? 1 : 0;
+	my $skipscale_for_shutdown_level = lc($nut->{skipscale_for_shutdown_level} || "") eq "y" ? 1 : 0;
+	my $alt_scaling_for_voltage = lc($nut->{alt_scaling_for_voltage} || "") eq "y" ? 1 : 0;
+	my $alt_scaling_for_timeleft = lc($nut->{alt_scaling_for_timeleft} || "") eq "y" ? 1 : 0;
+	my $alt_scaling_for_battery_voltage = lc($nut->{alt_scaling_for_battery_voltage} || "") eq "y" ? 1 : 0;
 
 	# text mode
 	#
@@ -414,7 +443,8 @@ sub nut_cgi {
 		my $driver = "";
 		my $model = "";
 		my $status = "";
-		my $transfer = "";
+		my $transfer = "None";
+		my $nominal_power;
 		foreach(my @l = split('\n', $data)) {
 			if(/^driver\.name:\s+(.*?)$/) {
 				$driver = trim($1);
@@ -434,6 +464,10 @@ sub nut_cgi {
 			}
 			if(/^input\.transfer\.reason:\s+(\d+)$/) {
 				$transfer = trim($1);
+				next;
+			}
+			if(/^ups\.realpower\.nominal:\s+(.*?)$/) {
+				$nominal_power = trim($1);
 				next;
 			}
 		}
@@ -459,7 +493,7 @@ sub nut_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
-		push(@tmp, "LINE2:htran#EE4444:High input transfer");
+		push(@tmp, "LINE2:htran#EE4444:High input transfer" . skipscale_string($skipscale_for_transfer_voltage));
 		push(@tmp, "GPRINT:htran:LAST:   Cur\\: %5.1lf");
 		push(@tmp, "GPRINT:htran:AVERAGE:  Avg\\: %5.1lf");
 		push(@tmp, "GPRINT:htran:MIN:  Min\\: %5.1lf");
@@ -474,15 +508,15 @@ sub nut_cgi {
 		push(@tmp, "GPRINT:ovolt:AVERAGE:  Avg\\: %5.1lf");
 		push(@tmp, "GPRINT:ovolt:MIN:  Min\\: %5.1lf");
 		push(@tmp, "GPRINT:ovolt:MAX:  Max\\: %5.1lf\\n");
-		push(@tmp, "LINE2:ltran#EE4444:Low input transfer");
+		push(@tmp, "LINE2:ltran#EE4444:Low input transfer" . skipscale_string($skipscale_for_transfer_voltage));
 		push(@tmp, "GPRINT:ltran:LAST:    Cur\\: %5.1lf");
 		push(@tmp, "GPRINT:ltran:AVERAGE:  Avg\\: %5.1lf");
 		push(@tmp, "GPRINT:ltran:MIN:  Min\\: %5.1lf");
 		push(@tmp, "GPRINT:ltran:MAX:  Max\\: %5.1lf\\n");
-		push(@tmpz, "LINE2:htran#EE4444:High input transfer");
+		push(@tmpz, "LINE2:htran#EE4444:High input transfer" . skipscale_string($skipscale_for_transfer_voltage));
 		push(@tmpz, "LINE2:ivolt#44EE44:Input voltage");
 		push(@tmpz, "LINE2:ovolt#4444EE:Output voltage");
-		push(@tmpz, "LINE2:ltran#EE4444:Low input transfer");
+		push(@tmpz, "LINE2:ltran#EE4444:Low input transfer" . skipscale_string($skipscale_for_transfer_voltage));
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -503,6 +537,7 @@ sub nut_cgi {
 			"--vertical-label=Volts",
 			"--width=$width",
 			"--height=$height",
+			altscaling_options($alt_scaling_for_voltage),
 			@extra,
 			@riglim,
 			$zoom,
@@ -530,6 +565,7 @@ sub nut_cgi {
 				"--width=$width",
 				"--height=$height",
 				@full_size_mode,
+				altscaling_options($alt_scaling_for_voltage),
 				@extra,
 				@riglim,
 				$zoom,
@@ -565,29 +601,31 @@ sub nut_cgi {
 			}
 		}
 
+		my $nominal_power_string_length = 19;
+		my $nominal_power_string = (defined($nominal_power) ? " (max. " . $nominal_power . "W)" : "");
 		@riglim = @{setup_riglim($rigid[1], $limit[1])};
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
-		push(@tmp, "AREA:bchar#4444EE:Charge");
-		push(@tmp, "GPRINT:bchar:LAST:             Cur\\: %4.1lf%%");
-		push(@tmp, "GPRINT:bchar:AVERAGE:   Avg\\: %4.1lf%%");
-		push(@tmp, "GPRINT:bchar:MIN:   Min\\: %4.1lf%%");
-		push(@tmp, "GPRINT:bchar:MAX:   Max\\: %4.1lf%%\\n");
-		push(@tmp, "AREA:loadc#EE4444:Load capacity");
-		push(@tmp, "GPRINT:loadc:LAST:      Cur\\: %4.1lf%%");
-		push(@tmp, "GPRINT:loadc:AVERAGE:   Avg\\: %4.1lf%%");
-		push(@tmp, "GPRINT:loadc:MIN:   Min\\: %4.1lf%%");
-		push(@tmp, "GPRINT:loadc:MAX:   Max\\: %4.1lf%%\\n");
+		push(@tmp, "AREA:bchar#4444EE:" . pad_string($nominal_power_string_length, "Charge"));
+		push(@tmp, "GPRINT:bchar:LAST:Cur\\:%5.1lf%%");
+		push(@tmp, "GPRINT:bchar:AVERAGE:   Avg\\:%5.1lf%%");
+		push(@tmp, "GPRINT:bchar:MIN:   Min\\:%5.1lf%%");
+		push(@tmp, "GPRINT:bchar:MAX:   Max\\:%5.1lf%%\\n");
+		push(@tmp, "AREA:loadc#EE4444:" . pad_string($nominal_power_string_length, "Load" . $nominal_power_string));
+		push(@tmp, "GPRINT:loadc:LAST:Cur\\:%5.1lf%%");
+		push(@tmp, "GPRINT:loadc:AVERAGE:   Avg\\:%5.1lf%%");
+		push(@tmp, "GPRINT:loadc:MIN:   Min\\:%5.1lf%%");
+		push(@tmp, "GPRINT:loadc:MAX:   Max\\:%5.1lf%%\\n");
 		push(@tmp, "LINE1:bchar#0000EE");
 		push(@tmp, "LINE1:loadc#EE0000");
-		push(@tmp, "LINE2:mbatc#EEEE44:Shutdown level");
-		push(@tmp, "GPRINT:mbatc:LAST:     Cur\\: %4.1lf%%");
-		push(@tmp, "GPRINT:mbatc:AVERAGE:   Avg\\: %4.1lf%%");
-		push(@tmp, "GPRINT:mbatc:MIN:   Min\\: %4.1lf%%");
-		push(@tmp, "GPRINT:mbatc:MAX:   Max\\: %4.1lf%%\\n");
+		push(@tmp, "LINE2:mbatc#EEEE44:" . pad_string($nominal_power_string_length, "Shutdown level"));
+		push(@tmp, "GPRINT:mbatc:LAST:Cur\\:%5.1lf%%");
+		push(@tmp, "GPRINT:mbatc:AVERAGE:   Avg\\:%5.1lf%%");
+		push(@tmp, "GPRINT:mbatc:MIN:   Min\\:%5.1lf%%");
+		push(@tmp, "GPRINT:mbatc:MAX:   Max\\:%5.1lf%%\\n");
 		push(@tmpz, "AREA:bchar#4444EE:Charge");
-		push(@tmpz, "AREA:loadc#EE4444:Load");
+		push(@tmpz, "AREA:loadc#EE4444:Load" . $nominal_power_string);
 		push(@tmpz, "LINE2:mbatc#EEEE44:Shutdown level");
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
@@ -806,6 +844,7 @@ sub nut_cgi {
 			"--vertical-label=Volts",
 			"--width=$width",
 			"--height=$height",
+			altscaling_options($alt_scaling_for_battery_voltage),
 			@extra,
 			@riglim,
 			$zoom,
@@ -829,6 +868,7 @@ sub nut_cgi {
 				"--width=$width",
 				"--height=$height",
 				@full_size_mode,
+				altscaling_options($alt_scaling_for_battery_voltage),
 				@extra,
 				@riglim,
 				$zoom,
@@ -869,10 +909,10 @@ sub nut_cgi {
 		undef(@CDEF);
 		push(@tmp, "LINE2:timel_min#44EEEE:Minutes left");
 		push(@tmp, "GPRINT:timel_min:LAST:         Current\\: %3.0lf\\n");
-		push(@tmp, "LINE2:minti_min#EEEE44:Shutdown level");
+		push(@tmp, "LINE2:minti_min#EEEE44:Shutdown level" . skipscale_string($skipscale_for_shutdown_level));
 		push(@tmp, "GPRINT:minti_min:LAST:       Current\\: %3.0lf\\n");
 		push(@tmpz, "LINE2:timel_min#44EEEE:Minutes left");
-		push(@tmpz, "LINE2:minti_min#EEEE44:Shutdown level");
+		push(@tmpz, "LINE2:minti_min#EEEE44:Shutdown level" . skipscale_string($skipscale_for_shutdown_level));
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -895,6 +935,7 @@ sub nut_cgi {
 			"--vertical-label=Minutes",
 			"--width=$width",
 			"--height=$height",
+			altscaling_options($alt_scaling_for_timeleft),
 			@extra,
 			@riglim,
 			$zoom,
@@ -919,6 +960,7 @@ sub nut_cgi {
 				"--vertical-label=Minutes",
 				"--width=$width",
 				"--height=$height",
+				altscaling_options($alt_scaling_for_timeleft),
 				@full_size_mode,
 				@extra,
 				@riglim,
