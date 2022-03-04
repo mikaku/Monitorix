@@ -310,11 +310,13 @@ if($config{include_dir} && opendir(DIR, $config{include_dir})) {
 
 $config{url} = ($config{url_prefix_proxy} || "");
 if(!$config{url}) {
-	$config{url} = ($ENV{HTTPS} || ($config{httpd_builtin}->{https_url} || "n") eq "y") ? "https://" . $ENV{HTTP_HOST} : "http://" . $ENV{HTTP_HOST};
 	$config{hostname} = $config{hostname} || $ENV{SERVER_NAME};
-	if(!($config{hostname})) {	# called from the command line
-		$config{hostname} = "127.0.0.1";
-		$config{url} = "http://127.0.0.1";
+	if(lc($config{enable_relative_urls} || "") ne "y") {
+		$config{url} = ($ENV{HTTPS} || ($config{httpd_builtin}->{https_url} || "n") eq "y") ? "https://" . $ENV{HTTP_HOST} : "http://" . $ENV{HTTP_HOST};
+		if(!($config{hostname})) {	# called from the command line
+			$config{hostname} = "127.0.0.1";
+			$config{url} = "http://127.0.0.1";
+		}
 	}
 }
 $config{url} .= $config{base_url};
