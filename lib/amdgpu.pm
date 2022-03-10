@@ -478,10 +478,10 @@ sub amdgpu_cgi {
 		"%4.2lf%s",
 		"%5.0lf%s",
 		"%5.0lf%s",
-		"%3.1lf%%",
-		"%3.1lf",
-		"%3.1lf",
-		"%3.1lf"
+		"%5.1lf%%",
+		"%5.1lf",
+		"%5.1lf",
+		"%5.1lf"
 	);
 
 	my @graphs_per_plot = (7, 8, 10, 9, [5, 6], 0, 1, 2, 3, 4); # To rearange the graphs
@@ -597,12 +597,12 @@ sub amdgpu_cgi {
 							push(@tmp, "COMMENT:      N/A\\n");
 						} else {
 							if($main_plots_with_average[$n_plot]) {
-								push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:  Current\\: " . $legend_labels_per_sensor[$n_sensor]);
-								push(@tmp, "GPRINT:trans_" . $value_name . ":AVERAGE:  Average\\: " . $legend_labels_per_sensor[$n_sensor]);
-								push(@tmp, "GPRINT:trans_" . $value_name . ":MIN:  Min\\: " . $legend_labels_per_sensor[$n_sensor]);
-								push(@tmp, "GPRINT:trans_" . $value_name . ":MAX:  Max\\: " . $legend_labels_per_sensor[$n_sensor] . "\\n");
+								push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:  Current\\:" . $legend_labels_per_sensor[$n_sensor]);
+								push(@tmp, "GPRINT:trans_" . $value_name . ":AVERAGE: Average\\:" . $legend_labels_per_sensor[$n_sensor]);
+								push(@tmp, "GPRINT:trans_" . $value_name . ":MIN: Min\\:" . $legend_labels_per_sensor[$n_sensor]);
+								push(@tmp, "GPRINT:trans_" . $value_name . ":MAX: Max\\:" . $legend_labels_per_sensor[$n_sensor] . "\\n");
 							} else {
-								push(@tmp, "GPRINT:trans_" . $value_name . ":LAST: Current\\: " . $legend_labels_per_sensor[$n_sensor] . "\\n");
+								push(@tmp, "GPRINT:trans_" . $value_name . ":LAST:  Current\\:" . $legend_labels_per_sensor[$n_sensor] . "\\n");
 							}
 						}
 					} else {
