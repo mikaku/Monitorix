@@ -7,6 +7,17 @@ N.NN.N - DD-MMM-YYYY
 - Added the 'additional_graph_name' configuration option. [#388]
 - Added support to be able to rename ipmi sensors that include whitespaces in
   their name. [#393]
+- Added the option 'use_nan_for_missing_data' to 'du.pm' and 'fs.pm'. [#399]
+- Added some new options to handle zero values as NaN in 'nut.pm'. [#401]
+- Added a new option 'enable_rrd_lock' (disabled by default) to synchronise the
+  rrd file access. [#370]
+- Added the option 'use_nan_for_missing_data' to 'lmsens.pm'. [#406]
+- Added support for the 'mV' unit to voltage keys in 'lmsens.pm'. [#315]
+- Added some new options to (optionally) change scaling in 'nut.pm'. [#409]
+- Added support to enable relative URLs in graphs. [#410]
+- Added more accuracy when measuring the time elapsed between updates, instead
+  of assuming always 60 seconds (in 'fs.pm', 'libvirt.pm', 'net.pm', 'port.pm'
+  and 'process.pm'). [#407]
 - Fixed an error in 'pgsql.pm' if a non-privileged user is used to read the
   statistics. [#384]
 - Fixed the amdgpu section in 'monitorix.conf'. [#385]
@@ -16,6 +27,9 @@ N.NN.N - DD-MMM-YYYY
 - Fixed wrong index for image directory in 'amdgpu.pm', 'nvidiagpu.pm' and
   'nvme.pm'. [#387]
 - Fixed the extra padding in 'ipmi.pm' and 'du.pm'. [#392]
+- Fixed the CSS theming support in the bottom of some graphs. [#405]
+- Fixed graphs layout when using more than one server in 'chrony.pm'. [#408]
+- Small fixes and cosmetic changes.
 
 
 3.14.0 - 18-Jan-2022
