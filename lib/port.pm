@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use Monitorix;
 use RRDs;
+use Time::HiRes;
 use POSIX qw(strftime setlocale LC_ALL);
 use Exporter 'import';
 our @EXPORT = qw(port_init port_update port_cgi);
@@ -31,6 +32,130 @@ our @EXPORT = qw(port_init port_update port_cgi);
 # Force a standard locale
 $ENV{LANG} = "";
 setlocale(LC_ALL, "C");
+
+sub measure {
+	my ($myself, $config, $port) = @_;
+
+	my @i_in;
+	my @i_out;
+	my @o_in;
+	my @o_out;
+	my $table = $config->{ip_default_table};
+
+	my $epoc_identifier = "last_epoc";
+	my $last_epoc = ($config->{port_hist_time}->{$epoc_identifier} || 0);
+	my $epoc = Time::HiRes::time();
+	$config->{port_hist_time}->{$epoc_identifier} = $epoc;
+	my $delta_t = ($last_epoc ne 0) ? ($epoc - $last_epoc) : 60;
+
+	my $rrdata = "N";
+	if($config->{os} eq "Linux") {
+		my @data;
+		my $l;
+		my $cmd;
+		my $cmd6;
+
+		$cmd = "iptables" . $config->{iptables_wait_lock};
+		$cmd6 = "ip6tables" . $config->{iptables_wait_lock};
+		open(IN, "$cmd -t $table -nxvL INPUT 2>/dev/null |");
+		@data = <IN>;
+		close(IN);
+		if(lc($config->{ipv6_disabled} || "") ne "y") {
+			open(IN, "$cmd6 -t $table -nxvL INPUT 2>/dev/null |");
+			push(@data, <IN>);
+			close(IN);
+		}
+		for($l = 0; $l < scalar(@data); $l++) {
+			for(my $n = 0; $n < $port->{max}; $n++) {
+				$i_in[$n] = 0 unless $i_in[$n];
+				$o_in[$n] = 0 unless $o_in[$n];
+				if($data[$l] =~ / monitorix_IN_$n /) {
+					my (undef, $bytes) = split(' ', $data[$l]);
+					chomp($bytes);
+					$i_in[$n] = $bytes - ($config->{port_hist_i_in}[$n] || 0);
+					$i_in[$n] = 0 unless $i_in[$n] != $bytes;
+					$config->{port_hist_i_in}[$n] = $bytes;
+					$i_in[$n] /= $delta_t;
+				}
+				if($data[$l] =~ / monitorix_OUT_$n /) {
+					my (undef, $bytes) = split(' ', $data[$l]);
+					chomp($bytes);
+					$o_in[$n] = $bytes - ($config->{port_hist_o_in}[$n] || 0);
+					$o_in[$n] = 0 unless $o_in[$n] != $bytes;
+					$config->{port_hist_o_in}[$n] = $bytes;
+					$o_in[$n] /= $delta_t;
+				}
+			}
+		}
+		open(IN, "$cmd -t $table -nxvL OUTPUT 2>/dev/null |");
+		@data = <IN>;
+		close(IN);
+		if(lc($config->{ipv6_disabled} || "") ne "y") {
+			open(IN, "$cmd6 -t $table -nxvL OUTPUT 2>/dev/null |");
+			push(@data, <IN>);
+			close(IN);
+		}
+		for($l = 0; $l < scalar(@data); $l++) {
+			for(my $n = 0; $n < $port->{max}; $n++) {
+				$o_out[$n] = 0 unless $o_out[$n];
+				$i_out[$n] = 0 unless $i_out[$n];
+				if($data[$l] =~ / monitorix_OUT_$n /) {
+					my (undef, $bytes) = split(' ', $data[$l]);
+					chomp($bytes);
+					$o_out[$n] = $bytes - ($config->{port_hist_o_out}[$n] || 0);
+					$o_out[$n] = 0 unless $o_out[$n] != $bytes;
+					$config->{port_hist_o_out}[$n] = $bytes;
+					$o_out[$n] /= $delta_t;
+				}
+				if($data[$l] =~ / monitorix_IN_$n /) {
+					my (undef, $bytes) = split(' ', $data[$l]);
+					chomp($bytes);
+					$i_out[$n] = $bytes - ($config->{port_hist_i_out}[$n] || 0);
+					$i_out[$n] = 0 unless $i_out[$n] != $bytes;
+					$config->{port_hist_i_out}[$n] = $bytes;
+					$i_out[$n] /= $delta_t;
+				}
+			}
+		}
+	}
+	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
+		my @pl = split(',', $port->{list});
+		open(IN, "ipfw show $port->{rule} 2>/dev/null |");
+		while(<IN>) {
+			for(my $n = 0; $n < $port->{max}; $n++) {
+				$i_in[$n] = 0 unless $i_in[$n];
+				$o_in[$n] = 0 unless $o_in[$n];
+				$pl[$n] = trim($pl[$n]);
+				my ($np) = ($pl[$n] =~ m/^(\d+).*?/);
+				if(/ from any to me dst-port $np$/) {
+					my (undef, undef, $bytes) = split(' ', $_);
+					chomp($bytes);
+					$i_in[$n] = $bytes - ($config->{port_hist_i_in}[$n] || 0);
+					$i_in[$n] = 0 unless $i_in[$n] != $bytes;
+					$config->{port_hist_i_in}[$n] = $bytes;
+					$i_in[$n] /= $delta_t;
+				}
+				$o_out[$n] = 0 unless $o_out[$n];
+				$i_out[$n] = 0 unless $i_out[$n];
+				if(/ from me $np to any$/) {
+					my (undef, undef, $bytes) = split(' ', $_);
+					chomp($bytes);
+					$i_out[$n] = $bytes - ($config->{port_hist_i_out}[$n] || 0);
+					$i_out[$n] = 0 unless $i_out[$n] != $bytes;
+					$config->{port_hist_i_out}[$n] = $bytes;
+					$i_out[$n] /= $delta_t;
+				}
+			}
+		}
+		close(IN);
+	}
+
+	for(my $n = 0; $n < $port->{max}; $n++) {
+		$rrdata .= ":$i_in[$n]:$i_out[$n]:$o_in[$n]:$o_out[$n]";
+	}
+
+	return $rrdata;
+}
 
 sub port_init {
 	my $myself = (caller(0))[3];
@@ -199,7 +324,9 @@ sub port_init {
 
 	$config->{port_hist_in} = ();
 	$config->{port_hist_out} = ();
+	$config->{port_hist_time} = ();
 	push(@{$config->{func_update}}, $package);
+	measure($myself, $config, $port); # Call to measuring routine to initialize the last values for calculating the differences. This way, the first update call will actually measure correct values.
 	logger("$myself: Ok") if $debug;
 }
 
@@ -209,119 +336,8 @@ sub port_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $port = $config->{port};
 
-	my @i_in;
-	my @i_out;
-	my @o_in;
-	my @o_out;
-	my $table = $config->{ip_default_table};
+	my $rrdata = measure($myself, $config, $port);
 
-	my $n;
-	my $rrdata = "N";
-
-	if($config->{os} eq "Linux") {
-		my @data;
-		my $l;
-		my $cmd;
-		my $cmd6;
-
-		$cmd = "iptables" . $config->{iptables_wait_lock};
-		$cmd6 = "ip6tables" . $config->{iptables_wait_lock};
-		open(IN, "$cmd -t $table -nxvL INPUT 2>/dev/null |");
-		@data = <IN>;
-		close(IN);
-		if(lc($config->{ipv6_disabled} || "") ne "y") {
-			open(IN, "$cmd6 -t $table -nxvL INPUT 2>/dev/null |");
-			push(@data, <IN>);
-			close(IN);
-		}
-		for($l = 0; $l < scalar(@data); $l++) {
-			for($n = 0; $n < $port->{max}; $n++) {
-				$i_in[$n] = 0 unless $i_in[$n];
-				$o_in[$n] = 0 unless $o_in[$n];
-				if($data[$l] =~ / monitorix_IN_$n /) {
-					my (undef, $bytes) = split(' ', $data[$l]);
-					chomp($bytes);
-					$i_in[$n] = $bytes - ($config->{port_hist_i_in}[$n] || 0);
-					$i_in[$n] = 0 unless $i_in[$n] != $bytes;
-					$config->{port_hist_i_in}[$n] = $bytes;
-					$i_in[$n] /= 60;
-				}
-				if($data[$l] =~ / monitorix_OUT_$n /) {
-					my (undef, $bytes) = split(' ', $data[$l]);
-					chomp($bytes);
-					$o_in[$n] = $bytes - ($config->{port_hist_o_in}[$n] || 0);
-					$o_in[$n] = 0 unless $o_in[$n] != $bytes;
-					$config->{port_hist_o_in}[$n] = $bytes;
-					$o_in[$n] /= 60;
-				}
-			}
-		}
-		open(IN, "$cmd -t $table -nxvL OUTPUT 2>/dev/null |");
-		@data = <IN>;
-		close(IN);
-		if(lc($config->{ipv6_disabled} || "") ne "y") {
-			open(IN, "$cmd6 -t $table -nxvL OUTPUT 2>/dev/null |");
-			push(@data, <IN>);
-			close(IN);
-		}
-		for($l = 0; $l < scalar(@data); $l++) {
-			for($n = 0; $n < $port->{max}; $n++) {
-				$o_out[$n] = 0 unless $o_out[$n];
-				$i_out[$n] = 0 unless $i_out[$n];
-				if($data[$l] =~ / monitorix_OUT_$n /) {
-					my (undef, $bytes) = split(' ', $data[$l]);
-					chomp($bytes);
-					$o_out[$n] = $bytes - ($config->{port_hist_o_out}[$n] || 0);
-					$o_out[$n] = 0 unless $o_out[$n] != $bytes;
-					$config->{port_hist_o_out}[$n] = $bytes;
-					$o_out[$n] /= 60;
-				}
-				if($data[$l] =~ / monitorix_IN_$n /) {
-					my (undef, $bytes) = split(' ', $data[$l]);
-					chomp($bytes);
-					$i_out[$n] = $bytes - ($config->{port_hist_i_out}[$n] || 0);
-					$i_out[$n] = 0 unless $i_out[$n] != $bytes;
-					$config->{port_hist_i_out}[$n] = $bytes;
-					$i_out[$n] /= 60;
-				}
-			}
-		}
-	}
-	if(grep {$_ eq $config->{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
-		my @pl = split(',', $port->{list});
-		open(IN, "ipfw show $port->{rule} 2>/dev/null |");
-		while(<IN>) {
-			for($n = 0; $n < $port->{max}; $n++) {
-				$i_in[$n] = 0 unless $i_in[$n];
-				$o_in[$n] = 0 unless $o_in[$n];
-				$pl[$n] = trim($pl[$n]);
-				my ($np) = ($pl[$n] =~ m/^(\d+).*?/);
-				if(/ from any to me dst-port $np$/) {
-					my (undef, undef, $bytes) = split(' ', $_);
-					chomp($bytes);
-					$i_in[$n] = $bytes - ($config->{port_hist_i_in}[$n] || 0);
-					$i_in[$n] = 0 unless $i_in[$n] != $bytes;
-					$config->{port_hist_i_in}[$n] = $bytes;
-					$i_in[$n] /= 60;
-				}
-				$o_out[$n] = 0 unless $o_out[$n];
-				$i_out[$n] = 0 unless $i_out[$n];
-				if(/ from me $np to any$/) {
-					my (undef, undef, $bytes) = split(' ', $_);
-					chomp($bytes);
-					$i_out[$n] = $bytes - ($config->{port_hist_i_out}[$n] || 0);
-					$i_out[$n] = 0 unless $i_out[$n] != $bytes;
-					$config->{port_hist_i_out}[$n] = $bytes;
-					$i_out[$n] /= 60;
-				}
-			}
-		}
-		close(IN);
-	}
-
-	for($n = 0; $n < $port->{max}; $n++) {
-		$rrdata .= ":$i_in[$n]:$i_out[$n]:$o_in[$n]:$o_out[$n]";
-	}
 	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;
 	my $err = RRDs::error;
