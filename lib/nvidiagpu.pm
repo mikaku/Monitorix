@@ -191,7 +191,7 @@ sub nvidiagpu_update {
 					if(scalar(@tmp) > 1) { # To catch missing devices
 						for(my $n_sensor = 0; $n_sensor < scalar(@tmp); $n_sensor += 1) {
 							my $val = trim($tmp[$n_sensor]);
-							if($val ne "N/A") {
+							if($val !~ /N\/A/) {
 								if(substr($val, 0, 1) eq "P") {
 									$val = substr($val, 1);
 								}
