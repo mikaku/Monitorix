@@ -296,6 +296,7 @@ sub du_cgi {
 	}
 
 	$title = !$silent ? $title : "";
+	my $gap_on_all_nan = lc($du->{gap_on_all_nan} || "") eq "y" ? 1 : 0;
 	my @disk_list = split(',', $du->{list});
 
 	# text mode
@@ -447,7 +448,7 @@ sub du_cgi {
 				push(@DEF0, "DEF:d7=$rrd:du" . $n . "_d7:AVERAGE");
 				push(@DEF0, "DEF:d8=$rrd:du" . $n . "_d8:AVERAGE");
 				push(@DEF0, "DEF:d9=$rrd:du" . $n . "_d9:AVERAGE");
-				push(@CDEF0, "CDEF:allvalues=d1,d2,d3,d4,d5,d6,d7,d8,d9,+,+,+,+,+,+,+,+");
+				push(@CDEF0, ($gap_on_all_nan ? "CDEF:allvalues=d1,UN,0,1,IF,d2,UN,0,1,IF,d3,UN,0,1,IF,d4,UN,0,1,IF,d5,UN,0,1,IF,d6,UN,0,1,IF,d7,UN,0,1,IF,d8,UN,0,1,IF,d9,UN,0,1,IF,+,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=d1,d2,d3,d4,d5,d6,d7,d8,d9,+,+,+,+,+,+,+,+"));
 			# default type is 'bytes'
 			} else {
 				$type_label = "bytes";
@@ -460,7 +461,7 @@ sub du_cgi {
 				push(@DEF0, "DEF:dk7=$rrd:du" . $n . "_d7:AVERAGE");
 				push(@DEF0, "DEF:dk8=$rrd:du" . $n . "_d8:AVERAGE");
 				push(@DEF0, "DEF:dk9=$rrd:du" . $n . "_d9:AVERAGE");
-				push(@CDEF0, "CDEF:allvalues=dk1,dk2,dk3,dk4,dk5,dk6,dk7,dk8,dk9,+,+,+,+,+,+,+,+");
+				push(@CDEF0, ($gap_on_all_nan ? "CDEF:allvalues=dk1,UN,0,1,IF,dk2,UN,0,1,IF,dk3,UN,0,1,IF,dk4,UN,0,1,IF,dk5,UN,0,1,IF,dk6,UN,0,1,IF,dk7,UN,0,1,IF,dk8,UN,0,1,IF,dk9,UN,0,1,IF,+,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=dk1,dk2,dk3,dk4,dk5,dk6,dk7,dk8,dk9,+,+,+,+,+,+,+,+"));
 				push(@CDEF0, "CDEF:d1=dk1,1024,*");
 				push(@CDEF0, "CDEF:d2=dk2,1024,*");
 				push(@CDEF0, "CDEF:d3=dk3,1024,*");
