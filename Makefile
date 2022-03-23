@@ -18,6 +18,7 @@ RM = rm -f
 RMD = rmdir
 SED = sed
 INSTALL = install -p
+BACKUP = -b
 INSTALL_PROGRAM = $(INSTALL) -m755
 INSTALL_DATA = $(INSTALL) -m644
 INSTALL_DIR = $(INSTALL) -d
@@ -58,7 +59,7 @@ install-bin:
 	$(INSTALL_DATA) css/white.css "$(DESTDIR)$(WWWDIR)/css/white.css"
 
 	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)/$(PN)"
-	$(INSTALL_DATA) $(PN).conf "$(DESTDIR)$(CONFDIR)/$(PN)/$(PN).conf"
+	$(INSTALL_DATA) $(BACKUP) $(PN).conf "$(DESTDIR)$(CONFDIR)/$(PN)/$(PN).conf"
 	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)/$(PN)/conf.d"
 
 	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)/logrotate.d/"
