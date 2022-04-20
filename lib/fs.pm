@@ -210,6 +210,164 @@ EOF
 	}
 }
 
+# This tries to find out the physical device name of each fs.
+sub get_device_name {
+	my ($myself, $config, $fs, $debug) = @_;
+
+	foreach my $k (sort keys %{$fs->{list}}) {
+		my @fsl = split(',', $fs->{list}->{$k});
+		my $d;
+		foreach my $f (@fsl) {
+			$d = "";
+			$f = trim($f);
+			$d = $fs->{devmap}->{$f} if $fs->{devmap}->{$f};
+			next unless !$d;
+
+			if($f ne "swap") {
+				my $pid;
+				eval {
+					local $SIG{'ALRM'} = sub {
+						if($pid) {
+							logger("$myself: Timeout! Process with PID '$pid' still hung after $config->{timeout} secs. Killed.");
+							kill 9, $pid;
+						} else {
+							logger("$myself: WARNING: \$pid has no value ('$pid') in ALRM sighandler.");
+						}
+					};
+					alarm($config->{timeout});
+					$pid = open(IN, "df -P '$f' |");
+					while(<IN>) {
+						if(/ $f$/) {
+							($d) = split(' ', $_);
+							last;
+						}
+					}
+					close(IN);
+					alarm(0);
+					chomp($d);
+				};
+			}
+
+			if($config->{os} eq "Linux" && $config->{kernel} gt "2.4") {
+				my $lvm;
+				my $lvm_disk;
+				my $is_md;
+				my $found;
+
+				if($f eq "swap") {
+					$d = `cat /proc/swaps | tail -1 | awk -F " " '{ print \$1 }'`;
+					chomp($d);
+				}
+
+				# check for device names using symbolic links
+				# e.g. /dev/disk/by-uuid/db312d12-0da6-44e5-a354-4c82118f4b66
+				if(-l $d) {
+					$d = abs_path(dirname($d) . "/" . readlink($d));
+					chomp($d);
+				}
+
+				# get the major and minor of $d
+				my $rdev = (stat($d))[6];
+				if(!$rdev) {
+					logger("$myself: Unable to detect the device name of '$f', I/O stats won't be shown in graph. If this is really a mount point then consider using <devmap> to map it manually to a device name.");
+					next;
+				}
+				my $minor = $rdev % 256;
+				my $major = int($rdev / 256);
+
+				# do exists in /proc/diskstats?
+				if($found = is_in_diskstats($d, $major, $minor)) {
+					$d = $found;
+					$fs->{devmap}->{$f} = $d;
+					logger("$myself: Detected physical device name for $f in '$d'.") if $debug;
+					next;
+				}
+
+				logger("$myself: Unable to find major/minor in /proc/diskstats.") if $debug;
+
+				# check if device is using EVMS <http://evms.sourceforge.net/>
+				if($d =~ m/\/dev\/evms\//) {
+					$d = `evms_query disks $d`;
+					if($found = is_in_diskstats($d)) {
+						$d = $found;
+						$fs->{devmap}->{$f} = $d;
+						logger("$myself: Detected physical device name for $f in '$d'.") if $debug;
+						next;
+					}
+				}
+
+				$d =~ s/^.*dev\///;	# remove the /dev/ prefix
+				$d =~ s/^.*mapper\///;	# remove the mapper/ prefix
+
+				# check if the device is under a crypt LUKS (encrypted fs)
+				my $dev;
+				if($dev = is_luks($d)) {
+					$d = $dev;
+				}
+
+				# do exists in /proc/diskstats?
+				if($found = is_in_diskstats($d)) {
+					$d = $found;
+					$fs->{devmap}->{$f} = $d;
+					logger("$myself: Detected physical device name for $f in '$d'.") if $debug;
+					next;
+				}
+
+				# check if the device is in a LVM
+				$lvm = $d;
+				$lvm =~ s/-.*//;
+				if($lvm ne $d) {	# probably LVM
+					if(system("pvs >/dev/null 2>&1") == 0 && $lvm) {
+						$lvm_disk = `pvs --noheadings | grep $lvm | tail -1 | awk -F " " '{ print \$1 }'`;
+						chomp($lvm_disk);
+						$lvm_disk =~ s/^.*dev\///;	# remove the /dev/ prefix
+						$lvm_disk =~ s/^.*mapper\///;	# remove the mapper/ prefix
+						if(!($lvm_disk =~ m/md/)) {
+							if($lvm_disk =~ m/cciss/) {
+								# LVM over a CCISS disk (/dev/cciss/c0d0)
+								$d = $lvm_disk;
+								chomp($d);
+							} elsif($dev = is_luks($lvm_disk)) {
+								$d = $dev;
+							} else {
+								# LVM over a direct disk (/dev/sda1)
+								$d = $lvm_disk;
+								chomp($d);
+							}
+						} else {
+							# LVM over Linux RAID combination (/dev/md1)
+							$d = $lvm_disk;
+							chomp($d);
+						}
+					}
+				}
+			} elsif($config->{os} eq "FreeBSD" || $config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
+				if($f eq "swap") {
+					if($config->{os} eq "FreeBSD" || $config->{os} eq "NetBSD") {
+						$d = `swapinfo | tail -1 | awk -F " " '{ print \$1 }'`;
+						chomp($d);
+					}
+					if($config->{os} eq "OpenBSD") {
+						$d = `swapctl -l | tail -1 | awk -F " " '{ print \$1 }'`;
+						chomp($d);
+					}
+				}
+
+				# remove the /dev/ prefix
+				if ($d =~ s/^.*dev\///) {
+					# not ZFS; get the device name, eg ada0; md0; ad10
+					$d =~ s/^(\D+\d*)\D.*/$1/;
+				} else {
+					# Just take ZFS pool name
+					$d =~ s,^([^/]*)/.*,$1,;
+				}
+			}
+			$fs->{devmap}->{$f} = $d;
+			logger("$myself: Detected physical device name for $f in '$d'.") if $debug;
+		}
+	}
+}
+
 sub measure {
 	my ($myself, $config, $fs) = @_;
 	my $use_nan_for_missing_data = lc($fs->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
@@ -619,159 +777,12 @@ sub fs_init {
 		}
 	}
 
-	# This tries to find out the physical device name of each fs.
-	foreach my $k (sort keys %{$fs->{list}}) {
-		my @fsl = split(',', $fs->{list}->{$k});
-		my $d;
-		foreach my $f (@fsl) {
-			$d = "";
-			$f = trim($f);
-			$d = $fs->{devmap}->{$f} if $fs->{devmap}->{$f};
-			next unless !$d;
-
-			if($f ne "swap") {
-				my $pid;
-				eval {
-					local $SIG{'ALRM'} = sub {
-						if($pid) {
-							logger("$myself: Timeout! Process with PID '$pid' still hung after $config->{timeout} secs. Killed.");
-							kill 9, $pid;
-						} else {
-							logger("$myself: WARNING: \$pid has no value ('$pid') in ALRM sighandler.");
-						}
-					};
-					alarm($config->{timeout});
-					$pid = open(IN, "df -P '$f' |");
-					while(<IN>) {
-						if(/ $f$/) {
-							($d) = split(' ', $_);
-							last;
-						}
-					}
-					close(IN);
-					alarm(0);
-					chomp($d);
-				};
-			}
-
-			if($config->{os} eq "Linux" && $config->{kernel} gt "2.4") {
-				my $lvm;
-				my $lvm_disk;
-				my $is_md;
-				my $found;
-
-				if($f eq "swap") {
-					$d = `cat /proc/swaps | tail -1 | awk -F " " '{ print \$1 }'`;
-					chomp($d);
-				}
-
-				# check for device names using symbolic links
-				# e.g. /dev/disk/by-uuid/db312d12-0da6-44e5-a354-4c82118f4b66
-				if(-l $d) {
-					$d = abs_path(dirname($d) . "/" . readlink($d));
-					chomp($d);
-				}
-
-				# get the major and minor of $d
-				my $rdev = (stat($d))[6];
-				if(!$rdev) {
-					logger("$myself: Unable to detect the device name of '$f', I/O stats won't be shown in graph. If this is really a mount point then consider using <devmap> to map it manually to a device name.");
-					next;
-				}
-				my $minor = $rdev % 256;
-				my $major = int($rdev / 256);
-
-				# do exists in /proc/diskstats?
-				if($found = is_in_diskstats($d, $major, $minor)) {
-					$d = $found;
-					$fs->{devmap}->{$f} = $d;
-					logger("$myself: Detected physical device name for $f in '$d'.") if $debug;
-					next;
-				}
-
-				logger("$myself: Unable to find major/minor in /proc/diskstats.") if $debug;
-
-				# check if device is using EVMS <http://evms.sourceforge.net/>
-				if($d =~ m/\/dev\/evms\//) {
-					$d = `evms_query disks $d`;
-					if($found = is_in_diskstats($d)) {
-						$d = $found;
-						$fs->{devmap}->{$f} = $d;
-						logger("$myself: Detected physical device name for $f in '$d'.") if $debug;
-						next;
-					}
-				}
-
-				$d =~ s/^.*dev\///;	# remove the /dev/ prefix
-				$d =~ s/^.*mapper\///;	# remove the mapper/ prefix
-
-				# check if the device is under a crypt LUKS (encrypted fs)
-				my $dev;
-				if($dev = is_luks($d)) {
-					$d = $dev;
-				}
-
-				# do exists in /proc/diskstats?
-				if($found = is_in_diskstats($d)) {
-					$d = $found;
-					$fs->{devmap}->{$f} = $d;
-					logger("$myself: Detected physical device name for $f in '$d'.") if $debug;
-					next;
-				}
-
-				# check if the device is in a LVM
-				$lvm = $d;
-				$lvm =~ s/-.*//;
-				if($lvm ne $d) {	# probably LVM
-					if(system("pvs >/dev/null 2>&1") == 0 && $lvm) {
-						$lvm_disk = `pvs --noheadings | grep $lvm | tail -1 | awk -F " " '{ print \$1 }'`;
-						chomp($lvm_disk);
-						$lvm_disk =~ s/^.*dev\///;	# remove the /dev/ prefix
-						$lvm_disk =~ s/^.*mapper\///;	# remove the mapper/ prefix
-						if(!($lvm_disk =~ m/md/)) {
-							if($lvm_disk =~ m/cciss/) {
-								# LVM over a CCISS disk (/dev/cciss/c0d0)
-								$d = $lvm_disk;
-								chomp($d);
-							} elsif($dev = is_luks($lvm_disk)) {
-								$d = $dev;
-							} else {
-								# LVM over a direct disk (/dev/sda1)
-								$d = $lvm_disk;
-								chomp($d);
-							}
-						} else {
-							# LVM over Linux RAID combination (/dev/md1)
-							$d = $lvm_disk;
-							chomp($d);
-						}
-					}
-				}
-			} elsif($config->{os} eq "FreeBSD" || $config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
-				if($f eq "swap") {
-					if($config->{os} eq "FreeBSD" || $config->{os} eq "NetBSD") {
-						$d = `swapinfo | tail -1 | awk -F " " '{ print \$1 }'`;
-						chomp($d);
-					}
-					if($config->{os} eq "OpenBSD") {
-						$d = `swapctl -l | tail -1 | awk -F " " '{ print \$1 }'`;
-						chomp($d);
-					}
-				}
-
-				# remove the /dev/ prefix
-				if ($d =~ s/^.*dev\///) {
-					# not ZFS; get the device name, eg ada0; md0; ad10
-					$d =~ s/^(\D+\d*)\D.*/$1/;
-				} else {
-					# Just take ZFS pool name
-					$d =~ s,^([^/]*)/.*,$1,;
-				}
-			}
-			$fs->{devmap}->{$f} = $d;
-			logger("$myself: Detected physical device name for $f in '$d'.") if $debug;
-		}
+	# save the original values in <devmap>
+	foreach my $d (sort keys %{$fs->{devmap}}) {
+		$config->{fs_orig_devmap}->{$d} = $fs->{devmap}->{$d};
 	}
+
+	get_device_name($myself, $config, $fs, $debug);
 
 	# check for deprecated options
 	if($fs->{alerts}->{rootfs_enabled} || $fs->{alerts}->{rootfs_timeintvl} || $fs->{alerts}->{rootfs_threshold} || $fs->{alerts}->{rootfs_script}) {
@@ -817,6 +828,16 @@ sub fs_update {
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $fs = $config->{fs};
+
+	if(lc($fs->{has_removable_devices} || "") eq "y") {
+		undef($config->{fs}->{devmap});
+
+		# restore the original values from <devmap>
+		foreach my $d (sort keys %{$config->{fs_orig_devmap}}) {
+			$config->{fs}->{devmap}->{$d} = $config->{fs_orig_devmap}->{$d};
+		}
+		get_device_name($myself, $config, $fs, $debug);
+	}
 
 	my $rrdata = measure($myself, $config, $fs);
 
@@ -890,7 +911,7 @@ sub fs_cgi {
 	}
 
 	$title = !$silent ? $title : "";
-	my $gap_on_all_nan = lc($fs->{gap_on_all_nan} || "") eq "y" ? 1 : 0;
+
 
 	# text mode
 	#
@@ -1036,7 +1057,6 @@ sub fs_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
-		my $cdef_allvalues_fs = $gap_on_all_nan ? "CDEF:allvalues=fs0,UN,0,1,IF,fs1,UN,0,1,IF,fs2,UN,0,1,IF,fs3,UN,0,1,IF,fs4,UN,0,1,IF,fs5,UN,0,1,IF,fs6,UN,0,1,IF,fs7,UN,0,1,IF,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 4]",
 			"--title=$config->{graphs}->{_fs1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -1057,7 +1077,7 @@ sub fs_cgi {
 			"DEF:fs5=$rrd:fs" . $e . "_use5:AVERAGE",
 			"DEF:fs6=$rrd:fs" . $e . "_use6:AVERAGE",
 			"DEF:fs7=$rrd:fs" . $e . "_use7:AVERAGE",
-			$cdef_allvalues_fs,
+			"CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -1085,7 +1105,7 @@ sub fs_cgi {
 				"DEF:fs5=$rrd:fs" . $e . "_use5:AVERAGE",
 				"DEF:fs6=$rrd:fs" . $e . "_use6:AVERAGE",
 				"DEF:fs7=$rrd:fs" . $e . "_use7:AVERAGE",
-				$cdef_allvalues_fs,
+				"CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -1156,7 +1176,6 @@ sub fs_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		my $cdef_allvalues_ioa = $gap_on_all_nan ? "CDEF:allvalues=ioa0,UN,0,1,IF,ioa1,UN,0,1,IF,ioa2,UN,0,1,IF,ioa3,UN,0,1,IF,ioa4,UN,0,1,IF,ioa5,UN,0,1,IF,ioa6,UN,0,1,IF,ioa7,UN,0,1,IF,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=ioa0,ioa1,ioa2,ioa3,ioa4,ioa5,ioa6,ioa7,+,+,+,+,+,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 4 + 1]",
 			"--title=$config->{graphs}->{_fs2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -1177,7 +1196,7 @@ sub fs_cgi {
 			"DEF:ioa5=$rrd:fs" . $e . "_ioa5:AVERAGE",
 			"DEF:ioa6=$rrd:fs" . $e . "_ioa6:AVERAGE",
 			"DEF:ioa7=$rrd:fs" . $e . "_ioa7:AVERAGE",
-			$cdef_allvalues_ioa,
+			"CDEF:allvalues=ioa0,ioa1,ioa2,ioa3,ioa4,ioa5,ioa6,ioa7,+,+,+,+,+,+,+",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -1205,7 +1224,7 @@ sub fs_cgi {
 				"DEF:ioa5=$rrd:fs" . $e . "_ioa5:AVERAGE",
 				"DEF:ioa6=$rrd:fs" . $e . "_ioa6:AVERAGE",
 				"DEF:ioa7=$rrd:fs" . $e . "_ioa7:AVERAGE",
-				$cdef_allvalues_ioa,
+				"CDEF:allvalues=ioa0,ioa1,ioa2,ioa3,ioa4,ioa5,ioa6,ioa7,+,+,+,+,+,+,+",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -1273,7 +1292,6 @@ sub fs_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
-		my $cdef_allvalues_ino = $gap_on_all_nan ? "CDEF:allvalues=fs0,UN,0,1,IF,fs1,UN,0,1,IF,fs2,UN,0,1,IF,fs3,UN,0,1,IF,fs4,UN,0,1,IF,fs5,UN,0,1,IF,fs6,UN,0,1,IF,fs7,UN,0,1,IF,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 4 + 2]",
 			"--title=$config->{graphs}->{_fs3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -1294,7 +1312,7 @@ sub fs_cgi {
 			"DEF:fs5=$rrd:fs" . $e . "_ino5:AVERAGE",
 			"DEF:fs6=$rrd:fs" . $e . "_ino6:AVERAGE",
 			"DEF:fs7=$rrd:fs" . $e . "_ino7:AVERAGE",
-			$cdef_allvalues_ino,
+			"CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+",
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -1322,7 +1340,7 @@ sub fs_cgi {
 				"DEF:fs5=$rrd:fs" . $e . "_ino5:AVERAGE",
 				"DEF:fs6=$rrd:fs" . $e . "_ino6:AVERAGE",
 				"DEF:fs7=$rrd:fs" . $e . "_ino7:AVERAGE",
-				$cdef_allvalues_ino,
+				"CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+",
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -1428,7 +1446,6 @@ sub fs_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
-		my $cdef_allvalues_tim = $gap_on_all_nan ? "CDEF:allvalues=tim0,UN,0,1,IF,tim1,UN,0,1,IF,tim2,UN,0,1,IF,tim3,UN,0,1,IF,tim4,UN,0,1,IF,tim5,UN,0,1,IF,tim6,UN,0,1,IF,tim7,UN,0,1,IF,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=tim0,tim1,tim2,tim3,tim4,tim5,tim6,tim7,+,+,+,+,+,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 4 + 3]",
 			"--title=$graph_title",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -1449,7 +1466,7 @@ sub fs_cgi {
 			"DEF:tim5=$rrd:fs" . $e . "_tim5:AVERAGE",
 			"DEF:tim6=$rrd:fs" . $e . "_tim6:AVERAGE",
 			"DEF:tim7=$rrd:fs" . $e . "_tim7:AVERAGE",
-			$cdef_allvalues_tim,
+			"CDEF:allvalues=tim0,tim1,tim2,tim3,tim4,tim5,tim6,tim7,+,+,+,+,+,+,+",
 			"CDEF:stim0=tim0,1000,/",
 			"CDEF:stim1=tim1,1000,/",
 			"CDEF:stim2=tim2,1000,/",
@@ -1485,7 +1502,7 @@ sub fs_cgi {
 				"DEF:tim5=$rrd:fs" . $e . "_tim5:AVERAGE",
 				"DEF:tim6=$rrd:fs" . $e . "_tim6:AVERAGE",
 				"DEF:tim7=$rrd:fs" . $e . "_tim7:AVERAGE",
-				$cdef_allvalues_tim,
+				"CDEF:allvalues=tim0,tim1,tim2,tim3,tim4,tim5,tim6,tim7,+,+,+,+,+,+,+",
 				"CDEF:stim0=tim0,1000,/",
 				"CDEF:stim1=tim1,1000,/",
 				"CDEF:stim2=tim2,1000,/",
