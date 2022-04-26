@@ -429,6 +429,18 @@ sub mail_update {
 						# There one line per spf check, so it gets here, we'll consider it is a softfail
 						$spf_softfail++;
 					}
+				# amavis Module Mail::SPF
+				} elsif(/policyd-spf/) {
+					if(/: Pass/) {
+						$spf_pass++;
+					} elsif(/: None/ || / SPF skipped/) {
+						$spf_none++;
+					} elsif(/ 550 /) {
+						$spf_fail++;
+					} else {
+						# /: Softfail/ or anything else, so consider as a soft fail
+						$spf_softfail++;
+					}
 				# for other SPF handlers (smf-spf)
 				} else {
 					if(/ SPF none/) {
