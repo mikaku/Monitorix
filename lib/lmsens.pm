@@ -673,17 +673,18 @@ sub lmsens_cgi {
 		push(@output, main::graph_header($title, 2));
 	}
 	@riglim = @{setup_riglim($rigid[0], $limit[0])};
-	for($n = 0; $n < 4; $n++) {
-		for($n2 = $n; $n2 < 16; $n2 += 4) {
-			$str = "core" . $n2;
-			if($lmsens->{list}->{$str}) {
-				$str = $lmsens->{desc}->{$str} ? sprintf("%7s", substr($lmsens->{desc}->{$str}, 0, 7)) : sprintf("Core %2d", $n2);
-				push(@tmp, "LINE2:core_$n2" . $LC[$n2] . ":$str\\g");
-				push(@tmp, "GPRINT:core_$n2:LAST:\\:%3.0lf      ");
+	for($n2 = 0; $n2 < 16; $n2++) {
+		$str = "core" . $n2;
+		if($lmsens->{list}->{$str}) {
+			$str = $lmsens->{desc}->{$str} ? sprintf("%7s", substr($lmsens->{desc}->{$str}, 0, 7)) : sprintf("Core %2d", $n2);
+			push(@tmp, "LINE2:core_$n2" . $LC[$n2] . ":$str\\g");
+			push(@tmp, "GPRINT:core_$n2:LAST:\\:%3.0lf      ");
+			if(!(($n2 + 1) % 4)) {
+				push(@tmp, "COMMENT: \\n");
 			}
 		}
-		push(@tmp, "COMMENT: \\n") unless !@tmp;
 	}
+	push(@tmp, "COMMENT: \\n") unless !@tmp;
 	for($n = 0; $n < 16; $n++) {
 		$str = "core" . $n;
 		if($lmsens->{list}->{$str}) {
