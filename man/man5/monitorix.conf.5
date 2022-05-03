@@ -2713,6 +2713,13 @@ This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option 
 .P
 Default value: \fIn\fP
 .RE
+.P
+.BI has_removable_devices
+.RS
+This option, when enabled via \fIy\fP, solves the problem with those hotpluggable devices that were offline when Monitorix was started, and later when they went online Monitorix don't know their device names and do not appear in the I/O statistics graphs, unless you restart Monitorix. So, when this option is enabled Monitorix will re-check the devices on every update.
+.P
+Default value: \fIn\fP
+.RE
 .SS ZFS statistics (zfs.pm)
 This graph is able to monitor an unlimited number of pools.
 .P
