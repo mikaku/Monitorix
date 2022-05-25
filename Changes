@@ -18,6 +18,13 @@ N.NN.N - DD-MMM-YYYY
 - Added more accuracy when measuring the time elapsed between updates, instead
   of assuming always 60 seconds (in 'fs.pm', 'libvirt.pm', 'net.pm', 'port.pm'
   and 'process.pm'). [#407]
+- Added some graph enhancements in 'nut.pm'. [#409]
+- Added the option 'gap_on_all_nan' in 'du.pm' and 'fs.pm'. [#417]
+- Added the new option 'has_removable_devices' (disabled by default) in 'fs.pm'
+  to recalculate the device name of each filesystem on every update. [#418]
+- Added support for AMaViS Module Mail::SPF. [#419]
+- Included more NVIDIA variants of 'N/A' in 'nvidiagpu.pm'. [#415]
+- Changed to '/usr/bin/vcgencmd' the default path in 'monitorix.conf'. [#420]
 - Fixed an error in 'pgsql.pm' if a non-privileged user is used to read the
   statistics. [#384]
 - Fixed the amdgpu section in 'monitorix.conf'. [#385]
@@ -29,6 +36,9 @@ N.NN.N - DD-MMM-YYYY
 - Fixed the extra padding in 'ipmi.pm' and 'du.pm'. [#392]
 - Fixed the CSS theming support in the bottom of some graphs. [#405]
 - Fixed graphs layout when using more than one server in 'chrony.pm'. [#408]
+- Fixed the legend alignment in 'nvidiagpu.pm' and 'amdgpu.pm'. [#411]
+- Fixed Makefile to do a backup of 'monitorix.conf'. [#414]
+- Fixed to match the values in the zoom graph of cores in 'lmsens.pm'.
 - Small fixes and cosmetic changes.
 
 
