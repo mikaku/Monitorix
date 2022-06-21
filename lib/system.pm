@@ -689,7 +689,7 @@ sub system_cgi {
 		push(@tmp, "AREA:m_minac#448844:Inactive");
 		push(@tmp, "LINE2:m_minac#008800");
 		push(@tmp, "LINE2:m_macti#E29136");
-		push(@tmp, "LINE2:m_mbuff#888888");
+		push(@tmp, "LINE2:m_mbuff#CCCCCC");
 		push(@tmp, "LINE2:m_mcach#00EE00");
 		push(@tmp, "LINE2:m_mused#EE0000");
 	} elsif($config->{os} eq "OpenBSD" || $config->{os} eq "NetBSD") {
