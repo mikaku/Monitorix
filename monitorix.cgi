@@ -580,7 +580,7 @@ if($mode eq "localhost") {
 	my @writers;	# array of file descriptors
 	my $children = 0;
 
-	my $lockfile_handler = lockfile_handler(\%config);
+	my $lockfile_handler = lockfile_handler(\%config) unless $ENV{INHIBIT_LOCKING};
 	global_flock($lockfile_handler, LOCK_SH);
 	foreach (split(',', $config{graph_name})) {
 		my $gn = trim($_);

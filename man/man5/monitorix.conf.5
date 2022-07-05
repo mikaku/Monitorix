@@ -171,7 +171,7 @@ Default value: \fIy\fP
 .P
 .BI enable_rrd_lock
 .RS
-This option will synchronise the rrd file access by creating the file \fI/tmp/monitorix.lock\fP and use it via flock.
+This option will synchronise the rrd file access by creating the file \fI/tmp/monitorix.lock\fP and use it via flock. The read lock during the cgi call can be disabled on a per call basis via setting the environment variable \fIINHIBIT_LOCKING\fP. This is useful for modules that call the cgi function internally.
 .P
 Default value: \fIn\fP
 .RE
