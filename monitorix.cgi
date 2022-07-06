@@ -381,19 +381,17 @@ if(!$config{theme}->{$color}) {
 	$config{theme}->{$color}->{gap} = "000000";
 }
 
-if($color eq "black") {
-	push(@{$colors{graph_colors}}, "--color=CANVAS#" . $config{theme}->{$color}->{canvas});
-	push(@{$colors{graph_colors}}, "--color=BACK#" . $config{theme}->{$color}->{back});
-	push(@{$colors{graph_colors}}, "--color=FONT#" . $config{theme}->{$color}->{font});
-	push(@{$colors{graph_colors}}, "--color=MGRID#" . $config{theme}->{$color}->{mgrid});
-	push(@{$colors{graph_colors}}, "--color=GRID#" . $config{theme}->{$color}->{grid});
-	push(@{$colors{graph_colors}}, "--color=FRAME#" . $config{theme}->{$color}->{frame});
-	push(@{$colors{graph_colors}}, "--color=ARROW#" . $config{theme}->{$color}->{arrow});
-	push(@{$colors{graph_colors}}, "--color=SHADEA#" . $config{theme}->{$color}->{shadea});
-	push(@{$colors{graph_colors}}, "--color=SHADEB#" . $config{theme}->{$color}->{shadeb});
-	push(@{$colors{graph_colors}}, "--color=AXIS#" . $config{theme}->{$color}->{axis})
-		if defined($config{theme}->{$color}->{axis});
-}
+push(@{$colors{graph_colors}}, "--color=CANVAS#" . $config{theme}->{$color}->{canvas}) if defined($config{theme}->{$color}->{canvas});
+push(@{$colors{graph_colors}}, "--color=BACK#" . $config{theme}->{$color}->{back}) if defined($config{theme}->{$color}->{back});
+push(@{$colors{graph_colors}}, "--color=FONT#" . $config{theme}->{$color}->{font}) if defined($config{theme}->{$color}->{font});
+push(@{$colors{graph_colors}}, "--color=MGRID#" . $config{theme}->{$color}->{mgrid}) if defined($config{theme}->{$color}->{mgrid});
+push(@{$colors{graph_colors}}, "--color=GRID#" . $config{theme}->{$color}->{grid}) if defined($config{theme}->{$color}->{grid});
+push(@{$colors{graph_colors}}, "--color=FRAME#" . $config{theme}->{$color}->{frame}) if defined($config{theme}->{$color}->{frame});
+push(@{$colors{graph_colors}}, "--color=ARROW#" . $config{theme}->{$color}->{arrow}) if defined($config{theme}->{$color}->{arrow});
+push(@{$colors{graph_colors}}, "--color=SHADEA#" . $config{theme}->{$color}->{shadea}) if defined($config{theme}->{$color}->{shadea});
+push(@{$colors{graph_colors}}, "--color=SHADEB#" . $config{theme}->{$color}->{shadeb}) if defined($config{theme}->{$color}->{shadeb});
+push(@{$colors{graph_colors}}, "--color=AXIS#" . $config{theme}->{$color}->{axis}) if defined($config{theme}->{$color}->{axis});
+
 $colors{bg_color} = $config{theme}->{$color}->{main_bg};
 $colors{fg_color} = $config{theme}->{$color}->{main_fg};
 $colors{title_bg_color} = $config{theme}->{$color}->{title_bg};
