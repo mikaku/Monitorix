@@ -63,6 +63,10 @@ th, td {
     font-family: Verdana, sans-serif;
     color: #888800;
 }
+
+.td-title a {
+    color: #888800;
+}
  
 .td-valign-top {
     vertical-align: top;
