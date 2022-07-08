@@ -167,14 +167,16 @@ sub http_header {
 	print "Server: Monitorix HTTP Server\r\n";
 	print "Connection: close\r\n";
 
-	if($mimetype =~ m/(html|cgi)/) {
-		print "Content-Type: text/html; charset=UTF-8\r\n";
-	} elsif($mimetype eq "css") {
-		print "Content-Type: text/css; charset=UTF-8\r\n";
-	} elsif($mimetype eq "svg") {
-		print "Content-Type: image/svg+xml; charset=UTF-8\r\n";
-	} else {
-		print "Content-Type: image/$mimetype;\r\n";
+	if (defined($mimetype)) {
+		if($mimetype =~ m/(html|cgi)/) {
+			print "Content-Type: text/html; charset=UTF-8\r\n";
+		} elsif($mimetype eq "css") {
+			print "Content-Type: text/css; charset=UTF-8\r\n";
+		} elsif($mimetype eq "svg") {
+			print "Content-Type: image/svg+xml; charset=UTF-8\r\n";
+		} else {
+			print "Content-Type: image/$mimetype;\r\n";
+		}
 	}
 
 	print "\r\n";
