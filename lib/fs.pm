@@ -911,7 +911,7 @@ sub fs_cgi {
 	}
 
 	$title = !$silent ? $title : "";
-
+	my $gap_on_all_nan = lc($fs->{gap_on_all_nan} || "") eq "y" ? 1 : 0;
 
 	# text mode
 	#
@@ -1057,6 +1057,7 @@ sub fs_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
+		my $cdef_allvalues_fs = $gap_on_all_nan ? "CDEF:allvalues=fs0,UN,0,1,IF,fs1,UN,0,1,IF,fs2,UN,0,1,IF,fs3,UN,0,1,IF,fs4,UN,0,1,IF,fs5,UN,0,1,IF,fs6,UN,0,1,IF,fs7,UN,0,1,IF,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 4]",
 			"--title=$config->{graphs}->{_fs1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -1077,7 +1078,7 @@ sub fs_cgi {
 			"DEF:fs5=$rrd:fs" . $e . "_use5:AVERAGE",
 			"DEF:fs6=$rrd:fs" . $e . "_use6:AVERAGE",
 			"DEF:fs7=$rrd:fs" . $e . "_use7:AVERAGE",
-			"CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+",
+			$cdef_allvalues_fs,
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -1105,7 +1106,7 @@ sub fs_cgi {
 				"DEF:fs5=$rrd:fs" . $e . "_use5:AVERAGE",
 				"DEF:fs6=$rrd:fs" . $e . "_use6:AVERAGE",
 				"DEF:fs7=$rrd:fs" . $e . "_use7:AVERAGE",
-				"CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+",
+				$cdef_allvalues_fs,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -1176,6 +1177,7 @@ sub fs_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
+		my $cdef_allvalues_ioa = $gap_on_all_nan ? "CDEF:allvalues=ioa0,UN,0,1,IF,ioa1,UN,0,1,IF,ioa2,UN,0,1,IF,ioa3,UN,0,1,IF,ioa4,UN,0,1,IF,ioa5,UN,0,1,IF,ioa6,UN,0,1,IF,ioa7,UN,0,1,IF,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=ioa0,ioa1,ioa2,ioa3,ioa4,ioa5,ioa6,ioa7,+,+,+,+,+,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 4 + 1]",
 			"--title=$config->{graphs}->{_fs2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -1196,7 +1198,7 @@ sub fs_cgi {
 			"DEF:ioa5=$rrd:fs" . $e . "_ioa5:AVERAGE",
 			"DEF:ioa6=$rrd:fs" . $e . "_ioa6:AVERAGE",
 			"DEF:ioa7=$rrd:fs" . $e . "_ioa7:AVERAGE",
-			"CDEF:allvalues=ioa0,ioa1,ioa2,ioa3,ioa4,ioa5,ioa6,ioa7,+,+,+,+,+,+,+",
+			$cdef_allvalues_ioa,
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -1224,7 +1226,7 @@ sub fs_cgi {
 				"DEF:ioa5=$rrd:fs" . $e . "_ioa5:AVERAGE",
 				"DEF:ioa6=$rrd:fs" . $e . "_ioa6:AVERAGE",
 				"DEF:ioa7=$rrd:fs" . $e . "_ioa7:AVERAGE",
-				"CDEF:allvalues=ioa0,ioa1,ioa2,ioa3,ioa4,ioa5,ioa6,ioa7,+,+,+,+,+,+,+",
+				$cdef_allvalues_ioa,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -1292,6 +1294,7 @@ sub fs_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
+		my $cdef_allvalues_ino = $gap_on_all_nan ? "CDEF:allvalues=fs0,UN,0,1,IF,fs1,UN,0,1,IF,fs2,UN,0,1,IF,fs3,UN,0,1,IF,fs4,UN,0,1,IF,fs5,UN,0,1,IF,fs6,UN,0,1,IF,fs7,UN,0,1,IF,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 4 + 2]",
 			"--title=$config->{graphs}->{_fs3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -1312,7 +1315,7 @@ sub fs_cgi {
 			"DEF:fs5=$rrd:fs" . $e . "_ino5:AVERAGE",
 			"DEF:fs6=$rrd:fs" . $e . "_ino6:AVERAGE",
 			"DEF:fs7=$rrd:fs" . $e . "_ino7:AVERAGE",
-			"CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+",
+			$cdef_allvalues_ino,
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -1340,7 +1343,7 @@ sub fs_cgi {
 				"DEF:fs5=$rrd:fs" . $e . "_ino5:AVERAGE",
 				"DEF:fs6=$rrd:fs" . $e . "_ino6:AVERAGE",
 				"DEF:fs7=$rrd:fs" . $e . "_ino7:AVERAGE",
-				"CDEF:allvalues=fs0,fs1,fs2,fs3,fs4,fs5,fs6,fs7,+,+,+,+,+,+,+",
+				$cdef_allvalues_ino,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -1446,6 +1449,7 @@ sub fs_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
+		my $cdef_allvalues_tim = $gap_on_all_nan ? "CDEF:allvalues=tim0,UN,0,1,IF,tim1,UN,0,1,IF,tim2,UN,0,1,IF,tim3,UN,0,1,IF,tim4,UN,0,1,IF,tim5,UN,0,1,IF,tim6,UN,0,1,IF,tim7,UN,0,1,IF,+,+,+,+,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=tim0,tim1,tim2,tim3,tim4,tim5,tim6,tim7,+,+,+,+,+,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 4 + 3]",
 			"--title=$graph_title",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -1466,7 +1470,7 @@ sub fs_cgi {
 			"DEF:tim5=$rrd:fs" . $e . "_tim5:AVERAGE",
 			"DEF:tim6=$rrd:fs" . $e . "_tim6:AVERAGE",
 			"DEF:tim7=$rrd:fs" . $e . "_tim7:AVERAGE",
-			"CDEF:allvalues=tim0,tim1,tim2,tim3,tim4,tim5,tim6,tim7,+,+,+,+,+,+,+",
+			$cdef_allvalues_tim,
 			"CDEF:stim0=tim0,1000,/",
 			"CDEF:stim1=tim1,1000,/",
 			"CDEF:stim2=tim2,1000,/",
@@ -1502,7 +1506,7 @@ sub fs_cgi {
 				"DEF:tim5=$rrd:fs" . $e . "_tim5:AVERAGE",
 				"DEF:tim6=$rrd:fs" . $e . "_tim6:AVERAGE",
 				"DEF:tim7=$rrd:fs" . $e . "_tim7:AVERAGE",
-				"CDEF:allvalues=tim0,tim1,tim2,tim3,tim4,tim5,tim6,tim7,+,+,+,+,+,+,+",
+				$cdef_allvalues_tim,
 				"CDEF:stim0=tim0,1000,/",
 				"CDEF:stim1=tim1,1000,/",
 				"CDEF:stim2=tim2,1000,/",
