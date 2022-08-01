@@ -56,35 +56,34 @@ sub emailreports_send {
 
 	my $html = <<"EOF";
 <html>
-  <body bgcolor='FFFFFF' vlink='#888888' link='#888888'>
-  <table cellspacing='5' cellpadding='0' bgcolor='CCCCCC' border='1'>
+  <head>
+  <style>
+EOF
+
+	open(IN, "$config->{base_dir}/css/white.css");
+	while(<IN>) { $html .= $_; }
+	close(IN);
+
+	$html .= <<"EOF";
+  </style>
+  </head>
+  <table class='cgi-header-table'>
   <tr>
-  <td bgcolor='777777'>
-  <font face='Verdana, sans-serif' color='CCCC00'>
-    <font size='5'><b>&nbsp;&nbsp;Host:&nbsp;<b></font>
-  </font>
-  </td>
-  <td bgcolor='FFFFFF'>
-  <font face='Verdana, sans-serif' color='000000'>
-    <font size='5'><b>&nbsp;&nbsp;$hostname&nbsp;&nbsp;</b></font>
-  </font>
-  </td>
-  <td bgcolor='777777'>
-  <font face='Verdana, sans-serif' color='CCCC00'>
-    <font size='5'><b>&nbsp;&nbsp;$report&nbsp;&nbsp;<b></font>
-  </font>
-  </td>
+     <th class='td-title'><b>&nbsp;&nbsp;Host:&nbsp;</b></th>
+     <td class='td-title-host'>
+       <b>&nbsp;&nbsp;$hostname&nbsp;&nbsp;</b>
+     </td>
+     <td class='td-title' ><b>&nbsp;&nbsp;$report&nbsp;&nbsp;</b></td>
   </tr>
   </table>
   <br>
 EOF
+
 	my $html_footer = <<EOF;
-  <p>
+  <p class='text-copyright'>
   <a href='https://www.monitorix.org'><img src='cid:image_logo' border='0'></a>
   <br>
-  <font face='Verdana, sans-serif' color='000000' size='-2'>
-Copyright &copy; 2005-2022 Jordi Sanfeliu
-  </font>
+  Copyright &copy; 2005-2022 Jordi Sanfeliu
   </body>
 </html>
 EOF
@@ -157,19 +156,18 @@ EOF
 	# addendum data included in report
 	if($emailreports->{$report}->{addendum_script}) {
 		$html .= <<"EOF";
-<table cellspacing='5' cellpadding='0' width='100%' bgcolor='CCCCCC' border='1'>
- <tr>
-  <td bgcolor='777777'>
-   <font face='Verdana, sans-serif' color='CCCC00'>
-    <b>&nbsp;&nbsp;Addendum data&nbsp;<b>
-   </font>
-  </td>
- </tr>
- <tr>
-  <td bgcolor='FFFFFF'>
+  <table class='table-module' width='1'>
+  <tr>
+     <td class='td-title'><b>&nbsp;&nbsp;Addendum data&nbsp;</b></td>
+  </tr>
+  <tr>
+     <td class='td-addendum'>
+     <pre>
 EOF
+
 		$html .= `$emailreports->{$report}->{addendum_script}`;
 		$html .= "\n";
+		$html .= "  </pre>\n";
 		$html .= "  </td>\n";
 		$html .= " </tr>\n";
 		$html .= "</table>\n";
