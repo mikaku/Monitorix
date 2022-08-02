@@ -113,7 +113,7 @@ sub daemonize {
 
 sub usage {
 	print(STDERR << "EOF");
-Usage: monitorix -c configfile [-p pidfile] [-d none | graph[,graph] | all ] [-v] [-n] [-u] [-s splitpolicy]
+Usage: monitorix -c configfile [-p pidfile] [-d none | graph[,graph] | all ] [-v] [-n] [-u] [-s splitpolicy] [-e report=<report>,graphs=<graph>[,<graph>,...],to=<email>[,from=<email>]
 
 EOF
 	exit(1);
@@ -487,7 +487,7 @@ EOF
 
 # Main
 # ----------------------------------------------------------------------------
-getopts("c:p:d:vnus:", \%options) || usage();
+getopts("c:p:d:vnus:e:", \%options) || usage();
 
 if($options{v}) {
 	print("Monitorix version " . VERSION . " (" . RELDATE . ")\n");
@@ -661,6 +661,55 @@ if(!$config{use_external_firewall}) {
 	$config{use_external_firewall} = "n";
 }
 
+# one-shot for the 'emailreports' module
+if($options{e}) {
+	my $em_report;
+	my $em_graphs;
+	my $em_to;
+	my $em_when;
+
+	foreach (split(',', $options{e})) {
+		my $em = trim($_);
+		if($em =~ m/^report=(hourly|daily|weekly|monthly|yearly)$/) {
+			$em_report=$1;
+		}
+		if($em =~ m/^graphs=(\S+)$/) {
+			$em_graphs=$1;
+			$em_graphs =~ s/\+/\,/g;
+		}
+		if($em =~ m/^to=(\S+)$/) {
+			$em_to=$1;
+		}
+	}
+	die "Invalid or not defined time frame in 'report='." unless $em_report;
+	die "Unspecified graph names in 'graphs='." unless $em_graphs;
+	die "Unspecified destination email address in 'to='." unless $em_to;
+
+	my $emailreports = $config{emailreports};
+	$emailreports->{$em_report}->{graphs} = $em_graphs;
+	$emailreports->{$em_report}->{to} = $em_to;
+	my $d = "emailreports";
+	undef($d) if(!grep {trim($_) eq $d} (@{$config{debug}}));
+
+	eval "use emailreports qw(emailreports_send)";
+	if($@) {
+		die "WARNING: unable to load module 'emailreports'. $@";
+	}
+
+	$em_when = "1hour" if $em_report eq "hourly";
+	$em_when = "1day" if $em_report eq "daily";
+	$em_when = "1week" if $em_report eq "weekly";
+	$em_when = "1month" if $em_report eq "monthly";
+	$em_when = "1year" if $em_report eq "yearly";
+
+	eval { emailreports::emailreports_send(\%config, $em_report, $em_when, $d); };
+	if($@) {
+		logger("emailreports::emailreports_send(): $@");
+	}
+	logger("Done.");
+	exit(0);
+}
+
 # save the path of the configuration file
 if(open(OUT, "> " . $config{base_dir} . "/cgi/monitorix.conf.path")) {
 	print(OUT "$options{c}\n");
@@ -816,7 +865,7 @@ while(1) {
 			}
 		}
 
-		# Email Reports
+		# Scheduled Email Reports
 		if(lc($config{emailreports}->{enabled} || "") eq "y") {
 			my $emailreports = $config{emailreports};
 			my $m = $emailreports->{minute} || 0;
