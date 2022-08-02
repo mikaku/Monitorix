@@ -84,6 +84,12 @@ th, td {
     color: #cccc00;
 }
 
+.td-addendum {
+    background-color: #eeeeee;
+    font-family: Verdana, sans-serif;
+    color: #000000;
+}
+
 .text-title-date {
     font-family: Verdana, sans-serif;
     color: #888888;
