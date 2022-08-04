@@ -822,7 +822,7 @@ sub bind_cgi {
 	foreach (my @bl = split(',', $bind->{list})) {
 		my $l = trim($_);
 		if($e) {
-			push(@output, print("   <br>\n"));
+			push(@output, "   <br>\n");
 		}
 		if($title) {
 			push(@output, main::graph_header($title, 2));
