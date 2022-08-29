@@ -196,6 +196,7 @@ sub amdgpu_update {
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $amdgpu = $config->{amdgpu};
 	my $use_nan_for_missing_data = lc($amdgpu->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
+	my $respect_power_state = lc($amdgpu->{respect_power_state} || "") eq "y" ? 1 : 0;
 
 	my @sensors;
 
@@ -216,21 +217,44 @@ sub amdgpu_update {
 				my $str = trim($gpu_group[$n] || "");
 				my @sensor_names = split(',', $amdgpu->{sensors}->{$str});
 
-				for(my $i_sensor = 0; $i_sensor < $number_of_values_per_gpu_in_rrd; $i_sensor++) {
-					if ($i_sensor < scalar(@sensor_names)) {
-						my $sensor_name = $sensor_names[$i_sensor];
-						chomp($sensor_name);
-						$sensor_name = trim($sensor_name);
-						if ($sensor_name ne "") {
-							my $sensor_file = $sensor_name;
-							if(open(IN, $sensor_file)) {
+				my $gpu_in_d3_state = 0;
+				if ($respect_power_state) {
+					my $power_state_sensor_name = $amdgpu->{power_states}->{$str};
+					if (defined($power_state_sensor_name)) {
+						chomp($power_state_sensor_name);
+						$power_state_sensor_name = trim($power_state_sensor_name);
+						if ($power_state_sensor_name ne "") {
+							my $power_state_sensor_file = $power_state_sensor_name;
+							if(open(IN, $power_state_sensor_file)) {
 								my $val = <IN>;
 								close(IN);
-								$val = trim($val);
-								chomp($val);
-								$sensors[$i_sensor] = $val;
+								if (index(lc($val), lc("D3")) != -1) {
+									$gpu_in_d3_state = 1;
+								}
 							} else {
-								logger("$myself: ERROR: unable to open '$sensor_file'.");
+								logger("$myself: ERROR: unable to open power state sensor file '$power_state_sensor_file'.");
+							}
+						}
+					}
+				}
+
+				if (!$gpu_in_d3_state) {
+					for(my $i_sensor = 0; $i_sensor < $number_of_values_per_gpu_in_rrd; $i_sensor++) {
+						if ($i_sensor < scalar(@sensor_names)) {
+							my $sensor_name = $sensor_names[$i_sensor];
+							chomp($sensor_name);
+							$sensor_name = trim($sensor_name);
+							if ($sensor_name ne "") {
+								my $sensor_file = $sensor_name;
+								if(open(IN, $sensor_file)) {
+									my $val = <IN>;
+									close(IN);
+									$val = trim($val);
+									chomp($val);
+									$sensors[$i_sensor] = $val;
+								} else {
+									logger("$myself: ERROR: unable to open '$sensor_file'.");
+								}
 							}
 						}
 					}

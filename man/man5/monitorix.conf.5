@@ -2012,6 +2012,28 @@ This option, when enabled via \fIy\fP, combined with the \fIshow_gaps\fP option 
 .P
 Default value: \fIn\fP
 .RE
+.P
+.BI respect_power_state
+.RS
+This option, when enabled via \fIy\fP, will respect the AMD GPU D3 power state. Monitorix won't wake up a GPU in D3 power state to check the sensors values but skip it. The power state sensor has to be specified via the \fpower_states\fP option for each GPU that should be respected.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI power_states
+.RS
+This list complements the \fBrespect_power_state\fP option. You can specify the power_state sensor for each GPU that should not be woken up if in D3.
+.P
+.RS
+<power_states>
+.br
+	amd-w6800 = /dev/hwmon-w6800/device/power_state
+.br
+	amd-rx6900 = /dev/hwmon-rx6900/device/power_state
+.br
+</power_states>
+.RE
+.RE
 .SS NVIDIA GPU temperatures and usage (nvidiagpu.pm)
 This graph is able to monitor an unlimited number of Nvidia GPUs via \fInvidia-smi\fP.
 .P
