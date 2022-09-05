@@ -7,7 +7,7 @@
 .SH NAME
 monitorix - a lightweight system monitoring tool
 .SH SYNOPSIS
-\fBmonitorix\fR \fB-c\fR configfile [\fB-p\fR pidfile] [\fB-d\fR none | graph[,graph] | all] [\fB-v\fR] [\fB-n\fR] [\fB-u\fR] [\fB-s\fR splitpolicy]
+\fBmonitorix\fR \fB-c\fR configfile [\fB-p\fR pidfile] [\fB-d\fR none | graph[,graph] | all] [\fB-v\fR] [\fB-n\fR] [\fB-u\fR] [\fB-s\fR splitpolicy] [\fB-e\fR report=<timeframe>,graphs=<graph>[+graph][+graph...],to=<email>]
 .SH DESCRIPTION
 This Perl daemon starts the main Monitorix process, which gathers statistics about the system it is running on and stores this information in a set of RRD files.
 .SH OPTIONS
@@ -42,6 +42,15 @@ This option will force Monitorix to run under the regular user who started it. I
 .TP
 \fB\-s\fR \fIsplitpolicy\fR
 This option decides which part of a line in the config file will be the key and which one will be the value. The split policy accepts the values \fIguess\fP (which is the default), \fIwhitespace\fP (which causes the Monitorix to split by whitespace) and \fIequalsign\fP (which causes it to split strictly by equal sign).
+.TP
+\fB\-e\fR report=\fItimeframe\fR,graphs=\fIgraph\fR[\fI+graph\fR][\fI+graph\fR...],to=\fIemail\fR
+This option permits to send email reports unscheduled (i.e: at any time). You don't need to stop your current Monitorix instance, just execute a new one with the new parameter -e and once the job is done it will terminate itself, without affecting your current Monitorix instance. The following is an example of how to send an email report that includes the last day of \fIsystem\fR, \fIkernel\fR and \fIhptemp\fR graphs to the \fIuser@example.com\fR email address:
+.P
+.RS
+# monitorix -c </etc/monitorix/conf.d/local.conf> -e report=daily,graphs=system+kern+hptemp,to=user@example.com
+.P
+This option requires to have previously enabled the \fIemailreports\fR module.
+.RE
 .SH SIGNALS
 On receipt of a SIGHUP, \fBmonitorix\fP will close and reopen its log file (provided that it has a filename defined). This is useful in scripts which rotate and age log files.
 .P
