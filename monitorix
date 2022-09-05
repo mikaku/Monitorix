@@ -113,7 +113,7 @@ sub daemonize {
 
 sub usage {
 	print(STDERR << "EOF");
-Usage: monitorix -c configfile [-p pidfile] [-d none | graph[,graph] | all ] [-v] [-n] [-u] [-s splitpolicy] [-e report=<report>,graphs=<graph>[,<graph>,...],to=<email>[,from=<email>]
+Usage: monitorix -c configfile [-p pidfile] [-d none | graph[,graph] | all ] [-v] [-n] [-u] [-s splitpolicy] [-e report=<timeframe>,graphs=<graph>[,<graph>,...],to=<email>]
 
 EOF
 	exit(1);
