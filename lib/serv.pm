@@ -32,8 +32,10 @@ sub serv_init {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $serv = $config->{serv};
 
 	my $info;
+	my @ds;
 	my @rra;
 	my @tmp;
 	my $n;
@@ -46,11 +48,20 @@ sub serv_init {
 	if(-e $rrd) {
 		$info = RRDs::info($rrd);
 		for my $key (keys %$info) {
+			if(index($key, 'ds[') == 0) {
+				if(index($key, '.type') != -1) {
+					push(@ds, substr($key, 3, index($key, ']') - 3));
+				}
+			}
 			if(index($key, 'rra[') == 0) {
 				if(index($key, '.rows') != -1) {
 					push(@rra, substr($key, 4, index($key, ']') - 4));
 				}
 			}
+		}
+		if(scalar(@ds) / 32 != keys(%{$serv->{list}})) {
+			logger("$myself: Detected size mismatch between <list>...</list> (" . keys(%{$serv->{list}}) . ") and $rrd (" . scalar(@ds) / 32 . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
+			rename($rrd, "$rrd.bak");
 		}
 		if(scalar(@rra) < 12 + (4 * $config->{max_historic_years})) {
 			logger("$myself: Detected size mismatch between 'max_historic_years' (" . $config->{max_historic_years} . ") and $rrd (" . ((scalar(@rra) -12) / 4) . "). Resizing it accordingly. All historical data will be lost. Backup file created.");
@@ -66,41 +77,44 @@ sub serv_init {
 			push(@max, "RRA:MAX:0.5:1440:" . (365 * $n));
 			push(@last, "RRA:LAST:0.5:1440:" . (365 * $n));
 		}
+		for($n = 0; $n < keys(%{$serv->{list}}); $n++) {
+			push(@tmp, "DS:serv". $n . "_i_01:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_i_02:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_i_03:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_i_04:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_i_05:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_i_06:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_i_07:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_i_08:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_i_09:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_i_10:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_i_11:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_i_12:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_i_13:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_i_14:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_i_15:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_i_16:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_01:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_02:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_03:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_04:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_05:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_06:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_07:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_08:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_09:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_10:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_11:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_12:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_13:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_14:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_15:GAUGE:600:0:U");
+			push(@tmp, "DS:serv". $n . "_l_16:GAUGE:600:0:U");
+		}
 		eval {
 			RRDs::create($rrd,
 				"--step=300",
-				"DS:serv_i_ssh:GAUGE:600:0:U",
-				"DS:serv_i_ftp:GAUGE:600:0:U",
-				"DS:serv_i_telnet:GAUGE:600:0:U",
-				"DS:serv_i_imap:GAUGE:600:0:U",
-				"DS:serv_i_smb:GAUGE:600:0:U",
-				"DS:serv_i_fax:GAUGE:600:0:U",
-				"DS:serv_i_cups:GAUGE:600:0:U",
-				"DS:serv_i_pop3:GAUGE:600:0:U",
-				"DS:serv_i_smtp:GAUGE:600:0:U",
-				"DS:serv_i_spam:GAUGE:600:0:U",
-				"DS:serv_i_virus:GAUGE:600:0:U",
-				"DS:serv_i_f2b:GAUGE:600:0:U",
-				"DS:serv_i_val02:GAUGE:600:0:U",
-				"DS:serv_i_val03:GAUGE:600:0:U",
-				"DS:serv_i_val04:GAUGE:600:0:U",
-				"DS:serv_i_val05:GAUGE:600:0:U",
-				"DS:serv_l_ssh:GAUGE:600:0:U",
-				"DS:serv_l_ftp:GAUGE:600:0:U",
-				"DS:serv_l_telnet:GAUGE:600:0:U",
-				"DS:serv_l_imap:GAUGE:600:0:U",
-				"DS:serv_l_smb:GAUGE:600:0:U",
-				"DS:serv_l_fax:GAUGE:600:0:U",
-				"DS:serv_l_cups:GAUGE:600:0:U",
-				"DS:serv_l_pop3:GAUGE:600:0:U",
-				"DS:serv_l_smtp:GAUGE:600:0:U",
-				"DS:serv_l_spam:GAUGE:600:0:U",
-				"DS:serv_l_virus:GAUGE:600:0:U",
-				"DS:serv_l_f2b:GAUGE:600:0:U",
-				"DS:serv_l_val02:GAUGE:600:0:U",
-				"DS:serv_l_val03:GAUGE:600:0:U",
-				"DS:serv_l_val04:GAUGE:600:0:U",
-				"DS:serv_l_val05:GAUGE:600:0:U",
+				@tmp,
 				"RRA:AVERAGE:0.5:1:288",
 				"RRA:AVERAGE:0.5:6:336",
 				"RRA:AVERAGE:0.5:12:744",
@@ -132,6 +146,43 @@ sub serv_init {
 		}
 	}
 
+	# Since 3.15.0 all values have been renamed
+	RRDs::tune($rrd,
+		"--data-source-rename=serv_i_ssh:serv0_i_01",
+		"--data-source-rename=serv_i_ftp:serv0_i_02",
+		"--data-source-rename=serv_i_telnet:serv0_i_03",
+		"--data-source-rename=serv_i_imap:serv0_i_04",
+		"--data-source-rename=serv_i_smb:serv0_i_05",
+		"--data-source-rename=serv_i_fax:serv0_i_06",
+		"--data-source-rename=serv_i_cups:serv0_i_07",
+		"--data-source-rename=serv_i_pop3:serv0_i_08",
+		"--data-source-rename=serv_i_smtp:serv0_i_09",
+		"--data-source-rename=serv_i_spam:serv0_i_10",
+		"--data-source-rename=serv_i_virus:serv0_i_11",
+		"--data-source-rename=serv_i_f2b:serv0_i_12",
+		"--data-source-rename=serv_i_val02:serv0_i_13",
+		"--data-source-rename=serv_i_val03:serv0_i_14",
+		"--data-source-rename=serv_i_val04:serv0_i_15",
+		"--data-source-rename=serv_i_val05:serv0_i_16",
+
+		"--data-source-rename=serv_l_ssh:serv0_l_01",
+		"--data-source-rename=serv_l_ftp:serv0_l_02",
+		"--data-source-rename=serv_l_telnet:serv0_l_03",
+		"--data-source-rename=serv_l_imap:serv0_l_04",
+		"--data-source-rename=serv_l_smb:serv0_l_05",
+		"--data-source-rename=serv_l_fax:serv0_l_06",
+		"--data-source-rename=serv_l_cups:serv0_l_07",
+		"--data-source-rename=serv_l_pop3:serv0_l_08",
+		"--data-source-rename=serv_l_smtp:serv0_l_09",
+		"--data-source-rename=serv_l_spam:serv0_l_10",
+		"--data-source-rename=serv_l_virus:serv0_l_11",
+		"--data-source-rename=serv_l_f2b:serv0_l_12",
+		"--data-source-rename=serv_l_val02:serv0_l_13",
+		"--data-source-rename=serv_l_val03:serv0_l_14",
+		"--data-source-rename=serv_l_val04:serv0_l_15",
+		"--data-source-rename=serv_l_val05:serv0_l_16",
+	);
+
 	$config->{serv_hist} = ();
 	push(@{$config->{func_update}}, $package);
 	logger("$myself: Ok") if $debug;
@@ -141,486 +192,139 @@ sub serv_update {
 	my $myself = (caller(0))[3];
 	my ($package, $config, $debug) = @_;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
+	my $serv = $config->{serv};
+	my $use_nan_for_missing_data = lc($serv->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
 
-	my $ssh = 0;
-	my $ftp = 0;
-	my $telnet = 0;
-	my $imap = 0;
-	my $smb = 0;
-	my $fax = 0;
-	my $cups = 0;
-	my $pop3 = 0;
-	my $smtp = 0;
-	my $spam = 0;
-	my $virus = 0;
-	my $f2b = 0;
-	my $val02 = 0;
-	my $val03 = 0;
-	my $val04 = 0;
-	my $val05 = 0;
-
-	my $secure_seek_pos;
-	my $imap_seek_pos;
-	my $mail_seek_pos;
-	my $sa_seek_pos;
-	my $clamav_seek_pos;
-	my $logsize;
-
-	my $date;
-	my $hour;
-	my $rrdata = "N";
-
-	# this graph is refreshed only every 5 minutes
+	# this graph is refreshed every 5 minutes only
 	my (undef, $min) = localtime(time);
 	return if($min % 5);
 
-	$ssh = $config->{serv_hist}->{'i_ssh'} || 0;
-	$ftp = $config->{serv_hist}->{'i_ftp'} || 0;
-	$telnet = $config->{serv_hist}->{'i_telnet'} || 0;
-	$imap = $config->{serv_hist}->{'i_imap'} || 0;
-	$pop3 = $config->{serv_hist}->{'i_pop3'} || 0;
-	$smtp = $config->{serv_hist}->{'i_smtp'} || 0;
-	$spam = $config->{serv_hist}->{'i_spam'} || 0;
-	$virus = $config->{serv_hist}->{'i_virus'} || 0;
+	my $n;
+	my $rrdata = "N";
+	my $e = 0;
 
-	# zero all values on every new day
-	$hour = int(strftime("%H", localtime));
-	if(!defined($config->{serv_hist}->{'hour'})) {
-		$config->{serv_hist}->{'hour'} = $hour;
-	} else {
-		if($hour < $config->{serv_hist}->{'hour'}) {
-			$ssh = 0;
-			$ftp = 0;
-			$telnet = 0;
-			$imap = 0;
-			$smb = 0;
-			$fax = 0;
-			$cups = 0;
-			$pop3 = 0;
-			$smtp = 0;
-			$spam = 0;
-			$virus = 0;
-			$f2b = 0;
-			$val02 = 0;
-			$val03 = 0;
-			$val04 = 0;
-			$val05 = 0;
-		}
-		$config->{serv_hist}->{'hour'} = $hour;
-	}
+	foreach my $sg (sort keys %{$serv->{list}}) {
+		my @sl = split(',', $serv->{list}->{$sg});
+		my @val = ($use_nan_for_missing_data ? (0+"nan") : 0) x 16;
+		my @l_val = ($use_nan_for_missing_data ? (0+"nan") : 0) x 16;
 
-	if(-r $config->{secure_log}) {
-		$date = strftime("%b %e", localtime);
-		$config->{secure_log_date_format} = $config->{secure_log_date_format} || "%b %e";
-		my $date2 = strftime($config->{secure_log_date_format}, localtime);
-
-		$secure_seek_pos = $config->{serv_hist}->{'secure_seek_pos'} || 0;
-		$secure_seek_pos = defined($secure_seek_pos) ? int($secure_seek_pos) : 0;
-
-		open(IN, "$config->{secure_log}");
-		if(!seek(IN, 0, 2)) {
-			logger("Couldn't seek to the end of '$config->{secure_log}': $!");
-			close(IN);
-			return;
-		}
-		$logsize = tell(IN);
-		if($logsize < $secure_seek_pos) {
-			$secure_seek_pos = 0;
-		}
-		if(!seek(IN, $secure_seek_pos, 0)) {
-			logger("Couldn't seek to $secure_seek_pos in '$config->{secure_log}': $!");
-			close(IN);
-			return;
+		# loads saved data
+		for($n = 0; $n < 16; $n++) {
+			my $str = "i_${e}_${n}";
+			$val[$n] = $config->{serv_hist}->{$str} if $config->{serv_hist}->{$str};
 		}
 
-		while(<IN>) {
-			if(/^$date/) {
-				if(/ sshd\[/ && /Accepted /) {
-					$ssh++;
+		# zero all values on every new day
+		my $hour = int(strftime("%H", localtime));
+		if(!defined($config->{serv_hist}->{'hour'})) {
+			$config->{serv_hist}->{'hour'} = $hour;
+		} else {
+			if($hour < $config->{serv_hist}->{'hour'}) {
+				@val = ($use_nan_for_missing_data ? (0+"nan") : 0) x 16;
+			}
+			$config->{serv_hist}->{'hour'} = $hour;
+		}
+
+		for($n = 0; $n < 16; $n++) {
+			my $seek_str = "${e}_${n}";
+			my $s = trim($sl[$n] || "");
+			my $logsize;
+
+			if(defined($serv->{desc}->{$s})) {
+				my @sa;
+				my @sc;
+
+				# any service can be defined multiple times and so
+				# it will be combined into a single total.
+				if(ref $serv->{desc}->{$s} ne "ARRAY") {
+					@sa = $serv->{desc}->{$s};	# convert to array
+				} else {
+					@sa = @{$serv->{desc}->{$s}};
 				}
-				if($config->{os} eq "Linux") {
-					if(/START: pop3/) {
-						$pop3++;
+				foreach my $se (@sa) {
+					@sc = split(',', $se);
+					my $logfile = trim($sc[0]);
+					$sc[1] = trim($sc[1]);
+					$sc[1] =~ s/^\"//; $sc[1] =~ s/\"$//; # remove leading and trailing quotes
+					my $date = strftime($sc[1], localtime);
+					$date = qr($date);
+					my @regex = split('\+', trim($sc[2]));
+					my $IN;
+					my $seek_pos = $config->{serv_hist}->{$seek_str} || 0;
+					if($logfile =~ m/^file:.+/) {
+						$logfile =~ s/^file://;
+						if(-r $logfile) {
+							$seek_pos = defined($seek_pos) ? int($seek_pos) : 0;
+
+							open($IN, "$logfile");
+							if(!seek($IN, 0, 2)) {
+								logger("Couldn't seek to the end of '$logfile': $!");
+							}
+							$logsize = tell($IN) || 0;
+							$seek_pos = 0 if $logsize < $seek_pos;
+							if(!seek($IN, $seek_pos, 0)) {
+								logger("Couldn't seek to $seek_pos in '$logfile': $!");
+							}
+						} else {
+							logger("Logfile '$logfile' in service '$s' does not exist: $!");
+							undef($logfile);
+						}
+					} elsif($logfile =~ m/^exec:.+/) {
+						$logfile =~ s/^exec://;
+						if(!open($IN, "$logfile |")) {
+							logger("Unable to execute '$logfile' in service '$s': $!");
+							undef($logfile);
+						}
+					} else {
+						logger("Malformed logfile parameter '$logfile' in service '$s': $!");
+						undef($logfile);
 					}
-					if(/START: telnet/) {
-						$telnet++;
+					if(defined($logfile)) {
+						while(<$IN>) {
+							if(/$date/) {
+								# multiple regex separated by a plus sign are accepted
+								foreach my $r (@regex) {
+									my $re = $r;
+									$re = trim($re);
+									$re =~ s/^\"//; $re =~ s/\"$//; # remove leading and trailing quotes
+									# those prefixed with i: mean 'insensitive case'
+									if($re =~ m/^i:.+/) {
+										$re =~ s/^i://;
+										$re =~ s/^\"//;	# remove leading quotes
+										$val[$n]++ if /$re/i;
+									} else {
+										$val[$n]++ if /$re/;
+									}
+								}
+							}
+						}
+						close($IN);
 					}
-				} elsif($config->{os} eq "FreeBSD") {
-
-					if(/login:/ && /login from /) {
-						$telnet++;
-					}
 				}
-			}
-			if(/$date2/) {
-				# ProFTPD log
-				if(/START: ftp/ || (/ proftpd\[/ && /Login successful./) || /\"PASS .*\" 230/) {
-					$ftp++;
-					next;
-				}
-				# vsftpd log
-				if(/OK LOGIN:/) {
-					$ftp++;
-					next;
-				}
-				# Pure-FTPd log
-				if(/ \[INFO\] .*? is now logged in/) {
-					$ftp++;
-					next;
-				}
+				$config->{serv_hist}->{$seek_str} = $logsize;
 			}
 		}
-		close(IN);
-		$config->{serv_hist}->{'secure_seek_pos'} = $logsize;
+
+		# saves 'I data' (incremental)
+		for($n = 0; $n < 16; $n++) {
+			my $str = "i_${e}_${n}";
+			$config->{serv_hist}->{$str} = $val[$n];
+			$rrdata .= ":$val[$n]";
+		}
+
+		# saves 'L data' (load)
+		for($n = 0; $n < 16; $n++) {
+			my $str = "l_${e}_${n}";
+			$l_val[$n] = $val[$n] - ($config->{serv_hist}->{$str} || 0);
+			$l_val[$n] = 0 unless $l_val[$n] != $val[$n];
+			$l_val[$n] /= 300;
+			$config->{serv_hist}->{$str} = $val[$n];
+			$rrdata .= ":$l_val[$n]";
+		}
+
+		$e++;
 	}
 
-	if(-r $config->{imap_log}) {
-		$config->{imap_log_date_format} = $config->{imap_log_date_format} || "%b %d";
-		my $date_dovecot = strftime($config->{imap_log_date_format}, localtime);
-		my $date_uw = strftime("%b %e", localtime);
-
-		$imap_seek_pos = $config->{serv_hist}->{'imap_seek_pos'} || 0;
-		$imap_seek_pos = defined($imap_seek_pos) ? int($imap_seek_pos) : 0;
-		open(IN, "$config->{imap_log}");
-		if(!seek(IN, 0, 2)) {
-			logger("Couldn't seek to the end of '$config->{imap_log}': $!");
-			close(IN);
-			return;
-		}
-		$logsize = tell(IN);
-		if($logsize < $imap_seek_pos) {
-			$imap_seek_pos = 0;
-		}
-		if(!seek(IN, $imap_seek_pos, 0)) {
-			logger("Couldn't seek to $imap_seek_pos in '$config->{imap_log}': $!");
-			close(IN);
-			return;
-		}
-
-		while(<IN>) {
-			# UW-IMAP log
-			if(/$date_uw/) {
-				if(/ imapd\[/ && / Login user=/) {
-					$imap++;
-				}
-				if(/ ipop3d\[/ && / Login user=/) {
-					$pop3++;
-				}
-			}
-			# Dovecot log
-			if(/$date_dovecot /) {
-				if(/ imap-login: / && / Login: /) {
-					$imap++;
-				}
-				if(/ pop3-login: / && / Login: /) {
-					$pop3++;
-				}
-			}
-		}
-		close(IN);
-		$config->{serv_hist}->{'imap_seek_pos'} = $logsize;
-	}
-
-	my $smb_L = 0;
-	open(IN, "smbstatus -L 2>/dev/null |");
-	while(<IN>) {
-		if(/^----------/) {
-			$smb_L++;
-			next;
-		}
-		if($smb_L) {
-			$smb_L++ unless !$_;
-		}
-	}
-	close(IN);
-	$smb_L--;
-	my $smb_S = 0;
-	open(IN, "smbstatus -S 2>/dev/null |");
-	while(<IN>) {
-		if(/^----------/) {
-			$smb_S++;
-			next;
-		}
-		if($smb_S) {
-			$smb_S++ unless !$_;
-		}
-	}
-	close(IN);
-	$smb_S--;
-	$smb = $smb_L + $smb_S;
-
-	if(-r $config->{hylafax_log}) {
-		$date = strftime("%m/%d/%y", localtime);
-		open(IN, "$config->{hylafax_log}");
-		while(<IN>) {
-			if(/^$date/ && /SEND/) {
-				$fax++;
-			}
-		}
-		close(IN);
-	}
-
-	if(-r $config->{cups_log}) {
-		$date = strftime("%d/%b/%Y", localtime);
-		open(IN, "$config->{cups_log}");
-		while(<IN>) {
-			if(/\[$date:/) {
-				$cups++;
-			}
-		}
-		close(IN);
-	}
-
-	if(-r $config->{fail2ban_log}) {
-		$date = strftime("%Y-%m-%d", localtime);
-		open(IN, $config->{fail2ban_log});
-		while(<IN>) {
-			if(/^$date/ && / fail2ban.actions/ && / Ban /) {
-				$f2b++;
-			}
-		}
-		close(IN);
-	}
-
-	if(-r $config->{mail_log}) {
-		$date = strftime("%b %e", localtime);
-
-		$mail_seek_pos = $config->{serv_hist}->{'mail_seek_pos'} || 0;
-		$mail_seek_pos = defined($mail_seek_pos) ? int($mail_seek_pos) :0;
-		open(IN, "$config->{mail_log}");
-		if(!seek(IN, 0, 2)) {
-			logger("Couldn't seek to the end of '$config->{mail_log}': $!");
-			close(IN);
-			return;
-		}
-		$logsize = tell(IN);
-		if($logsize < $mail_seek_pos) {
-			$mail_seek_pos = 0;
-		}
-		if(!seek(IN, $mail_seek_pos, 0)) {
-			logger("Couldn't seek to $mail_seek_pos in '$config->{mail_log}': $!");
-			close(IN);
-			return;
-		}
-
-		while(<IN>) {
-			if(/^$date/) {
-				if(/to=/ && /stat(us)?=sent/i) {
-					$smtp++;
-				}
-				if(/MailScanner/ && /Spam Checks:/ && /Found/ && /spam messages/) {
-					$spam++;
-				}
-				if(/MailScanner/ && /Virus Scanning:/ && /Found/ && /viruses/) {
-					$virus++;
-				}
-				if(/amavis\[.* SPAM/) {
-					$spam++;
-				}
-				if(/amavis\[.* INFECTED|amavis\[.* BANNED/) {
-					$virus++;
-				}
-			}
-		}
-		close(IN);
-		$config->{serv_hist}->{'mail_seek_pos'} = $logsize;
-	}
-
-	$date = strftime("%Y-%m-%d", localtime);
-	if(-r "$config->{cg_logdir}/$date.log") {
-		open(IN, "$config->{cg_logdir}/$date.log");
-		while(<IN>) {
-			if(/DEQUEUER \[\d+\] (LOCAL\(.+\) delivered|SMTP.+ relayed)\:/) {
-				$smtp++;
-			}
-			if(/IMAP/ && / connected from /) {
-				$imap++;
-			}
-			if(/POP/ && / connected from /) {
-				$pop3++;
-			}
-		}
-		close(IN);
-	}
-
-	if(-r $config->{spamassassin_log}) {
-		$date = strftime("%b %e", localtime);
-
-		$sa_seek_pos = $config->{serv_hist}->{'sa_seek_pos'} || 0;
-		$sa_seek_pos = defined($sa_seek_pos) ? int($sa_seek_pos) :0;
-		open(IN, "$config->{spamassassin_log}");
-		if(!seek(IN, 0, 2)) {
-			logger("Couldn't seek to the end of '$config->{spamassassin_log}': $!");
-			close(IN);
-			return;
-		}
-		$logsize = tell(IN);
-		if($logsize < $sa_seek_pos) {
-			$sa_seek_pos = 0;
-		}
-		if(!seek(IN, $sa_seek_pos, 0)) {
-			logger("Couldn't seek to $sa_seek_pos in '$config->{spamassassin_log}': $!");
-			close(IN);
-			return;
-		}
-
-		while(<IN>) {
-			if(/^$date/ && /spamd: identified spam/) {
-				$spam++;
-			}
-		}
-		close(IN);
-		$config->{serv_hist}->{'sa_seek_pos'} = $logsize;
-	}
-
-	if(-r $config->{clamav_log}) {
-		$date = strftime("%a %b %e", localtime);
-
-		$clamav_seek_pos = $config->{serv_hist}->{'clamav_seek_pos'} || 0;
-		$clamav_seek_pos = defined($clamav_seek_pos) ? int($clamav_seek_pos) :0;
-		open(IN, "$config->{clamav_log}");
-		if(!seek(IN, 0, 2)) {
-			logger("Couldn't seek to the end of '$config->{clamav_log}': $!");
-			close(IN);
-			return;
-		}
-		$logsize = tell(IN);
-		if($logsize < $clamav_seek_pos) {
-			$clamav_seek_pos = 0;
-		}
-		if(!seek(IN, $clamav_seek_pos, 0)) {
-			logger("Couldn't seek to $clamav_seek_pos in '$config->{clamav_log}': $!");
-			close(IN);
-			return;
-		}
-
-		while(<IN>) {
-			if(/^$date/ && / FOUND/) {
-				$virus++;
-			}
-		}
-		close(IN);
-		$config->{serv_hist}->{'clamav_seek_pos'} = $logsize;
-	}
-
-	# I data (incremental)
-	$config->{serv_hist}->{'i_ssh'} = $ssh;
-	$config->{serv_hist}->{'i_ftp'} = $ftp;
-	$config->{serv_hist}->{'i_telnet'} = $telnet;
-	$config->{serv_hist}->{'i_imap'} = $imap;
-	$config->{serv_hist}->{'i_smb'} = $smb;
-	$config->{serv_hist}->{'i_fax'} = $fax;
-	$config->{serv_hist}->{'i_cups'} = $cups;
-	$config->{serv_hist}->{'i_pop3'} = $pop3;
-	$config->{serv_hist}->{'i_smtp'} = $smtp;
-	$config->{serv_hist}->{'i_spam'} = $spam;
-	$config->{serv_hist}->{'i_virus'} = $virus;
-	$config->{serv_hist}->{'i_f2b'} = $f2b;
-	$config->{serv_hist}->{'i_val02'} = $val02;
-	$config->{serv_hist}->{'i_val03'} = $val03;
-	$config->{serv_hist}->{'i_val04'} = $val04;
-	$config->{serv_hist}->{'i_val05'} = $val05;
-	$rrdata .= ":$ssh:$ftp:$telnet:$imap:$smb:$fax:$cups:$pop3:$smtp:$spam:$virus:$f2b:$val02:$val03:$val04:$val05";
-
-	# L data (load)
-	my $l_ssh = 0;
-	my $l_ftp = 0;
-	my $l_telnet = 0;
-	my $l_imap = 0;
-	my $l_smb = 0;
-	my $l_fax = 0;
-	my $l_cups = 0;
-	my $l_pop3 = 0;
-	my $l_smtp = 0;
-	my $l_spam = 0;
-	my $l_virus = 0;
-	my $l_f2b = 0;
-	my $l_val02 = 0;
-	my $l_val03 = 0;
-	my $l_val04 = 0;
-	my $l_val05 = 0;
-
-	$l_ssh = $ssh - ($config->{serv_hist}->{'l_ssh'} || 0);
-	$l_ssh = 0 unless $l_ssh != $ssh;
-	$l_ssh /= 300;
-	$config->{serv_hist}->{'l_ssh'} = $ssh;
-
-	$l_ftp = $ftp - ($config->{serv_hist}->{'l_ftp'} || 0);
-	$l_ftp = 0 unless $l_ftp != $ftp;
-	$l_ftp /= 300;
-	$config->{serv_hist}->{'l_ftp'} = $ftp;
-
-	$l_telnet = $telnet - ($config->{serv_hist}->{'l_telnet'} || 0);
-	$l_telnet = 0 unless $l_telnet != $telnet;
-	$l_telnet /= 300;
-	$config->{serv_hist}->{'l_telnet'} = $telnet;
-
-	$l_imap = $imap - ($config->{serv_hist}->{'l_imap'} || 0);
-	$l_imap = 0 unless $l_imap != $imap;
-	$l_imap /= 300;
-	$config->{serv_hist}->{'l_imap'} = $imap;
-
-	$l_smb = $smb - ($config->{serv_hist}->{'l_smb'} || 0);
-	$l_smb = 0 unless $l_smb != $smb;
-	$l_smb /= 300;
-	$config->{serv_hist}->{'l_smb'} = $smb;
-
-	$l_fax = $fax - ($config->{serv_hist}->{'l_fax'} || 0);
-	$l_fax = 0 unless $l_fax != $fax;
-	$l_fax /= 300;
-	$config->{serv_hist}->{'l_fax'} = $fax;
-
-	$l_cups = $cups - ($config->{serv_hist}->{'l_cups'} || 0);
-	$l_cups = 0 unless $l_cups != $cups;
-	$l_cups /= 300;
-	$config->{serv_hist}->{'l_cups'} = $cups;
-
-	$l_pop3 = $pop3 - ($config->{serv_hist}->{'l_pop3'} || 0);
-	$l_pop3 = 0 unless $l_pop3 != $pop3;
-	$l_pop3 /= 300;
-	$config->{serv_hist}->{'l_pop3'} = $pop3;
-
-	$l_smtp = $smtp - ($config->{serv_hist}->{'l_smtp'} || 0);
-	$l_smtp = 0 unless $l_smtp != $smtp;
-	$l_smtp /= 300;
-	$config->{serv_hist}->{'l_smtp'} = $smtp;
-
-	$l_spam = $spam - ($config->{serv_hist}->{'l_spam'} || 0);
-	$l_spam = 0 unless $l_spam != $spam;
-	$l_spam /= 300;
-	$config->{serv_hist}->{'l_spam'} = $spam;
-
-	$l_virus = $virus - ($config->{serv_hist}->{'l_virus'} || 0);
-	$l_virus = 0 unless $l_virus != $virus;
-	$l_virus /= 300;
-	$config->{serv_hist}->{'l_virus'} = $virus;
-
-	$l_f2b = $f2b - ($config->{serv_hist}->{'l_f2b'} || 0);
-	$l_f2b = 0 unless $l_f2b != $f2b;
-	$l_f2b /= 300;
-	$config->{serv_hist}->{'l_f2b'} = $f2b;
-
-	$l_val02 = $val02 - ($config->{serv_hist}->{'l_val02'} || 0);
-	$l_val02 = 0 unless $l_val02 != $val02;
-	$l_val02 /= 300;
-	$config->{serv_hist}->{'l_val02'} = $val02;
-
-	$l_val03 = $val03 - ($config->{serv_hist}->{'l_val03'} || 0);
-	$l_val03 = 0 unless $l_val03 != $val03;
-	$l_val03 /= 300;
-	$config->{serv_hist}->{'l_val03'} = $val03;
-
-	$l_val04 = $val04 - ($config->{serv_hist}->{'l_val04'} || 0);
-	$l_val04 = 0 unless $l_val04 != $val04;
-	$l_val04 /= 300;
-	$config->{serv_hist}->{'l_val04'} = $val04;
-
-	$l_val05 = $val05 - ($config->{serv_hist}->{'l_val05'} || 0);
-	$l_val05 = 0 unless $l_val05 != $val05;
-	$l_val05 /= 300;
-	$config->{serv_hist}->{'l_val05'} = $val05;
-
-	$rrdata .= ":$l_ssh:$l_ftp:$l_telnet:$l_imap:$l_smb:$l_fax:$l_cups:$l_pop3:$l_smtp:$l_spam:$l_virus:$l_f2b:$l_val02:$l_val03:$l_val04:$l_val05";
 	RRDs::update($rrd, $rrdata);
 	logger("$myself: $rrdata") if $debug;
 	my $err = RRDs::error;
@@ -656,12 +360,34 @@ sub serv_cgi {
 	my @extra;
 	my @riglim;
 	my $vlabel;
+	my @IMG;
+	my @IMGz;
 	my @tmp;
 	my @tmpz;
 	my @CDEF;
 	my $n;
+	my $n2;
+	my $e;
 	my $str;
 	my $err;
+	my @LC = (
+		"#FFA500",
+		"#44EEEE",
+		"#44EE44",
+		"#4444EE",
+		"#448844",
+		"#5F04B4",
+		"#EE44EE",
+		"#EEEE44",
+		"#888888",
+		"#DDAE8C",
+		"#963C74",
+		"#CCCCCC",
+		"#AEB404",
+		"#037C8C",
+		"#9048D4",
+		"#8C7000",
+	);
 
 	$version = "old" if $RRDs::VERSION < 1.3;
 	push(@full_size_mode, "--full-size-mode") if $RRDs::VERSION > 1.3;
@@ -675,6 +401,7 @@ sub serv_cgi {
 	}
 
 	$title = !$silent ? $title : "";
+	my $gap_on_all_nan = lc($serv->{gap_on_all_nan} || "") eq "y" ? 1 : 0;
 
 
 	# text mode
@@ -695,27 +422,54 @@ sub serv_cgi {
 		if(lc($serv->{mode}) eq "i") {
 			push(@output, "Values expressed as incremental or cumulative hits.\n");
 		}
-		push(@output, "Time    SSH     FTP  Telnet   Samba     Fax    CUPS     F2B    IMAP    POP3    SMTP    Spam   Virus\n");
-		push(@output, "--------------------------------------------------------------------------------------------------- \n");
+		my $line1;
+		my $line2;
+		my $line3;
+
+		foreach my $sg (sort keys %{$serv->{list}}) {
+			my @sl = split(',', $serv->{list}->{$sg});
+			my $len;
+			for($n = 0; $n < scalar(@sl); $n++) {
+				my $s = trim($sl[$n]);
+				if(defined($serv->{desc}->{$s})) {
+					if($len) {
+						$len++;
+						$line3 .= sprintf("-");
+					}
+					$line2 .= sprintf("%10s ", substr($s, 0, 10));
+					$len += 10;
+					$line3 .= sprintf("----------");
+				}
+			}
+			$len++;
+			$line1 .= sprintf("%${len}s", $sg);
+		}
+		push(@output, "    $line1\n");
+		push(@output, "Time $line2\n");
+		push(@output, "-----$line3\n");
 		my $line;
 		my @row;
 		my $time;
 		my $from = 0;
 		my $to;
-		if(lc($serv->{mode}) eq "l") {
-			$from = 15;
-		}
 		for($n = 0, $time = $tf->{tb}; $n < ($tf->{tb} * $tf->{ts}); $n++) {
 			$line = @$data[$n];
 			$time = $time - (1 / $tf->{ts});
-			$to = $from + 10;
-			my ($ssh, $ftp, $telnet, $imap, $smb, $fax, $cups, $pop3, $smtp, $spam, $virus, $f2b) = @$line[$from..$to];
-			@row = ($ssh, $ftp, $telnet, $imap, $smb, $fax, $cups, $f2b, $pop3, $smtp, $spam, $virus);
-			if(lc($serv->{mode}) eq "i") {
-				push(@output, sprintf(" %2d$tf->{tc} %6d  %6d  %6d  %6d  %6d  %6d  %6d  %6d  %6d  %6d  %6d  %6d\n", $time, @row));
-			} elsif(lc($serv->{mode}) eq "l") {
-				push(@output, sprintf(" %2d$tf->{tc} %6.2f  %6.2f  %6.2f  %6.2f  %6.2f  %6.2f  %6.2f  %6.2f  %6.2f  %6.2f  %6.2f  %6.2f\n", $time, @row));
+			push(@output, sprintf(" %2d$tf->{tc} ", $time));
+			$e = 0;
+			foreach my $sg (sort keys %{$serv->{list}}) {
+				my @sl = split(',', $serv->{list}->{$sg});
+				$from = ($e * 16);
+				$to = $from + scalar(@sl);
+				@row = @$line[$from..$to];
+				my $str = "";
+				for($n2 = 0; $n2 < scalar(@sl); $n2++) {
+					$str .= "%10d ";
+				}
+				push(@output, sprintf($str, @row));
+				$e++;
 			}
+			push(@output, "\n");
 		}
 		push(@output, "    </pre>\n");
 		if($title) {
@@ -739,498 +493,194 @@ sub serv_cgi {
 		$u = "";
 	}
 
-	my $IMG1 = $u . $package . "1." . $tf->{when} . ".$imgfmt_lc";
-	my $IMG2 = $u . $package . "2." . $tf->{when} . ".$imgfmt_lc";
-	my $IMG3 = $u . $package . "3." . $tf->{when} . ".$imgfmt_lc";
-	my $IMG1z = $u . $package . "1z." . $tf->{when} . ".$imgfmt_lc";
-	my $IMG2z = $u . $package . "2z." . $tf->{when} . ".$imgfmt_lc";
-	my $IMG3z = $u . $package . "3z." . $tf->{when} . ".$imgfmt_lc";
-	unlink ("$IMG_DIR" . "$IMG1",
-		"$IMG_DIR" . "$IMG2",
-		"$IMG_DIR" . "$IMG3");
-	if(lc($config->{enable_zoom}) eq "y") {
-		unlink ("$IMG_DIR" . "$IMG1z",
-			"$IMG_DIR" . "$IMG2z",
-			"$IMG_DIR" . "$IMG3z");
+	for($n = 0; $n < scalar(keys %{$serv->{list}}); $n++) {
+		$str = $u . $package . $n . "." . $tf->{when} . ".$imgfmt_lc";
+		push(@IMG, $str);
+		unlink("$IMG_DIR" . $str);
+		if(lc($config->{enable_zoom}) eq "y") {
+			$str = $u . $package . $n . "z." . $tf->{when} . ".$imgfmt_lc";
+			push(@IMGz, $str);
+			unlink("$IMG_DIR" . $str);
+		}
 	}
 
-	if($title) {
-		push(@output, main::graph_header($title, 2));
+	my $graphs_per_row = $serv->{graphs_per_row} || 2;
+	my @sgl = (sort keys %{$serv->{list}});
+	my @linpad = (0) x scalar(@sgl);
+	if($graphs_per_row > 1) {
+		for(my $n = 0; $n < scalar(@sgl); $n++) {
+			my $sg = trim($sgl[$n]);
+			my @sl = split(',', $serv->{list}->{$sg});
+			$linpad[$n] = scalar(@sl);
+		}
+		for(my $n = 0; $n < scalar(@linpad); $n++) {
+			if($n % $graphs_per_row == 0) {
+				my $max_number_of_lines = 0;
+				for(my $sub_n = $n; $sub_n < min($n + $graphs_per_row, scalar(@linpad)); $sub_n++) {
+					$max_number_of_lines = max($max_number_of_lines, $linpad[$sub_n]);
+				}
+				for(my $sub_n = $n; $sub_n < min($n + $graphs_per_row, scalar(@linpad)); $sub_n++) {
+					$linpad[$sub_n] = $max_number_of_lines;
+				}
+			}
+		}
 	}
+
 	@riglim = @{setup_riglim($rigid[0], $limit[0])};
-	if(lc($serv->{mode}) eq "l") {
-		$vlabel = "Accesses/s";
-		push(@tmp, "AREA:l_ssh#4444EE:SSH");
-		push(@tmp, "GPRINT:l_ssh:LAST:        Current\\: %3.2lf");
-		push(@tmp, "GPRINT:l_ssh:AVERAGE:   Average\\: %3.2lf");
-		push(@tmp, "GPRINT:l_ssh:MIN:   Min\\: %3.2lf");
-		push(@tmp, "GPRINT:l_ssh:MAX:   Max\\: %3.2lf\\n");
-		push(@tmp, "AREA:l_ftp#44EE44:FTP");
-		push(@tmp, "GPRINT:l_ftp:LAST:        Current\\: %3.2lf");
-		push(@tmp, "GPRINT:l_ftp:AVERAGE:   Average\\: %3.2lf");
-		push(@tmp, "GPRINT:l_ftp:MIN:   Min\\: %3.2lf");
-		push(@tmp, "GPRINT:l_ftp:MAX:   Max\\: %3.2lf\\n");
-		push(@tmp, "AREA:l_telnet#EE44EE:Telnet");
-		push(@tmp, "GPRINT:l_telnet:LAST:     Current\\: %3.2lf");
-		push(@tmp, "GPRINT:l_telnet:AVERAGE:   Average\\: %3.2lf");
-		push(@tmp, "GPRINT:l_telnet:MIN:   Min\\: %3.2lf");
-		push(@tmp, "GPRINT:l_telnet:MAX:   Max\\: %3.2lf\\n");
-		push(@tmp, "AREA:l_smb#EEEE44:Samba");
-		push(@tmp, "GPRINT:l_smb:LAST:      Current\\: %3.2lf");
-		push(@tmp, "GPRINT:l_smb:AVERAGE:   Average\\: %3.2lf");
-		push(@tmp, "GPRINT:l_smb:MIN:   Min\\: %3.2lf");
-		push(@tmp, "GPRINT:l_smb:MAX:   Max\\: %3.2lf\\n");
-		push(@tmp, "AREA:l_fax#FFA500:Fax");
-		push(@tmp, "GPRINT:l_fax:LAST:        Current\\: %3.2lf");
-		push(@tmp, "GPRINT:l_fax:AVERAGE:   Average\\: %3.2lf");
-		push(@tmp, "GPRINT:l_fax:MIN:   Min\\: %3.2lf");
-		push(@tmp, "GPRINT:l_fax:MAX:   Max\\: %3.2lf\\n");
-		push(@tmp, "AREA:l_cups#444444:CUPS");
-		push(@tmp, "GPRINT:l_cups:LAST:       Current\\: %3.2lf");
-		push(@tmp, "GPRINT:l_cups:AVERAGE:   Average\\: %3.2lf");
-		push(@tmp, "GPRINT:l_cups:MIN:   Min\\: %3.2lf");
-		push(@tmp, "GPRINT:l_cups:MAX:   Max\\: %3.2lf\\n");
-		push(@tmp, "AREA:l_f2b#EE4444:Fail2ban");
-		push(@tmp, "GPRINT:l_f2b:LAST:   Current\\: %3.2lf");
-		push(@tmp, "GPRINT:l_f2b:AVERAGE:   Average\\: %3.2lf");
-		push(@tmp, "GPRINT:l_f2b:MIN:   Min\\: %3.2lf");
-		push(@tmp, "GPRINT:l_f2b:MAX:   Max\\: %3.2lf\\n");
-		push(@tmp, "LINE2:l_ssh#4444EE");
-		push(@tmp, "LINE2:l_ftp#44EE44");
-		push(@tmp, "LINE2:l_telnet#EE44EE");
-		push(@tmp, "LINE2:l_smb#EEEE44");
-		push(@tmp, "LINE2:l_fax#FFA500");
-		push(@tmp, "LINE2:l_cups#444444");
-		push(@tmp, "LINE2:l_f2b#EE4444");
-		push(@tmp, "COMMENT: \\n");
-
-		push(@tmpz, "AREA:l_ssh#4444EE:SSH");
-		push(@tmpz, "AREA:l_ftp#44EE44:FTP");
-		push(@tmpz, "AREA:l_telnet#EE44EE:Telnet");
-		push(@tmpz, "AREA:l_smb#EEEE44:Samba");
-		push(@tmpz, "AREA:l_fax#FFA500:Fax");
-		push(@tmpz, "AREA:l_cups#444444:CUPS");
-		push(@tmpz, "AREA:l_f2b#EE4444:Fail2ban");
-		push(@tmpz, "LINE2:l_ssh#4444EE");
-		push(@tmpz, "LINE2:l_ftp#44EE44");
-		push(@tmpz, "LINE2:l_telnet#EE44EE");
-		push(@tmpz, "LINE2:l_smb#EEEE44");
-		push(@tmpz, "LINE2:l_fax#FFA500");
-		push(@tmpz, "LINE2:l_cups#444444");
-		push(@tmpz, "LINE2:l_f2b#EE4444");
-	} else {
-		$vlabel = "Incremental hits";
-		push(@tmp, "AREA:i_ssh#4444EE:SSH");
-		push(@tmp, "GPRINT:i_ssh:LAST:        Current\\: %5.0lf");
-		push(@tmp, "GPRINT:i_ssh:AVERAGE:   Average\\: %5.0lf");
-		push(@tmp, "GPRINT:i_ssh:MIN:   Min\\: %5.0lf");
-		push(@tmp, "GPRINT:i_ssh:MAX:   Max\\: %5.0lf\\n");
-		push(@tmp, "AREA:i_ftp#44EE44:FTP");
-		push(@tmp, "GPRINT:i_ftp:LAST:        Current\\: %5.0lf");
-		push(@tmp, "GPRINT:i_ftp:AVERAGE:   Average\\: %5.0lf");
-		push(@tmp, "GPRINT:i_ftp:MIN:   Min\\: %5.0lf");
-		push(@tmp, "GPRINT:i_ftp:MAX:   Max\\: %5.0lf\\n");
-		push(@tmp, "AREA:i_telnet#EE44EE:Telnet");
-		push(@tmp, "GPRINT:i_telnet:LAST:     Current\\: %5.0lf");
-		push(@tmp, "GPRINT:i_telnet:AVERAGE:   Average\\: %5.0lf");
-		push(@tmp, "GPRINT:i_telnet:MIN:   Min\\: %5.0lf");
-		push(@tmp, "GPRINT:i_telnet:MAX:   Max\\: %5.0lf\\n");
-		push(@tmp, "AREA:i_smb#EEEE44:Samba");
-		push(@tmp, "GPRINT:i_smb:LAST:      Current\\: %5.0lf");
-		push(@tmp, "GPRINT:i_smb:AVERAGE:   Average\\: %5.0lf");
-		push(@tmp, "GPRINT:i_smb:MIN:   Min\\: %5.0lf");
-		push(@tmp, "GPRINT:i_smb:MAX:   Max\\: %5.0lf\\n");
-		push(@tmp, "AREA:i_fax#FFA500:Fax");
-		push(@tmp, "GPRINT:i_fax:LAST:        Current\\: %5.0lf");
-		push(@tmp, "GPRINT:i_fax:AVERAGE:   Average\\: %5.0lf");
-		push(@tmp, "GPRINT:i_fax:MIN:   Min\\: %5.0lf");
-		push(@tmp, "GPRINT:i_fax:MAX:   Max\\: %5.0lf\\n");
-		push(@tmp, "AREA:i_cups#444444:CUPS");
-		push(@tmp, "GPRINT:i_cups:LAST:       Current\\: %5.0lf");
-		push(@tmp, "GPRINT:i_cups:AVERAGE:   Average\\: %5.0lf");
-		push(@tmp, "GPRINT:i_cups:MIN:   Min\\: %5.0lf");
-		push(@tmp, "GPRINT:i_cups:MAX:   Max\\: %5.0lf\\n");
-		push(@tmp, "AREA:i_f2b#EE4444:Fail2ban");
-		push(@tmp, "GPRINT:i_f2b:LAST:   Current\\: %5.0lf");
-		push(@tmp, "GPRINT:i_f2b:AVERAGE:   Average\\: %5.0lf");
-		push(@tmp, "GPRINT:i_f2b:MIN:   Min\\: %5.0lf");
-		push(@tmp, "GPRINT:i_f2b:MAX:   Max\\: %5.0lf\\n");
-		push(@tmp, "LINE2:i_ssh#4444EE");
-		push(@tmp, "LINE2:i_ftp#44EE44");
-		push(@tmp, "LINE2:i_telnet#EE44EE");
-		push(@tmp, "LINE2:i_smb#EEEE44");
-		push(@tmp, "LINE2:i_fax#FFA500");
-		push(@tmp, "LINE2:i_cups#444444");
-		push(@tmp, "LINE2:i_f2b#EE4444");
-		push(@tmp, "COMMENT: \\n");
-
-		push(@tmpz, "AREA:i_ssh#4444EE:SSH");
-		push(@tmpz, "AREA:i_ftp#44EE44:FTP");
-		push(@tmpz, "AREA:i_telnet#EE44EE:Telnet");
-		push(@tmpz, "AREA:i_smb#EEEE44:Samba");
-		push(@tmpz, "AREA:i_fax#FFA500:Fax");
-		push(@tmpz, "AREA:i_cups#444444:CUPS");
-		push(@tmpz, "AREA:i_f2b#EE4444:Fail2ban");
-		push(@tmpz, "LINE2:i_ssh#4444EE");
-		push(@tmpz, "LINE2:i_ftp#44EE44");
-		push(@tmpz, "LINE2:i_telnet#EE44EE");
-		push(@tmpz, "LINE2:i_smb#EEEE44");
-		push(@tmpz, "LINE2:i_fax#FFA500");
-		push(@tmpz, "LINE2:i_cups#444444");
-		push(@tmpz, "LINE2:i_f2b#EE4444");
-	}
-	if(lc($config->{show_gaps}) eq "y") {
-		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
-		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
-		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
-	}
-
-	if($title) {
-		push(@output, "    <tr>\n");
-		push(@output, "    <td>\n");
-	}
-	($width, $height) = split('x', $config->{graph_size}->{main});
-	if($silent =~ /imagetag/) {
-		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
-		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
-		@tmp = @tmpz;
-		push(@tmp, "COMMENT: \\n");
-		push(@tmp, "COMMENT: \\n");
-		push(@tmp, "COMMENT: \\n");
-	}
-	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG1",
-		"--title=$config->{graphs}->{_serv1}  ($tf->{nwhen}$tf->{twhen})",
-		"--start=-$tf->{nwhen}$tf->{twhen}",
-		"--imgformat=$imgfmt_uc",
-		"--vertical-label=$vlabel",
-		"--width=$width",
-		"--height=$height",
-		@extra,
-		@riglim,
-		$zoom,
-		@{$cgi->{version12}},
-		@{$colors->{graph_colors}},
-		"DEF:i_ssh=$rrd:serv_i_ssh:AVERAGE",
-		"DEF:i_ftp=$rrd:serv_i_ftp:AVERAGE",
-		"DEF:i_telnet=$rrd:serv_i_telnet:AVERAGE",
-		"DEF:i_imap=$rrd:serv_i_imap:AVERAGE",
-		"DEF:i_smb=$rrd:serv_i_smb:AVERAGE",
-		"DEF:i_fax=$rrd:serv_i_fax:AVERAGE",
-		"DEF:i_cups=$rrd:serv_i_cups:AVERAGE",
-		"DEF:i_f2b=$rrd:serv_i_f2b:AVERAGE",
-		"DEF:l_ssh=$rrd:serv_l_ssh:AVERAGE",
-		"DEF:l_ftp=$rrd:serv_l_ftp:AVERAGE",
-		"DEF:l_telnet=$rrd:serv_l_telnet:AVERAGE",
-		"DEF:l_imap=$rrd:serv_l_imap:AVERAGE",
-		"DEF:l_smb=$rrd:serv_l_smb:AVERAGE",
-		"DEF:l_fax=$rrd:serv_l_fax:AVERAGE",
-		"DEF:l_cups=$rrd:serv_l_cups:AVERAGE",
-		"DEF:l_f2b=$rrd:serv_l_f2b:AVERAGE",
-		"CDEF:allvalues=i_ssh,i_ftp,i_telnet,i_imap,i_smb,i_fax,i_cups,i_f2b,+,+,+,+,+,+,+",
-		@CDEF,
-		@tmp);
-	$err = RRDs::error;
-	push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG1: $err\n") if $err;
-	if(lc($config->{enable_zoom}) eq "y") {
-		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG1z",
-			"--title=$config->{graphs}->{_serv1}  ($tf->{nwhen}$tf->{twhen})",
-			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=$imgfmt_uc",
-			"--vertical-label=$vlabel",
-			"--width=$width",
-			"--height=$height",
-			@full_size_mode,
-			@extra,
-			@riglim,
-			$zoom,
-			@{$cgi->{version12}},
-			@{$colors->{graph_colors}},
-			"DEF:i_ssh=$rrd:serv_i_ssh:AVERAGE",
-			"DEF:i_ftp=$rrd:serv_i_ftp:AVERAGE",
-			"DEF:i_telnet=$rrd:serv_i_telnet:AVERAGE",
-			"DEF:i_imap=$rrd:serv_i_imap:AVERAGE",
-			"DEF:i_smb=$rrd:serv_i_smb:AVERAGE",
-			"DEF:i_fax=$rrd:serv_i_fax:AVERAGE",
-			"DEF:i_cups=$rrd:serv_i_cups:AVERAGE",
-			"DEF:i_f2b=$rrd:serv_i_f2b:AVERAGE",
-			"DEF:l_ssh=$rrd:serv_l_ssh:AVERAGE",
-			"DEF:l_ftp=$rrd:serv_l_ftp:AVERAGE",
-			"DEF:l_telnet=$rrd:serv_l_telnet:AVERAGE",
-			"DEF:l_imap=$rrd:serv_l_imap:AVERAGE",
-			"DEF:l_smb=$rrd:serv_l_smb:AVERAGE",
-			"DEF:l_fax=$rrd:serv_l_fax:AVERAGE",
-			"DEF:l_cups=$rrd:serv_l_cups:AVERAGE",
-			"DEF:l_f2b=$rrd:serv_l_f2b:AVERAGE",
-			"CDEF:allvalues=i_ssh,i_ftp,i_telnet,i_imap,i_smb,i_fax,i_cups,i_f2b,+,+,+,+,+,+,+",
-			@CDEF,
-			@tmpz);
-		$err = RRDs::error;
-		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG1z: $err\n") if $err;
-	}
-	if($title || ($silent =~ /imagetag/ && $graph =~ /serv1/)) {
-		if(lc($config->{enable_zoom}) eq "y") {
-			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG1z, IMG => $IMG1) . "\n");
-			} else {
-				if($version eq "new") {
-					$picz_width = $picz->{image_width} * $config->{global_zoom};
-					$picz_height = $picz->{image_height} * $config->{global_zoom};
-				} else {
-					$picz_width = $width + 115;
-					$picz_height = $height + 100;
-				}
-				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG1z, IMG => $IMG1) . "\n");
+	$e = 0;
+	while($e < scalar(@sgl)) {
+		if($title) {
+			if($e == 0) {
+				push(@output, main::graph_header($title, $graphs_per_row));
 			}
-		} else {
-			push(@output, "      " . img_element(config => $config, IMG => $IMG1) . "\n");
+			push(@output, "    <tr>\n");
+		}
+		for($n = 0; $n < $graphs_per_row; $n++) {
+			my @DEF0;
+			my @CDEF0;
+
+			last unless defined($sgl[$e]);
+			if($title) {
+				push(@output, "    <td>\n");
+			}
+			undef(@tmp);
+			undef(@tmpz);
+			undef(@CDEF);
+
+			if(lc($serv->{mode}) eq "i") {
+				$vlabel = "Incremental hits";
+				push(@DEF0, "DEF:s1=$rrd:serv" . $e . "_i_01:AVERAGE");
+				push(@DEF0, "DEF:s2=$rrd:serv" . $e . "_i_02:AVERAGE");
+				push(@DEF0, "DEF:s3=$rrd:serv" . $e . "_i_03:AVERAGE");
+				push(@DEF0, "DEF:s4=$rrd:serv" . $e . "_i_04:AVERAGE");
+				push(@DEF0, "DEF:s5=$rrd:serv" . $e . "_i_05:AVERAGE");
+				push(@DEF0, "DEF:s6=$rrd:serv" . $e . "_i_06:AVERAGE");
+				push(@DEF0, "DEF:s7=$rrd:serv" . $e . "_i_07:AVERAGE");
+				push(@DEF0, "DEF:s8=$rrd:serv" . $e . "_i_08:AVERAGE");
+				push(@DEF0, "DEF:s9=$rrd:serv" . $e . "_i_09:AVERAGE");
+				push(@DEF0, "DEF:s10=$rrd:serv" . $e . "_i_10:AVERAGE");
+				push(@DEF0, "DEF:s11=$rrd:serv" . $e . "_i_11:AVERAGE");
+				push(@DEF0, "DEF:s12=$rrd:serv" . $e . "_i_12:AVERAGE");
+				push(@DEF0, "DEF:s13=$rrd:serv" . $e . "_i_13:AVERAGE");
+				push(@DEF0, "DEF:s14=$rrd:serv" . $e . "_i_14:AVERAGE");
+				push(@DEF0, "DEF:s15=$rrd:serv" . $e . "_i_15:AVERAGE");
+				push(@DEF0, "DEF:s16=$rrd:serv" . $e . "_i_16:AVERAGE");
+				push(@CDEF0, ($gap_on_all_nan ? "CDEF:allvalues=s1,UN,0,1,IF,s2,UN,0,1,IF,s3,UN,0,1,IF,s4,UN,0,1,IF,s5,UN,0,1,IF,s6,UN,0,1,IF,s7,UN,0,1,IF,s8,UN,0,1,IF,s9,UN,0,1,IF,s10,UN,0,1,IF,s11,UN,0,1,IF,s12,UN,0,1,IF,s13,UN,0,1,IF,s14,UN,0,1,IF,s15,UN,0,1,IF,s16,UN,0,1,IF,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+0,GT,1,UNKN,IF" : "CDEF:allvalues=s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15,s16,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+"));
+			} else {
+				$vlabel = "Accesses/s";
+				push(@DEF0, "DEF:s1=$rrd:serv" . $e . "_l_01:AVERAGE");
+				push(@DEF0, "DEF:s2=$rrd:serv" . $e . "_l_02:AVERAGE");
+				push(@DEF0, "DEF:s3=$rrd:serv" . $e . "_l_03:AVERAGE");
+				push(@DEF0, "DEF:s4=$rrd:serv" . $e . "_l_04:AVERAGE");
+				push(@DEF0, "DEF:s5=$rrd:serv" . $e . "_l_05:AVERAGE");
+				push(@DEF0, "DEF:s6=$rrd:serv" . $e . "_l_06:AVERAGE");
+				push(@DEF0, "DEF:s7=$rrd:serv" . $e . "_l_07:AVERAGE");
+				push(@DEF0, "DEF:s8=$rrd:serv" . $e . "_l_08:AVERAGE");
+				push(@DEF0, "DEF:s9=$rrd:serv" . $e . "_l_09:AVERAGE");
+				push(@DEF0, "DEF:s10=$rrd:serv" . $e . "_l_10:AVERAGE");
+				push(@DEF0, "DEF:s11=$rrd:serv" . $e . "_l_11:AVERAGE");
+				push(@DEF0, "DEF:s12=$rrd:serv" . $e . "_l_12:AVERAGE");
+				push(@DEF0, "DEF:s13=$rrd:serv" . $e . "_l_13:AVERAGE");
+				push(@DEF0, "DEF:s14=$rrd:serv" . $e . "_l_14:AVERAGE");
+				push(@DEF0, "DEF:s15=$rrd:serv" . $e . "_l_15:AVERAGE");
+				push(@DEF0, "DEF:s16=$rrd:serv" . $e . "_l_16:AVERAGE");
+				push(@CDEF0, ($gap_on_all_nan ? "CDEF:allvalues=s1,UN,0,1,IF,s2,UN,0,1,IF,s3,UN,0,1,IF,s4,UN,0,1,IF,s5,UN,0,1,IF,s6,UN,0,1,IF,s7,UN,0,1,IF,s8,UN,0,1,IF,s9,UN,0,1,IF,s10,UN,0,1,IF,s11,UN,0,1,IF,s12,UN,0,1,IF,s13,UN,0,1,IF,s14,UN,0,1,IF,s15,UN,0,1,IF,s16,UN,0,1,IF,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+0,GT,1,UNKN,IF" : "CDEF:allvalues=s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15,s16,+,+,+,+,+,+,+,+,+,+,+,+,+,+,+"));
+			}
+
+			my $sg = trim($sgl[$e]);
+			my @sl = split(',', $serv->{list}->{$sg});
+			for($n2 = 0; $n2 < scalar(@sl); $n2++) {
+				my $s = trim($sl[$n2]);
+				$str = sprintf("%-25s", substr($s, 0, 25));
+				push(@tmp, "LINE2:s" . ($n2 + 1) . $LC[$n2] . ":$str");
+				if(lc($serv->{mode}) eq "i") {
+					push(@tmp, "GPRINT:s" . ($n2 + 1) . ":LAST:Cur\\: %3.0lf%s");
+					push(@tmp, "GPRINT:s" . ($n2 + 1) . ":MIN: Min\\: %3.0lf%s");
+					push(@tmp, "GPRINT:s" . ($n2 + 1) . ":MAX: Max\\: %3.0lf%s\\n");
+				} else {
+					push(@tmp, "GPRINT:s" . ($n2 + 1) . ":LAST: Current\\:%7.1lf%s\\n");
+				}
+				push(@tmpz, "LINE2:s" . ($n2 + 1) . $LC[$n2] . ":$str");
+			}
+			while($n2 < $linpad[$e]) {
+				push(@tmp, "COMMENT: \\n");
+				$n2++;
+			}
+			if(lc($config->{show_gaps}) eq "y") {
+				push(@tmp, "AREA:wrongdata#$colors->{gap}:");
+				push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
+				push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
+			}
+			($width, $height) = split('x', $config->{graph_size}->{medium});
+			$str = substr(trim($sg), 0, 25);
+			$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e]",
+				"--title=$str  ($tf->{nwhen}$tf->{twhen})",
+				"--start=-$tf->{nwhen}$tf->{twhen}",
+				"--imgformat=$imgfmt_uc",
+				"--vertical-label=$vlabel",
+				"--width=$width",
+				"--height=$height",
+				@extra,
+				@riglim,
+				$zoom,
+				@{$cgi->{version12}},
+				@{$colors->{graph_colors}},
+				@DEF0,
+				@CDEF0,
+				@CDEF,
+				@tmp);
+			$err = RRDs::error;
+			push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$e]: $err\n") if $err;
+			if(lc($config->{enable_zoom}) eq "y") {
+				($width, $height) = split('x', $config->{graph_size}->{zoom});
+				$picz = $rrd{$version}->("$IMG_DIR" . "$IMGz[$e]",
+					"--title=$str  ($tf->{nwhen}$tf->{twhen})",
+					"--start=-$tf->{nwhen}$tf->{twhen}",
+					"--imgformat=$imgfmt_uc",
+					"--vertical-label=$vlabel",
+					"--width=$width",
+					"--height=$height",
+					@full_size_mode,
+					@extra,
+					@riglim,
+					$zoom,
+					@{$cgi->{version12}},
+					@{$colors->{graph_colors}},
+					@DEF0,
+					@CDEF0,
+					@CDEF,
+					@tmpz);
+				$err = RRDs::error;
+				push(@output, "ERROR: while graphing $IMG_DIR" . "$IMGz[$e]: $err\n") if $err;
+			}
+			if($title || ($silent =~ /imagetag/ && $graph =~ /du$e/)) {
+				if(lc($config->{enable_zoom}) eq "y") {
+					if(lc($config->{disable_javascript_void}) eq "y") {
+						push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e], IMG => $IMG[$e]) . "\n");
+					} else {
+						if($version eq "new") {
+							$picz_width = $picz->{image_width} * $config->{global_zoom};
+							$picz_height = $picz->{image_height} * $config->{global_zoom};
+						} else {
+							$picz_width = $width + 115;
+							$picz_height = $height + 100;
+						}
+						push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMGz[$e], IMG => $IMG[$e]) . "\n");
+					}
+				} else {
+					push(@output, "      " . img_element(config => $config, IMG => $IMG[$e]) . "\n");
+				}
+			}
+			if($title) {
+				push(@output, "    </td>\n");
+			}
+			$e++;
+		}
+		if($title) {
+			push(@output, "    </tr>\n");
 		}
 	}
-
 	if($title) {
-		push(@output, "    </td>\n");
-		push(@output, "    <td class='td-valign-top'>\n");
-	}
-	@riglim = @{setup_riglim($rigid[1], $limit[1])};
-	undef(@tmp);
-	undef(@tmpz);
-	undef(@CDEF);
-	if(lc($serv->{mode}) eq "l") {
-		$vlabel = "Accesses/s";
-		push(@tmp, "AREA:l_imap#4444EE:IMAP");
-		push(@tmp, "GPRINT:l_imap:LAST:                 Current\\: %4.2lf\\n");
-		push(@tmp, "AREA:l_pop3#44EE44:POP3");
-		push(@tmp, "GPRINT:l_pop3:LAST:                 Current\\: %4.2lf\\n");
-		push(@tmp, "LINE1:l_imap#4444EE:");
-		push(@tmp, "LINE1:l_pop3#44EE44:");
-		push(@tmpz, "AREA:l_imap#4444EE:IMAP");
-		push(@tmpz, "AREA:l_pop3#44EE44:POP3");
-		push(@tmpz, "LINE2:l_imap#4444EE:");
-		push(@tmpz, "LINE2:l_pop3#44EE44:");
-	} else {
-		$vlabel = "Incremental hits";
-		push(@tmp, "AREA:i_imap#4444EE:IMAP");
-		push(@tmp, "GPRINT:i_imap:LAST:                 Current\\: %5.0lf\\n");
-		push(@tmp, "AREA:i_pop3#44EE44:POP3");
-		push(@tmp, "GPRINT:i_pop3:LAST:                 Current\\: %5.0lf\\n");
-		push(@tmp, "LINE1:i_imap#4444EE:");
-		push(@tmp, "LINE1:i_pop3#44EE44:");
-		push(@tmpz, "AREA:i_imap#4444EE:IMAP");
-		push(@tmpz, "AREA:i_pop3#44EE44:POP3");
-		push(@tmpz, "LINE2:i_imap#4444EE:");
-		push(@tmpz, "LINE2:i_pop3#44EE44:");
-	}
-	if(lc($config->{show_gaps}) eq "y") {
-		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
-		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
-		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
-	}
-	($width, $height) = split('x', $config->{graph_size}->{small});
-	if($silent =~ /imagetag/) {
-		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
-		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
-		@tmp = @tmpz;
-		push(@tmp, "COMMENT: \\n");
-		push(@tmp, "COMMENT: \\n");
-		push(@tmp, "COMMENT: \\n");
-	}
-	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG2",
-		"--title=$config->{graphs}->{_serv2}  ($tf->{nwhen}$tf->{twhen})",
-		"--start=-$tf->{nwhen}$tf->{twhen}",
-		"--imgformat=$imgfmt_uc",
-		"--vertical-label=$vlabel",
-		"--width=$width",
-		"--height=$height",
-		@extra,
-		@riglim,
-		$zoom,
-		@{$cgi->{version12}},
-		@{$cgi->{version12_small}},
-		@{$colors->{graph_colors}},
-		"DEF:i_imap=$rrd:serv_i_imap:AVERAGE",
-		"DEF:l_imap=$rrd:serv_l_imap:AVERAGE",
-		"DEF:i_pop3=$rrd:serv_i_pop3:AVERAGE",
-		"DEF:l_pop3=$rrd:serv_l_pop3:AVERAGE",
-		"CDEF:allvalues=i_imap,i_pop3,+",
-		@CDEF,
-		@tmp);
-	$err = RRDs::error;
-	push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG2: $err\n") if $err;
-	if(lc($config->{enable_zoom}) eq "y") {
-		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG2z",
-			"--title=$config->{graphs}->{_serv2}  ($tf->{nwhen}$tf->{twhen})",
-			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=$imgfmt_uc",
-			"--vertical-label=$vlabel",
-			"--width=$width",
-			"--height=$height",
-			@full_size_mode,
-			@extra,
-			@riglim,
-			$zoom,
-			@{$cgi->{version12}},
-			@{$cgi->{version12_small}},
-			@{$colors->{graph_colors}},
-			"DEF:i_imap=$rrd:serv_i_imap:AVERAGE",
-			"DEF:l_imap=$rrd:serv_l_imap:AVERAGE",
-			"DEF:i_pop3=$rrd:serv_i_pop3:AVERAGE",
-			"DEF:l_pop3=$rrd:serv_l_pop3:AVERAGE",
-			"CDEF:allvalues=i_imap,i_pop3,+",
-			@CDEF,
-			@tmpz);
-		$err = RRDs::error;
-		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG2z: $err\n") if $err;
-	}
-	if($title || ($silent =~ /imagetag/ && $graph =~ /serv2/)) {
-		if(lc($config->{enable_zoom}) eq "y") {
-			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG2z, IMG => $IMG2) . "\n");
-			} else {
-				if($version eq "new") {
-					$picz_width = $picz->{image_width} * $config->{global_zoom};
-					$picz_height = $picz->{image_height} * $config->{global_zoom};
-				} else {
-					$picz_width = $width + 115;
-					$picz_height = $height + 100;
-				}
-				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG2z, IMG => $IMG2) . "\n");
-			}
-		} else {
-			push(@output, "      " . img_element(config => $config, IMG => $IMG2) . "\n");
-		}
-	}
-
-	@riglim = @{setup_riglim($rigid[2], $limit[2])};
-	undef(@tmp);
-	undef(@tmpz);
-	undef(@CDEF);
-	if(lc($serv->{mode}) eq "l") {
-		$vlabel = "Accesses/s";
-		push(@tmp, "AREA:l_smtp#44EEEE:SMTP");
-		push(@tmp, "GPRINT:l_smtp:LAST:                 Current\\: %4.2lf\\n");
-		push(@tmp, "AREA:l_spam#EEEE44:Spam");
-		push(@tmp, "GPRINT:l_spam:LAST:                 Current\\: %4.2lf\\n");
-		push(@tmp, "AREA:l_virus#EE4444:Virus");
-		push(@tmp, "GPRINT:l_virus:LAST:                Current\\: %4.2lf\\n");
-		push(@tmp, "LINE2:l_smtp#44EEEE");
-		push(@tmp, "LINE2:l_spam#EEEE44");
-		push(@tmp, "LINE2:l_virus#EE4444");
-
-		push(@tmpz, "AREA:l_smtp#44EEEE:SMTP");
-		push(@tmpz, "AREA:l_spam#EEEE44:Spam");
-		push(@tmpz, "AREA:l_virus#EE4444:Virus");
-		push(@tmpz, "LINE2:l_smtp#44EEEE");
-		push(@tmpz, "LINE2:l_spam#EEEE44");
-		push(@tmpz, "LINE2:l_virus#EE4444");
-	} else {
-		$vlabel = "Incremental hits";
-		push(@tmp, "AREA:i_smtp#44EEEE:SMTP");
-		push(@tmp, "GPRINT:i_smtp:LAST:                 Current\\: %5.0lf\\n");
-		push(@tmp, "AREA:i_spam#EEEE44:Spam");
-		push(@tmp, "GPRINT:i_spam:LAST:                 Current\\: %5.0lf\\n");
-		push(@tmp, "AREA:i_virus#EE4444:Virus");
-		push(@tmp, "GPRINT:i_virus:LAST:                Current\\: %5.0lf\\n");
-		push(@tmp, "LINE2:i_smtp#44EEEE");
-		push(@tmp, "LINE2:i_spam#EEEE44");
-		push(@tmp, "LINE2:i_virus#EE4444");
-
-		push(@tmpz, "AREA:i_smtp#44EEEE:SMTP");
-		push(@tmpz, "AREA:i_spam#EEEE44:Spam");
-		push(@tmpz, "AREA:i_virus#EE4444:Virus");
-		push(@tmpz, "LINE2:i_smtp#44EEEE");
-		push(@tmpz, "LINE2:i_spam#EEEE44");
-		push(@tmpz, "LINE2:i_virus#EE4444");
-	}
-	if(lc($config->{show_gaps}) eq "y") {
-		push(@tmp, "AREA:wrongdata#$colors->{gap}:");
-		push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
-		push(@CDEF, "CDEF:wrongdata=allvalues,UN,INF,UNKN,IF");
-	}
-	($width, $height) = split('x', $config->{graph_size}->{small});
-	if($silent =~ /imagetag/) {
-		($width, $height) = split('x', $config->{graph_size}->{remote}) if $silent eq "imagetag";
-		($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
-		@tmp = @tmpz;
-		push(@tmp, "COMMENT: \\n");
-		push(@tmp, "COMMENT: \\n");
-		push(@tmp, "COMMENT: \\n");
-	}
-	$pic = $rrd{$version}->("$IMG_DIR" . "$IMG3",
-		"--title=$config->{graphs}->{_serv3}  ($tf->{nwhen}$tf->{twhen})",
-		"--start=-$tf->{nwhen}$tf->{twhen}",
-		"--imgformat=$imgfmt_uc",
-		"--vertical-label=$vlabel",
-		"--width=$width",
-		"--height=$height",
-		@extra,
-		@riglim,
-		$zoom,
-		@{$cgi->{version12}},
-		@{$cgi->{version12_small}},
-		@{$colors->{graph_colors}},
-		"DEF:i_smtp=$rrd:serv_i_smtp:AVERAGE",
-		"DEF:i_spam=$rrd:serv_i_spam:AVERAGE",
-		"DEF:i_virus=$rrd:serv_i_virus:AVERAGE",
-		"DEF:l_smtp=$rrd:serv_l_smtp:AVERAGE",
-		"DEF:l_spam=$rrd:serv_l_spam:AVERAGE",
-		"DEF:l_virus=$rrd:serv_l_virus:AVERAGE",
-		"CDEF:allvalues=i_smtp,i_spam,i_virus,+,+",
-		@CDEF,
-		@tmp);
-	$err = RRDs::error;
-	push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG3: $err\n") if $err;
-	if(lc($config->{enable_zoom}) eq "y") {
-		undef(@tmp);
-		($width, $height) = split('x', $config->{graph_size}->{zoom});
-		$picz = $rrd{$version}->("$IMG_DIR" . "$IMG3z",
-			"--title=$config->{graphs}->{_serv3}  ($tf->{nwhen}$tf->{twhen})",
-			"--start=-$tf->{nwhen}$tf->{twhen}",
-			"--imgformat=$imgfmt_uc",
-			"--vertical-label=$vlabel",
-			"--width=$width",
-			"--height=$height",
-			@full_size_mode,
-			@extra,
-			@riglim,
-			$zoom,
-			@{$cgi->{version12}},
-			@{$cgi->{version12_small}},
-			@{$colors->{graph_colors}},
-			"DEF:i_smtp=$rrd:serv_i_smtp:AVERAGE",
-			"DEF:i_spam=$rrd:serv_i_spam:AVERAGE",
-			"DEF:i_virus=$rrd:serv_i_virus:AVERAGE",
-			"DEF:l_smtp=$rrd:serv_l_smtp:AVERAGE",
-			"DEF:l_spam=$rrd:serv_l_spam:AVERAGE",
-			"DEF:l_virus=$rrd:serv_l_virus:AVERAGE",
-			"CDEF:allvalues=i_smtp,i_spam,i_virus,+,+",
-			@CDEF,
-			@tmpz);
-		$err = RRDs::error;
-		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG3z: $err\n") if $err;
-	}
-	if($title || ($silent =~ /imagetag/ && $graph =~ /serv3/)) {
-		if(lc($config->{enable_zoom}) eq "y") {
-			if(lc($config->{disable_javascript_void}) eq "y") {
-				push(@output, "      " . picz_a_element(config => $config, IMGz => $IMG3z, IMG => $IMG3) . "\n");
-			} else {
-				if($version eq "new") {
-					$picz_width = $picz->{image_width} * $config->{global_zoom};
-					$picz_height = $picz->{image_height} * $config->{global_zoom};
-				} else {
-					$picz_width = $width + 115;
-					$picz_height = $height + 100;
-				}
-				push(@output, "      " . picz_js_a_element(width => $picz_width, height => $picz_height, config => $config, IMGz => $IMG3z, IMG => $IMG3) . "\n");
-			}
-		} else {
-			push(@output, "      " . img_element(config => $config, IMG => $IMG3) . "\n");
-		}
-	}
-
-	if($title) {
-		push(@output, "    </td>\n");
-		push(@output, "    </tr>\n");
 		push(@output, main::graph_footer());
 	}
 	push(@output, "  <br>\n");
