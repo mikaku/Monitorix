@@ -252,7 +252,7 @@ sub nut_update {
 
 sub skipscale_string {
 	my ($skipscale) = @_;
-  if ($skipscale) {
+	if ($skipscale) {
 		return ":skipscale";
 	} else {
 		return "";
@@ -262,7 +262,7 @@ sub skipscale_string {
 sub altscaling_options {
 	my ($altscaling) = @_;
 	my @scaling_options;
-  if ($altscaling) {
+	if ($altscaling) {
 		push(@scaling_options, "--alt-autoscale");
 		push(@scaling_options, "--alt-y-grid");
 	}

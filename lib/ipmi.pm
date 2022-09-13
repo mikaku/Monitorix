@@ -385,7 +385,7 @@ sub ipmi_cgi {
 			}
 		}
 	}
-  
+
 	my $whitespace_key_support = lc($ipmi->{whitespace_key_support} || "") eq "y" ? 1 : 0;
 
 	$n = 0;

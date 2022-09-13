@@ -140,15 +140,15 @@ sub verlihub_update {
 	if($dbh) {
 		# Now retrieve data from the table.
 		$sth = $dbh->prepare($sql);
-        	$sth->execute;
+		$sth->execute;
 		my $row = $sth->fetchrow_hashref();
 
-        	$users_total = int($row->{users_total});
-        	$upload_total = int($row->{upload_total});
-        	$share_total = int($row->{share_total_gb});
+		$users_total = int($row->{users_total});
+		$upload_total = int($row->{upload_total});
+		$share_total = int($row->{share_total_gb});
 
 		$sth->finish;
-        	$dbh->disconnect;
+		$dbh->disconnect;
 
 		$rrdata .= ":$users_total:$upload_total:$share_total";
 		RRDs::update($rrd, $rrdata);

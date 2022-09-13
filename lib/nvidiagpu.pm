@@ -185,7 +185,7 @@ sub nvidiagpu_update {
 			if($n < scalar(@gpu_group)) {
 				my $str = trim($gpu_group[$n]);
 
-        open(IN, "nvidia-smi --format=csv,noheader,nounits -i $str --query-gpu=clocks.current.graphics,clocks.current.memory,utilization.gpu,utilization.memory,temperature.gpu,temperature.memory,fan.speed,pstate,power.draw,power.limit,memory.used,memory.total |");
+				open(IN, "nvidia-smi --format=csv,noheader,nounits -i $str --query-gpu=clocks.current.graphics,clocks.current.memory,utilization.gpu,utilization.memory,temperature.gpu,temperature.memory,fan.speed,pstate,power.draw,power.limit,memory.used,memory.total |");
 				while(<IN>) {
 					my @tmp = split(',', $_);
 					if(scalar(@tmp) > 1) { # To catch missing devices

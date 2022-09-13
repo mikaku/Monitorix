@@ -998,15 +998,15 @@ sub unbound_cgi {
 		"$IMG_DIR" . "$IMG10");
 	if(lc($config->{enable_zoom}) eq "y") {
 		unlink ("$IMG_DIR" . "$IMG1z",
-    			"$IMG_DIR" . "$IMG2z",
-    			"$IMG_DIR" . "$IMG3z",
-    			"$IMG_DIR" . "$IMG4z",
-    			"$IMG_DIR" . "$IMG5z",
-    			"$IMG_DIR" . "$IMG6z",
-    			"$IMG_DIR" . "$IMG7z",
-    			"$IMG_DIR" . "$IMG8z",
-    			"$IMG_DIR" . "$IMG9z",
-    			"$IMG_DIR" . "$IMG10z");
+			"$IMG_DIR" . "$IMG2z",
+			"$IMG_DIR" . "$IMG3z",
+			"$IMG_DIR" . "$IMG4z",
+			"$IMG_DIR" . "$IMG5z",
+			"$IMG_DIR" . "$IMG6z",
+			"$IMG_DIR" . "$IMG7z",
+			"$IMG_DIR" . "$IMG8z",
+			"$IMG_DIR" . "$IMG9z",
+			"$IMG_DIR" . "$IMG10z");
 	}
 
 	my $e;		# ??????????
