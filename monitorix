@@ -362,6 +362,14 @@ EOF
 				}
 				next;
 			}
+			if($g eq "serv") {
+				for($n = 0; $n < scalar(my @serv_list = (sort keys %{$config{serv}->{list}})); $n++) {
+					my $name = trim($serv_list[$n]);
+					$gname = "_" . $g;
+					print(OUT "              <option value='" . $gname . $n . "'>" . $name . "</option>\n");
+				}
+				next;
+			}
 			if($g eq "port") {
 				for($n = 0; $n < $config{port}->{max} && $n < scalar(my @port_list = split(',', $config{port}->{list})); $n++) {
 					my $num = trim($port_list[$n]);
