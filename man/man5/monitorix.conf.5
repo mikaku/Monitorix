@@ -3147,7 +3147,65 @@ You can define as much entries as you want.
 This is the unit in which will appear the values in the uptime graph. Possible values are: \fBminute\fP, \fBhour\fP or \fBday\fP. It will default to \fBday\fP even if none is specified.
 .RE
 .SS System services demand (serv.pm)
-This graph requires either \fIMailScanner\fP or \fIamavisd-new\fP mail scanners in order to account spam and virus emails.
+This graph is able to monitor an unlimited number of system services or any application that has a log file.
+.P
+.BI list
+.RS
+This is a list of groups of services that you plan to monitor. Each group will become a graph and there may be an unlimited number of groups.
+.P
+WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIserv.rrd\fP file accordingly, removing all historical data.
+.P
+An example of this option would be:
+.P
+.RS
+<list>
+.br
+	Default = SSH, FTP, TELNET, IMAP, Samba, Fax, CUPS, POP3, SMTP, Spam, Virus, Fail2ban
+.br
+</list>
+.RE
+.P
+The maximum number of services allowed per group is 16.
+.P
+.RE
+.BI desc
+.RS
+This list complements the \fBlist\fP option. It basically allows you to define how Monitorix will monitor such service.
+.P
+You must use the same name of service that you defined in \fBlist\fP followed by an equal sign and a number of values. The first value indicates the logfile from where Monitorix will extract the information. It must be prefixed with \fIfile:\fP to indicate that it's a file. If you need to use the output of a program instead, then you can prefix it with \fIexec:\fP and Monitorix will run this script and will use its output as if it was the logfile.
+.P
+The second value is the first regular expression that Monitorix will use to match lines. It's normally use as the date that appears in the log file.
+.P
+The third and last value is a group of regular expressions separated by a plus sign. You can prefix a regular expresion with \fIi:\fP in order to note that it must be insensitive case.
+.P
+You can create multiple definitions of the same service with different values, so you are able to combine similar services into one single metric.
+.P
+.RS
+<desc>
+.br
+	SSH = file:/var/log/secure, "^%b %e", "sshd\\[.*\\]: Accepted "
+.br
+	Spam = file:/var/log/maillog, "^%b %e", "MailScanner.*Spam Checks:.*Found.*spam messages" + "amavis\\[.* SPAM"
+.br
+	Spam = file:/var/log/sa-update.log, "^%b %e", "spamd: identified spam"
+.br
+	SMTP = file:/var/log/maillog, "^%b %e", i:"to=.*stat(us)?=sent"
+.br
+	IMAP = file:/var/log/uwimap, "%b %d", " imapd\\[.* Login user="
+.br
+	IMAP = file:/var/log/dovecot, "%b %d", " imap-login: .* Login: "
+.br
+	Samba = exec:/usr/local/bin/samba.sh, "", ""
+.br
+	POP3 = file:/var/log/uwimap, "%b %d", " ipop3d\\[.* Login user="
+.br
+	POP3 = file:/var/log/dovecot, "%b %d", " pop3-login: .* Login: "
+.br
+</desc>
+.RE
+.P
+You can define as much entries as you want.
+.RE
 .P
 .BI mode
 .RS
@@ -3160,6 +3218,13 @@ This option toggles the way the System Services Demand data is represented in th
 .RE
 .P
 Default value: \fIi\fP
+.RE
+.P
+.BI graphs_per_row
+.RS
+This is the number of graphs that will be put in a row.
+.P
+Default value: \fI2\fP
 .RE
 .SS Mail statistics (mail.pm)
 This graph requires either \fIMailScanner\fP or \fIamavisd-new\fP mail scanners in order to account spam and virus emails. Spamassassin and Clamav antivirus are also used for spam and virus email accounting.
