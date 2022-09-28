@@ -21,7 +21,7 @@ jobs:
           - fedora:34
           - fedora:35
           - ubuntu:20.04
-          - ubuntu:21.10
+          - ubuntu:22.04
       fail-fast: false
     container:
       image: ${{ matrix.image }}
