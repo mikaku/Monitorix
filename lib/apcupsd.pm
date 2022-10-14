@@ -148,30 +148,33 @@ sub apcupsd_update {
 	my $n;
 	my $rrdata = "N";
 
+	my $use_nan_for_missing_data = lc($apcupsd->{use_nan_for_missing_data} || "") eq "y" ? 1 : 0;
+	my $default_value = $use_nan_for_missing_data ? (0+"nan") : 0;
+
 	my $e = 0;
 	foreach(my @al = split(',', $apcupsd->{list})) {
-		my $linev;
-		my $loadc;
-		my $bchar;
-		my $timel;
-		my $mbatc;
-		my $ovolt;
-		my $ltran;
-		my $htran;
-		my $itemp;
-		my $battv;
-		my $linef;
-		my $nxfer;
-		my $nomov;
-		my $minti;
-		my $nomba;
-		my $humid;
-		my $atemp;
-		my $val01;
-		my $val02;
-		my $val03;
-		my $val04;
-		my $val05;
+		my $linev = $default_value;
+		my $loadc = $default_value;
+		my $bchar = $default_value;
+		my $timel = $default_value;
+		my $mbatc = $default_value;
+		my $ovolt = $default_value;
+		my $ltran = $default_value;
+		my $htran = $default_value;
+		my $itemp = $default_value;
+		my $battv = $default_value;
+		my $linef = $default_value;
+		my $nxfer = $default_value;
+		my $nomov = $default_value;
+		my $minti = $default_value;
+		my $nomba = $default_value;
+		my $humid = $default_value;
+		my $atemp = $default_value;
+		my $val01 = $default_value;
+		my $val02 = $default_value;
+		my $val03 = $default_value;
+		my $val04 = $default_value;
+		my $val05 = $default_value;
 
 		my $data;
 		if(open(EXEC, $apcupsd->{cmd} . " status " . $al[$e] . " |")) {
@@ -184,10 +187,6 @@ sub apcupsd_update {
 			$rrdata .= ":U:U:U:U:U:U:U:U:U:U:U:U:U:U:U:U:U:U:U:U:U:U";
 			next;
 		}
-
-		($linev, $loadc, $bchar, $timel, $mbatc, $ovolt, $ltran,
-		 $htran, $itemp, $battv, $linef, $nxfer, $nomov, $minti,
-		 $nomba, $humid, $atemp) = (0) x 17;
 
 		foreach(my @l = split('\n', $data)) {
 			if(/^LINEV\s*:\s*(\d+\.\d+)\s+Volts/) {
@@ -252,6 +251,30 @@ sub apcupsd_update {
 	logger("ERROR: while updating $rrd: $err") if $err;
 }
 
+sub skipscale_string {
+	my ($skipscale) = @_;
+	if ($skipscale) {
+		return ":skipscale";
+	} else {
+		return "";
+	}
+}
+
+sub altscaling_options {
+	my ($altscaling) = @_;
+	my @scaling_options;
+	if ($altscaling) {
+		push(@scaling_options, "--alt-autoscale");
+		push(@scaling_options, "--alt-y-grid");
+	}
+	return @scaling_options;
+}
+
+sub pad_string {
+	my ($string_length, $string) = @_;
+	return sprintf("%-" . $string_length . "s",$string);
+}
+
 sub apcupsd_cgi {
 	my ($package, $config, $cgi) = @_;
 	my @output;
@@ -309,6 +332,13 @@ sub apcupsd_cgi {
 	if(lc($config->{temperature_scale}) eq "f") {
 		$temp_scale = "Fahrenheit";
 	}
+
+	my $gap_on_all_nan = lc($apcupsd->{gap_on_all_nan} || "") eq "y" ? 1 : 0;
+	my $skipscale_for_transfer_voltage = lc($apcupsd->{skipscale_for_transfer_voltage} || "") eq "y" ? 1 : 0;
+	my $skipscale_for_shutdown_level = lc($apcupsd->{skipscale_for_shutdown_level} || "") eq "y" ? 1 : 0;
+	my $alt_scaling_for_voltage = lc($apcupsd->{alt_scaling_for_voltage} || "") eq "y" ? 1 : 0;
+	my $alt_scaling_for_timeleft = lc($apcupsd->{alt_scaling_for_timeleft} || "") eq "y" ? 1 : 0;
+	my $alt_scaling_for_battery_voltage = lc($apcupsd->{alt_scaling_for_battery_voltage} || "") eq "y" ? 1 : 0;
 
 	# text mode
 	#
@@ -455,7 +485,7 @@ sub apcupsd_cgi {
 		undef(@tmp);
 		undef(@tmpz);
 		undef(@CDEF);
-		push(@tmp, "LINE2:htran#EE4444:High transition");
+		push(@tmp, "LINE2:htran#EE4444:High transition" . skipscale_string($skipscale_for_transfer_voltage));
 		push(@tmp, "GPRINT:htran:LAST: Current\\: %4.1lf");
 		push(@tmp, "GPRINT:htran:AVERAGE:   Average\\: %4.1lf");
 		push(@tmp, "GPRINT:htran:MIN:   Min\\: %4.1lf");
@@ -470,15 +500,17 @@ sub apcupsd_cgi {
 		push(@tmp, "GPRINT:ovolt:AVERAGE:   Average\\: %4.1lf");
 		push(@tmp, "GPRINT:ovolt:MIN:   Min\\: %4.1lf");
 		push(@tmp, "GPRINT:ovolt:MAX:   Max\\: %4.1lf\\n");
-		push(@tmp, "LINE2:ltran#EE4444:Low transition");
+		push(@tmp, "LINE2:ltran#EE4444:Low transition" . skipscale_string($skipscale_for_transfer_voltage));
 		push(@tmp, "GPRINT:ltran:LAST:  Current\\: %4.1lf");
 		push(@tmp, "GPRINT:ltran:AVERAGE:   Average\\: %4.1lf");
 		push(@tmp, "GPRINT:ltran:MIN:   Min\\: %4.1lf");
 		push(@tmp, "GPRINT:ltran:MAX:   Max\\: %4.1lf\\n");
-		push(@tmpz, "LINE2:htran#EE4444:High transition");
+		push(@tmpz, "LINE2:htran#EE4444:High transition" . skipscale_string($skipscale_for_transfer_voltage));
 		push(@tmpz, "LINE2:linev#44EE44:Line");
 		push(@tmpz, "LINE2:ovolt#4444EE:Output");
 		push(@tmpz, "LINE2:ltran#EE4444:Low transition");
+		push(@tmpz, "LINE2:ltran#EE4444:Low transition" . skipscale_string($skipscale_for_transfer_voltage));
+
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -491,6 +523,7 @@ sub apcupsd_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
+		my $cdef_allvalues_volt = $gap_on_all_nan ? "CDEF:allvalues=ltran,UN,0,1,IF,htran,UN,0,1,IF,linev,UN,0,1,IF,ovolt,UN,0,1,IF,+,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=htran,linev,ovolt,ltran,+,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6]",
 			"--title=$config->{graphs}->{_apcupsd1}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -498,6 +531,7 @@ sub apcupsd_cgi {
 			"--vertical-label=Volts",
 			"--width=$width",
 			"--height=$height",
+			altscaling_options($alt_scaling_for_voltage),
 			@extra,
 			@riglim,
 			$zoom,
@@ -507,7 +541,7 @@ sub apcupsd_cgi {
 			"DEF:linev=$rrd:apcupsd" . $e . "_linev:AVERAGE",
 			"DEF:ovolt=$rrd:apcupsd" . $e . "_ovolt:AVERAGE",
 			"DEF:ltran=$rrd:apcupsd" . $e . "_ltran:AVERAGE",
-			"CDEF:allvalues=htran,linev,ovolt,ltran,+,+,+",
+			$cdef_allvalues_volt,
 			@CDEF,
 			"COMMENT: \\n",
 			@tmp,
@@ -524,6 +558,7 @@ sub apcupsd_cgi {
 				"--vertical-label=Volts",
 				"--width=$width",
 				"--height=$height",
+				altscaling_options($alt_scaling_for_voltage),
 				@full_size_mode,
 				@extra,
 				@riglim,
@@ -534,7 +569,7 @@ sub apcupsd_cgi {
 				"DEF:linev=$rrd:apcupsd" . $e . "_linev:AVERAGE",
 				"DEF:ovolt=$rrd:apcupsd" . $e . "_ovolt:AVERAGE",
 				"DEF:ltran=$rrd:apcupsd" . $e . "_ltran:AVERAGE",
-				"CDEF:allvalues=htran,linev,ovolt,ltran,+,+,+",
+				$cdef_allvalues_volt,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -565,22 +600,22 @@ sub apcupsd_cgi {
 		undef(@tmpz);
 		undef(@CDEF);
 		push(@tmp, "AREA:bchar#4444EE:Charge");
-		push(@tmp, "GPRINT:bchar:LAST:          Current\\: %4.1lf%%");
-		push(@tmp, "GPRINT:bchar:AVERAGE:   Average\\: %4.1lf%%");
-		push(@tmp, "GPRINT:bchar:MIN:   Min\\: %4.1lf%%");
-		push(@tmp, "GPRINT:bchar:MAX:   Max\\: %4.1lf%%\\n");
+		push(@tmp, "GPRINT:bchar:LAST:          Current\\:%5.1lf%%");
+		push(@tmp, "GPRINT:bchar:AVERAGE:   Average\\:%5.1lf%%");
+		push(@tmp, "GPRINT:bchar:MIN:   Min\\:%5.1lf%%");
+		push(@tmp, "GPRINT:bchar:MAX:   Max\\:%5.1lf%%\\n");
 		push(@tmp, "AREA:loadc#EE4444:Load capacity");
-		push(@tmp, "GPRINT:loadc:LAST:   Current\\: %4.1lf%%");
-		push(@tmp, "GPRINT:loadc:AVERAGE:   Average\\: %4.1lf%%");
-		push(@tmp, "GPRINT:loadc:MIN:   Min\\: %4.1lf%%");
-		push(@tmp, "GPRINT:loadc:MAX:   Max\\: %4.1lf%%\\n");
+		push(@tmp, "GPRINT:loadc:LAST:   Current\\:%5.1lf%%");
+		push(@tmp, "GPRINT:loadc:AVERAGE:   Average\\:%5.1lf%%");
+		push(@tmp, "GPRINT:loadc:MIN:   Min\\:%5.1lf%%");
+		push(@tmp, "GPRINT:loadc:MAX:   Max\\:%5.1lf%%\\n");
 		push(@tmp, "LINE1:bchar#0000EE");
 		push(@tmp, "LINE1:loadc#EE0000");
 		push(@tmp, "LINE2:mbatc#EEEE44:Shutdown level");
-		push(@tmp, "GPRINT:mbatc:LAST:  Current\\: %4.1lf%%");
-		push(@tmp, "GPRINT:mbatc:AVERAGE:   Average\\: %4.1lf%%");
-		push(@tmp, "GPRINT:mbatc:MIN:   Min\\: %4.1lf%%");
-		push(@tmp, "GPRINT:mbatc:MAX:   Max\\: %4.1lf%%\\n");
+		push(@tmp, "GPRINT:mbatc:LAST:  Current\\:%5.1lf%%");
+		push(@tmp, "GPRINT:mbatc:AVERAGE:   Average\\:%5.1lf%%");
+		push(@tmp, "GPRINT:mbatc:MIN:   Min\\:%5.1lf%%");
+		push(@tmp, "GPRINT:mbatc:MAX:   Max\\:%5.1lf%%\\n");
 		push(@tmpz, "AREA:bchar#4444EE:Charge");
 		push(@tmpz, "AREA:loadc#EE4444:Load");
 		push(@tmpz, "LINE2:mbatc#EEEE44:Shutdown level");
@@ -596,6 +631,7 @@ sub apcupsd_cgi {
 			($width, $height) = split('x', $config->{graph_size}->{main}) if $silent eq "imagetagbig";
 			@tmp = @tmpz;
 		}
+		my $cdef_allvalues_bat = $gap_on_all_nan ? "CDEF:allvalues=bchar,UN,0,1,IF,mbatc,UN,0,1,IF,loadc,UN,0,1,IF,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=bchar,mbatc,loadc,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 1]",
 			"--title=$config->{graphs}->{_apcupsd2}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -611,13 +647,12 @@ sub apcupsd_cgi {
 			"DEF:bchar=$rrd:apcupsd" . $e . "_bchar:AVERAGE",
 			"DEF:mbatc=$rrd:apcupsd" . $e . "_mbatc:AVERAGE",
 			"DEF:loadc=$rrd:apcupsd" . $e . "_loadc:AVERAGE",
-			"CDEF:allvalues=bchar,mbatc,loadc,+,+",
+			$cdef_allvalues_bat,
 			@CDEF,
 			"COMMENT: \\n",
 			@tmp,
 			"COMMENT: \\n",
-			$timeleft,
-			"COMMENT: \\n");
+			$timeleft);
 		$err = RRDs::error;
 		push(@output, "ERROR: while graphing $IMG_DIR" . "$IMG[$e * 6 + 1]: $err\n") if $err;
 		if(lc($config->{enable_zoom}) eq "y") {
@@ -638,7 +673,7 @@ sub apcupsd_cgi {
 				"DEF:bchar=$rrd:apcupsd" . $e . "_bchar:AVERAGE",
 				"DEF:mbatc=$rrd:apcupsd" . $e . "_mbatc:AVERAGE",
 				"DEF:loadc=$rrd:apcupsd" . $e . "_loadc:AVERAGE",
-				"CDEF:allvalues=bchar,mbatc,loadc,+,+",
+				$cdef_allvalues_bat,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -701,6 +736,7 @@ sub apcupsd_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
+		my $cdef_allvalues_temp = $gap_on_all_nan ? "CDEF:allvalues=itemp,UN,0,1,IF,atemp,UN,0,1,IF,humid,UN,0,1,IF,+,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=itemp,atemp,humid,+,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 2]",
 			"--title=$config->{graphs}->{_apcupsd3}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -717,7 +753,7 @@ sub apcupsd_cgi {
 			"DEF:itemp=$rrd:apcupsd" . $e . "_itemp:AVERAGE",
 			"DEF:atemp=$rrd:apcupsd" . $e . "_atemp:AVERAGE",
 			"DEF:humid=$rrd:apcupsd" . $e . "_humid:AVERAGE",
-			"CDEF:allvalues=itemp,atemp,humid,+,+",
+			$cdef_allvalues_temp,
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -741,7 +777,7 @@ sub apcupsd_cgi {
 				"DEF:itemp=$rrd:apcupsd" . $e . "_itemp:AVERAGE",
 				"DEF:atemp=$rrd:apcupsd" . $e . "_atemp:AVERAGE",
 				"DEF:humid=$rrd:apcupsd" . $e . "_humid:AVERAGE",
-				"CDEF:allvalues=itemp,atemp,humid,+,+",
+				$cdef_allvalues_temp,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -791,6 +827,7 @@ sub apcupsd_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
+		my $cdef_allvalues_batvolt = $gap_on_all_nan ? "CDEF:allvalues=battv,UN,0,1,IF,nomba,UN,0,1,IF,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=battv,nomba,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 3]",
 			"--title=$config->{graphs}->{_apcupsd4}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -798,6 +835,7 @@ sub apcupsd_cgi {
 			"--vertical-label=Volts",
 			"--width=$width",
 			"--height=$height",
+			altscaling_options($alt_scaling_for_battery_voltage),
 			@extra,
 			@riglim,
 			$zoom,
@@ -806,7 +844,7 @@ sub apcupsd_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:battv=$rrd:apcupsd" . $e . "_battv:AVERAGE",
 			"DEF:nomba=$rrd:apcupsd" . $e . "_nomba:AVERAGE",
-			"CDEF:allvalues=battv,nomba,+",
+			$cdef_allvalues_batvolt,
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -820,6 +858,7 @@ sub apcupsd_cgi {
 				"--vertical-label=Volts",
 				"--width=$width",
 				"--height=$height",
+				altscaling_options($alt_scaling_for_battery_voltage),
 				@full_size_mode,
 				@extra,
 				@riglim,
@@ -829,7 +868,7 @@ sub apcupsd_cgi {
 				@{$colors->{graph_colors}},
 				"DEF:battv=$rrd:apcupsd" . $e . "_battv:AVERAGE",
 				"DEF:nomba=$rrd:apcupsd" . $e . "_nomba:AVERAGE",
-				"CDEF:allvalues=battv,nomba,+",
+				$cdef_allvalues_batvolt,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -861,10 +900,10 @@ sub apcupsd_cgi {
 		undef(@CDEF);
 		push(@tmp, "LINE2:timel#44EEEE:Minutes left");
 		push(@tmp, "GPRINT:timel:LAST:         Current\\: %3.0lf\\n");
-		push(@tmp, "LINE2:minti#EEEE44:Shutdown level");
+		push(@tmp, "LINE2:minti#EEEE44:Shutdown level" . skipscale_string($skipscale_for_shutdown_level));
 		push(@tmp, "GPRINT:minti:LAST:       Current\\: %3.0lf\\n");
 		push(@tmpz, "LINE2:timel#44EEEE:Minutes left");
-		push(@tmpz, "LINE2:minti#EEEE44:Shutdown level");
+		push(@tmpz, "LINE2:minti#EEEE44:Shutdown level" . skipscale_string($skipscale_for_shutdown_level));
 		if(lc($config->{show_gaps}) eq "y") {
 			push(@tmp, "AREA:wrongdata#$colors->{gap}:");
 			push(@tmpz, "AREA:wrongdata#$colors->{gap}:");
@@ -879,6 +918,7 @@ sub apcupsd_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
+		my $cdef_allvalues_timeleft = $gap_on_all_nan ? "CDEF:allvalues=timel,UN,0,1,IF,minti,UN,0,1,IF,+,0,GT,1,UNKN,IF" : "CDEF:allvalues=timel,minti,+";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 4]",
 			"--title=$config->{graphs}->{_apcupsd5}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -886,6 +926,7 @@ sub apcupsd_cgi {
 			"--vertical-label=Minutes",
 			"--width=$width",
 			"--height=$height",
+			altscaling_options($alt_scaling_for_timeleft),
 			@extra,
 			@riglim,
 			$zoom,
@@ -894,7 +935,7 @@ sub apcupsd_cgi {
 			@{$colors->{graph_colors}},
 			"DEF:timel=$rrd:apcupsd" . $e . "_timel:AVERAGE",
 			"DEF:minti=$rrd:apcupsd" . $e . "_minti:AVERAGE",
-			"CDEF:allvalues=timel,minti,+",
+			$cdef_allvalues_timeleft,
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -908,6 +949,7 @@ sub apcupsd_cgi {
 				"--vertical-label=Minutes",
 				"--width=$width",
 				"--height=$height",
+				altscaling_options($alt_scaling_for_timeleft),
 				@full_size_mode,
 				@extra,
 				@riglim,
@@ -917,7 +959,7 @@ sub apcupsd_cgi {
 				@{$colors->{graph_colors}},
 				"DEF:timel=$rrd:apcupsd" . $e . "_timel:AVERAGE",
 				"DEF:minti=$rrd:apcupsd" . $e . "_minti:AVERAGE",
-				"CDEF:allvalues=timel,minti,+",
+				$cdef_allvalues_timeleft,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
@@ -964,6 +1006,7 @@ sub apcupsd_cgi {
 			push(@tmp, "COMMENT: \\n");
 			push(@tmp, "COMMENT: \\n");
 		}
+		my $cdef_allvalues_freq = $gap_on_all_nan ? "CDEF:allvalues=linef,UN,0,1,IF,0,GT,1,UNKN,IF" : "CDEF:allvalues=linef";
 		$pic = $rrd{$version}->("$IMG_DIR" . "$IMG[$e * 6 + 5]",
 			"--title=$config->{graphs}->{_apcupsd6}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
@@ -978,7 +1021,7 @@ sub apcupsd_cgi {
 			@{$cgi->{version12_small}},
 			@{$colors->{graph_colors}},
 			"DEF:linef=$rrd:apcupsd" . $e . "_linef:AVERAGE",
-			"CDEF:allvalues=linef",
+			$cdef_allvalues_freq,
 			@CDEF,
 			@tmp);
 		$err = RRDs::error;
@@ -1000,7 +1043,7 @@ sub apcupsd_cgi {
 				@{$cgi->{version12_small}},
 				@{$colors->{graph_colors}},
 				"DEF:linef=$rrd:apcupsd" . $e . "_linef:AVERAGE",
-				"CDEF:allvalues=linef",
+				$cdef_allvalues_freq,
 				@CDEF,
 				@tmpz);
 			$err = RRDs::error;
