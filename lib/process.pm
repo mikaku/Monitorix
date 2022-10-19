@@ -1281,10 +1281,10 @@ sub process_cgi {
 				push(@tmpz, "LINE2:n_ics" . $n . $LC[$n]);
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:vcs" . $n . $LC[$n] . ":$str");
-				push(@tmp, "GPRINT:tcs" . $n . ":LAST:Cur\\: %4.0lf");
-				push(@tmp, "GPRINT:tcs" . $n . ":MIN:  Min\\: %4.0lf");
-				push(@tmp, "GPRINT:tcs" . $n . ":MAX:  Max\\: %4.0lf\\n");
-				push(@tmp, "LINE2:n_ics" . $n . $LC[$n]);
+				push(@tmp, "GPRINT:tcs" . $n . ":LAST:Cur\\:%7.1lf");
+				push(@tmp, "GPRINT:tcs" . $n . ":MIN:Min\\:%7.1lf");
+				push(@tmp, "GPRINT:tcs" . $n . ":MAX:Max\\:%7.1lf\\n");
+				push(@tmp, "LINE1:n_ics" . $n . $LC[$n]);
 			}
 		}
 		if($title) {
@@ -1309,7 +1309,8 @@ sub process_cgi {
 			"--title=$config->{graphs}->{_process7}  ($tf->{nwhen}$tf->{twhen})",
 			"--start=-$tf->{nwhen}$tf->{twhen}",
 			"--imgformat=$imgfmt_uc",
-			"--vertical-label=Nonvoluntary + voluntary/s",
+			"--vertical-label=Voluntary/s",
+			"--right-axis-label=-1 x Involuntary/s",
 			"--width=$width",
 			"--height=$height",
 			@extra,
