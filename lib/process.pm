@@ -1570,15 +1570,15 @@ sub process_cgi {
 		if(lc(($process->{time_unit} || "") eq "minute")) {
 			$ytitle = "Minutes";
 			$unit = 60;
-			$format = "%5.0lf";
+			$format = "%7.0lf";
 		} elsif(lc(($process->{time_unit} || "") eq "hour")) {
 			$ytitle = "Hours";
 			$unit = 3600;
-			$format = "%4.0lf";
+			$format = "%7.0lf";
 		} else {
 			$ytitle = "Days";
 			$unit = 86400;
-			$format = "%4.1lf";
+			$format = "%7.1lf";
 		}
 		for($n = 0; $n < 10; $n++) {
 			my $p = trim($lp[$n] || "");
@@ -1589,9 +1589,9 @@ sub process_cgi {
 				push(@tmpz, "LINE2:uptd" . $n . $LC[$n] . ":$str");
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:uptd" . $n . $LC[$n] . ":$str");
-				push(@tmp, "GPRINT:uptd" . $n . ":LAST:Cur\\: $format");
-				push(@tmp, "GPRINT:uptd" . $n . ":MIN:  Min\\: $format");
-				push(@tmp, "GPRINT:uptd" . $n . ":MAX:  Max\\: $format\\n");
+				push(@tmp, "GPRINT:uptd" . $n . ":LAST:Cur\\:$format");
+				push(@tmp, "GPRINT:uptd" . $n . ":MIN:Min\\:$format");
+				push(@tmp, "GPRINT:uptd" . $n . ":MAX:Max\\:$format\\n");
 			}
 		}
 		if($title) {
