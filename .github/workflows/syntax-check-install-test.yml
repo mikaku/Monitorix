@@ -27,7 +27,7 @@ jobs:
       image: ${{ matrix.image }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Dependencies (Arch Linux)
         uses: ./.github/actions/pacman/install
@@ -100,7 +100,7 @@ jobs:
             /var/log/monitorix*
 
       - name: Upload `Monitorix` artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.image_name }}
           path: /tmp/artifacts.tar.gz
