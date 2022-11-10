@@ -18,7 +18,7 @@ RM = rm -f
 RMD = rmdir
 SED = sed
 INSTALL = install -p
-BACKUP = -b
+BACKUP = -b --suffix=.bak
 INSTALL_PROGRAM = $(INSTALL) -m755
 INSTALL_DATA = $(INSTALL) -m644
 INSTALL_DIR = $(INSTALL) -d
