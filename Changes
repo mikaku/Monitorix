@@ -1,4 +1,4 @@
-N.NN.N - DD-MMM-YYYY
+N.NN.N - DD-Dec-2022
 ====================
 - Added a complete graph to monitor the power consumption of Intel-RAPL capable
   devices ('intelrapl.pm'). [#390]
@@ -32,7 +32,8 @@ N.NN.N - DD-MMM-YYYY
   in D3 power state. [#433]
 - Included more NVIDIA variants of 'N/A' in 'nvidiagpu.pm'. [#415]
 - Changed to '/usr/bin/vcgencmd' the default path in 'monitorix.conf'. [#420]
-- Updated 'apcupsd.pm' to have the same options and fixes as 'nut.pm'.  [#440]
+- Updated 'apcupsd.pm' to have the same options and fixes as 'nut.pm'. [#440]
+- Improved the readability of the Context switches graph in 'process.pm'. [#442]
 - Removed a call to print() inside of push() that displayed the return value
   (1) when monitoring multiple BIND servers.
 - Fixed an error in 'pgsql.pm' if a non-privileged user is used to read the
@@ -47,7 +48,7 @@ N.NN.N - DD-MMM-YYYY
 - Fixed the CSS theming support in the bottom of some graphs. [#405]
 - Fixed graphs layout when using more than one server in 'chrony.pm'. [#408]
 - Fixed the legend alignment in 'nvidiagpu.pm' and 'amdgpu.pm'. [#411]
-- Fixed Makefile to do a backup of 'monitorix.conf'. [#414]
+- Fixed Makefile to do a backup of the current 'monitorix.conf'. [#414]
 - Fixed to match the values in the zoom graph of cores in 'lmsens.pm'.
 - Fixed warnings for undefined mimetype on some HTTP requests. [#427]
 - Small fixes and cosmetic changes.
