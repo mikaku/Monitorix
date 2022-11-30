@@ -247,7 +247,7 @@ sub serv_update {
 					$sc[1] = trim($sc[1]);
 					$sc[1] =~ s/^\"//; $sc[1] =~ s/\"$//; # remove leading and trailing quotes
 					my $date = strftime($sc[1], localtime);
-					$date = qr($date);
+					$date = qr($date) unless !$date;
 					my @regex = split('\+', trim($sc[2]));
 					my $IN;
 					my $seek_pos = $config->{serv_hist}->{$seek_str} || 0;
@@ -279,6 +279,7 @@ sub serv_update {
 						logger("Malformed logfile parameter '$logfile' in service '$s': $!");
 						undef($logfile);
 					}
+					$date = "." if !$date;
 					if(defined($logfile)) {
 						while(<$IN>) {
 							if(/$date/) {
