@@ -243,12 +243,14 @@ sub serv_update {
 				}
 				foreach my $se (@sa) {
 					@sc = split(',', $se);
-					my $logfile = trim($sc[0]);
-					$sc[1] = trim($sc[1]);
-					$sc[1] =~ s/^\"//; $sc[1] =~ s/\"$//; # remove leading and trailing quotes
-					my $date = strftime($sc[1], localtime);
+					my $valtype = trim(uc($sc[0]));
+					$val[$n] = 0 unless $valtype eq "C";	# zero it if is not a counter
+					my $logfile = trim($sc[1]);
+					$sc[2] = trim($sc[2]);
+					$sc[2] =~ s/^\"//; $sc[2] =~ s/\"$//; # remove leading and trailing quotes
+					my $date = strftime($sc[2], localtime);
 					$date = qr($date) unless !$date;
-					my @regex = split('\+', trim($sc[2]));
+					my @regex = split('\+', trim($sc[3]));
 					my $IN;
 					my $seek_pos = $config->{serv_hist}->{$seek_str} || 0;
 					if($logfile =~ m/^file:.+/) {
