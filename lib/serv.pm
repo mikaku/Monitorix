@@ -250,7 +250,9 @@ sub serv_update {
 					$sc[2] =~ s/^\"//; $sc[2] =~ s/\"$//; # remove leading and trailing quotes
 					my $date = strftime($sc[2], localtime);
 					$date = qr($date) unless !$date;
-					my @regex = split('\+', trim($sc[3]));
+					$sc[3] = trim($sc[3]);
+					$sc[3] = "\".\"" unless $sc[3] ne "\"\"";	# set "." as a minimal regex
+					my @regex = split('\+', $sc[3]);
 					my $IN;
 					my $seek_pos = $config->{serv_hist}->{$seek_str} || 0;
 					if($logfile =~ m/^file:.+/) {
