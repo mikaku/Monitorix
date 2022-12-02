@@ -202,6 +202,18 @@ sub serv_update {
 	my $n;
 	my $rrdata = "N";
 	my $e = 0;
+	my $reset = 0;
+
+	# zero all values on every new day
+	my $hour = int(strftime("%H", localtime));
+	if(!defined($config->{serv_hist}->{'hour'})) {
+		$config->{serv_hist}->{'hour'} = $hour;
+	} else {
+		if($hour < $config->{serv_hist}->{'hour'}) {
+			$reset = 1;
+		}
+		$config->{serv_hist}->{'hour'} = $hour;
+	}
 
 	foreach my $sg (sort keys %{$serv->{list}}) {
 		my @sl = split(',', $serv->{list}->{$sg});
@@ -214,15 +226,8 @@ sub serv_update {
 			$val[$n] = $config->{serv_hist}->{$str} if $config->{serv_hist}->{$str};
 		}
 
-		# zero all values on every new day
-		my $hour = int(strftime("%H", localtime));
-		if(!defined($config->{serv_hist}->{'hour'})) {
-			$config->{serv_hist}->{'hour'} = $hour;
-		} else {
-			if($hour < $config->{serv_hist}->{'hour'}) {
-				@val = ($use_nan_for_missing_data ? (0+"nan") : 0) x 16;
-			}
-			$config->{serv_hist}->{'hour'} = $hour;
+		if($reset) {
+			@val = ($use_nan_for_missing_data ? (0+"nan") : 0) x 16;
 		}
 
 		for($n = 0; $n < 16; $n++) {
