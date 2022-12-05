@@ -3172,34 +3172,34 @@ The maximum number of services allowed per group is 16.
 .RS
 This list complements the \fBlist\fP option. It basically allows you to define how Monitorix will monitor such service.
 .P
-You must use the same name of service that you defined in \fBlist\fP followed by an equal sign and a number of values. The first value indicates the logfile from where Monitorix will extract the information. It must be prefixed with \fIfile:\fP to indicate that it's a file. If you need to use the output of a program instead, then you can prefix it with \fIexec:\fP and Monitorix will run this script and will use its output as if it was the logfile.
+You must use the same name of service that you defined in \fBlist\fP followed by an equal sign and a number of values. The first value indicates if this will be a \fIC\fP (counter) or a \fIG\fP (gauge). Counters are perfect for values that accumulate on every sample (match lines in logfiles), Gauges are for values that can change on every new sample (disk usage, Samba users, etc). The second value indicates the logfile from where Monitorix will extract the information. It must be prefixed with \fIfile:\fP to indicate that it's a file. If you need to use the output of a program instead, then you can prefix it with \fIexec:\fP and Monitorix will run this script and will use its output as if it was the logfile.
 .P
-The second value is the first regular expression that Monitorix will use to match lines. It's normally use as the date that appears in the log file.
+The third value is the first regular expression that Monitorix will use to match lines. It's normally used as the date that appears in the log file.
 .P
-The third and last value is a group of regular expressions separated by a plus sign. You can prefix a regular expresion with \fIi:\fP in order to note that it must be insensitive case.
+The forth and last value is a group of regular expressions separated by a plus sign. You can prefix a regular expresion with \fIi:\fP in order to note that it must be insensitive case.
 .P
 You can create multiple definitions of the same service with different values, so you are able to combine similar services into one single metric.
 .P
 .RS
 <desc>
 .br
-	SSH = file:/var/log/secure, "^%b %e", "sshd\\[.*\\]: Accepted "
+	SSH = C, file:/var/log/secure, "^%b %e", "sshd\\[.*\\]: Accepted "
 .br
-	Spam = file:/var/log/maillog, "^%b %e", "MailScanner.*Spam Checks:.*Found.*spam messages" + "amavis\\[.* SPAM"
+	Spam = C, file:/var/log/maillog, "^%b %e", "MailScanner.*Spam Checks:.*Found.*spam messages" + "amavis\\[.* SPAM"
 .br
-	Spam = file:/var/log/sa-update.log, "^%b %e", "spamd: identified spam"
+	Spam = C, file:/var/log/sa-update.log, "^%b %e", "spamd: identified spam"
 .br
-	SMTP = file:/var/log/maillog, "^%b %e", i:"to=.*stat(us)?=sent"
+	SMTP = C, file:/var/log/maillog, "^%b %e", i:"to=.*stat(us)?=sent"
 .br
-	IMAP = file:/var/log/uwimap, "%b %d", " imapd\\[.* Login user="
+	IMAP = C, file:/var/log/uwimap, "%b %d", " imapd\\[.* Login user="
 .br
-	IMAP = file:/var/log/dovecot, "%b %d", " imap-login: .* Login: "
+	IMAP = C, file:/var/log/dovecot, "%b %d", " imap-login: .* Login: "
 .br
-	Samba = exec:/usr/local/bin/samba.sh, "", ""
+	Samba = G, exec:/usr/local/bin/samba.sh, "", ""
 .br
-	POP3 = file:/var/log/uwimap, "%b %d", " ipop3d\\[.* Login user="
+	POP3 = C, file:/var/log/uwimap, "%b %d", " ipop3d\\[.* Login user="
 .br
-	POP3 = file:/var/log/dovecot, "%b %d", " pop3-login: .* Login: "
+	POP3 = C, file:/var/log/dovecot, "%b %d", " pop3-login: .* Login: "
 .br
 </desc>
 .RE
