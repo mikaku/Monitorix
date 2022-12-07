@@ -1,4 +1,4 @@
-N.NN.N - DD-Dec-2022
+3.15.0 - 07-Dec-2022
 ====================
 - Added a complete graph to monitor the power consumption of Intel-RAPL capable
   devices ('intelrapl.pm'). [#390]
