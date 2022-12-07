@@ -33,7 +33,8 @@ N.NN.N - DD-Dec-2022
 - Included more NVIDIA variants of 'N/A' in 'nvidiagpu.pm'. [#415]
 - Changed to '/usr/bin/vcgencmd' the default path in 'monitorix.conf'. [#420]
 - Updated 'apcupsd.pm' to have the same options and fixes as 'nut.pm'. [#440]
-- Improved the readability of the Context switches graph in 'process.pm'. [#442]
+- Improved the readability of the Context switches graph and value alignments
+  in 'process.pm'. [#442][#443]
 - Removed a call to print() inside of push() that displayed the return value
   (1) when monitoring multiple BIND servers.
 - Fixed an error in 'pgsql.pm' if a non-privileged user is used to read the
