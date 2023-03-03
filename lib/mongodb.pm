@@ -211,12 +211,14 @@ sub mongodb_update {
 		my $port = $mongodb->{desc}->{$mongo}->{port} || "";
 		my $user = $mongodb->{desc}->{$mongo}->{username} || "";
 		my $pass = $mongodb->{desc}->{$mongo}->{password} || "";
-		my $cmd = "mongo ";
+		my $cmd = $mongodb->{cmd} || "mongo";
+		my $cmd_db_serverstatus = $mongodb->{cmd_db_serverstatus} || "--eval \"printjson(db.serverStatus())\"";
+		$cmd .= " ";
 		$cmd .= "--host $host " if $host;
 		$cmd .= "--port $port " if $port;
 		$cmd .= "-u $user " if $user;
 		$cmd .= "-p $pass " if $pass;
-		$cmd .= "--eval \"printjson(db.serverStatus())\"";
+		$cmd .= $cmd_db_serverstatus;
 
 		if(open(IN, "$cmd |")) {
 			my @data = <IN>;
@@ -224,32 +226,32 @@ sub mongodb_update {
 
 			my $start = "";
 			foreach(@data) {
-				if(/"uptime"\s+:\s+(\d+),/) {
+				if(/"uptime"\s*:\s+(\d+),/) {
 					$uptime = $1;
 					next;
 				}
-				if(/"asserts"\s+:\s*{/) {
+				if(/"asserts"\s*:\s*{/) {
 					$start = "asserts";
 					next;
 				}
 				if($start eq "asserts") {
-					if(/"regular"\s+:\s+(\d+),/) {
+					if(/"regular"\s*:\s+(\d+),/) {
 						$asserts_sum = $1;
 						next;
 					}
-					if(/"warning"\s+:\s+(\d+),/) {
+					if(/"warning"\s*:\s+(\d+),/) {
 						$asserts_sum += $1;
 						next;
 					}
-					if(/"msg"\s+:\s+(\d+),/) {
+					if(/"msg"\s*:\s+(\d+),/) {
 						$asserts_sum += $1;
 						next;
 					}
-					if(/"user"\s+:\s+(\d+),/) {
+					if(/"user"\s*:\s+(\d+),/) {
 						$asserts_sum += $1;
 						next;
 					}
-					if(/"rollovers"\s+:\s+(\d+),/) {
+					if(/"rollovers"\s*:\s+(\d+),/) {
 						$asserts_sum += $1;
 						$str = $n . "asserts";
 						$asserts = $asserts_sum - ($config->{mongodb_hist}->{$str} || 0);
@@ -260,31 +262,31 @@ sub mongodb_update {
 						next;
 					}
 				}
-				if(/"backgroundFlushing"\s+:\s*{/) {
+				if(/"backgroundFlushing"\s*:\s*{/) {
 					$start = "backgroundFlushing";
 					next;
 				}
 				if($start eq "backgroundFlushing") {
-					if(/"average_ms"\s+:\s+(\d+.*\d*),/) {
+					if(/"average_ms"\s*:\s+(\d+.*\d*),/) {
 						$bf_avrgms = $1;
 						next;
 					}
-					if(/"last_ms"\s+:\s+(\d+),/) {
+					if(/"last_ms"\s*:\s+(\d+),/) {
 						$bf_lastms = $1;
 						$start = "";
 						next;
 					}
 				}
-				if(/"connections"\s+:\s*{/) {
+				if(/"connections"\s*:\s*{/) {
 					$start = "connections";
 					next;
 				}
 				if($start eq "connections") {
-					if(/"current"\s+:\s+(\d+),/) {
+					if(/"current"\s*:\s+(\d+),/) {
 						$conn_curr = $1;
 						next;
 					}
-					if(/"totalCreated"\s+:\s+NumberLong\((\d+)\)/) {
+					if(/"totalCreated"\s*:\s+NumberLong\((\d+)\)/) {
 						$str = $n . "conn_totc";
 						$conn_totc = $1 - ($config->{mongodb_hist}->{$str} || 0);
 						$conn_totc = 0 unless $conn_totc != $1;
@@ -294,77 +296,77 @@ sub mongodb_update {
 						next;
 					}
 				}
-				if(/"dur"\s+:\s*{/) {
+				if(/"dur"\s*:\s*{/) {
 					$start = "dur";
 					next;
 				}
 				if($start eq "dur") {
-					if(/"commits"\s+:\s+(\d+),/) {
+					if(/"commits"\s*:\s+(\d+),/) {
 						$dur_commi = $1;
 						next;
 					}
-					if(/"journaledMB"\s+:\s+(\d+.*\d*),/) {
+					if(/"journaledMB"\s*:\s+(\d+.*\d*),/) {
 						$dur_io = $1;
 						next;
 					}
-					if(/"writeToDataFilesMB"\s+:\s+(\d+.*\d*),/) {
+					if(/"writeToDataFilesMB"\s*:\s+(\d+.*\d*),/) {
 						$dur_io += $1;
 						$dur_io *= 1000000;	# (journaledMB + writeToDataFilesMB) * 1000000 in bytes
 						$start = "";
 						next;
 					}
 				}
-				if(/"extra_info"\s+:\s*{/) {
+				if(/"extra_info"\s*:\s*{/) {
 					$start = "extra_info";
 					next;
 				}
 				if($start eq "extra_info") {
-					if(/"heap_usage_bytes"\s+:\s+(\d+),/) {
+					if(/"heap_usage_bytes"\s*:\s+(\d+),/) {
 						$ei_heapus = $1;
 						next;
 					}
-					if(/"page_faults"\s+:\s+(\d+)/) {
+					if(/"page_faults"\s*:\s+(\d+)/) {
 						$ei_pgfalt = $1;
 						$start = "";
 						next;
 					}
 				}
-				if(/"globalLock"\s+:\s*{/) {
+				if(/"globalLock"\s*:\s*{/) {
 					$start = "globalLock";
 					next;
 				}
 				if($start eq "globalLock") {
-					if(/"currentQueue"\s+:\s*{/) {
+					if(/"currentQueue"\s*:\s*{/) {
 						$start = "globalLock.currentQueue";
 						next;
 					}
 				}
 				if($start eq "globalLock.currentQueue") {
-					if(/"total"\s+:\s+(\d+),/) {
+					if(/"total"\s*:\s+(\d+),/) {
 						$gbl_currq = $1;
 						$start = "globalLock";
 						next;
 					}
 				}
 				if($start eq "globalLock") {
-					if(/"activeClients"\s+:\s*{/) {
+					if(/"activeClients"\s*:\s*{/) {
 						$start = "globalLock.activeClients";
 						next;
 					}
 				}
 				if($start eq "globalLock.activeClients") {
-					if(/"total"\s+:\s+(\d+),/) {
+					if(/"total"\s*:\s+(\d+),/) {
 						$gbl_actcl = $1;
 						$start = "";
 						next;
 					}
 				}
-				if(/"network"\s+:\s*{/) {
+				if(/"network"\s*:\s*{/) {
 					$start = "network";
 					next;
 				}
 				if($start eq "network") {
-					if(/"bytesIn"\s+:\s+(\d+),/) {
+					if(/"bytesIn"\s*:\s+(\d+),/) {
 						$str = $n . "net_in";
 						$net_in = $1 - ($config->{mongodb_hist}->{$str} || 0);
 						$net_in = 0 unless $net_in != $1;
@@ -372,7 +374,7 @@ sub mongodb_update {
 						$config->{mongodb_hist}->{$str} = $1;
 						next;
 					}
-					if(/"bytesOut"\s+:\s+(\d+),/) {
+					if(/"bytesOut"\s*:\s+(\d+),/) {
 						$str = $n . "net_out";
 						$net_out = $1 - ($config->{mongodb_hist}->{$str} || 0);
 						$net_out = 0 unless $net_out != $1;
@@ -380,7 +382,7 @@ sub mongodb_update {
 						$config->{mongodb_hist}->{$str} = $1;
 						next;
 					}
-					if(/"numRequests"\s+:\s+(\d+)/) {
+					if(/"numRequests"\s*:\s+(\d+)/) {
 						$str = $n . "net_req";
 						$net_req = $1 - ($config->{mongodb_hist}->{$str} || 0);
 						$net_req = 0 unless $net_req != $1;
@@ -390,12 +392,12 @@ sub mongodb_update {
 						next;
 					}
 				}
-				if(/"opcounters"\s+:\s*{/) {
+				if(/"opcounters"\s*:\s*{/) {
 					$start = "opcounters";
 					next;
 				}
 				if($start eq "opcounters") {
-					if(/"insert"\s+:\s+(\d+),/) {
+					if(/"insert"\s*:\s+(\d+),/) {
 						$str = $n . "op_ins";
 						$op_ins = $1 - ($config->{mongodb_hist}->{$str} || 0);
 						$op_ins = 0 unless $op_ins != $1;
@@ -403,7 +405,7 @@ sub mongodb_update {
 						$config->{mongodb_hist}->{$str} = $1;
 						next;
 					}
-					if(/"query"\s+:\s+(\d+),/) {
+					if(/"query"\s*:\s+(\d+),/) {
 						$str = $n . "op_que";
 						$op_que = $1 - ($config->{mongodb_hist}->{$str} || 0);
 						$op_que = 0 unless $op_que != $1;
@@ -411,7 +413,7 @@ sub mongodb_update {
 						$config->{mongodb_hist}->{$str} = $1;
 						next;
 					}
-					if(/"update"\s+:\s+(\d+),/) {
+					if(/"update"\s*:\s+(\d+),/) {
 						$str = $n . "op_upd";
 						$op_upd = $1 - ($config->{mongodb_hist}->{$str} || 0);
 						$op_upd = 0 unless $op_upd != $1;
@@ -419,7 +421,7 @@ sub mongodb_update {
 						$config->{mongodb_hist}->{$str} = $1;
 						next;
 					}
-					if(/"delete"\s+:\s+(\d+),/) {
+					if(/"delete"\s*:\s+(\d+),/) {
 						$str = $n . "op_del";
 						$op_del = $1 - ($config->{mongodb_hist}->{$str} || 0);
 						$op_del = 0 unless $op_del != $1;
@@ -427,7 +429,7 @@ sub mongodb_update {
 						$config->{mongodb_hist}->{$str} = $1;
 						next;
 					}
-					if(/"getmore"\s+:\s+(\d+),/) {
+					if(/"getmore"\s*:\s+(\d+),/) {
 						$str = $n . "op_get";
 						$op_get = $1 - ($config->{mongodb_hist}->{$str} || 0);
 						$op_get = 0 unless $op_get != $1;
@@ -435,7 +437,7 @@ sub mongodb_update {
 						$config->{mongodb_hist}->{$str} = $1;
 						next;
 					}
-					if(/"command"\s+:\s+(\d+)/) {
+					if(/"command"\s*:\s+(\d+)/) {
 						$str = $n . "op_com";
 						$op_com = $1 - ($config->{mongodb_hist}->{$str} || 0);
 						$op_com = 0 unless $op_com != $1;
@@ -445,18 +447,18 @@ sub mongodb_update {
 						next;
 					}
 				}
-				if(/"metrics"\s+:\s*{/) {
+				if(/"metrics"\s*:\s*{/) {
 					$start = "metrics";
 					next;
 				}
 				if($start eq "metrics") {
-					if(/"document"\s+:\s*{/) {
+					if(/"document"\s*:\s*{/) {
 						$start = "metrics.document";
 						next;
 					}
 				}
 				if($start eq "metrics.document") {
-					if(/"deleted"\s+:\s+NumberLong\((\d+)\),/) {
+					if(/"deleted"\s*:\s+NumberLong\((\d+)\),/) {
 						$str = $n . "doc_del";
 						$doc_del = $1 - ($config->{mongodb_hist}->{$str} || 0);
 						$doc_del = 0 unless $doc_del != $1;
@@ -464,7 +466,7 @@ sub mongodb_update {
 						$config->{mongodb_hist}->{$str} = $1;
 						next;
 					}
-					if(/"inserted"\s+:\s+NumberLong\((\d+)\),/) {
+					if(/"inserted"\s*:\s+NumberLong\((\d+)\),/) {
 						$str = $n . "doc_ins";
 						$doc_ins = $1 - ($config->{mongodb_hist}->{$str} || 0);
 						$doc_ins = 0 unless $doc_ins != $1;
@@ -472,7 +474,7 @@ sub mongodb_update {
 						$config->{mongodb_hist}->{$str} = $1;
 						next;
 					}
-					if(/"returned"\s+:\s+NumberLong\((\d+)\),/) {
+					if(/"returned"\s*:\s+NumberLong\((\d+)\),/) {
 						$str = $n . "doc_ret";
 						$doc_ret = $1 - ($config->{mongodb_hist}->{$str} || 0);
 						$doc_ret = 0 unless $doc_ret != $1;
@@ -480,7 +482,7 @@ sub mongodb_update {
 						$config->{mongodb_hist}->{$str} = $1;
 						next;
 					}
-					if(/"updated"\s+:\s+NumberLong\((\d+)\)/) {
+					if(/"updated"\s*:\s+NumberLong\((\d+)\)/) {
 						$str = $n . "doc_upd";
 						$doc_upd = $1 - ($config->{mongodb_hist}->{$str} || 0);
 						$doc_upd = 0 unless $doc_upd != $1;
@@ -515,41 +517,45 @@ sub mongodb_update {
 			my $val5 = 0;
 
 			my $db = trim($dbl[$e]);
-			my $cmd = "mongo ";
+			my $cmd = $mongodb->{cmd} || "mongo";
+			my $cmd_db_stats = $mongodb->{cmd_db_stats} || "--eval \"printjson(db.stats(1))\"";
+			$cmd .= " ";
 			$cmd .= "--host $host " if $host;
 			$cmd .= "--port $port " if $port;
-			$cmd .= "--eval \"printjson(db.stats(1))\" $db";
+			$cmd .= $cmd_db_stats;
+			$cmd .= " ";
+			$cmd .= $db;
 
 			if(open(IN, "$cmd |")) {
 				my @data = <IN>;
 				close(IN);
 
 				foreach(@data) {
-					if(/"collections"\s+:\s+(\d+),/) {
+					if(/"collections"\s*:\s+(\d+),/) {
 						$colls = $1;
 						next;
 					}
-					if(/"objects"\s+:\s+(\d+),/) {
+					if(/"objects"\s*:\s+(\d+),/) {
 						$objcs = $1;
 						next;
 					}
-					if(/"dataSize"\s+:\s+(\d+),/) {
+					if(/"dataSize"\s*:\s+(\d+),/) {
 						$dsize = $1;
 						next;
 					}
-					if(/"storageSize"\s+:\s+(\d+),/) {
+					if(/"storageSize"\s*:\s+(\d+),/) {
 						$ssize = $1;
 						next;
 					}
-					if(/"numExtents"\s+:\s+(\d+),/) {
+					if(/"numExtents"\s*:\s+(\d+),/) {
 						$nexte = $1;
 						next;
 					}
-					if(/"indexes"\s+:\s+(\d+),/) {
+					if(/"indexes"\s*:\s+(\d+),/) {
 						$index = $1;
 						next;
 					}
-					if(/"fileSize"\s+:\s+(\d+),/) {
+					if(/"fileSize"\s*:\s+(\d+),/) {
 						$fsize = $1;
 						next;
 					}
