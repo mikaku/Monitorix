@@ -3785,6 +3785,27 @@ WARNING: Every time the number of entries in this option changes, Monitorix will
 Default value: \fI1\fP
 .RE
 .P
+.BI cmd
+.RS
+This is the command that will be used to retrieve MongoDB information. The default command works for versions prior to 6. If you have the version 6 or later better use the command \fImongosh\fP.
+.P
+Default value: \fImongo\fP
+.RE
+.P
+.BI cmd_db_serverstatus
+.RS
+This is the argument used to retrieve MongoDB server status information. The default argument works for versions prior to 6. If you have the version 6 or later better use the argument \fI"--eval \\"EJSON.stringify(db.serverStatus(),null,' ')\\""\fP
+.P
+Default value: \fI"--eval \\"printjson(db.serverStatus()),printjson(db.stats(1))\\""\fP
+.RE
+.P
+.BI cmd_db_stats
+.RS
+This is the argument used to retrieve MongoDB database status information. The default argument works for versions prior to 6. If you have the version 6 or later better use the argument \fI"--eval \\"EJSON.stringify(db.stats(1),null,' ')\\" $db"\fP
+.P
+Default value: \fI"--eval \\"printjson(db.stats(1))\\""\fP
+.RE
+.P
 .BI desc
 .RS
 This is a list of blocks of names specified in the \fBlist\fP option.
