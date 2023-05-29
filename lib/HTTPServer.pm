@@ -35,7 +35,9 @@ sub logger {
 	if($main::config{httpd_builtin}->{log_file}) {
 		if(open(OUT, ">> $main::config{httpd_builtin}->{log_file}")) {
 			if($type eq "OK") {
-				print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] \"$ENV{REQUEST_METHOD} $url - " . ($ENV{HTTP_USER_AGENT} || "") . "\"\n";
+				if(lc($main::config{httpd_builtin}->{log_successful_requests} || "") ne "n") {
+					print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] \"$ENV{REQUEST_METHOD} $url - " . ($ENV{HTTP_USER_AGENT} || "") . "\"\n";
+				}
 			} elsif($type eq "NOTEXIST") {
 				print OUT localtime() . " - $type - [$ENV{REMOTE_ADDR}] File does not exist: $url\n";
 			} elsif($type eq "AUTHERR") {
@@ -52,7 +54,9 @@ sub logger {
 	} else {
 		my $msg;
 		if($type eq "OK") {
-			$msg = localtime() . " - $type - [$ENV{REMOTE_ADDR}] \"$ENV{REQUEST_METHOD} $url - " . ($ENV{HTTP_USER_AGENT} || "") . "\"\n";
+			if(lc($main::config{httpd_builtin}->{log_successful_requests} || "") ne "n") {
+				$msg = localtime() . " - $type - [$ENV{REMOTE_ADDR}] \"$ENV{REQUEST_METHOD} $url - " . ($ENV{HTTP_USER_AGENT} || "") . "\"\n";
+			}
 		} elsif($type eq "NOTEXIST") {
 			$msg = localtime() . " - $type - [$ENV{REMOTE_ADDR}] File does not exist: $url\n";
 		} elsif($type eq "AUTHERR") {
@@ -62,7 +66,7 @@ sub logger {
 		} else {
 			$msg = localtime() . " - $type - [$ENV{REMOTE_ADDR}] $url\n";
 		}
-		print("$msg");
+		print("$msg") if $msg;
 	}
 }
 
