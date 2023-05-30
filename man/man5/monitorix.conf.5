@@ -365,6 +365,13 @@ If you leave this option blank or undefined Monitorix will log using the standar
 Default value: \fI/var/log/monitorix-httpd\fP
 .RE
 .P
+.BI log_successful_requests
+.RS
+This option disables the logging of all successful HTTP requests. It can be used in cases where you only want to log failed HTTP requests in order to keep a smaller log file.
+.P
+Default value: \fIy\fP
+.RE
+.P
 .BI hosts_deny
 .RS
 This is a comma delimited set of IP addresses which are not permitted to access Monitorix graphs. There is the special keyword called \fIall\fP that can be used to deny all IP addresses.
