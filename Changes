@@ -1,3 +1,13 @@
+3.16.0 - DD-MMM-2023
+====================
+- Added support for MongoDB version 6 and changed the way how 'mongodb.pm' is
+  configured. [#451]
+- Added the new option 'log_successful_requests' in the HTTP built-in server, to
+  be able to not logging successful requests (enabled by default). [#454]
+- Fixed the colors based on the meaning of input (upload) and output (download)
+  from the server point of view in 'ftp.pm'.
+
+
 3.15.0 - 07-Dec-2022
 ====================
 - Added a complete graph to monitor the power consumption of Intel-RAPL capable
