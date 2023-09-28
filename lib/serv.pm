@@ -259,6 +259,11 @@ sub serv_update {
 					$sc[3] = "\".\"" unless $sc[3] ne "\"\"";	# set "." as a minimal regex
 					my @regex = split('\+', $sc[3]);
 					my $IN;
+
+					# FIXME
+					# $seek_pos does not distinguish between different
+					# logfiles when a service is defined multiple times.
+
 					my $seek_pos = $config->{serv_hist}->{$seek_str} || 0;
 					if($logfile =~ m/^file:.+/) {
 						$logfile =~ s/^file://;
