@@ -184,13 +184,13 @@ sub ftp_update {
 					if($cmd eq "RETR") {
 						if($code =~ /^2../) {
 							$retr++;
-							$bytes_down += int($bytes);
+							$bytes_up += int($bytes);
 						}
 					}
 					if($cmd =~ /(STOR|STOU)/) {
 						if($code =~ /^2../) {
 							$stor++;
-							$bytes_up += int($bytes);
+							$bytes_down += int($bytes);
 						}
 					}
 					if($cmd =~ /(MKD|XMKD)/) {
@@ -222,11 +222,11 @@ sub ftp_update {
 				if(/^$date /) {
 					if(/ OK DOWNLOAD: .*?, (\d+) bytes, /) {
 						$retr++;
-						$bytes_down += int($1);
+						$bytes_up += int($1);
 					}
 					if(/ OK UPLOAD: .*?, (\d+) bytes, /) {
 						$stor++;
-						$bytes_up += int($1);
+						$bytes_down += int($1);
 					}
 					if(/ OK MKDIR: /) {
 						$mkd++;
@@ -256,11 +256,11 @@ sub ftp_update {
 				if(/^$date /) {
 					if(/ \[NOTICE\] .*? downloaded  \((\d+) bytes,.*?/) {
 						$retr++;
-						$bytes_down += int($1);
+						$bytes_up += int($1);
 					}
 					if(/ \[NOTICE\] .*? uploaded  \((\d+) bytes,.*?/) {
 						$stor++;
-						$bytes_up += int($1);
+						$bytes_down += int($1);
 					}
 					if(/ \[DEBUG\] Command \[mkd\] /) {
 						$mkd++;
@@ -432,16 +432,16 @@ sub ftp_cgi {
 		push(@output, "    <tr>\n");
 		push(@output, "    <td>\n");
 	}
-	push(@tmp, "LINE2:retr#44EE44:Files downloaded (RETR)");
-	push(@tmp, "GPRINT:retr:LAST: Current\\: %3.0lf");
-	push(@tmp, "GPRINT:retr:AVERAGE:   Average\\: %3.0lf");
-	push(@tmp, "GPRINT:retr:MIN:   Min\\: %3.0lf");
-	push(@tmp, "GPRINT:retr:MAX:   Max\\: %3.0lf\\n");
-	push(@tmp, "LINE2:stor#4444EE:Files uploaded (STOR)");
+	push(@tmp, "LINE2:stor#44EE44:Files uploaded (STOR)");
 	push(@tmp, "GPRINT:stor:LAST:   Current\\: %3.0lf");
 	push(@tmp, "GPRINT:stor:AVERAGE:   Average\\: %3.0lf");
 	push(@tmp, "GPRINT:stor:MIN:   Min\\: %3.0lf");
 	push(@tmp, "GPRINT:stor:MAX:   Max\\: %3.0lf\\n");
+	push(@tmp, "LINE2:retr#4444EE:Files downloaded (RETR)");
+	push(@tmp, "GPRINT:retr:LAST: Current\\: %3.0lf");
+	push(@tmp, "GPRINT:retr:AVERAGE:   Average\\: %3.0lf");
+	push(@tmp, "GPRINT:retr:MIN:   Min\\: %3.0lf");
+	push(@tmp, "GPRINT:retr:MAX:   Max\\: %3.0lf\\n");
 	push(@tmp, "LINE2:mkd#EEEE44:Dirs created (MKD)");
 	push(@tmp, "GPRINT:mkd:LAST:      Current\\: %3.0lf");
 	push(@tmp, "GPRINT:mkd:AVERAGE:   Average\\: %3.0lf");
@@ -462,8 +462,8 @@ sub ftp_cgi {
 	push(@tmp, "GPRINT:mlsd:AVERAGE:   Average\\: %3.0lf");
 	push(@tmp, "GPRINT:mlsd:MIN:   Min\\: %3.0lf");
 	push(@tmp, "GPRINT:mlsd:MAX:   Max\\: %3.0lf\\n");
-	push(@tmpz, "LINE2:retr#44EE44:Files downloaded (RETR)");
-	push(@tmpz, "LINE2:stor#4444EE:Files uploaded (STOR)");
+	push(@tmpz, "LINE2:stor#44EE44:Files uploaded (STOR)");
+	push(@tmpz, "LINE2:retr#4444EE:Files downloaded (RETR)");
 	push(@tmpz, "LINE2:mkd#EEEE44:Dirs created (MKD)");
 	push(@tmpz, "LINE2:rmd#EE4444:Dirs deleted (RMD)");
 	push(@tmpz, "LINE2:dele#EE44EE:Files deleted (DELE)");
@@ -657,18 +657,18 @@ sub ftp_cgi {
 	undef(@tmp);
 	undef(@tmpz);
 	undef(@CDEF);
-	push(@tmp, "AREA:B_up#44EE44:Upload");
-	push(@tmp, "AREA:B_dn#4444EE:Download");
-	push(@tmp, "AREA:B_dn#4444EE:");
-	push(@tmp, "AREA:B_up#44EE44:");
-	push(@tmp, "LINE1:B_dn#0000EE");
-	push(@tmp, "LINE1:B_up#00EE00");
-	push(@tmpz, "AREA:B_up#44EE44:Upload");
-	push(@tmpz, "AREA:B_dn#4444EE:Download");
-	push(@tmpz, "AREA:B_dn#4444EE:");
-	push(@tmpz, "AREA:B_up#44EE44:");
-	push(@tmpz, "LINE1:B_dn#0000EE");
-	push(@tmpz, "LINE1:B_up#00EE00");
+	push(@tmp, "AREA:B_dn#44EE44:Input");
+	push(@tmp, "AREA:B_up#4444EE:Output");
+	push(@tmp, "AREA:B_up#4444EE:");
+	push(@tmp, "AREA:B_dn#44EE44:");
+	push(@tmp, "LINE1:B_up#0000EE");
+	push(@tmp, "LINE1:B_dn#00EE00");
+	push(@tmpz, "AREA:B_dn#44EE44:Input");
+	push(@tmpz, "AREA:B_up#4444EE:Output");
+	push(@tmpz, "AREA:B_up#4444EE:");
+	push(@tmpz, "AREA:B_dn#44EE44:");
+	push(@tmpz, "LINE1:B_up#0000EE");
+	push(@tmpz, "LINE1:B_dn#00EE00");
 	push(@CDEF, "CDEF:B_up=up");
 	if(lc($config->{netstats_mode} || "") eq "separated") {
 		push(@CDEF, "CDEF:B_dn=dn,-1,*");
