@@ -630,19 +630,19 @@ sub mail_update {
 		$gen[4] /= 60 if lc($mail->{stats_rate}) eq "per_second";
 	}
 
+	$gen_h[5] = $gen[5] = 0;
+	$gen_h[6] = $gen[6] = 0;
+	$gen_h[7] = $gen[7] = 0;
+	$gen_h[8] = $gen[8] = 0;
+	$gen_h[9] = $gen[9] = 0;
+
 	if(lc($mail->{greylist}) eq "milter-greylist") {
-		$gen_h[5] = $gen[5] = 0;
 		$gen_h[6] = $gen[6] = int($gl_records) || 0;
 		$gen_h[7] = $gen[7] = int($gl_greylisted) || 0;
 		$gen_h[8] = $gen[8] = int($gl_whitelisted) || 0;
 		$gen_h[9] = $gen[9] = int($gl_delayed) || 0;
 	}
 	if(lc($mail->{greylist}) eq "postgrey") {
-		$gen_h[5] = $gen[5] = 0;
-		$gen_h[6] = $gen[6] = 0;
-		$gen_h[7] = $gen[7] = 0;
-		$gen_h[8] = $gen[8] = 0;
-		$gen_h[9] = $gen[9] = 0;
 		# avoid initial peak
 		if(!$first_read) {
 			$gen[6] = int($gl_records);
