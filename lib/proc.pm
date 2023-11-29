@@ -254,7 +254,7 @@ sub proc_cgi {
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
-	my $zoom = "--zoom=" . $config->{global_zoom};
+	my $zoom = $config->{global_zoom};
 	my %rrd = (
 		'new' => \&RRDs::graphv,
 		'old' => \&RRDs::graph,
@@ -367,13 +367,16 @@ sub proc_cgi {
 	# graph mode
 	#
 	if($silent eq "yes" || $silent eq "imagetag") {
+		$zoom = 1;	# force 'global_zoom' to 1 in Multihost viewer
 		$colors->{fg_color} = "#000000";  # visible color for text mode
 		$u = "_";
 	}
 	if($silent eq "imagetagbig") {
+		$zoom = 1;	# force 'global_zoom' to 1 in Multihost viewer
 		$colors->{fg_color} = "#000000";  # visible color for text mode
 		$u = "";
 	}
+	my $global_zoom = "--zoom=" . $zoom;
 
 	for($n = 0; $n < $ncpu; $n++) {
 		$str = $u . $package . $n . "." . $tf->{when} . ".$imgfmt_lc";
@@ -630,7 +633,7 @@ sub proc_cgi {
 				"--height=$height",
 				@extra,
 				@riglim,
-				$zoom,
+				$global_zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:user=$rrd:proc" . $n . "_user:AVERAGE",
@@ -658,7 +661,7 @@ sub proc_cgi {
 					@full_size_mode,
 					@extra,
 					@riglim,
-					$zoom,
+					$global_zoom,
 					@{$cgi->{version12}},
 					@{$colors->{graph_colors}},
 					"DEF:user=$rrd:proc" . $n . "_user:AVERAGE",
@@ -681,8 +684,8 @@ sub proc_cgi {
 						push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$n], IMG => $IMG[$n]) . "\n");
 					} else {
 						if($version eq "new") {
-							$picz_width = $picz->{image_width} * $config->{global_zoom};
-							$picz_height = $picz->{image_height} * $config->{global_zoom};
+							$picz_width = $picz->{image_width} * $zoom;
+							$picz_height = $picz->{image_height} * $zoom;
 						} else {
 							$picz_width = $width + 115;
 							$picz_height = $height + 100;

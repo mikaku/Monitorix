@@ -353,7 +353,7 @@ sub process_cgi {
 	my $colors = $cgi->{colors};
 	my $graph = $cgi->{graph};
 	my $silent = $cgi->{silent};
-	my $zoom = "--zoom=" . $config->{global_zoom};
+	my $zoom = $config->{global_zoom};
 	my %rrd = (
 		'new' => \&RRDs::graphv,
 		'old' => \&RRDs::graph,
@@ -497,13 +497,16 @@ sub process_cgi {
 	# graph mode
 	#
 	if($silent eq "yes" || $silent eq "imagetag") {
+		$zoom = 1;	# force 'global_zoom' to 1 in Multihost viewer
 		$colors->{fg_color} = "#000000";  # visible color for text mode
 		$u = "_";
 	}
 	if($silent eq "imagetagbig") {
+		$zoom = 1;	# force 'global_zoom' to 1 in Multihost viewer
 		$colors->{fg_color} = "#000000";  # visible color for text mode
 		$u = "";
 	}
+	my $global_zoom = "--zoom=" . $zoom;
 
 	for($n = 0; $n < keys(%{$process->{list}}); $n++) {
 		for($n2 = 1; $n2 <= 10; $n2++) {
@@ -571,7 +574,7 @@ sub process_cgi {
 			"--height=$height",
 			@extra,
 			@riglim,
-			$zoom,
+			$global_zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:cpu0=$rrd:proc" . $e . "_cpu0:AVERAGE",
@@ -601,7 +604,7 @@ sub process_cgi {
 				@full_size_mode,
 				@extra,
 				@riglim,
-				$zoom,
+				$global_zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:cpu0=$rrd:proc" . $e . "_cpu0:AVERAGE",
@@ -627,8 +630,8 @@ sub process_cgi {
 					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 10], IMG => $IMG[$e * 10]) . "\n");
 				} else {
 					if($version eq "new") {
-						$picz_width = $picz->{image_width} * $config->{global_zoom};
-						$picz_height = $picz->{image_height} * $config->{global_zoom};
+						$picz_width = $picz->{image_width} * $zoom;
+						$picz_height = $picz->{image_height} * $zoom;
 					} else {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
@@ -685,7 +688,7 @@ sub process_cgi {
 			"--height=$height",
 			@extra,
 			@riglim,
-			$zoom,
+			$global_zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:mem0=$rrd:proc" . $e . "_mem0:AVERAGE",
@@ -725,7 +728,7 @@ sub process_cgi {
 				@full_size_mode,
 				@extra,
 				@riglim,
-				$zoom,
+				$global_zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:mem0=$rrd:proc" . $e . "_mem0:AVERAGE",
@@ -761,8 +764,8 @@ sub process_cgi {
 					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 10 + 1], IMG => $IMG[$e * 10 + 1]) . "\n");
 				} else {
 					if($version eq "new") {
-						$picz_width = $picz->{image_width} * $config->{global_zoom};
-						$picz_height = $picz->{image_height} * $config->{global_zoom};
+						$picz_width = $picz->{image_width} * $zoom;
+						$picz_height = $picz->{image_height} * $zoom;
 					} else {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
@@ -816,7 +819,7 @@ sub process_cgi {
 			"--height=$height",
 			@extra,
 			@riglim,
-			$zoom,
+			$global_zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:dsk0=$rrd:proc" . $e . "_dsk0:AVERAGE",
@@ -856,7 +859,7 @@ sub process_cgi {
 				@full_size_mode,
 				@extra,
 				@riglim,
-				$zoom,
+				$global_zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:dsk0=$rrd:proc" . $e . "_dsk0:AVERAGE",
@@ -892,8 +895,8 @@ sub process_cgi {
 					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 10 + 2], IMG => $IMG[$e * 10 + 2]) . "\n");
 				} else {
 					if($version eq "new") {
-						$picz_width = $picz->{image_width} * $config->{global_zoom};
-						$picz_height = $picz->{image_height} * $config->{global_zoom};
+						$picz_width = $picz->{image_width} * $zoom;
+						$picz_height = $picz->{image_height} * $zoom;
 					} else {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
@@ -973,7 +976,7 @@ sub process_cgi {
 			"--height=$height",
 			@extra,
 			@riglim,
-			$zoom,
+			$global_zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:net0=$rrd:proc" . $e . "_net0:AVERAGE",
@@ -1003,7 +1006,7 @@ sub process_cgi {
 				@full_size_mode,
 				@extra,
 				@riglim,
-				$zoom,
+				$global_zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:net0=$rrd:proc" . $e . "_net0:AVERAGE",
@@ -1029,8 +1032,8 @@ sub process_cgi {
 					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 10 + 3], IMG => $IMG[$e * 10 + 3]) . "\n");
 				} else {
 					if($version eq "new") {
-						$picz_width = $picz->{image_width} * $config->{global_zoom};
-						$picz_height = $picz->{image_height} * $config->{global_zoom};
+						$picz_width = $picz->{image_width} * $zoom;
+						$picz_height = $picz->{image_height} * $zoom;
 					} else {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
@@ -1084,7 +1087,7 @@ sub process_cgi {
 			"--height=$height",
 			@extra,
 			@riglim,
-			$zoom,
+			$global_zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:nof0=$rrd:proc" . $e . "_nof0:AVERAGE",
@@ -1114,7 +1117,7 @@ sub process_cgi {
 				@full_size_mode,
 				@extra,
 				@riglim,
-				$zoom,
+				$global_zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:nof0=$rrd:proc" . $e . "_nof0:AVERAGE",
@@ -1140,8 +1143,8 @@ sub process_cgi {
 					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 10 + 4], IMG => $IMG[$e * 10 + 4]) . "\n");
 				} else {
 					if($version eq "new") {
-						$picz_width = $picz->{image_width} * $config->{global_zoom};
-						$picz_height = $picz->{image_height} * $config->{global_zoom};
+						$picz_width = $picz->{image_width} * $zoom;
+						$picz_height = $picz->{image_height} * $zoom;
 					} else {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
@@ -1198,7 +1201,7 @@ sub process_cgi {
 			"--height=$height",
 			@extra,
 			@riglim,
-			$zoom,
+			$global_zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:nth0=$rrd:proc" . $e . "_nth0:AVERAGE",
@@ -1228,7 +1231,7 @@ sub process_cgi {
 				@full_size_mode,
 				@extra,
 				@riglim,
-				$zoom,
+				$global_zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:nth0=$rrd:proc" . $e . "_nth0:AVERAGE",
@@ -1254,8 +1257,8 @@ sub process_cgi {
 					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 10 + 5], IMG => $IMG[$e * 10 + 5]) . "\n");
 				} else {
 					if($version eq "new") {
-						$picz_width = $picz->{image_width} * $config->{global_zoom};
-						$picz_height = $picz->{image_height} * $config->{global_zoom};
+						$picz_width = $picz->{image_width} * $zoom;
+						$picz_height = $picz->{image_height} * $zoom;
 					} else {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
@@ -1315,7 +1318,7 @@ sub process_cgi {
 			"--height=$height",
 			@extra,
 			@riglim,
-			$zoom,
+			$global_zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:vcs0=$rrd:proc" . $e . "_vcs0:AVERAGE",
@@ -1376,7 +1379,7 @@ sub process_cgi {
 				@full_size_mode,
 				@extra,
 				@riglim,
-				$zoom,
+				$global_zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:vcs0=$rrd:proc" . $e . "_vcs0:AVERAGE",
@@ -1433,8 +1436,8 @@ sub process_cgi {
 					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 10 + 6], IMG => $IMG[$e * 10 + 6]) . "\n");
 				} else {
 					if($version eq "new") {
-						$picz_width = $picz->{image_width} * $config->{global_zoom};
-						$picz_height = $picz->{image_height} * $config->{global_zoom};
+						$picz_width = $picz->{image_width} * $zoom;
+						$picz_height = $picz->{image_height} * $zoom;
 					} else {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
@@ -1491,7 +1494,7 @@ sub process_cgi {
 			"--height=$height",
 			@extra,
 			@riglim,
-			$zoom,
+			$global_zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:pro0=$rrd:proc" . $e . "_pro0:AVERAGE",
@@ -1521,7 +1524,7 @@ sub process_cgi {
 				@full_size_mode,
 				@extra,
 				@riglim,
-				$zoom,
+				$global_zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:pro0=$rrd:proc" . $e . "_pro0:AVERAGE",
@@ -1547,8 +1550,8 @@ sub process_cgi {
 					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 10 + 7], IMG => $IMG[$e * 10 + 7]) . "\n");
 				} else {
 					if($version eq "new") {
-						$picz_width = $picz->{image_width} * $config->{global_zoom};
-						$picz_height = $picz->{image_height} * $config->{global_zoom};
+						$picz_width = $picz->{image_width} * $zoom;
+						$picz_height = $picz->{image_height} * $zoom;
 					} else {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
@@ -1618,7 +1621,7 @@ sub process_cgi {
 			"--height=$height",
 			@extra,
 			@riglim,
-			$zoom,
+			$global_zoom,
 			@{$cgi->{version12}},
 			@{$colors->{graph_colors}},
 			"DEF:upt0=$rrd:proc" . $e . "_upt0:AVERAGE",
@@ -1658,7 +1661,7 @@ sub process_cgi {
 				@full_size_mode,
 				@extra,
 				@riglim,
-				$zoom,
+				$global_zoom,
 				@{$cgi->{version12}},
 				@{$colors->{graph_colors}},
 				"DEF:upt0=$rrd:proc" . $e . "_upt0:AVERAGE",
@@ -1694,8 +1697,8 @@ sub process_cgi {
 					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 10 + 8], IMG => $IMG[$e * 10 + 8]) . "\n");
 				} else {
 					if($version eq "new") {
-						$picz_width = $picz->{image_width} * $config->{global_zoom};
-						$picz_height = $picz->{image_height} * $config->{global_zoom};
+						$picz_width = $picz->{image_width} * $zoom;
+						$picz_height = $picz->{image_height} * $zoom;
 					} else {
 						$picz_width = $width + 115;
 						$picz_height = $height + 100;
@@ -1752,7 +1755,7 @@ sub process_cgi {
 #			"--height=$height",
 #			@extra,
 #			@riglim,
-#			$zoom,
+#			$global_zoom,
 #			@{$cgi->{version12}},
 #			@{$colors->{graph_colors}},
 #			"DEF:xxx0=$rrd:proc" . $e . "_xxx0:AVERAGE",
@@ -1782,7 +1785,7 @@ sub process_cgi {
 #				@full_size_mode,
 #				@extra,
 #				@riglim,
-#				$zoom,
+#				$global_zoom,
 #				@{$cgi->{version12}},
 #				@{$colors->{graph_colors}},
 #				"DEF:xxx0=$rrd:proc" . $e . "_xxx0:AVERAGE",
@@ -1808,8 +1811,8 @@ sub process_cgi {
 #					push(@output, "      " . picz_a_element(config => $config, IMGz => $IMGz[$e * 10 + 9], IMG => $IMG[$e * 10 + 9]) . "\n");
 #				} else {
 #					if($version eq "new") {
-#						$picz_width = $picz->{image_width} * $config->{global_zoom};
-#						$picz_height = $picz->{image_height} * $config->{global_zoom};
+#						$picz_width = $picz->{image_width} * $zoom;
+#						$picz_height = $picz->{image_height} * $zoom;
 #					} else {
 #						$picz_width = $width + 115;
 #						$picz_height = $height + 100;
