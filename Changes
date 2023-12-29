@@ -4,8 +4,12 @@
   configured. [#451]
 - Added the new option 'log_successful_requests' in the HTTP built-in server, to
   be able to not logging successful requests (enabled by default). [#454]
+- Fixed the size of graphs in Multihost viewer when using a bigger 'global_zoom'
+  value.
 - Fixed the colors based on the meaning of input (upload) and output (download)
   from the server point of view in 'ftp.pm'.
+- Fixed the error message 'Use of uninitialized value $gen_h[5] in join or
+  string at /usr/lib/monitorix/mail.pm line 668'.
 
 
 3.15.0 - 07-Dec-2022
