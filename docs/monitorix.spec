@@ -39,8 +39,6 @@ simplicity and small size may also be used on embedded devices as well.
 
 %install
 rm -rf %{buildroot}
-mkdir -p %{buildroot}%{_initrddir}
-install -m 0755 docs/monitorix.init %{buildroot}%{_initrddir}/monitorix
 mkdir -p %{buildroot}%{_sysconfdir}/logrotate.d
 install -m 0644 docs/monitorix.logrotate %{buildroot}%{_sysconfdir}/logrotate.d/monitorix
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
@@ -73,11 +71,33 @@ install -m 0644 man/man8/monitorix.8 %{buildroot}%{_mandir}/man8
 rm -rf %{buildroot}
 
 %post
-/sbin/chkconfig --add monitorix
+if [ -d /var/run/systemd ] ; then
+	install -m 0644 %{_datadir}/doc/%{name}-%{version}/monitorix.service /usr/lib/systemd/system/%{name}.service
+else
+	install -m 0755 %{_datadir}/doc/%{name}-%{version}/monitorix.init %{_initrddir}/%{name}
+	/sbin/chkconfig --add monitorix
+fi
+
+%preun
+if [ -d /var/run/systemd ] ; then
+	/usr/bin/systemctl stop %{name}.service
+else
+	if [ -f /var/lock/subsys/%{name} ] ; then
+		service monitorix stop
+	fi
+fi
+
+%postun
+if [ -d /var/run/systemd ] ; then
+	/usr/bin/systemctl disable %{name}.service
+	rm -f /usr/lib/systemd/system/%{name}.service
+else
+	/sbin/chkconfig --del monitorix
+	rm -f %{_initrddir}/%{name}
+fi
 
 %files
 %defattr(-, root, root)
-%{_initrddir}/monitorix
 %config(noreplace) %{_sysconfdir}/logrotate.d/monitorix
 %config(noreplace) %{_sysconfdir}/sysconfig/monitorix
 %config(noreplace) %{_sysconfdir}/monitorix/monitorix.conf
@@ -94,7 +114,7 @@ rm -rf %{buildroot}
 %{_localstatedir}/lib/monitorix/reports/*.html
 %doc %{_mandir}/man5/monitorix.conf.5.gz
 %doc %{_mandir}/man8/monitorix.8.gz
-%doc Changes COPYING README README.nginx README.BSD docs/monitorix-alert.sh docs/monitorix-apache.conf docs/monitorix-lighttpd.conf docs/monitorix.service docs/htpasswd.pl
+%doc Changes COPYING README README.nginx README.BSD docs/monitorix-alert.sh docs/monitorix-apache.conf docs/monitorix-lighttpd.conf docs/monitorix.service docs/monitorix.init docs/htpasswd.pl
 
 %changelog
 * Thu Sep 01 2005 Jordi Sanfeliu <jordi@fibranet.cat>
