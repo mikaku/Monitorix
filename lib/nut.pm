@@ -465,7 +465,7 @@ sub nut_cgi {
 				$status = trim($1);
 				next;
 			}
-			if(/^input\.transfer\.reason:\s+(\d+)$/) {
+			if(/^input\.transfer\.reason:\s+(.*?)$/) {
 				$transfer = trim($1);
 				next;
 			}
