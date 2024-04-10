@@ -1,15 +1,19 @@
-3.16.0 - DD-MMM-2023
+3.16.0 - DD-MMM-2024
 ====================
 - Added support for MongoDB version 6 and changed the way how 'mongodb.pm' is
   configured. [#451]
 - Added the new option 'log_successful_requests' in the HTTP built-in server, to
   be able to not logging successful requests (enabled by default). [#454]
+- Adjusted the .spec file to be able to generate an RPM file to be installed on
+  systemd or SysV init systems. [#462]
 - Fixed the size of graphs in Multihost viewer when using a bigger 'global_zoom'
   value.
 - Fixed the colors based on the meaning of input (upload) and output (download)
   from the server point of view in 'ftp.pm'.
 - Fixed the error message 'Use of uninitialized value $gen_h[5] in join or
   string at /usr/lib/monitorix/mail.pm line 668'.
+- Fixed the regexp that retrieves the reason for last transfer to battery string
+  in 'nut.pm'. [#466]
 
 
 3.15.0 - 07-Dec-2022
