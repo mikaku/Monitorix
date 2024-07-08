@@ -175,57 +175,41 @@ sub tinyproxy_update {
 
 		#print $data->toStringHTML();
 
-		my $xpath = '//tr//td';
-		my @stats;
-
-		# This 'foreach' emulates the method 'to_literal_list' as it was
-		# introduced in Perl-XML-LibXML version 2.0105 (2013-09-07), and
-		# unfortunately not all systems have such a recent version.
-		#
-		# Some day in the future it should be changed by the line:
-		# push(@stats, $_) foreach $data->findnodes($xpath)->to_literal_list;
-		foreach($data->findnodes($xpath)->get_nodelist()) {
-			my $node;
-			($node = $_) =~ s@</?td>@@g;
-			push(@stats, $node);
-		}
-		my %hstats = @stats;
-
-		for my $key (keys %hstats) {
-			if($key eq "Number of open connections") {
+		foreach(split('\n', $data->toStringHTML())) {
+			if(/^Number of open connections:\s+(\d+)/) {
 				$str = $e . "open";
-				$ocon = $hstats{$key} - ($config->{tinyproxy_hist}->{$str} || 0);
-				$ocon = 0 unless $ocon != $hstats{$key};
+				$ocon = $1 - ($config->{tinyproxy_hist}->{$str} || 0);
+				$ocon = 0 unless $ocon != $1;
 				$ocon /= 60;
-				$config->{tinyproxy_hist}->{$str} = $hstats{$key};
+				$config->{tinyproxy_hist}->{$str} = $1;
 			}
-			if($key eq "Number of requests") {
+			if(/Number of requests:\s+(\d+)/) {
 				$str = $e . "reqs";
-				$reqs = $hstats{$key} - ($config->{tinyproxy_hist}->{$str} || 0);
-				$reqs = 0 unless $reqs != $hstats{$key};
+				$reqs = $1 - ($config->{tinyproxy_hist}->{$str} || 0);
+				$reqs = 0 unless $reqs != $1;
 				$reqs /= 60;
-				$config->{tinyproxy_hist}->{$str} = $hstats{$key};
+				$config->{tinyproxy_hist}->{$str} = $1;
 			}
-			if($key eq "Number of bad connections") {
+			if(/Number of bad connections:\s+(\d+)/) {
 				$str = $e . "bcon";
-				$bcon = $hstats{$key} - ($config->{tinyproxy_hist}->{$str} || 0);
-				$bcon = 0 unless $bcon != $hstats{$key};
+				$bcon = $1 - ($config->{tinyproxy_hist}->{$str} || 0);
+				$bcon = 0 unless $bcon != $1;
 				$bcon /= 60;
-				$config->{tinyproxy_hist}->{$str} = $hstats{$key};
+				$config->{tinyproxy_hist}->{$str} = $1;
 			}
-			if($key eq "Number of denied connections") {
+			if(/Number of denied connections:\s+(\d+)/) {
 				$str = $e . "dcon";
-				$dcon = $hstats{$key} - ($config->{tinyproxy_hist}->{$str} || 0);
-				$dcon = 0 unless $dcon != $hstats{$key};
+				$dcon = $1 - ($config->{tinyproxy_hist}->{$str} || 0);
+				$dcon = 0 unless $dcon != $1;
 				$dcon /= 60;
-				$config->{tinyproxy_hist}->{$str} = $hstats{$key};
+				$config->{tinyproxy_hist}->{$str} = $1;
 			}
-			if($key eq "Number of refused connections due to high load") {
+			if(/Number of refused connections due to high load:\s+(\d+)/) {
 				$str = $e . "rcon";
-				$rcon = $hstats{$key} - ($config->{tinyproxy_hist}->{$str} || 0);
-				$rcon = 0 unless $rcon != $hstats{$key};
+				$rcon = $1 - ($config->{tinyproxy_hist}->{$str} || 0);
+				$rcon = 0 unless $rcon != $1;
 				$rcon /= 60;
-				$config->{tinyproxy_hist}->{$str} = $hstats{$key};
+				$config->{tinyproxy_hist}->{$str} = $1;
 			}
 		}
 
