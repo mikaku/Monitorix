@@ -1281,7 +1281,7 @@ sub process_cgi {
 				$str = trim((split(',', $process->{desc}->{$p} || ""))[0]) || $p;
 				$str =~ s/:/\\:/g;	# escape colons
 				push(@tmpz, "LINE2:vcs" . $n . $LC[$n] . ":$str");
-				push(@tmpz, "LINE2:n_ics" . $n . $LC[$n]);
+				push(@tmpz, "LINE1:n_ics" . $n . $LC[$n]);
 				$str = sprintf("%-20s", substr($str, 0, 20));
 				push(@tmp, "LINE2:vcs" . $n . $LC[$n] . ":$str");
 				push(@tmp, "GPRINT:tcs" . $n . ":LAST:Cur\\:%7.1lf");
