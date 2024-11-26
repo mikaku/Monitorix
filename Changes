@@ -1,9 +1,10 @@
-3.16.0 - DD-MMM-2024
+3.16.0 - DD-Nov-2024
 ====================
 - Added support for MongoDB version 6 and changed the way how 'mongodb.pm' is
   configured. [#451]
 - Added the new option 'log_successful_requests' in the HTTP built-in server, to
   be able to not logging successful requests (enabled by default). [#454]
+- Changed the default value of 'global_zoom' so now all graphs are 50% bigger.
 - Adjusted the .spec file to be able to generate an RPM file to be installed on
   systemd or SysV init systems. [#462]
 - Fixed the size of graphs in Multihost viewer when using a bigger 'global_zoom'
@@ -15,7 +16,7 @@
 - Fixed the regexp that retrieves the reason for last transfer to battery string
   in 'nut.pm'. [#466]
 - Fixed the update() function to support newer versions of Tinyproxy.
-- Fixed to LINE1 the Involuntari Context Switches value in 'process.pm'.
+- Fixed to LINE1 the Involuntary Context Switches value in 'process.pm'.
 
 
 3.15.0 - 07-Dec-2022
