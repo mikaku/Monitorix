@@ -1,4 +1,4 @@
-3.16.0 - DD-Nov-2024
+3.16.0 - 27-Nov-2024
 ====================
 - Added support for MongoDB version 6 and changed the way how 'mongodb.pm' is
   configured. [#451]
@@ -7,6 +7,8 @@
 - Changed the default value of 'global_zoom' so now all graphs are 50% bigger.
 - Adjusted the .spec file to be able to generate an RPM file to be installed on
   systemd or SysV init systems. [#462]
+- Removed the following obsolete options:'secure_log', 'secure_log_date_format',
+  'imap_log', 'imap_log_date_format', 'hylafax_log', 'cups_log' and 'cg_logdir'.
 - Fixed the size of graphs in Multihost viewer when using a bigger 'global_zoom'
   value.
 - Fixed the colors based on the meaning of input (upload) and output (download)
