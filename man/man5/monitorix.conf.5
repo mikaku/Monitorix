@@ -478,13 +478,6 @@ If you leave this option blank or undefined Monitorix will log using the standar
 Default value: \fI/var/log/monitorix\fP
 .RE
 .P
-.BI secure_log
-.RS
-This is the path to the system log (also known as \fIauth.log\fP, etc.) Monitorix uses this file to report SSH, POP3, FTP and Telnet successful logins.
-.P
-Default value: \fI/var/log/secure\fP
-.RE
-.P
 .BI mail_log
 .RS
 This is the path to the mail log file. Monitorix uses this file to report messages sent (supporting Sendmail and Postfix formats), and the MailScanner log format for spam-mail and virus-mail alerts.
@@ -497,27 +490,6 @@ Default value: \fI/var/log/maillog\fP
 This is the path to the dump file of \fImilter-greylist\fP.
 .P
 Default value: \fI/var/milter-greylist/greylist.db\fP
-.RE
-.P
-.BI imap_log
-.RS
-This is the path to the IMAP (Dovecot or UW-IMAP) log file. Monitorix uses this file to report IMAP and POP3 successful logins.
-.P
-Default value: \fI/var/log/imap\fP
-.RE
-.P
-.BI hylafax_log
-.RS
-This is the path to the Hylafax log file. Monitorix uses this file to report successful FAX dispatches.
-.P
-Default value: \fI/var/spool/hylafax/etc/xferfaxlog\fP
-.RE
-.P
-.BI cups_log
-.RS
-This is the path to the CUPS page log file. Monitorix uses this file to report on print jobs.
-.P
-Default value: \fI/var/log/cups/page_log\fP
 .RE
 .P
 .BI ftp_log
@@ -548,13 +520,6 @@ This is the path to the Clamav log file. Monitorix uses this file to report viru
 Default value: \fI/var/log/clamav/clamav.log\fP
 .RE
 .P
-.BI cg_logdir
-.RS
-This is the path to the CommuniGate logs directory. Monitorix uses these files to report the number of mail messages successfully received and sent, and to report IMAP and POP3 successful logins.
-.P
-Default value: \fI/var/CommuniGate/SystemLogs/\fP
-.RE
-.P
 .BI squid_log
 .RS
 This is the path to the Squid log file. Monitorix uses this file to report on Squid Proxy requests.
@@ -562,19 +527,6 @@ This is the path to the Squid log file. Monitorix uses this file to report on Sq
 Default value: \fI/var/log/squid/access.log\fP
 .RE
 .P
-.BI imap_log_date_format
-.RS
-This is the Dovecot date format as it appears in the \fBimap_log\fP file.
-.P
-Default value: \fI%b %d\fP
-.RE
-.P
-.BI secure_log_date_format
-.RS
-This is \fIsecure_log\fP date format.
-.P
-Default value: \fI%b %e\fP
-.RE
 .SS Piwik tracking code
 .BI enabled
 .RS
