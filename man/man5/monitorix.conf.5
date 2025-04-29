@@ -4208,11 +4208,27 @@ This graph is able to monitor an unlimited number of Redis installations.
 .P
 .BI list
 .RS
-This is a comma-separated list of hostnames with network port running Redis.
+This is a comma-separated list of hostname:port specifications or socket filenames for Redis or Valkey servers.  If an entry ends in ".sock" it is assumed to be a Unix domain socket instead of a TCP connection.
 .P
 WARNING: Every time the number of entries in this option changes, Monitorix will resize the \fIredis.rrd\fP file accordingly, removing all historical data.
 .P
 Default value: \fIlocalhost:6379\fP
+.RE
+.P
+.BI user
+.RS
+This is a comma-separated list of usernames corresponding to the list of Redis servers.
+.P
+Default value:
+.RE
+.P
+.BI pass
+.RS
+This is a comma-separated list of passwords corresponding to the list of Redis servers.
+.P
+Default value:
+.P
+The user/pass options work with Redis V6 ACLs.  In most cases, the username "default" should be used.  If the user is omitted, no authentication is attempted.  Old-style password-only Redis authentication is not supported.
 .RE
 .SS PHP-FPM statistics (phpfpm.pm)
 This graph is able to monitor an unlimited number of PHP-FPM pools.
