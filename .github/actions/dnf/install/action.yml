@@ -1,0 +1,42 @@
+---
+inputs:
+  dependencies:
+    description: List of package(s) to pre-install
+    required: false
+  groups:
+    description: List of group(s) to install
+    required: false
+  packages:
+    description: List of package(s) to install
+    required: true
+  upgrade:
+    default: true
+    description: Upgrade packages
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Upgrade packages
+      run: |
+        dnf --assumeyes upgrade
+      shell: bash --noprofile --norc -euxo pipefail {0}
+      if: inputs.upgrade
+
+    - name: Install dependency package(s)
+      run: |
+        if [ -n "${{ inputs.dependencies }}" ]; then
+          dnf --assumeyes install ${{ inputs.dependencies }}
+        fi
+      shell: bash --noprofile --norc -euxo pipefail {0}
+
+    - name: Install group(s)
+      run: |
+        if [ -n '${{ inputs.groups }}' ]; then
+          dnf --assumeyes group install ${{ inputs.groups }}
+        fi
+      shell: bash --noprofile --norc -euxo pipefail {0}
+
+    - name: Install package(s)
+      run: dnf --assumeyes install ${{ inputs.packages }}
+      shell: bash --noprofile --norc -euxo pipefail {0}
