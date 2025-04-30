@@ -180,6 +180,15 @@ sub redis_update {
 		my $str;
 		my $s;
 
+		my @ul = split(',', $redis->{user});
+		my @pl = split(',', $redis->{pass});
+		my $user = $ul[$e];
+		my $pass = $pl[$e];
+		my $auth_cmd = "*3\r\n" .
+			"\$4\r\nAUTH\r\n" .
+			"\$" . length($user) . "\r\n$user\r\n" .
+			"\$" . length($pass) . "\r\n$pass\r\n";
+
 		if(substr($rl[$e], -5) eq ".sock") {
 			my $file = trim($rl[$e]);
 			$s = new IO::Socket::UNIX (
@@ -214,8 +223,28 @@ sub redis_update {
 		my $select = new IO::Select();
 		$select->add($s);
 
-		$s->send("info\n");
+		# Authenticate if needed
 		my ($data, @sockets_ready);
+		if ($user ne "") {
+			$s->send($auth_cmd);
+			while (1) {
+				my @sockets_ready = $select->can_read(1.0);
+				if(!scalar(@sockets_ready)) {
+					last;
+				} else {
+					foreach $s (@sockets_ready) {
+						$s->recv($str, 1024);
+						$data .= $str;
+					}
+				}
+			}
+			if ($data !~ /\+OK/) {
+				logger("$myself: AUTH Failed with '$rl[$e]': $data");
+				next;
+			}
+		}
+
+		$s->send("info\n");
 		$str = "";
 		while (1) {
 			my @sockets_ready = $select->can_read(1.0);
@@ -231,6 +260,11 @@ sub redis_update {
 
 		$s->close();
 		$data =~ s/\r//g;	# remove DOS format
+		if ($data =~ /^-NOAUTH/) {
+			logger("$myself: AUTH required for '$rl[$e]': $data");
+			next;
+		}
+
 
 		foreach(my @l = split('\n', $data)) {
 			if(/^uptime_in_seconds:\s*(\d+)$/) {
