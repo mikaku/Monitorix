@@ -9,33 +9,34 @@ inputs:
   packages:
     description: List of package(s) to install
     required: true
+  upgrade:
+    default: true
+    description: Upgrade packages
+    required: false
 
 runs:
   using: composite
   steps:
-    - name: Cache `DNF` / `YUM`
-      uses: actions/cache@v4
-      with:
-        path: |
-          /var/cache/dnf
-          /var/lib/dnf
-          /var/cache/yum
-        key: ${{ matrix.image }}-yum-dnf
+    - name: Upgrade packages
+      run: |
+        dnf --assumeyes upgrade
+      shell: bash --noprofile --norc -euxo pipefail {0}
+      if: inputs.upgrade
 
     - name: Install dependency package(s)
       run: |
         if [ -n "${{ inputs.dependencies }}" ]; then
-          yum --assumeyes install ${{ inputs.dependencies }}
+          dnf --assumeyes install ${{ inputs.dependencies }}
         fi
       shell: bash --noprofile --norc -euxo pipefail {0}
 
     - name: Install group(s)
       run: |
         if [ -n '${{ inputs.groups }}' ]; then
-          yum --assumeyes groups install ${{ inputs.groups }}
+          dnf --assumeyes group install ${{ inputs.groups }}
         fi
       shell: bash --noprofile --norc -euxo pipefail {0}
 
     - name: Install package(s)
-      run: yum --assumeyes --skip-broken install ${{ inputs.packages }}
+      run: dnf --assumeyes install ${{ inputs.packages }}
       shell: bash --noprofile --norc -euxo pipefail {0}
