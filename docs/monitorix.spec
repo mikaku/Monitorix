@@ -40,7 +40,11 @@ simplicity and small size may also be used on embedded devices as well.
 %install
 rm -rf %{buildroot}
 mkdir -p %{buildroot}%{_sysconfdir}/logrotate.d
+%if 0%{?rhel} >= 7
+install -m 0644 docs/monitorix.logrotate.systemd %{buildroot}%{_sysconfdir}/logrotate.d/monitorix
+%else
 install -m 0644 docs/monitorix.logrotate %{buildroot}%{_sysconfdir}/logrotate.d/monitorix
+%endif
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
 install -m 0644 docs/monitorix.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/monitorix
 mkdir -p %{buildroot}%{_sysconfdir}/monitorix

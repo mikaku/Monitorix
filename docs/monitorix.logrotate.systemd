@@ -1,0 +1,7 @@
+/var/log/monitorix /var/log/monitorix-httpd {
+	nocompress
+	missingok
+	postrotate
+		/usr/bin/systemctl kill --signal=HUP --kill-who=main monitorix.service 2>/dev/null || true
+	endscript
+}
