@@ -546,10 +546,15 @@ sub bind_update {
 			$rrdata .= ":0:0:0";
 		}
 		if($major eq "3") {
-			foreach my $counters ($data->findnodes('/statistics/taskmgr/thread-model')) {
-				$rrdata .= ":" . ($counters->findvalue('./worker-threads') || 0);
-				$rrdata .= ":" . ($counters->findvalue('./default-quantum') || 0);
-				$rrdata .= ":" . ($counters->findvalue('./tasks-running') || 0);
+			if($data->findnodes('/statistics/taskmgr/thread-model')) {
+				foreach my $counters ($data->findnodes('/statistics/taskmgr/thread-model')) {
+					$rrdata .= ":" . ($counters->findvalue('./worker-threads') || 0);
+					$rrdata .= ":" . ($counters->findvalue('./default-quantum') || 0);
+					$rrdata .= ":" . ($counters->findvalue('./tasks-running') || 0);
+				}
+			} else {
+				logger("$myself: WARNING: '/statistics/taskmgr/thread-model' not found.") if $debug;
+				$rrdata .= ":0:0:0";
 			}
 			$rrdata .= ":0:0:0";
 		}
