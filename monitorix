@@ -522,62 +522,6 @@ my $conf = new Config::General(
 $config{debug} = ();
 $config{func_update} = ();
 
-# get the current OS and kernel version and check its support
-my $release;
-($config{os}, undef, $release) = uname();
-if(!($release =~ m/^(\d+)\.(\d+)/)) {
-        die "FATAL: unable to get the kernel version.";
-}
-$config{kernel} = "$1.$2";
-
-if(!grep {$_ eq $config{os}} @suppsys) {
-	die "FATAL: your operating system ($config{os}) is not supported.";
-}
-
-if(grep {$_ eq $config{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
-	$SIG{'CHLD'} = 'DEFAULT';
-}	
-
-$0 = sprintf("%s %s%s%s%s%s%s",
-	$^V lt 5.6.2 ? "monitorix" : abs_path($0),
-	$options{c} ? "-c $options{c}" : "",
-	$options{p} ? " -p $options{p}" : "",
-	$options{d} ? " -d $options{d}" : "",
-	$options{v} ? " -v" : "",
-	$options{n} ? " -n" : "",
-	$options{u} ? " -u" : "");
-
-daemonize() unless $options{n};
-logger("Starting Monitorix version " . VERSION . " (pid $$).");
-logger("Loaded main configuration file '$options{c}'.");
-
-# save the pidfile
-if($options{p}) {
-	$options{p} = abs_path($options{p});
-	open(OUT, "> $options{p}")
-		|| die "Could not open '$options{p}' for writing: $!";
-	print(OUT "$$");
-	close(OUT);
-}
-
-# change to a safety directory
-unless(chdir("/tmp")) {
-	die "Can't chdir to /tmp: $!";
-}
-
-if($options{d}) {
-	if($options{d} ne "none" && $options{d} ne "all") {
-		@{$config{debug}} = split(',', $options{d});
-		foreach my $t (@{$config{debug}}) {
-			if(!grep {trim($_) eq $t} (split(',', $config{graph_name} . ", traffacct, emailreports"))) {
-				die "Invalid debug key '$t'";
-			}
-		}
-	}
-	logger("Entering in debug mode.");
-	logger("Changed process name to '$0'.");
-}
-
 # load additional configuration files
 if($config{include_dir} && opendir(DIR, $config{include_dir})) {
 	my @files = grep { !/^[.]/ } readdir(DIR);
@@ -585,7 +529,7 @@ if($config{include_dir} && opendir(DIR, $config{include_dir})) {
 	foreach my $c (sort @files) {
 		next unless -f $config{include_dir} . "/$c";
 		next unless $c =~ m/\.conf$/;
-		logger("Loading extra configuration file '$config{include_dir}/$c'.");
+		push(@{$config{extra_conf}}, "$config{include_dir}/$c");
 		my $conf_inc = new Config::General(
 			-ConfigFile	=> $config{include_dir} . "/$c",
 			-SplitPolicy	=> $options{s},
@@ -629,6 +573,65 @@ if($config{include_dir} && opendir(DIR, $config{include_dir})) {
 } else {
 	logger("Can't read directory '$config{include_dir}'. $!")
 		if $config{include_dir};
+}
+
+# get the current OS and kernel version and check its support
+my $release;
+($config{os}, undef, $release) = uname();
+if(!($release =~ m/^(\d+)\.(\d+)/)) {
+        die "FATAL: unable to get the kernel version.";
+}
+$config{kernel} = "$1.$2";
+
+if(!grep {$_ eq $config{os}} @suppsys) {
+	die "FATAL: your operating system ($config{os}) is not supported.";
+}
+
+if(grep {$_ eq $config{os}} ("FreeBSD", "OpenBSD", "NetBSD")) {
+	$SIG{'CHLD'} = 'DEFAULT';
+}	
+
+$0 = sprintf("%s %s%s%s%s%s%s",
+	$^V lt 5.6.2 ? "monitorix" : abs_path($0),
+	$options{c} ? "-c $options{c}" : "",
+	$options{p} ? " -p $options{p}" : "",
+	$options{d} ? " -d $options{d}" : "",
+	$options{v} ? " -v" : "",
+	$options{n} ? " -n" : "",
+	$options{u} ? " -u" : "");
+
+daemonize() unless $options{n};
+logger("Starting Monitorix version " . VERSION . " (pid $$).");
+logger("Loaded main configuration file '$options{c}'.");
+foreach(@{$config{extra_conf}}) {
+	logger("Loading extra configuration file '$_'.");
+}
+
+# save the pidfile
+if($options{p}) {
+	$options{p} = abs_path($options{p});
+	open(OUT, "> $options{p}")
+		|| die "Could not open '$options{p}' for writing: $!";
+	print(OUT "$$");
+	close(OUT);
+}
+
+# change to a safety directory
+unless(chdir("/tmp")) {
+	die "Can't chdir to /tmp: $!";
+}
+
+if($options{d}) {
+	if($options{d} ne "none" && $options{d} ne "all") {
+		@{$config{debug}} = split(',', $options{d});
+		foreach my $t (@{$config{debug}}) {
+			if(!grep {trim($_) eq $t} (split(',', $config{graph_name} . ", traffacct, emailreports"))) {
+				die "Invalid debug key '$t'";
+			}
+		}
+	}
+	logger("Entering in debug mode.");
+	logger("Changed process name to '$0'.");
 }
 
 # make sure that some options are correctly defined
