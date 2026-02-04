@@ -943,8 +943,9 @@ while(1) {
 					my $ua = LWP::UserAgent->new(timeout => 30);
 					my $response = $ua->request(HTTP::Request->new('GET', $url));
 					if(!$response->is_success) {
-						if($response->status_line ne "401 Access Denied") {
-							logger("WARNING: HTTP built-in server not responding at '$url'.");
+					    my $status = $response->status_line;
+						if($status ne "401 Access Denied") {
+							logger("WARNING: HTTP built-in server not responding at '$url'. (status: $status)");
 							exit(1);
 						}
 					}
