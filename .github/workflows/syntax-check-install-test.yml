@@ -13,14 +13,13 @@ jobs:
       matrix:
         image:
           - archlinux:latest
-          - quay.io/centos/centos:stream9
-          - quay.io/centos/centos:stream10
           - almalinux:9
           - rockylinux:9
           - debian:11
           - debian:12
           - fedora:41
           - fedora:42
+          - fedora:43
           - ubuntu:22.04
           - ubuntu:24.04
       fail-fast: false
@@ -37,23 +36,21 @@ jobs:
         if: |
           startsWith(matrix.image, 'archlinux:')
 
-      - name: Install EPEL repository (AlmaLinux/CentOS Stream/Rocky Linux)
+      - name: Install EPEL repository (AlmaLinux/Rocky Linux)
         uses: ./.github/actions/dnf/install
         with:
           packages: epel-release
         if: |
           startsWith(matrix.image, 'almalinux:') ||
-          startsWith(matrix.image, 'quay.io/centos/centos:stream') ||
           startsWith(matrix.image, 'rockylinux:')
 
-      - name: Install Dependencies (AlmaLinux/CentOS Stream/Rocky Linux)
+      - name: Install Dependencies (AlmaLinux/Rocky Linux)
         uses: ./.github/actions/dnf/install
         with:
-          groups: ${{ env.almalinux-centos-stream-rockylinux-group-dependencies }}
-          packages: ${{ env.almalinux-centos-stream-rockylinux-dependencies }}
+          groups: ${{ env.almalinux-rockylinux-group-dependencies }}
+          packages: ${{ env.almalinux-rockylinux-dependencies }}
         if: |
           startsWith(matrix.image, 'almalinux:') ||
-          startsWith(matrix.image, 'quay.io/centos/centos:stream') ||
           startsWith(matrix.image, 'rockylinux:')
 
       - name: Install Dependencies (Debian/Ubuntu)
@@ -120,9 +117,9 @@ env:
     base-devel
     cpanminus
     rrdtool
-  almalinux-centos-stream-rockylinux-group-dependencies: >-
+  almalinux-rockylinux-group-dependencies: >-
     "Development Tools"
-  almalinux-centos-stream-rockylinux-dependencies: >-
+  almalinux-rockylinux-dependencies: >-
     expat-devel
     openssl
     openssl-devel
