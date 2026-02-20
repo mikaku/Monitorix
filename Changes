@@ -1,3 +1,16 @@
+3.17.0 - DD-MMM-2026
+====================
+- Added support for Redis ACL authentication.
+- Added support for Icecast 2.5 statistics. [#481]
+- On systems with 'systemd', use 'systemctl kill --signal=HUP -kill-who=main' in
+  logrotate postrotate script (RHBZ#2372726).
+- Added more information to the responsive-check warning message. [#483]
+- Fixed 'bind.pm' to be able to continue showing graphs on newer BIND versions
+  that come with a reduced XML statistics file. [#478]
+- Fixed to load early extra configuration files to ensure that all the options
+  ('log_file' specificly) take effect before Monitorix daemonize itself. [#479]
+
+
 3.16.0 - 27-Nov-2024
 ====================
 - Added support for MongoDB version 6 and changed the way how 'mongodb.pm' is
