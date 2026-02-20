@@ -25,6 +25,7 @@ use warnings;
 use Monitorix;
 use RRDs;
 use LWP::UserAgent;
+use XML::Simple;
 use Exporter 'import';
 our @EXPORT = qw(icecast_init icecast_update icecast_cgi);
 
@@ -167,6 +168,9 @@ sub icecast_update {
 	foreach(my @il = split(',', $icecast->{list})) {
 		my $ils = trim($il[$e]);
 		my $ssl = "";
+		my $data = "";
+		my @ls;
+		my @br;
 
 		$ssl = "ssl_opts => {verify_hostname => 0}"
 			if lc($config->{accept_selfsigned_certs}) eq "y";
@@ -174,41 +178,73 @@ sub icecast_update {
 		my $ua = LWP::UserAgent->new(timeout => 30, $ssl);
 		$ua->agent($config->{user_agent_id}) if $config->{user_agent_id} || "";
 		my $response = $ua->request(HTTP::Request->new('GET', $ils));
-		my $data = $response->content;
 
 		if(!$response->is_success) {
 			logger("$myself: ERROR: Unable to connect to '$ils'.");
 			logger("$myself: " . $response->status_line);
 		}
 
-		$data =~ s/\n//g;
+		if(index($ils, "publicstats") != -1) {
+			my @sources;
 
-		my $iceold;
-		my $icenew;
-		my @bl_pairs;
-		my @ls;
-		my @br;
+			# new XML stats v2.5.0+
+			$data = XMLin($response->content);
 
-		foreach my $i (split(',', $icecast->{desc}->{$ils})) {
-			$i = trim($i);
-			$i =~ s/\//\\\//g;
-			$iceold .= '<td><h3>Mount Point ' . $i . '<\/h3><\/td>.*?(?:<tr><td>Bitrate:<\/td><td class=\"streamdata\">(\d*?)<\/td><\/tr>)?<tr><td>Current Listeners:<\/td><td class=\"streamdata\">(\d*?)<\/td><\/tr>.*?<\/table>.*?';
-			$icenew .= '<h3 class=\"mount\">Mount Point ' . $i . '<\/h3>.*?(?:<tr><td>Bitrate:<\/td><td class=\"streamstats\">(\d*?)<\/td><\/tr>)?<tr><td>Listeners \(current\):<\/td><td class=\"streamstats\">(\d*?)<\/td><\/tr>.*?<\/table>.*?';
-		}
-		(@bl_pairs) = ($data =~ m/$iceold/);
-		(@bl_pairs) = ($data =~ m/$icenew/) if !scalar(@bl_pairs);
+			if(ref($data->{source}) eq "ARRAY") {
+				# multiple mount points
+				my $s = $data->{source};
+				foreach my $k (@{$s}) {
+					push(@sources, $k);
+				}
+			} else {
+				# single mount point
+				my $s = $data->{source};
+				foreach my $k ($s) {
+					push(@sources, $k);
+				}
+			}
+			foreach my $s (@sources) {
+				push(@ls, $s->{'listeners'});
+				push(@br, $s->{'ice-bitrate'});
+			}
+			for($n = 0; $n < 9; $n++) {
+				$ls[$n] = 0 unless defined($sources[$n]->{'listeners'});
+				$br[$n] = 0 unless defined($sources[$n]->{'ice-bitrate'});
+				$rrdata .= ":" . $ls[$n];
+				$rrdata .= ":" . $br[$n];
+				$rrdata .= ":" . "0";
+				$rrdata .= ":" . "0";
+			}
+		} else {
+			# old HTML stats
+			$data = $response->content;
+			$data =~ s/\n//g;
 
-		while(my ($b, $l) = splice(@bl_pairs, 0, 2)) {
-			push(@ls, $l);
-			push(@br, $b);
-		}
-		for($n = 0; $n < 9; $n++) {
-			$ls[$n] = 0 unless defined($ls[$n]);
-			$br[$n] = 0 unless defined($br[$n]);
-			$rrdata .= ":" . $ls[$n];
-			$rrdata .= ":" . $br[$n];
-			$rrdata .= ":" . "0";
-			$rrdata .= ":" . "0";
+			my $iceold;
+			my $icenew;
+			my @bl_pairs;
+
+			foreach my $i (split(',', $icecast->{desc}->{$ils})) {
+				$i = trim($i);
+				$i =~ s/\//\\\//g;
+				$iceold .= '<td><h3>Mount Point ' . $i . '<\/h3><\/td>.*?(?:<tr><td>Bitrate:<\/td><td class=\"streamdata\">(\d*?)<\/td><\/tr>)?<tr><td>Current Listeners:<\/td><td class=\"streamdata\">(\d*?)<\/td><\/tr>.*?<\/table>.*?';
+				$icenew .= '<h3 class=\"mount\">Mount Point ' . $i . '<\/h3>.*?(?:<tr><td>Bitrate:<\/td><td class=\"streamstats\">(\d*?)<\/td><\/tr>)?<tr><td>Listeners \(current\):<\/td><td class=\"streamstats\">(\d*?)<\/td><\/tr>.*?<\/table>.*?';
+			}
+			(@bl_pairs) = ($data =~ m/$iceold/);
+			(@bl_pairs) = ($data =~ m/$icenew/) if !scalar(@bl_pairs);
+
+			while(my ($b, $l) = splice(@bl_pairs, 0, 2)) {
+				push(@ls, $l);
+				push(@br, $b);
+			}
+			for($n = 0; $n < 9; $n++) {
+				$ls[$n] = 0 unless defined($ls[$n]);
+				$br[$n] = 0 unless defined($br[$n]);
+				$rrdata .= ":" . $ls[$n];
+				$rrdata .= ":" . $br[$n];
+				$rrdata .= ":" . "0";
+				$rrdata .= ":" . "0";
+			}
 		}
 		$e++;
 	}
