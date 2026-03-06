@@ -5,6 +5,8 @@
 - On systems with 'systemd', use 'systemctl kill --signal=HUP -kill-who=main' in
   logrotate postrotate script (RHBZ#2372726).
 - Added more information to the responsive-check warning message. [#483]
+- Added the option 'enable_hourly_view = n' in the configuration file, to make
+  it more visible. [#486]
 - Fixed 'bind.pm' to be able to continue showing graphs on newer BIND versions
   that come with a reduced XML statistics file. [#478]
 - Fixed to load early extra configuration files to ensure that all the options
