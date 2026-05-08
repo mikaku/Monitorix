@@ -382,7 +382,7 @@ sub pgsql_update {
 		$sth = $dbh->prepare("SELECT SUM(checkpoints_timed) FROM pg_stat_bgwriter");
 		$sth->execute;
 		$result = $sth->fetchrow_arrayref();
-		$value = @{$result}[0];
+		$value = (@{$result}[0] || 0);
 		$str = $n . "tbgwchkt";
 		$tbgwchkt = $value - ($config->{pgsql_hist}->{$str} || 0);
 		$tbgwchkt = 0 unless $tbgwchkt != $value;
@@ -393,7 +393,7 @@ sub pgsql_update {
 		$sth = $dbh->prepare("SELECT SUM(checkpoints_req) FROM pg_stat_bgwriter");
 		$sth->execute;
 		$result = $sth->fetchrow_arrayref();
-		$value = @{$result}[0];
+		$value = (@{$result}[0] || 0);
 		$str = $n . "tbgwchkr";
 		$tbgwchkr = $value - ($config->{pgsql_hist}->{$str} || 0);
 		$tbgwchkr = 0 unless $tbgwchkr != $value;
@@ -404,7 +404,7 @@ sub pgsql_update {
 		$sth = $dbh->prepare("SELECT SUM(buffers_checkpoint) FROM pg_stat_bgwriter");
 		$sth->execute;
 		$result = $sth->fetchrow_arrayref();
-		$value = @{$result}[0];
+		$value = (@{$result}[0] || 0);
 		$str = $n . "tbgwbchk";
 		$tbgwbchk = $value - ($config->{pgsql_hist}->{$str} || 0);
 		$tbgwbchk = 0 unless $tbgwbchk != $value;
@@ -437,7 +437,7 @@ sub pgsql_update {
 		$sth = $dbh->prepare("SELECT SUM(buffers_backend) FROM pg_stat_bgwriter");
 		$sth->execute;
 		$result = $sth->fetchrow_arrayref();
-		$value = @{$result}[0];
+		$value = (@{$result}[0] || 0);
 		$str = $n . "tbgwbbac";
 		$tbgwbbac = $value - ($config->{pgsql_hist}->{$str} || 0);
 		$tbgwbbac = 0 unless $tbgwbbac != $value;
