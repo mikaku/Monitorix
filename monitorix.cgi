@@ -434,12 +434,12 @@ if($tf{twhen} eq "year") {
 }
 
 
-if($RRDs::VERSION > 1.2) {
+if(version->declare($RRDs::VERSION)->numify > version->declare(1.2)->numify) {
 	push(@version12, "--slope-mode");
 	push(@version12, "--font=LEGEND:7:");
 	push(@version12, "--font=TITLE:9:");
 	push(@version12, "--font=UNIT:8:");
-	if($RRDs::VERSION >= 1.3) {
+	if(version->declare($RRDs::VERSION)->numify >= version->declare(1.3)->numify) {
 		push(@version12, "--font=DEFAULT:0:Mono");
 	}
 	if($tf{twhen} eq "day") {
@@ -447,7 +447,7 @@ if($RRDs::VERSION > 1.2) {
 	}
 	push(@version12_small, "--font=TITLE:8:");
 	push(@version12_small, "--font=UNIT:7:");
-	if($RRDs::VERSION >= 1.3) {
+	if(version->declare($RRDs::VERSION)->numify >= version->declare(1.3)->numify) {
 		push(@version12_small, "--font=DEFAULT:0:Mono");
 	}
 }

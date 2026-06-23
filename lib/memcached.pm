@@ -433,8 +433,8 @@ sub memcached_cgi {
 	my $str;
 	my $err;
 
-	$version = "old" if $RRDs::VERSION < 1.3;
-	push(@full_size_mode, "--full-size-mode") if $RRDs::VERSION > 1.3;
+	$version = "old" if version->declare($RRDs::VERSION)->numify < version->declare(1.3)->numify;
+	push(@full_size_mode, "--full-size-mode") if version->declare($RRDs::VERSION)->numify > version->declare(1.3)->numify;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
 	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
@@ -567,7 +567,7 @@ sub memcached_cgi {
 			}
 		}
 		$cachesizemb = int($cachesize / 1024 / 1024);
-		if($RRDs::VERSION > 1.2) {
+		if(version->declare($RRDs::VERSION)->numify > version->declare(1.2)->numify) {
 			$uptimeline = "COMMENT:uptime\\: " . uptime2str(trim($uptimeline)) . "\\c";
 		} else {
 			$uptimeline = "COMMENT:uptime: " . uptime2str(trim($uptimeline)) . "\\c";

@@ -448,8 +448,8 @@ sub wowza_cgi {
 		"#444444",
 	);
 
-	$version = "old" if $RRDs::VERSION < 1.3;
-	push(@full_size_mode, "--full-size-mode") if $RRDs::VERSION > 1.3;
+	$version = "old" if version->declare($RRDs::VERSION)->numify < version->declare(1.3)->numify;
+	push(@full_size_mode, "--full-size-mode") if version->declare($RRDs::VERSION)->numify > version->declare(1.3)->numify;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
 	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
@@ -590,7 +590,7 @@ sub wowza_cgi {
 		my $line = @$data[0];
 		my ($uptime) = @$line[$e * 130];
 		my $uptimeline;
-		if($RRDs::VERSION > 1.2) {
+		if(version->declare($RRDs::VERSION)->numify > version->declare(1.2)->numify) {
 			$uptimeline = "COMMENT:uptime\\: " . uptime2str($uptime) . "\\c";
 		} else {
 			$uptimeline = "COMMENT:uptime: " . uptime2str($uptime) . "\\c";

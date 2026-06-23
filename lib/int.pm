@@ -822,8 +822,8 @@ sub int_cgi {
 			"#EE00EE",
 			"#EEEE00");
 
-	$version = "old" if $RRDs::VERSION < 1.3;
-	push(@full_size_mode, "--full-size-mode") if $RRDs::VERSION > 1.3;
+	$version = "old" if version->declare($RRDs::VERSION)->numify < version->declare(1.3)->numify;
+	push(@full_size_mode, "--full-size-mode") if version->declare($RRDs::VERSION)->numify > version->declare(1.3)->numify;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
 	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
@@ -1014,7 +1014,7 @@ sub int_cgi {
 	for($n = 0, $n1 = 0, $n2 = 0, $n3 = 0; $n < 256; $n++) {
 		if(defined($NAME[$n])) {
 			# We need to escape colons to support RRDtool v1.2+
-			if($RRDs::VERSION > 1.2) {
+			if(version->declare($RRDs::VERSION)->numify > version->declare(1.2)->numify) {
 				$NAME[$n] =~ s/:/\\:/g;
 			}
 		}

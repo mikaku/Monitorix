@@ -457,8 +457,8 @@ sub system_cgi {
 	my $n;
 	my $err;
 
-	$version = "old" if $RRDs::VERSION < 1.3;
-	push(@full_size_mode, "--full-size-mode") if $RRDs::VERSION > 1.3;
+	$version = "old" if version->declare($RRDs::VERSION)->numify < version->declare(1.3)->numify;
+	push(@full_size_mode, "--full-size-mode") if version->declare($RRDs::VERSION)->numify > version->declare(1.3)->numify;
 	my $rrd = $config->{base_lib} . $package . ".rrd";
 	my $title = $config->{graph_title}->{$package};
 	my $IMG_DIR = $config->{base_dir} . "/" . $config->{imgs_dir};
@@ -572,7 +572,7 @@ sub system_cgi {
 	}
 	@riglim = @{setup_riglim($rigid[0], $limit[0])};
 	my $uptimeline;
-	if($RRDs::VERSION > 1.2) {
+	if(version->declare($RRDs::VERSION)->numify > version->declare(1.2)->numify) {
 		$uptimeline = "COMMENT:system uptime\\: " . get_uptime($config) . "\\c";
 	} else {
 		$uptimeline = "COMMENT:system uptime: " . get_uptime($config) . "\\c";
