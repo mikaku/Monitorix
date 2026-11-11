@@ -1993,6 +1993,87 @@ This list complements the \fBrespect_power_state\fP option. You can specify the 
 </power_states>
 .RE
 .RE
+.SS AMD GPU statistics from the amdgpu_top tool (amdgpu_top.pm)
+This graph monitors AMD GPUs using the JSON output (\fI-J -n 1\fP) of the \fIamdgpu_top\fP tool (https://github.com/Umio-Yasuno/amdgpu_top), which provides many more values than the bare \fIhwmon\fP interface: usage of the GFX/media/video/copy engines (GRBM and GRBM2 registers), temperatures, clocks, voltages, fan speed, power, VRAM and GTT memory usage and per-process fdinfo counters. The module records all values and shows them in ten panels: GPU usage, Power, Memory usage, GRBM engines, GRBM2 engines, Temperatures, Clocks, Voltage, Fan speed and Media engine usage.
+.P
+Only the \fIamdgpu_top\fP tool needs to be installed; the module parses its JSON output using the core Perl module \fIJSON::PP\fP, no other external dependency is needed.
+.P
+.BI list
+.RS
+This is a list of groups of GPUs that you want to monitor. Each group will become a graph and there may be an unlimited number of groups. The entries are the (0-based) indices into the \fIdevices[]\fP array reported by \fIamdgpu_top\fP, e.g. \fI0 = 0\fP shows the first GPU in group 0, \fI0 = 0, 1\fP shows the first two GPUs in one group.
+.P
+WARNING: Every time the number of groups in this option changes, Monitorix will resize the \fIamdgpu_top.rrd\fP file accordingly, removing all historical data.
+.P
+The maximum number of GPUs allowed per group is 8.
+.RE
+.P
+.BI cmd
+.RS
+The command used to collect the JSON data. Has to terminate by itself, which \fIamdgpu_top -J -n 1\fP does after about one second.
+.P
+Default value: \fIamdgpu_top -J -n 1\fP
+.RE
+.P
+.BI cmd_timeout
+.RS
+Hard timeout (in seconds) for each \fIcmd\fP invocation. This protects the Monitorix update loop against a wedged GPU or driver, since \fIamdgpu_top\fP talks directly to the DRM driver and could block indefinitely. On timeout the command is killed and all values of that update are written as unknown.
+.P
+Default value: \fI30\fP
+.RE
+.P
+.BI no_pc
+.RS
+This option, when enabled via \fIy\fP, appends \fI--no-pc\fP to the command line, which avoids reading the performance counters. Note that the GRBM/GRBM2 engine usage values are derived from those counters and will then stay empty.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI use_nan_for_missing_data
+.RS
+This option, when enabled via \fIy\fP, records values not provided by your GPU (e.g. fan speed on firmware-controlled APUs) as unknown (gaps in the graphs) instead of 0.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI panels
+.RS
+Comma-separated list of the panels (1-based) that you want to see in the web interface:
+.P
+.RS
+1 = GPU usage, 2 = Power, 3 = Memory usage, 4 = GRBM engines, 5 = GRBM2 engines, 6 = Temperatures, 7 = Clocks, 8 = Voltage, 9 = Fan speed, 10 = Media engine usage.
+.RE
+.P
+Panels not listed are hidden in the web interface only; all data sources keep being recorded in the \fIamdgpu_top.rrd\fP file, so a panel can be enabled later without losing history. Useful on hardware where some panels stay permanently empty (e.g. APUs without fan or media workload counters).
+.P
+Default value: \fIall 10 panels\fP
+.RE
+.P
+.BI show_current_values
+.RS
+This option, when enabled via \fIy\fP, adds a short legend with the current values to the smaller graphs.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI show_info
+.RS
+This option, when enabled via \fIy\fP, adds a static device information block (bus ids, VRAM sizes, driver, firmware versions, ...) to the text view, collected best-effort via \fIamdgpu_top -J --dump\fP.
+.P
+Default value: \fIn\fP
+.RE
+.P
+.BI map
+.RS
+This list allows you to assign friendly names to your GPU groups, shown in the legends of the graphs.
+.P
+.RS
+<map>
+.br
+	0 = Radeon 8060S
+.br
+</map>
+.RE
+.RE
 .SS NVIDIA GPU temperatures and usage (nvidiagpu.pm)
 This graph is able to monitor an unlimited number of Nvidia GPUs via \fInvidia-smi\fP.
 .P
