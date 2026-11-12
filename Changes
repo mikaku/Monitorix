@@ -1,5 +1,7 @@
 3.17.0 - DD-MMM-2026
 ====================
+- Added the new module 'amdgpu_top.pm', which monitors all time-series values
+  provided by the JSON output of the 'amdgpu_top' tool. [#489]
 - Added support for Redis ACL authentication.
 - Added support for Icecast 2.5 statistics. [#481]
 - On systems with 'systemd', use 'systemctl kill --signal=HUP -kill-who=main' in
