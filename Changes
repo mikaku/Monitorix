@@ -14,6 +14,7 @@
 - Fixed to load early extra configuration files to ensure that all the options
   ('log_file' specificly) take effect before Monitorix daemonize itself. [#479]
 - Fixed annoying messages about missing columns in PostgreSQL 18+. [#487]
+- Fixed all Perl version comparisons by using the 'version' module. [#488]
 
 
 3.16.0 - 27-Nov-2024
