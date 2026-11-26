@@ -1,4 +1,4 @@
-3.17.0 - DD-MMM-2026
+3.17.0 - 26-Nov-2026
 ====================
 - Added the new module 'amdgpu_top.pm', which monitors all time-series values
   provided by the JSON output of the 'amdgpu_top' tool. [#489]
